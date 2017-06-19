@@ -2,6 +2,10 @@ const path = require("path");
 const copy = require("copy-webpack-plugin");
 const fs = require("fs");
 
+var externals = {
+    "cockpit": "cockpit",
+};
+
 /* These can be overridden, typically from the Makefile.am */
 const srcdir = (process.env.SRCDIR || __dirname) + path.sep + "src";
 const builddir = (process.env.SRCDIR || __dirname);
@@ -15,8 +19,9 @@ var info = {
         ]
     },
     files: [
-        "index.html"
-    ]
+        "index.html",
+        "manifest.json",
+    ],
 };
 
 var output = {
@@ -71,6 +76,7 @@ var plugins = [
 
 module.exports = {
     entry: info.entries,
+    externals: externals,
     output: output,
     module: {
         rules: [
