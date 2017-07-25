@@ -2,6 +2,7 @@ const path = require("path");
 const copy = require("copy-webpack-plugin");
 const fs = require("fs");
 const webpack = require("webpack");
+const CompressionPlugin = require("compression-webpack-plugin");
 
 var externals = {
     "cockpit": "cockpit",
@@ -96,6 +97,13 @@ if (production) {
 
     /* Rename output files when minimizing */
     output.filename = "[name].min.js";
+
+    plugins.unshift(new CompressionPlugin({
+        asset: "[path].gz[query]",
+        test: /\.(js|html)$/,
+        minRatio: 0.9,
+        deleteOriginalAssets: true
+    }));
 }
 
 module.exports = {
