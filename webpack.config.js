@@ -11,11 +11,13 @@ const srcdir = (process.env.SRCDIR || __dirname) + path.sep + "src";
 const builddir = (process.env.SRCDIR || __dirname);
 const distdir = builddir + path.sep + "dist";
 const section = process.env.ONLYDIR || null;
+const nodedir = path.resolve((process.env.SRCDIR || __dirname), "node_modules");
 
 var info = {
     entries: {
         "index": [
-            "./index.js"
+            "./index.js",
+            "./subscriptions.css",
         ]
     },
     files: [
@@ -78,6 +80,12 @@ module.exports = {
     entry: info.entries,
     externals: externals,
     output: output,
+    devtool: "source-map",
+    resolve: {
+        alias: {
+            "react$": path.resolve(nodedir, "react-lite/dist/react-lite.js")
+        }
+    },
     module: {
         rules: [
             {

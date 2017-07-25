@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /*
  * This file is part of Cockpit.
  *
@@ -14,12 +15,25 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with subscription-manager; If not, see <http://www.gnu.org/licenses/>.
+ * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
+import React from 'react';
+import { Subscriptions } from './subscriptions-view.jsx';
 
-var cockpit = require("cockpit");
+function render() {
+    React.render(
+        React.createElement(
+            Subscriptions,
+            {title: "Sample Page"}
+        ),
+        document.getElementById('app')
+    );
+}
 
-document.addEventListener("DOMContentLoaded", function() {
-    var app = require("./index.es6");
-    app.run();
-});
+/**
+ * Start the application.
+ */
+export function run() {
+    // do initial render
+    render();
+}

@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /*
  * This file is part of Cockpit.
  *
@@ -14,12 +15,25 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with subscription-manager; If not, see <http://www.gnu.org/licenses/>.
+ * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
+import React from 'react';
 
-var cockpit = require("cockpit");
+export class Subscriptions extends React.Component {
+    constructor() {
+        super();
+        // a good place to initialize this.state
+    }
 
-document.addEventListener("DOMContentLoaded", function() {
-    var app = require("./index.es6");
-    app.run();
-});
+    render() {
+        let title = this.props.title?(<a href="#">{this.props.title}</a>):"Empty title";
+        return (
+            <div class="container-fluid">
+                <h3>{title}</h3>
+                <div>
+                    <span>Some content</span>
+                </div>
+            </div>
+        );
+    }
+}
