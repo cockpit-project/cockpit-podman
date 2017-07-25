@@ -1,6 +1,7 @@
 const path = require("path");
 const copy = require("copy-webpack-plugin");
 const fs = require("fs");
+const webpack = require("webpack");
 
 var externals = {
     "cockpit": "cockpit",
@@ -12,6 +13,9 @@ const builddir = (process.env.SRCDIR || __dirname);
 const distdir = builddir + path.sep + "dist";
 const section = process.env.ONLYDIR || null;
 const nodedir = path.resolve((process.env.SRCDIR || __dirname), "node_modules");
+
+/* A standard nodejs and webpack pattern */
+var production = process.env.NODE_ENV === 'production';
 
 var info = {
     entries: {
@@ -73,8 +77,26 @@ info.files.forEach(function(value) {
 info.files = files;
 
 var plugins = [
+    new webpack.DefinePlugin({
+        'process.env': {
+            'NODE_ENV': JSON.stringify(production ? 'production' : 'development')
+        }
+    }),
     new copy(info.files)
 ];
+
+/* Only minimize when in production mode */
+if (production) {
+    plugins.unshift(new webpack.optimize.UglifyJsPlugin({
+        beautify: true,
+        compress: {
+            warnings: false
+        },
+    }));
+
+    /* Rename output files when minimizing */
+    output.filename = "[name].min.js";
+}
 
 module.exports = {
     entry: info.entries,

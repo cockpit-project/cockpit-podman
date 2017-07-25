@@ -1,5 +1,5 @@
 all:
-	npm run build
+	NODE_ENV=$(NODE_ENV) npm run build
 
 clean:
 	rm -rf dist/
@@ -9,7 +9,9 @@ install: all
 	mkdir -p /usr/share/cockpit/subscription-manager
 	cp -r dist/* /usr/share/cockpit/subscription-manager
 
-dist-gzip: all
+# when building a distribution tarball, call webpack with a 'production' environment
+dist-gzip: NODE_ENV=production
+dist-gzip: clean all
 	mkdir -p _install/usr/share/cockpit
 	cp -r dist/ _install/usr/share/cockpit/subscription-manager
 	mkdir -p _install/usr/share/metainfo/
