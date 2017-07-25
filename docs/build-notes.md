@@ -28,11 +28,18 @@ This is the entry point for webpack, and will most likely contain the main paren
 
 ## Directory layout
 
-**TODO**: describe the high level layout of the folders, eg. component folder is for react components.
+The main package files are located in the [src](src) directory. These are processed during compilation and
+packaging.
 
-# Making a build
+## Building
 
-To actually build the plugin, simply run:
+You can use `make` to compile to code or `make install` to compile and install in `/usr/share/cockpit/`.
+
+The convenience make targets `srpm` and `rpm` build the source and binary rpms, respectively. Both of these make
+use of the `dist-gzip` target, which is used to generate the distribution tarball. In `production` mode, source files
+are automatically minified and compressed. Set `NODE_ENV=production` if you want to duplicate this behavior.
+
+Optionally, you can use `yarn` or `npm` to run the build, both of which in turn call `webpack`:
 
 ```
 yarn run build
@@ -52,3 +59,25 @@ users trying to build the plugin might have different versions of webpack instal
 dependency, and then using yarn or npm to run a command, it will use the webpack version installed locally.
 
 [-yarnpkg]: https://yarnpkg.com
+
+## Hacking with webpack
+A fairly simple workflow for development uses webpack directly and doesn't require root privileges.
+
+First, ensure that all dependencies are met and the code compiles:
+```
+npm install
+make
+```
+
+Then, link the `dist` directory in a place where cockpit can find it, without installing to the system directory.
+Call the following script from the git checkout:
+```
+ln -s ln -s ./dist subscription-manager
+```
+
+Then use webpack to monitor the filesystem for changes, also from the git checkout:
+```
+webpack --watch
+```
+
+After logging into Cockpit, you can refresh the page to load the newly built code after each change to the source files.
