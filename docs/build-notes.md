@@ -72,7 +72,7 @@ make
 Then, link the `dist` directory in a place where cockpit can find it, without installing to the system directory.
 Call the following script from the git checkout:
 ```
-ln -s ln -s ./dist subscription-manager
+ln -s ./dist subscription-manager
 ```
 
 Then use webpack to monitor the filesystem for changes, also from the git checkout:
