@@ -15,12 +15,12 @@ Requires: subscription-manager
 Subscription Manager Cockpit UI
 
 %prep
+%setup -n subscription-manager-cockpit
 
 %build
 
 %install
-mkdir -p %{buildroot}
-tar --strip-components=1 -xzf %{sources} -C %{buildroot}
+make install-only DESTDIR=%{buildroot}
 find %{buildroot} -type f >> files.list
 sed -i "s|%{buildroot}||" *.list
 

@@ -5,20 +5,27 @@ clean:
 	rm -rf dist/
 	rm -rf _install
 
-install: all
-	mkdir -p /usr/share/cockpit/subscription-manager
-	cp -r dist/* /usr/share/cockpit/subscription-manager
+install: all install-only
+
+install-only:
+	mkdir -p $(DESTDIR)/usr/share/cockpit/subscription-manager
+	cp -r dist/* $(DESTDIR)/usr/share/cockpit/subscription-manager
+	mkdir -p $(DESTDIR)/usr/share/metainfo/
+	cp org.cockpit-project.subscription-manager.metainfo.xml $(DESTDIR)/usr/share/metainfo/
+
+EXTRA_DIST = \
+	README.md \
+	org.cockpit-project.subscription-manager.metainfo.xml \
+	package.json \
+        .eslintrc.json \
+	webpack.config.js \
+	webpack-with-stats \
+	Makefile
 
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
 dist-gzip: clean all
-	mkdir -p _install/usr/share/cockpit
-	cp -r dist/ _install/usr/share/cockpit/subscription-manager
-	mkdir -p _install/usr/share/metainfo/
-	cp *.metainfo.xml _install/usr/share/metainfo/
-	cp subscription-manager-cockpit.spec _install/
-	tar -C _install/ -czf subscription-manager-cockpit.tar.gz .
-	rm -rf _install
+	tar czf subscription-manager-cockpit.tar.gz --transform 's,^,subscription-manager-cockpit/,' $$(cat webpack.inputs) $(EXTRA_DIST) dist/
 
 srpm: dist-gzip
 	rpmbuild -bs \
