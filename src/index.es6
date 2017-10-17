@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
+
+import 'cockpit';
 import React from 'react';
 import { StarterKit } from './starter-kit-view.jsx';
 
@@ -30,10 +32,4 @@ function render() {
     );
 }
 
-/**
- * Start the application.
- */
-export function run() {
-    // do initial render
-    render();
-}
+document.addEventListener("DOMContentLoaded", render);
