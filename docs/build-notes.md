@@ -4,7 +4,7 @@ These are some basic notes on building the plugin
 
 ## yarn
 
-The subscription-manager plugin for cockpit is built using webpack 2.x.  Although npm can be used to install the various
+The starter kit plugin for cockpit is built using webpack 2.x.  Although npm can be used to install the various
 dependencies, it is recommended to install [yarn][-yarnpkg] and use it instead:
 
 ```
@@ -72,7 +72,7 @@ make
 Then, link the `dist` directory in a place where cockpit can find it, without installing to the system directory.
 Call the following script from the git checkout:
 ```
-ln -s ./dist subscription-manager
+ln -s ./dist starter
 ```
 
 Then use webpack to monitor the filesystem for changes, also from the git checkout:

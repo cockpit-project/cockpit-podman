@@ -1,21 +1,19 @@
-Name: subscription-manager-cockpit
+Name: starter-cockpit
 Version: 1
 Release: 0
-Summary: Subscription Manager Cockpit UI
+Summary: Cockpit Starter Kit Example Module
 License: LGPLv2.1+
 
-Source: subscription-manager-cockpit.tar.gz
+Source: starter-cockpit.tar.gz
 BuildArch: noarch
-
-Requires: subscription-manager
 
 %define debug_package %{nil}
 
 %description
-Subscription Manager Cockpit UI
+Cockpit Starter Kit Example Module
 
 %prep
-%setup -n subscription-manager-cockpit
+%setup -n starter-cockpit
 
 %build
 

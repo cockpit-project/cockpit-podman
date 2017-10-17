@@ -21,8 +21,7 @@ var production = process.env.NODE_ENV === 'production';
 var info = {
     entries: {
         "index": [
-            "./index.js",
-            "./subscriptions.css",
+            "./index.js"
         ]
     },
     files: [

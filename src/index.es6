@@ -18,12 +18,12 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 import React from 'react';
-import { Subscriptions } from './subscriptions-view.jsx';
+import { StarterKit } from './starter-kit-view.jsx';
 
 function render() {
     React.render(
         React.createElement(
-            Subscriptions,
+            StarterKit,
             {title: "Sample Page"}
         ),
         document.getElementById('app')

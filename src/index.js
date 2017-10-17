@@ -1,6 +1,4 @@
 /*
- * This file is part of Cockpit.
- *
  * Copyright (C) 2017 Red Hat, Inc.
  *
  * Cockpit is free software; you can redistribute it and/or modify it
@@ -14,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with subscription-manager; If not, see <http://www.gnu.org/licenses/>.
+ * along with this package; If not, see <http://www.gnu.org/licenses/>.
  */
 
 var cockpit = require("cockpit");

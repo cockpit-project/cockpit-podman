@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /*
  * This file is part of Cockpit.
  *
@@ -16,4 +17,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
- 
+import React from 'react';
+
+export class StarterKit extends React.Component {
+    constructor() {
+        super();
+        // a good place to initialize this.state
+    }
+
+    render() {
+        let title = this.props.title?(<a href="#">{this.props.title}</a>):"Empty title";
+        return (
+            <div class="container-fluid">
+                <h3>{title}</h3>
+                <div>
+                    <span>Some content</span>
+                </div>
+            </div>
+        );
+    }
+}
