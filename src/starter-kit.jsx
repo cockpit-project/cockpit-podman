@@ -17,21 +17,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
+
+import 'cockpit';
 import React from 'react';
 
 export class StarterKit extends React.Component {
     constructor() {
         super();
-        // a good place to initialize this.state
+
+        cockpit.file('/etc/hostname').read().done((content) => {
+            this.setState({ 'hostname': content.trim() });
+        });
     }
 
     render() {
-        let title = this.props.title?(<a href="#">{this.props.title}</a>):"Empty title";
         return (
-            <div class="container-fluid">
-                <h3>{title}</h3>
+            <div className="container-fluid">
+                <h2>Starter Kit</h2>
                 <div>
-                    <span>Some content</span>
+                    <span>Running on {this.state.hostname}</span>
                 </div>
             </div>
         );

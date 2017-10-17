@@ -18,18 +18,9 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'cockpit';
 import React from 'react';
-import { StarterKit } from './starter-kit-view.jsx';
+import { StarterKit } from './starter-kit.jsx';
 
-function render() {
-    React.render(
-        React.createElement(
-            StarterKit,
-            {title: "Sample Page"}
-        ),
-        document.getElementById('app')
-    );
-}
-
-document.addEventListener("DOMContentLoaded", render);
+document.addEventListener("DOMContentLoaded", function () {
+    React.render(React.createElement(StarterKit, {}), document.getElementById('app'));
+});
