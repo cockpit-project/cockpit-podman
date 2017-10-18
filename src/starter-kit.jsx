@@ -18,7 +18,7 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'cockpit';
+import cockpit from 'cockpit';
 import React from 'react';
 
 export class StarterKit extends React.Component {
