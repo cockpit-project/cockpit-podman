@@ -15,19 +15,10 @@ install-only:
 	mkdir -p $(DESTDIR)/usr/share/metainfo/
 	cp org.cockpit-project.$(PACKAGE_NAME).metainfo.xml $(DESTDIR)/usr/share/metainfo/
 
-EXTRA_DIST = \
-	README.md \
-	org.cockpit-project.$(PACKAGE_NAME).metainfo.xml \
-	package.json \
-        .eslintrc.json \
-	webpack.config.js \
-	webpack-with-stats \
-	Makefile
-
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
 dist-gzip: clean all
-	tar czf $(PACKAGE_NAME)-cockpit.tar.gz --transform 's,^,$(PACKAGE_NAME)-cockpit/,' $$(cat webpack.inputs) $(EXTRA_DIST) dist/
+	tar czf $(PACKAGE_NAME)-cockpit.tar.gz --transform 's,^,$(PACKAGE_NAME)-cockpit/,' $$(git ls-files) dist/
 
 srpm: dist-gzip
 	rpmbuild -bs \
