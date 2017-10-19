@@ -39,3 +39,4 @@ rpm: dist-gzip
 	  cockpit-$(PACKAGE_NAME).spec
 	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r "`pwd`/rpmbuild"
+	rm -r "`pwd`/output" "`pwd`/build"
