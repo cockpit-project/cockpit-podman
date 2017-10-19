@@ -18,13 +18,13 @@ install-only:
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
 dist-gzip: clean all
-	tar czf $(PACKAGE_NAME)-cockpit.tar.gz --transform 's,^,$(PACKAGE_NAME)-cockpit/,' $$(git ls-files) dist/
+	tar czf cockpit-$(PACKAGE_NAME).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' $$(git ls-files) dist/
 
 srpm: dist-gzip
 	rpmbuild -bs \
 	  --define "_sourcedir `pwd`" \
 	  --define "_srcrpmdir `pwd`" \
-	  $(PACKAGE_NAME)-cockpit.spec
+	  cockpit-$(PACKAGE_NAME).spec
 
 rpm: dist-gzip
 	mkdir -p "`pwd`/output"
@@ -36,6 +36,6 @@ rpm: dist-gzip
 	  --define "_srcrpmdir `pwd`" \
 	  --define "_rpmdir `pwd`/output" \
 	  --define "_buildrootdir `pwd`/build" \
-	  $(PACKAGE_NAME)-cockpit.spec
+	  cockpit-$(PACKAGE_NAME).spec
 	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r "`pwd`/rpmbuild"
