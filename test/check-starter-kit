@@ -1,0 +1,33 @@
+#!/usr/bin/python
+# Run this with --help to see available options for tracing and debugging
+# See https://github.com/cockpit-project/cockpit/blob/master/test/common/testlib.py
+# "class Browser" and "class MachineCase" for the available API.
+
+import os
+import sys
+
+# import Cockpit's machinery for test VMs and its browser test API
+TEST_DIR = os.path.dirname(__file__)
+sys.path.append(os.path.join(TEST_DIR, "common"))
+sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
+import testlib
+
+
+class TestStarterKit(testlib.MachineCase):
+    def testBasic(self):
+        b = self.browser
+        m = self.machine
+
+        self.login_and_go("/starter-kit")
+        # verify expected heading
+        b.wait_present(".container-fluid h2")
+        b.wait_text(".container-fluid h2", "Starter Kit")
+
+        # verify expected host name
+        hostname = m.execute("hostname").strip()
+        b.wait_present(".container-fluid span")
+        b.wait_text(".container-fluid span", "Running on " + hostname)
+
+
+if __name__ == '__main__':
+    testlib.test_main()
