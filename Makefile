@@ -1,6 +1,6 @@
 PACKAGE_NAME := $(shell python3 -c "import json; print(json.load(open('package.json'))['name'])")
 
-all:
+all: node_modules/react-lite
 	NODE_ENV=$(NODE_ENV) npm run build
 
 clean:
@@ -40,3 +40,8 @@ rpm: dist-gzip
 	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
+
+node_modules/react-lite:
+	npm install
+
+.PHONY: all clean install install-only dist-gzip srpm rpm

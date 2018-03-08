@@ -4,9 +4,8 @@ Scaffolding for a [Cockpit](http://www.cockpit-project.org) module.
 
 # Building
 
-Run `npm install` to install dependencies and `make` to build the package. It
-builds into the `dist` directory. Link or copy that to a location were
-`cockpit-bridge` looks for packages.
+Run `make` to build the package. It builds into the `dist` directory. Link or
+copy that to a location were `cockpit-bridge` looks for packages.
 
 `make install` compiles and installs the package in `/usr/share/cockpit/`. The
 convenience targets `srpm` and `rpm` build the source and binary rpms,
