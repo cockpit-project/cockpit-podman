@@ -5,20 +5,25 @@ endif
 export TEST_OS
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 
-all: node_modules/react-lite
+all: dist/index.js
+
+dist/index.js: node_modules/react-lite $(wildcard src/*) package.json webpack.config.js
 	NODE_ENV=$(NODE_ENV) npm run build
 
 clean:
 	rm -rf dist/
 	rm -rf _install
 
-install: all install-only
-
-install-only:
+install: dist/index.js
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	cp -r dist/* $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	mkdir -p $(DESTDIR)/usr/share/metainfo/
 	cp org.cockpit-project.$(PACKAGE_NAME).metainfo.xml $(DESTDIR)/usr/share/metainfo/
+
+# this requires a built source tree and avoids having to install anything system-wide
+devel-install: dist/index.js
+	mkdir -p ~/.local/share/cockpit
+	ln -s `pwd`/dist ~/.local/share/cockpit/starter-kit
 
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
@@ -70,4 +75,4 @@ test/common:
 node_modules/react-lite:
 	npm install
 
-.PHONY: all clean install install-only dist-gzip srpm rpm check
+.PHONY: all clean install devel-install dist-gzip srpm rpm check

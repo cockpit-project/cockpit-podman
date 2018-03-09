@@ -16,9 +16,10 @@ Cockpit Starter Kit Example Module
 %setup -n cockpit-starter-kit
 
 %build
+make
 
 %install
-make install-only DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
 find %{buildroot} -type f >> files.list
 sed -i "s|%{buildroot}||" *.list
 
