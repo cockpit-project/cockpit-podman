@@ -55,6 +55,10 @@ rpm: dist-gzip
 $(VM_IMAGE): rpm bots
 	bots/image-customize -v -r 'rpm -e cockpit-starter-kit || true' -i cockpit -i `pwd`/cockpit-starter-kit-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
 
+# convenience target for the above
+vm: $(VM_IMAGE)
+	echo $(VM_IMAGE)
+
 # run the browser integration tests; skip check for SELinux denials
 check: node_modules/react-lite $(VM_IMAGE) test/common
 	TEST_AUDIT_NO_SELINUX=1 test/check-starter-kit
@@ -76,4 +80,4 @@ test/common:
 node_modules/react-lite:
 	npm install
 
-.PHONY: all clean install devel-install dist-gzip srpm rpm check
+.PHONY: all clean install devel-install dist-gzip srpm rpm check vm
