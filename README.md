@@ -17,7 +17,7 @@ duplicate this behavior.
 # Testing
 
 Run `make check` to build an RPM, install it into a standard Cockpit test VM
-(centos-7 by default), and run the test/check-starter-kit integration test on
+(centos-7 by default), and run the test/check-application integration test on
 it. This uses Cockpit's Chrome DevTools Protocol based browser tests, through a
 Python API abstraction. Note that this API is not guaranteed to be stable, so
 if you run into failures and don't want to adjust tests, consider checking out
@@ -28,7 +28,7 @@ After the test VM is prepared, you can manually run the test without rebuilding
 the VM, possibly with extra options for tracing and halting on test failures
 (for interactive debugging):
 
-    TEST_OS=centos-7 test/check-starter-kit -tvs
+    TEST_OS=centos-7 test/check-application -tvs
 
 You can also run the test against a different Cockpit image, for example:
 
@@ -41,3 +41,12 @@ Fedora 26 cloud image. Run `vagrant up` to start it and `vagrant rsync` to
 synchronize the `dist` directory to `/usr/local/share/cockit/starter-kit`. Use
 `vagrant rsync-auto` to automatically sync when contents of the `dist`
 directory change.
+
+# Customizing
+
+After cloning the Starter Kit you should rename the files, package names, and
+labels to your own project's name. Use these commands to find out what to
+change:
+
+    find -iname '*starter*'
+    git grep -i starter

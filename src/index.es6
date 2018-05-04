@@ -19,8 +19,8 @@
  */
 
 import React from 'react';
-import { StarterKit } from './starter-kit.jsx';
+import { Application } from './app.jsx';
 
 document.addEventListener("DOMContentLoaded", function () {
-    React.render(React.createElement(StarterKit, {}), document.getElementById('app'));
+    React.render(React.createElement(Application, {}), document.getElementById('app'));
 });

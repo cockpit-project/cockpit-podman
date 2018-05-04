@@ -21,7 +21,7 @@
 import cockpit from 'cockpit';
 import React from 'react';
 
-export class StarterKit extends React.Component {
+export class Application extends React.Component {
     constructor() {
         super();
 

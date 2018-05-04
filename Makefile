@@ -61,7 +61,7 @@ vm: $(VM_IMAGE)
 
 # run the browser integration tests; skip check for SELinux denials
 check: node_modules/react-lite $(VM_IMAGE) test/common
-	TEST_AUDIT_NO_SELINUX=1 test/check-starter-kit
+	TEST_AUDIT_NO_SELINUX=1 test/check-application
 
 # checkout Cockpit's bots/ directory for standard test VM images and API to launch them
 # must be from cockpit's master, as only that has current and existing images; but testvm.py API is stable
