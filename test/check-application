@@ -40,10 +40,12 @@ class TestApplication(testlib.MachineCase):
         # HACK: work around language switching in Chrome not working in current session (Cockpit issue #8160)
         b.reload(ignore_cache=True)
         b.wait_present("#content")
+        # menu label (from manifest) should be translated
+        b.wait_text("#host-apps a[href='/starter-kit']", "Bausatz")
 
         b.go("/starter-kit")
         b.enter_page("/starter-kit")
-
+        # page label (from js) should be translated
         b.wait_in_text(".container-fluid span", "Läuft auf")
 
 if __name__ == '__main__':

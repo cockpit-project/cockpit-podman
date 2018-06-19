@@ -17,7 +17,7 @@ po/POTFILES.js.in:
 	mkdir -p $(dir $@)
 	find src/ -name '*.js' -o -name '*.jsx' -o -name '*.es6' > $@
 
-po/$(PACKAGE_NAME).pot: po/POTFILES.js.in
+po/$(PACKAGE_NAME).js.pot: po/POTFILES.js.in
 	xgettext --default-domain=cockpit --output=$@ --language=C --keyword= \
 		--keyword=_:1,1t --keyword=_:1c,2,1t --keyword=C_:1c,2 \
 		--keyword=N_ --keyword=NC_:1c,2 \
@@ -25,6 +25,19 @@ po/$(PACKAGE_NAME).pot: po/POTFILES.js.in
 		--keyword=ngettext:1,2,3t --keyword=ngettext:1c,2,3,4t \
 		--keyword=gettextCatalog.getString:1,3c --keyword=gettextCatalog.getPlural:2,3,4c \
 		--from-code=UTF-8 --files-from=$^
+
+po/POTFILES.html.in:
+	mkdir -p $(dir $@)
+	find src -name '*.html' > $@
+
+po/$(PACKAGE_NAME).html.pot: po/POTFILES.html.in
+	po/html2po -f $^ -o $@
+
+po/$(PACKAGE_NAME).manifest.pot:
+	po/manifest2po src/manifest.json -o $@
+
+po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot
+	msgcat --sort-output --output-file=$@ $^
 
 # Update translations against current PO template
 update-po: po/$(PACKAGE_NAME).pot
