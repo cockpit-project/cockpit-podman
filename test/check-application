@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding: UTF-8
 # Run this with --help to see available options for tracing and debugging
 # See https://github.com/cockpit-project/cockpit/blob/master/test/common/testlib.py
 # "class Browser" and "class MachineCase" for the available API.
@@ -28,6 +29,22 @@ class TestApplication(testlib.MachineCase):
         b.wait_present(".container-fluid span")
         b.wait_text(".container-fluid span", "Running on " + hostname)
 
+        # change language to German
+        b.switch_to_top()
+        b.click("#content-user-name")
+        b.click(".display-language-menu a")
+        b.wait_popup('display-language')
+        b.set_val("#display-language select", "de-de")
+        b.click("#display-language-select-button")
+        b.expect_load()
+        # HACK: work around language switching in Chrome not working in current session (Cockpit issue #8160)
+        b.reload(ignore_cache=True)
+        b.wait_present("#content")
+
+        b.go("/starter-kit")
+        b.enter_page("/starter-kit")
+
+        b.wait_in_text(".container-fluid span", "Läuft auf")
 
 if __name__ == '__main__':
     testlib.test_main()

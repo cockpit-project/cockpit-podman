@@ -7,7 +7,41 @@ VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 
 all: dist/index.js
 
-dist/index.js: node_modules/react-lite $(wildcard src/*) package.json webpack.config.js
+#
+# i18n
+#
+
+LINGUAS=$(basename $(notdir $(wildcard po/*.po)))
+
+po/POTFILES.js.in:
+	mkdir -p $(dir $@)
+	find src/ -name '*.js' -o -name '*.jsx' -o -name '*.es6' > $@
+
+po/$(PACKAGE_NAME).pot: po/POTFILES.js.in
+	xgettext --default-domain=cockpit --output=$@ --language=C --keyword= \
+		--keyword=_:1,1t --keyword=_:1c,2,1t --keyword=C_:1c,2 \
+		--keyword=N_ --keyword=NC_:1c,2 \
+		--keyword=gettext:1,1t --keyword=gettext:1c,2,2t \
+		--keyword=ngettext:1,2,3t --keyword=ngettext:1c,2,3,4t \
+		--keyword=gettextCatalog.getString:1,3c --keyword=gettextCatalog.getPlural:2,3,4c \
+		--from-code=UTF-8 --files-from=$^
+
+# Update translations against current PO template
+update-po: po/$(PACKAGE_NAME).pot
+	for lang in $(LINGUAS); do \
+		msgmerge --output-file=po/$$lang.po po/$$lang.po $<; \
+	done
+
+dist/po.%.js: po/%.po
+	mkdir -p $(dir $@)
+	po/po2json -m po/po.empty.js -o $@.js.tmp $<
+	mv $@.js.tmp $@
+
+#
+# Build/Install/dist
+#
+
+dist/index.js: node_modules/react-lite $(wildcard src/*) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
 	NODE_ENV=$(NODE_ENV) npm run build
 
 clean:
@@ -80,4 +114,4 @@ test/common:
 node_modules/react-lite:
 	npm install
 
-.PHONY: all clean install devel-install dist-gzip srpm rpm check vm
+.PHONY: all clean install devel-install dist-gzip srpm rpm check vm update-po
