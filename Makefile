@@ -23,7 +23,7 @@ install: dist/index.js
 # this requires a built source tree and avoids having to install anything system-wide
 devel-install: dist/index.js
 	mkdir -p ~/.local/share/cockpit
-	ln -s `pwd`/dist ~/.local/share/cockpit/starter-kit
+	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
@@ -51,9 +51,9 @@ rpm: dist-gzip
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
 
-# build a VM with locally built cockpit-starter-kit.rpm installed
+# build a VM with locally built rpm installed
 $(VM_IMAGE): rpm bots
-	bots/image-customize -v -r 'rpm -e cockpit-starter-kit || true' -i cockpit -i `pwd`/cockpit-starter-kit-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize -v -r 'rpm -e cockpit-$(PACKAGE_NAME) || true' -i cockpit -i `pwd`/cockpit-$(PACKAGE_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
