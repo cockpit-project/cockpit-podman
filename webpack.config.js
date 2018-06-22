@@ -1,5 +1,6 @@
 const path = require("path");
 const copy = require("copy-webpack-plugin");
+const extract = require("extract-text-webpack-plugin");
 const fs = require("fs");
 const webpack = require("webpack");
 const CompressionPlugin = require("compression-webpack-plugin");
@@ -82,7 +83,8 @@ var plugins = [
             'NODE_ENV': JSON.stringify(production ? 'production' : 'development')
         }
     }),
-    new copy(info.files)
+    new copy(info.files),
+    new extract("[name].css")
 ];
 
 /* Only minimize when in production mode */
@@ -149,6 +151,11 @@ module.exports = {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 test: /\.es6$/
+            },
+            {
+                exclude: /node_modules/,
+                loader: extract.extract('css-loader!sass-loader'),
+                test: /\.scss$/
             }
         ]
     },

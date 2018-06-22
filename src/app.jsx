@@ -20,6 +20,7 @@
 
 import cockpit from 'cockpit';
 import React from 'react';
+import './app.scss';
 
 const _ = cockpit.gettext;
 
@@ -36,9 +37,9 @@ export class Application extends React.Component {
         return (
             <div className="container-fluid">
                 <h2>Starter Kit</h2>
-                <div>
-                    <span>{ cockpit.format(_("Running on $0"), this.state.hostname) }</span>
-                </div>
+                <p>
+                    { cockpit.format(_("Running on $0"), this.state.hostname) }
+                </p>
             </div>
         );
     }

@@ -26,8 +26,8 @@ class TestApplication(testlib.MachineCase):
 
         # verify expected host name
         hostname = m.execute("hostname").strip()
-        b.wait_present(".container-fluid span")
-        b.wait_text(".container-fluid span", "Running on " + hostname)
+        b.wait_present(".container-fluid p")
+        b.wait_text(".container-fluid p", "Running on " + hostname)
 
         # change language to German
         b.switch_to_top()
@@ -46,7 +46,7 @@ class TestApplication(testlib.MachineCase):
         b.go("/starter-kit")
         b.enter_page("/starter-kit")
         # page label (from js) should be translated
-        b.wait_in_text(".container-fluid span", "Läuft auf")
+        b.wait_in_text(".container-fluid p", "Läuft auf")
 
 if __name__ == '__main__':
     testlib.test_main()
