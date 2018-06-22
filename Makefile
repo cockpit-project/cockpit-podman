@@ -1,4 +1,5 @@
 PACKAGE_NAME := $(shell python3 -c "import json; print(json.load(open('package.json'))['name'])")
+VERSION := $(shell git describe 2>/dev/null || echo 1)
 ifeq ($(TEST_OS),)
 TEST_OS = centos-7
 endif
@@ -54,12 +55,16 @@ dist/po.%.js: po/%.po
 # Build/Install/dist
 #
 
+%.spec: %.spec.in
+	sed -e 's/@VERSION@/$(VERSION)/g' $< > $@
+
 dist/index.js: node_modules/react-lite $(wildcard src/*) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
 	NODE_ENV=$(NODE_ENV) npm run build
 
 clean:
 	rm -rf dist/
 	rm -rf _install
+	rm -f $(PACKAGE_NAME).spec
 
 install: dist/index.js
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
@@ -75,15 +80,15 @@ devel-install: dist/index.js
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
 dist-gzip: clean all
-	tar czf cockpit-$(PACKAGE_NAME).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' $$(git ls-files) dist/
+	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' $$(git ls-files) dist/
 
-srpm: dist-gzip
+srpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
 	rpmbuild -bs \
 	  --define "_sourcedir `pwd`" \
 	  --define "_srcrpmdir `pwd`" \
 	  cockpit-$(PACKAGE_NAME).spec
 
-rpm: dist-gzip
+rpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
 	mkdir -p "`pwd`/output"
 	mkdir -p "`pwd`/rpmbuild"
 	rpmbuild -bb \
