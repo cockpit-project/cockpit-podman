@@ -7,7 +7,7 @@ Vagrant.configure(2) do |config|
     end
 
     config.vm.synced_folder ".", "/vagrant", disabled: true
-    config.vm.synced_folder "dist/", "/usr/local/share/cockpit/" + File.basename(Dir.pwd), create: true
+    config.vm.synced_folder "dist/", "/usr/local/share/cockpit/" + File.basename(Dir.pwd), type: "rsync", create: true
 
     config.vm.provider "libvirt" do |libvirt|
         libvirt.memory = 1024
