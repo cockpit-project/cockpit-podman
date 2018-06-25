@@ -1,5 +1,5 @@
 Vagrant.configure(2) do |config|
-    config.vm.box = "fedora/26-cloud-base"
+    config.vm.box = "fedora/28-cloud-base"
     config.vm.network "forwarded_port", guest: 9090, host: 9090
 
     if Dir.glob("dist/*").length == 0
