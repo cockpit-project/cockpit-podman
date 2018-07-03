@@ -2,7 +2,7 @@ PACKAGE_NAME := $(shell python3 -c "import json; print(json.load(open('package.j
 RPM_NAME := cockpit-$(PACKAGE_NAME)
 VERSION := $(shell git describe 2>/dev/null || echo 1)
 ifeq ($(TEST_OS),)
-TEST_OS = centos-7
+TEST_OS = fedora-28
 endif
 export TEST_OS
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
@@ -106,7 +106,7 @@ rpm: dist-gzip $(RPM_NAME).spec
 
 # build a VM with locally built rpm installed
 $(VM_IMAGE): rpm bots
-	bots/image-customize -v -r 'rpm -e $(RPM_NAME) || true' -i cockpit -i `pwd`/$(RPM_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize -v -r 'rpm -e $(RPM_NAME) || true' -i cockpit-ws -i `pwd`/$(RPM_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)

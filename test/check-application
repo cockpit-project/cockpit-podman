@@ -18,34 +18,31 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/starter-kit")
-        # verify expected heading
-        b.wait_present(".container-fluid h2")
-        b.wait_text(".container-fluid h2", "Starter Kit")
+        self.login_and_go("/podman")
 
-        # verify expected host name
-        hostname = m.execute("hostname").strip()
-        b.wait_present(".container-fluid p")
-        b.wait_text(".container-fluid p", "Running on " + hostname)
+        # some version number
+        b.wait_present("#version")
+        b.wait_not_in_text("#version", "unknown")
+        self.assertRegex(b.text("#version"), "podman version: [0-9.]+")
 
-        # change language to German
-        b.switch_to_top()
-        b.click("#content-user-name")
-        b.click(".display-language-menu a")
-        b.wait_popup('display-language')
-        b.set_val("#display-language select", "de-de")
-        b.click("#display-language-select-button")
-        b.expect_load()
-        # HACK: work around language switching in Chrome not working in current session (Cockpit issue #8160)
-        b.reload(ignore_cache=True)
+        # list images
+        b.wait_present("#images")
+        b.wait_in_text("#images", "busybox:latest")
+        b.wait_in_text("#images", "alpine:latest")
+
+        # no containers
+        self.assertFalse(b.is_present("#containers li"))
+
+        # create a container
+        m.execute("podman run -d --name swamped-crate busybox sleep 1000")
+
+        # FIXME: UI needs to listen to change signals and update automatically
+        b.reload()
         b.wait_present("#content")
-        # menu label (from manifest) should be translated
-        b.wait_text("#host-apps a[href='/starter-kit']", "Bausatz")
+        b.enter_page("/podman")
+        b.wait_present("#containers")
 
-        b.go("/starter-kit")
-        b.enter_page("/starter-kit")
-        # page label (from js) should be translated
-        b.wait_in_text(".container-fluid p", "Läuft auf")
+        b.wait_in_text("#containers", "swamped-crate (docker.io/library/busybox:latest): sleep 1000")
 
 if __name__ == '__main__':
     testlib.test_main()
