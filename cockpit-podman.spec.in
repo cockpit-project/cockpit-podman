@@ -1,20 +1,20 @@
-Name: cockpit-starter-kit
+Name: cockpit-podman
 Version: @VERSION@
 Release: 1%{?dist}
-Summary: Cockpit Starter Kit Example Module
+Summary: Cockpit component for Podman containers
 License: LGPLv2.1+
 
-Source: cockpit-starter-kit-%{version}.tar.gz
+Source: cockpit-podman-%{version}.tar.gz
 BuildArch: noarch
 BuildRequires: /usr/bin/python3
 
 %define debug_package %{nil}
 
 %description
-Cockpit Starter Kit Example Module
+The Cockpit user interface for Podman containers.
 
 %prep
-%setup -n cockpit-starter-kit
+%setup -n cockpit-podman
 
 %build
 # There is nothing to do, release tarballs already have dist/.
