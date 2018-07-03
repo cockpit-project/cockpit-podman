@@ -107,7 +107,7 @@ export class Application extends React.Component {
 
     render() {
         let images = this.state.images.map(image => <li>{ image.repoTags.join(", ") } (created: {image.created})</li>);
-        let containers = this.state.containers.map(container => <li>{ container.command.join(", ")} </li> );
+        let containers = this.state.containers.map(container => <li>{container.names} ({container.image}): {container.command.join(" ")}</li> );
 
         return (
             <div className="container-fluid">
