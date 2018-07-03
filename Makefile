@@ -1,4 +1,5 @@
 PACKAGE_NAME := $(shell python3 -c "import json; print(json.load(open('package.json'))['name'])")
+RPM_NAME := cockpit-$(PACKAGE_NAME)
 VERSION := $(shell git describe 2>/dev/null || echo 1)
 ifeq ($(TEST_OS),)
 TEST_OS = centos-7
@@ -64,7 +65,7 @@ dist/index.js: node_modules/react-lite $(wildcard src/*) package.json webpack.co
 clean:
 	rm -rf dist/
 	rm -rf _install
-	rm -f $(PACKAGE_NAME).spec
+	rm -f $(RPM_NAME).spec
 
 install: dist/index.js
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
@@ -80,15 +81,15 @@ devel-install: dist/index.js
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
 dist-gzip: clean all
-	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' $$(git ls-files) dist/
+	tar czf $(RPM_NAME)-$(VERSION).tar.gz --transform 's,^,$(RPM_NAME)/,' $$(git ls-files) dist/
 
-srpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
+srpm: dist-gzip $(RPM_NAME).spec
 	rpmbuild -bs \
 	  --define "_sourcedir `pwd`" \
 	  --define "_srcrpmdir `pwd`" \
-	  cockpit-$(PACKAGE_NAME).spec
+	  $(RPM_NAME).spec
 
-rpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
+rpm: dist-gzip $(RPM_NAME).spec
 	mkdir -p "`pwd`/output"
 	mkdir -p "`pwd`/rpmbuild"
 	rpmbuild -bb \
@@ -98,14 +99,14 @@ rpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
 	  --define "_srcrpmdir `pwd`" \
 	  --define "_rpmdir `pwd`/output" \
 	  --define "_buildrootdir `pwd`/build" \
-	  cockpit-$(PACKAGE_NAME).spec
+	  $(RPM_NAME).spec
 	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
 
 # build a VM with locally built rpm installed
 $(VM_IMAGE): rpm bots
-	bots/image-customize -v -r 'rpm -e cockpit-$(PACKAGE_NAME) || true' -i cockpit -i `pwd`/cockpit-$(PACKAGE_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize -v -r 'rpm -e $(RPM_NAME) || true' -i cockpit -i `pwd`/$(RPM_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
