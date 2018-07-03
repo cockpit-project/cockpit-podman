@@ -30,7 +30,7 @@ import './app.scss';
 const encoder = cockpit.utf8_encoder();
 const decoder = cockpit.utf8_decoder(true);
 
-const PODMAN = { unix: "/run/io.projectatomic.podman" };
+const PODMAN = { unix: "/run/podman/io.projectatomic.podman" };
 
 /**
  * Do a varlink call on an existing channel. You must *never* call this
@@ -80,7 +80,7 @@ function varlinkCallChannel(channel, method, parameters) {
  * `varlinkCallChannel()` but allows multiple parallel calls.
  */
 function varlinkCall(channelOptions, method, parameters) {
-    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true}, channelOptions));
+    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true, superuser: "require" }, channelOptions));
     var response = varlinkCallChannel(channel, method, parameters);
     response.finally(() => channel.close());
     return response;
