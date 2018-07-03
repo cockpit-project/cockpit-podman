@@ -3,10 +3,15 @@
 # The application RPM will be installed separately
 set -eu
 
+systemctl enable cockpit.socket io.projectatomic.podman.socket
+
 # don't force https:// (self-signed cert)
 printf "[WebService]\\nAllowUnencrypted=true\\n" > /etc/cockpit/cockpit.conf
 
 if type firewall-cmd >/dev/null 2>&1; then
     firewall-cmd --add-service=cockpit --permanent
 fi
-systemctl enable cockpit.socket
+
+# grab a few images to play with; tests run offline, so they cannot download images
+podman pull busybox
+podman pull docker.io/alpine

@@ -113,15 +113,15 @@ export class Application extends React.Component {
             <div className="container-fluid">
                 <h2>Podman Varlink Demo</h2>
                 <div>
-                    <span>podman version: {this.state.version.version}</span>
+                    <span id="version">podman version: {this.state.version.version}</span>
                 </div>
 
                 <h3>Images</h3>
-                <ul>
+                <ul id="images">
                     {images}
                 </ul>
                 <h3>Containers</h3>
-                <ul>
+                <ul id="containers">
                     {containers}
                 </ul>
             </div>
