@@ -5,6 +5,8 @@ TEST_OS = centos-7
 endif
 export TEST_OS
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
+# one example directory from `npm install` to check if that already ran
+NODE_MODULES_TEST=node_modules/po2json
 
 all: dist/index.js
 
@@ -46,7 +48,7 @@ update-po: po/$(PACKAGE_NAME).pot
 		msgmerge --output-file=po/$$lang.po po/$$lang.po $<; \
 	done
 
-dist/po.%.js: po/%.po
+dist/po.%.js: po/%.po $(NODE_MODULES_TEST)
 	mkdir -p $(dir $@)
 	po/po2json -m po/po.empty.js -o $@.js.tmp $<
 	mv $@.js.tmp $@
@@ -58,7 +60,7 @@ dist/po.%.js: po/%.po
 %.spec: %.spec.in
 	sed -e 's/@VERSION@/$(VERSION)/g' $< > $@
 
-dist/index.js: node_modules/react-lite $(wildcard src/*) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
+dist/index.js: $(NODE_MODULES_TEST) $(wildcard src/*) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
 	NODE_ENV=$(NODE_ENV) npm run build
 
 clean:
@@ -79,7 +81,7 @@ devel-install: dist/index.js
 
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
-dist-gzip: clean all
+dist-gzip: clean $(NODE_MODULES_TEST) all
 	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' $$(git ls-files) dist/
 
 srpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
@@ -112,7 +114,7 @@ vm: $(VM_IMAGE)
 	echo $(VM_IMAGE)
 
 # run the browser integration tests; skip check for SELinux denials
-check: node_modules/react-lite $(VM_IMAGE) test/common
+check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common
 	TEST_AUDIT_NO_SELINUX=1 test/check-application
 
 # checkout Cockpit's bots/ directory for standard test VM images and API to launch them
@@ -129,7 +131,7 @@ test/common:
 	git checkout --force FETCH_HEAD -- test/common
 	git reset test/common
 
-node_modules/react-lite:
+$(NODE_MODULES_TEST):
 	npm install
 
 .PHONY: all clean install devel-install dist-gzip srpm rpm check vm update-po
