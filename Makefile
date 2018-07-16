@@ -131,7 +131,7 @@ test/common:
 	git checkout --force FETCH_HEAD -- test/common
 	git reset test/common
 
-$(NODE_MODULES_TEST):
+$(NODE_MODULES_TEST): package.json
 	npm install
 
 .PHONY: all clean install devel-install dist-gzip srpm rpm check vm update-po
