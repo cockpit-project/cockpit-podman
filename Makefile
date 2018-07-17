@@ -65,7 +65,7 @@ dist/index.js: $(NODE_MODULES_TEST) $(wildcard src/*) package.json webpack.confi
 
 clean:
 	rm -rf dist/
-	rm -f $(PACKAGE_NAME).spec
+	[ ! -e cockpit-$(PACKAGE_NAME).spec.in ] || rm -f cockpit-$(PACKAGE_NAME).spec
 
 install: dist/index.js
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
@@ -80,8 +80,10 @@ devel-install: dist/index.js
 
 # when building a distribution tarball, call webpack with a 'production' environment
 dist-gzip: NODE_ENV=production
-dist-gzip: clean $(NODE_MODULES_TEST) all
-	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' $$(git ls-files) dist/
+dist-gzip: $(NODE_MODULES_TEST) all cockpit-$(PACKAGE_NAME).spec
+	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
+		--exclude cockpit-$(PACKAGE_NAME).spec.in \
+		$$(git ls-files) cockpit-$(PACKAGE_NAME).spec dist/
 
 srpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
 	rpmbuild -bs \
