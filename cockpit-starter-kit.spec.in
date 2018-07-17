@@ -24,3 +24,5 @@ find %{buildroot} -type f >> files.list
 sed -i "s|%{buildroot}||" *.list
 
 %files -f files.list
+
+%changelog
