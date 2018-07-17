@@ -65,7 +65,6 @@ dist/index.js: $(NODE_MODULES_TEST) $(wildcard src/*) package.json webpack.confi
 
 clean:
 	rm -rf dist/
-	rm -rf _install
 	rm -f $(PACKAGE_NAME).spec
 
 install: dist/index.js
