@@ -20,111 +20,149 @@
 
 import cockpit from 'cockpit';
 import React from 'react';
-import './app.scss';
+import ContainerHeader from './ContainerHeader.jsx'
+import Containers from './Containers.jsx';
+import Images from './Images.jsx';
+import * as utils from './util.js';
 
-/***
- * varlink protocol helpers
- * https://github.com/varlink/varlink.github.io/wiki
- */
+const _ = cockpit.gettext;
 
-const encoder = cockpit.utf8_encoder();
-const decoder = cockpit.utf8_decoder(true);
-
-const PODMAN = { unix: "/run/podman/io.podman" };
-
-/**
- * Do a varlink call on an existing channel. You must *never* call this
- * multiple times in parallel on the same channel! Serialize the calls or use
- * `varlinkCall()`.
- *
- * Returns a promise that resolves with the result parameters or rejects with
- * an error message.
- */
-function varlinkCallChannel(channel, method, parameters) {
-    return new Promise((resolve, reject) => {
-        function on_close(event, options) {
-            reject(options.problem || options);
-        }
-
-        function on_message(event, data) {
-            channel.removeEventListener("message", on_message);
-            channel.removeEventListener("close", on_close);
-
-            // FIXME: support answer in multiple chunks until null byte
-            if (data[data.length - 1] != 0) {
-                reject("protocol error: expecting terminating 0");
-                return;
-            }
-
-            var reply = decoder.decode(data.slice(0, -1));
-            var json = JSON.parse(reply);
-            if (json.error)
-                reject(json.error)
-            else if (json.parameters) {
-                // debugging
-                console.log("varlinkCall", method, "→", JSON.stringify(json.parameters));
-                resolve(json.parameters)
-            } else
-                reject("protocol error: reply has neither parameters nor error: " + reply);
-        }
-
-        channel.addEventListener("close", on_close);
-        channel.addEventListener("message", on_message);
-        channel.send(encoder.encode(JSON.stringify({ method, parameters: (parameters || {}) })));
-        channel.send([0]); // message separator
-    });
-}
-
-/**
- * Do a varlink call on a new channel. This is more expensive than
- * `varlinkCallChannel()` but allows multiple parallel calls.
- */
-function varlinkCall(channelOptions, method, parameters) {
-    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true, superuser: "require" }, channelOptions));
-    var response = varlinkCallChannel(channel, method, parameters);
-    response.finally(() => channel.close());
-    return response;
-}
-
-export class Application extends React.Component {
+class Application extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            version: { version: "unknown" },
+            images: [],
+            containers: [],
+            imagesMeta: [],
+            containersMeta: [],
+            containersStats:[],
+            onlyShowRunning: true,
+            dropDownValue: 'Everything',
+        };
+        this.onChange = this.onChange.bind(this);
+        this.updateContainers = this.updateContainers.bind(this);
+        this.updateImages = this.updateImages.bind(this);
+    }
 
-        this.state = { version: { version: "unknown" }, images: [], containers: [] };
+    onChange(value) {
+        this.setState({
+            onlyShowRunning: value == "all" ? false : true
+        })
+    }
 
-        varlinkCall(PODMAN, "io.podman.GetVersion")
-            .then(reply => this.setState({ version: reply.version }))
+    updateContainers(newContainers) {
+        this.setState({
+            containers: newContainers
+        });
+    }
+
+    updateImages(newImages) {
+        this.setState({
+            images: newImages
+        });
+    }
+
+    componentDidMount() {
+        this._asyncRequestVersion = utils.varlinkCall(utils.PODMAN, "io.podman.GetVersion")
+            .then(reply => {
+                this._asyncRequestVersion = null;
+                this.setState({ version: reply.version });
+            })
             .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
 
-        varlinkCall(PODMAN, "io.podman.ListImages")
-            .then(reply => this.setState({ images: reply.images }))
-            .catch(ex => console.error("Failed to do ListImages call:", JSON.stringify(ex)));
+        this._asyncRequestImages = utils.varlinkCall(utils.PODMAN, "io.podman.ListImages")
+            .then(reply => {
+                this._asyncRequestImages = null;
+                this.setState({ imagesMeta: reply.images });
+                this.state.imagesMeta.map((img)=>{
+                    utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", JSON.parse('{"name":"' + img.id + '"}'))
+                        .then(reply => {
+                            const temp_imgs = this.state.images;
+                            temp_imgs.push(JSON.parse(reply.image));
+                            this.setState({images: temp_imgs});
+                        })
+                        .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
+                })
+            })
+            .catch(ex => console.error("Failed to do ListImages call:", ex, JSON.stringify(ex)));
 
-        varlinkCall(PODMAN, "io.podman.ListContainers")
-            .then(reply => this.setState({ containers: reply.containers || [] }))
+
+        this._asyncRequestContainers = utils.varlinkCall(utils.PODMAN, "io.podman.ListContainers")
+            .then(reply => {
+                this._asyncRequestContainers = null;
+                this.setState({containersMeta: reply.containers || []});
+                this.state.containersMeta.map((container) => {
+                    utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", JSON.parse('{"name":"' + container.id + '"}'))
+                        .then(reply => {
+                            const temp_containers = this.state.containers;
+                            temp_containers.push(JSON.parse(reply.container));
+                            this.setState({containers: temp_containers});
+                        })
+                        .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
+                });
+                this.state.containersMeta.map((container) => {
+                    utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", JSON.parse('{"name":"' + container.id + '"}'))
+                        .then(reply => {
+                            const temp_container_stats = this.state.containersStats;
+                            if (reply.container) {
+                                temp_container_stats[container.id] = reply.container;
+                            }
+                            this.setState({containersStats: temp_container_stats});
+                        })
+                        .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
+                });
+            })
             .catch(ex => console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString()));
     }
 
+    componentWillUnmount() {
+        if (this._asyncRequestVersion) {
+            this._asyncRequestVersion.cancel();
+        }
+        if (this._asyncRequestImages) {
+            this._asyncRequestImages.cancel();
+        }
+        if (this._asyncRequestContainers) {
+            this._asyncRequestContainers.cancel();
+        }
+    }
+
     render() {
-        let images = this.state.images.map(image => <li>{ image.repoTags.join(", ") } (created: {image.created})</li>);
-        let containers = this.state.containers.map(container => <li>{container.names} ({container.image}): {container.command.join(" ")}</li> );
+        let imageList;
+        let containerList;
+        imageList =
+            <Images
+                key={_("imageList")}
+                images={this.state.images}
+                updateImages={this.updateImages}
+            ></Images>;
+        containerList=
+            <Containers
+                key={_("containerList")}
+                containers={this.state.containers}
+                containersStats={this.state.containersStats}
+                onlyShowRunning={this.state.onlyShowRunning}
+                updateContainers={this.updateContainers}
+            ></Containers>
 
         return (
-            <div className="container-fluid">
-                <h2>Podman Varlink Demo</h2>
-                <div>
-                    <span id="version">podman version: {this.state.version.version}</span>
+            <div id="overview" key={"overview"}>
+                <div key={"containerheader"} className="content-filter">
+                    <ContainerHeader
+                        onlyShowRunning={this.state.onlyShowRunning}
+                        onChange={this.onChange}
+                    ></ContainerHeader>
                 </div>
-
-                <h3>Images</h3>
-                <ul id="images">
-                    {images}
-                </ul>
-                <h3>Containers</h3>
-                <ul id="containers">
-                    {containers}
-                </ul>
+                <div key={"containerslists"} className="container-fluid">
+                    {containerList}
+                </div>
+                <div key={"imageslists"} className="container-fluid">
+                    {imageList}
+                </div>
             </div>
         );
     }
 }
+
+export default Application;
