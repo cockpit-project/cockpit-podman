@@ -7,8 +7,10 @@ export TEST_OS
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # one example directory from `npm install` to check if that already ran
 NODE_MODULES_TEST=node_modules/po2json
+# one example file in dist/ from webpack to check if that already ran
+WEBPACK_TEST=dist/index.html
 
-all: dist/index.js
+all: $(WEBPACK_TEST)
 
 #
 # i18n
@@ -60,21 +62,21 @@ dist/po.%.js: po/%.po $(NODE_MODULES_TEST)
 %.spec: %.spec.in
 	sed -e 's/@VERSION@/$(VERSION)/g' $< > $@
 
-dist/index.js: $(NODE_MODULES_TEST) $(wildcard src/*) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
+$(WEBPACK_TEST): $(NODE_MODULES_TEST) $(wildcard src/*) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
 	NODE_ENV=$(NODE_ENV) npm run build
 
 clean:
 	rm -rf dist/
 	[ ! -e cockpit-$(PACKAGE_NAME).spec.in ] || rm -f cockpit-$(PACKAGE_NAME).spec
 
-install: dist/index.js
+install: $(WEBPACK_TEST)
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	cp -r dist/* $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	mkdir -p $(DESTDIR)/usr/share/metainfo/
 	cp org.cockpit-project.$(PACKAGE_NAME).metainfo.xml $(DESTDIR)/usr/share/metainfo/
 
 # this requires a built source tree and avoids having to install anything system-wide
-devel-install: dist/index.js
+devel-install: $(WEBPACK_TEST)
 	mkdir -p ~/.local/share/cockpit
 	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
