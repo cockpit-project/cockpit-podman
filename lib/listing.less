@@ -1,0 +1,502 @@
+/* Listing pattern */
+
+@import "./variables.less";
+
+table.listing-ct {
+    margin-top: @listing-ct-spacing;
+    min-width: 65%;
+}
+
+table.listing-ct > caption,
+table.listing-ct > thead h3 {
+    font-size: @font-size-h2;
+    padding: @listing-ct-padding 0px @listing-ct-padding;
+    font-weight: 300;
+    margin-top: 0;
+}
+
+table.listing-ct > caption {
+    color: inherit;
+    line-height: 1.1;
+}
+
+table.listing-ct > thead td {
+    padding-top: @listing-ct-padding * 2;
+}
+
+table.listing-ct > thead:first-child td {
+    padding-top: 0;
+}
+
+table.listing-ct > thead td > a {
+    line-height: 30px;
+    padding: @listing-ct-padding 0 @listing-ct-padding;
+}
+
+table.listing-ct > thead th {
+    border-top: 1px solid @gray-lighter;
+    font-weight: normal;
+    padding: @listing-ct-padding;
+    color: @listing-ct-metadata;
+}
+
+table.listing-ct > thead th:first-child {
+    padding-left: @listing-ct-padding * 2;
+}
+
+table.listing-ct > thead th:last-child {
+    text-align: right;
+}
+
+/* A listing item is a row in the table */
+tbody > tr.listing-ct-item {
+    border-top: 1px solid @gray-lighter;
+    border-bottom: 1px solid @gray-lighter;
+    cursor: pointer;
+}
+
+table.listing-ct > tbody:last-child {
+    border-bottom: 1px solid @gray-lighter;
+}
+table.listing-ct > tbody + thead {
+    border-top: 1px solid @gray-lighter;
+}
+table.listing-ct > tbody.open:last-child {
+    border-bottom: none;
+}
+table.listing-ct > tbody.open + thead {
+    border-top: none;
+}
+
+tbody > tr.listing-ct-item.listing-ct-warning {
+    background-color: @listing-ct-warning-color;
+}
+
+tbody.open > tr.listing-ct-item {
+    background-color: @color-pf-black-200;
+    border-bottom: none;
+    border-top: none;
+    border-left: 1px solid @listing-ct-border;
+    border-right: 1px solid @listing-ct-border;
+}
+
+tbody.open > tr.listing-ct-item td,
+tbody.open > tr.listing-ct-item th {
+    border-top: 1px solid @listing-ct-border;
+}
+
+tbody.open td div.listing-ct-head {
+    background-color: @color-pf-white;
+}
+
+tbody.open .listing-ct-panel {
+    border: 1px solid @listing-ct-border;
+}
+
+tbody.open .listing-ct-panel .listing-ct-body {
+    border: none;
+}
+
+tbody.open > tr.listing-ct-panel + tr.listing-ct-body {
+    border-top: none;
+}
+
+tbody.open > tr.listing-ct-panel td div.listing-ct-head {
+    border: none;
+    border-bottom: 1px solid @listing-ct-border;
+}
+
+/* only highlight the row if navigation is available */
+tbody:not(.open) > tr.listing-ct-item:not(.listing-ct-nonavigate):hover {
+    background-color: @listing-ct-hover;
+}
+
+/* if we can't navigate to a row but expand is available, highlight the caret */
+tbody:not(.open) > tr.listing-ct-item.listing-ct-nonavigate:hover td.listing-ct-toggle {
+    color: @listing-ct-active;
+}
+
+/* use gray for a row that's expanded or if navigation isn't available */
+tbody.open > tr.listing-ct-item:hover,
+tr.listing-ct-item.listing-ct-nonavigate:hover {
+    background-color: @color-pf-black-200;
+}
+
+/* always highlight caret when hovering over an expanded row */
+tbody.open > tr.listing-ct-item:hover td.listing-ct-toggle {
+    color: @listing-ct-active;
+}
+
+tr.listing-ct-item .listing-ct-toggle {
+    padding: 0 !important;
+    width: 35px;
+    color: @color-pf-black;
+}
+
+table.listing-ct thead .listing-ct-toggle + th,
+tr.listing-ct-item .listing-ct-toggle + td,
+tr.listing-ct-item .listing-ct-toggle + th {
+    padding-left: 0;
+}
+
+tr:not(.listing-ct-selected) {
+    td.listing-ct-toggle:hover {
+        color: @listing-ct-active;
+        background-color: @color-pf-black-200;
+
+        ~ td, ~ th {
+            background-color: @color-pf-black-200;
+        }
+    }
+ }
+td.listing-ct-toggle i {
+    font-size: 24px;
+    visibility: hidden;
+}
+
+tr.listing-ct-item:hover td.listing-ct-toggle i,
+tr.listing-ct-item td.listing-ct-toggle:hover i {
+    visibility: visible;
+}
+
+td.listing-ct-toggle i:before {
+    content: "\f105";
+}
+
+tbody.open td.listing-ct-toggle i {
+    visibility: visible;
+}
+
+tbody.open td.listing-ct-toggle i:before {
+    content: "\f107";
+}
+
+/* Listing items have decent padding ... */
+tr.listing-ct-item td {
+    padding: @listing-ct-padding;
+}
+
+tr.listing-ct-item th {
+    padding: @listing-ct-padding @listing-ct-padding @listing-ct-padding @listing-ct-spacing;
+}
+
+/* Listing caption is text next to the actions, text should be similar to nav (.nav-tabs-pf > li > a)*/
+.listing-ct-actions > .listing-ct-caption {
+    font-size: @font-size-h5;
+    vertical-align: middle;
+    color: @link-color;
+    padding-right: @listing-ct-padding / 2;
+}
+
+/* Listing actions can be used directly as a cell */
+tr.listing-ct-item td.listing-ct-actions,
+td.listing-ct-actions {
+    padding: @listing-ct-padding / 2 @listing-ct-padding;
+    text-align: right;
+    float: none;
+}
+
+/* if the entire row is selected, highlight */
+tr.listing-ct-item.listing-ct-selected {
+    background-color: @color-pf-blue-400;
+    color: @color-pf-white;
+    border-color: multiply(@color-pf-black-200, @color-pf-blue-400);
+
+    &:hover {
+        background-color: multiply(@color-pf-black-200, @color-pf-blue-400);
+        border-color: multiply(@color-pf-black-200, @color-pf-blue-400);
+    }
+}
+
+tr.listing-ct-item.listing-ct-selected .badge {
+    background-color: multiply(@badge-bg, @color-pf-blue-400);
+
+    &:hover {
+        background-color: multiply(@badge-bg, @color-pf-blue-500);
+    }
+}
+
+.listing-ct-head .listing-ct-actions {
+    margin-top: -7px;
+}
+
+tr.listing-ct-item td:first-child {
+    padding-left: @listing-ct-padding * 2;
+}
+
+/* The last column of a listing is always right aligned */
+tr.listing-ct-item td:last-child {
+    text-align: right;
+}
+
+div.listing-ct-panel {
+    box-shadow: 1px 1px 1px 1px @listing-ct-open;
+    margin-bottom: @listing-ct-spacing;
+}
+
+div.listing-ct-maybe {
+    border: 1px dashed @listing-ct-border-maybe;
+    box-shadow: none;
+}
+
+div.listing-ct-head {
+    padding: @listing-ct-padding @listing-ct-padding 0 @listing-ct-padding;
+    background-color: @listing-ct-open;
+    border-color: @listing-ct-border;
+    border-style: solid;
+    border-width: 1px 1px 0 1px;
+    overflow: hidden;
+}
+
+div.listing-ct-head:last-child {
+    padding-bottom: @listing-ct-padding;
+}
+
+div.listing-ct-maybe div.listing-ct-head,
+div.listing-ct-maybe div.listing-ct-body {
+    background-color: @color-pf-white;
+    border: none;
+}
+
+tbody.active .listing-ct-head {
+    border-top: @listing-ct-open-width solid #0099d3;
+}
+
+.listing-ct-head h3 {
+    font-weight: normal;
+    font-size: 18px;
+    margin-top: 0px;
+    margin-left: @listing-ct-padding / 2;
+    margin-bottom: @listing-ct-padding;
+}
+
+.listing-ct-head h3 i {
+    float: left;
+    padding-right: 7px;
+}
+
+.listing-ct-head .nav li a {
+    padding-top: 0px;
+    font-size: 13px;
+}
+
+.listing-ct-head .nav-tabs {
+    border-bottom: none;
+}
+
+.listing-ct-head .nav-tabs-pf {
+    margin-left: -@listing-ct-padding;
+}
+
+/* To display info instead of tabs */
+.listing-ct-head dl {
+    display: inline-block;
+    height: 1.6em;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    margin-right: 45px;
+    margin-left: 5px;
+}
+
+.listing-ct-head dt {
+    font-weight: normal;
+    display: inline;
+    margin-right: 0.5em;
+    color: @listing-ct-metadata;
+}
+
+.listing-ct-head dd {
+    display: inline;
+    color: black;
+}
+
+.listing-ct-body {
+    padding: @listing-ct-padding * 2 @listing-ct-padding + @listing-ct-spacing;
+    font-size: 13px;
+    border: 1px solid @listing-ct-border;
+    background-color: @color-pf-white;
+}
+
+.listing-ct-inline > .listing-ct-body {
+    border: none;
+    padding-top: 0px;
+    padding-left: @listing-ct-padding * 2;
+    padding-bottom: 0px;
+}
+
+.listing-ct-inline > h3 {
+    border-top: 1px solid @listing-ct-border;
+    padding-top: 20px;
+    margin-top: 30px;
+}
+
+.listing-ct-inline > h3:first-child {
+    border-top: none;
+    padding-top: 0px;
+    margin-top: 20px;
+}
+
+.listing-ct-actions {
+    float: right;
+    min-height: 26px;
+}
+
+.listing-ct-status {
+    float: right;
+    clear: right;
+}
+
+.listing-ct-error {
+    border-top: 1px solid @listing-ct-border;
+    border-left: 1px solid @listing-ct-border;
+    border-right: 1px solid @listing-ct-border;
+}
+
+.listing-ct-error.alert {
+    margin-bottom: 0;
+}
+
+.listing-ct-body tt {
+    font-size: 12px
+}
+
+.listing-ct-body dl {
+    margin: 0;
+}
+
+.listing-ct-body dl dd dl.inline-dl dt,
+.listing-ct-body dt {
+    clear: left;
+    float: left;
+    width: 100px;
+    min-height: 26px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: @listing-ct-metadata;
+    font-weight: normal;
+}
+
+.listing-ct-body dt {
+    text-align: right;
+}
+
+.listing-ct-body dl dd dl dt {
+    text-align: left;
+}
+
+.listing-ct-body dd {
+    margin-left: 110px;
+    min-height: 26px;
+    max-width: 1000px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.listing-ct-body dl.full-width dt {
+    text-align: left;
+    min-width: none;
+    max-width: none;
+    float: none;
+    width: auto;
+}
+
+.listing-ct-body dl.full-width dd {
+    margin-left: 0px;
+}
+
+table.listing-ct tbody.open {
+    box-shadow: 1px 1px 1px 1px @color-pf-black-150;
+}
+
+/* By default these thincgs are hidden */
+tbody tr.listing-ct-panel,
+tbody tr.listing-ct-body {
+    display: none;
+}
+
+/* ... unless they are in the right state */
+tbody.open tr.listing-ct-head,
+tbody.open tr.listing-ct-panel,
+tbody.open tr.listing-ct-body {
+    display: table-row;
+}
+
+tbody.open tr.listing-ct-head {
+    border-color: @listing-ct-border;
+    border-style: solid;
+    border-width: 1px 1px 0 1px;
+    border-top: @listing-ct-open-width solid #0099d3;
+    background-color: @listing-ct-open;
+}
+
+tr.listing-ct-head + tr.listing-ct-head {
+    border-top: none;
+}
+
+tr.listing-ct-head + tr.listing-ct-head td {
+    padding: 0px @listing-ct-padding 0px @listing-ct-padding;
+}
+
+tr.listing-ct-body td {
+    padding: @listing-ct-padding * 2 @listing-ct-padding + @listing-ct-spacing;
+    font-size: 13px;
+}
+
+.listing-ct-empty {
+    color: #888;
+    text-align: center;
+    border-top: 1px solid @listing-ct-border-light;
+    border-bottom: 1px solid @listing-ct-border-light;
+}
+
+/* Used at the end of a group of tbody to show an 'empty' message */
+thead.listing-ct-empty td,
+table.listing-ct > thead.listing-ct-empty td {
+    padding: @listing-ct-padding;
+}
+
+tbody + thead.listing-ct-empty {
+    display: none;
+}
+
+/* Listing pattern defaults to using full width of parent */
+.listing-ct-wide {
+    width: 100%;
+}
+
+div.listing-ct-head {
+    overflow: visible;
+}
+
+.listing-ct-head .btn-group,
+.listing-ct-head button:not(.dropdown-toggle) {
+    margin-left: 0.3em;
+}
+
+table.listing-ct > caption a {
+    font-size: 16px;
+}
+
+tbody tr.listing-ct-noexpand {
+    cursor: default;
+}
+
+/* Fix up nav-tabs-pf to work properly */
+
+.nav-tabs-pf > li:first-child a {
+    margin-left: 0px !important;
+    padding-left: @listing-ct-spacing !important;
+}
+
+.nav-tabs-pf > li a:before {
+    right: 0px !important;
+}
+
+.nav-tabs-pf > li > a:active:before,
+.nav-tabs-pf > li > a:focus:before,
+.nav-tabs-pf > li > a:hover:before,
+.nav-tabs-pf > li.active a:before {
+    height: @listing-ct-open-width;
+    left: 0px;
+}
