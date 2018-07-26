@@ -1,5 +1,4 @@
 import React from 'react';
-<<<<<<< HEAD
 import cockpit from 'cockpit';
 import Listing from '../lib/cockpit-components-listing.jsx';
 import ImageDetails from './ImageDetails.js';
@@ -172,38 +171,6 @@ class Images extends React.Component {
                     show={this.state.setRunContainer}
                     handleCancelRunImage={this.handleCancelRunImage}
                 ></ContainersRunImageModal>
-=======
-
-// const Listing = require('cockpit-components-listing.jsx');
-// import Listing from './cockpit-components-listing.jsx';
-// import cockpit from 'cockpit';
-class Images extends React.Component {
-    
-    handleSearchImageClick(event) {
-        return undefined;
-    }
-    render() {
-        // let _ = cockpit.gettext;
-
-        // let columnTitles = [ _("Name"), '', _("Created"), _("Size"), '' ];
-        // var getNewImageAction = <a role="link" tabIndex="0" onClick={this.handleSearchImageClick} className="card-pf-link-with-icon pull-right">
-        //     <span className="pficon pficon-add-circle-o" />{_("Get new image")}
-        // </a>;
-        console.log(this.props.images);
-        return(
-            <div className="container-fluid" >
-                <h1>This div for images table</h1>
-                {/* <table class="table">
-                    <tr>
-                        {columnTitles.map((title)=>{
-                            return <thead>table: {title}</thead>
-                        })}
-                    </tr>
-                    
-                </table> */}
-                
-               
->>>>>>> 5c7ccf8... create js files images & containers
             </div>
         );
     }

@@ -19,18 +19,10 @@
  */
 
 import React from 'react';
-<<<<<<< HEAD
 import ReactDOM from 'react-dom';
 import Application from './app.jsx';
 
 
 document.addEventListener("DOMContentLoaded", function () {
     ReactDOM.render(React.createElement(Application, {}), document.getElementById('app'));
-=======
-import Application from './app.jsx';
-// import Overview from './app.jsx';
-
-document.addEventListener("DOMContentLoaded", function () {
-    React.render(React.createElement(Application, {}), document.getElementById('app'));
->>>>>>> 5c7ccf8... create js files images & containers
 });

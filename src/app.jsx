@@ -22,11 +22,7 @@ import cockpit from 'cockpit';
 import React from 'react';
 import './app.scss';
 
-<<<<<<< HEAD
 import DropDownFilter from './DropDownFilter.js';
-=======
-
->>>>>>> 5c7ccf8... create js files images & containers
 import Containers from './Containers.js';
 import Images from './Images.js';
 /***
@@ -208,7 +204,6 @@ class Application extends React.Component {
 
         return (
             
-<<<<<<< HEAD
             <div className="container-fluid ">
                 <DropDownFilter
                     onlyShowRunning={this.state.onlyShowRunning}
@@ -217,9 +212,6 @@ class Application extends React.Component {
                     handleClickRunningContainers={this.handleClickRunningContainers}
                 ></DropDownFilter>
                 {/* Keep initial code */}
-=======
-                <div className="container-fluid ">
->>>>>>> 5c7ccf8... create js files images & containers
                 <div>
                     <h2>Podman Varlink Demo</h2>
                     
@@ -236,16 +228,10 @@ class Application extends React.Component {
                         {containers}
                     </ul>
                 </div>
-<<<<<<< HEAD
                 {/* List everything */}
                     {containerList}
                     {imageList}
             </div>
-=======
-                    <Containers></Containers>
-                    <Images></Images>
-                </div>
->>>>>>> 5c7ccf8... create js files images & containers
         );
     }
 }

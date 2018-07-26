@@ -1,5 +1,4 @@
 import React from 'react';
-<<<<<<< HEAD
 import Listing from '../lib/cockpit-components-listing.jsx';
 import cockpit from 'cockpit';
 
@@ -130,14 +129,6 @@ class Containers extends React.Component {
                     </Listing.Listing>
 
                 </div>
-=======
-
-class Containers extends React.Component {
-    render() {
-        return(
-            <div className="container-fluid ">
-                <h1>This div for containers table</h1>
->>>>>>> 5c7ccf8... create js files images & containers
             </div>
 
         );
