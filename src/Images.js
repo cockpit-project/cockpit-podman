@@ -57,6 +57,7 @@ class Images extends React.Component {
     }
 
     renderRow(image) {
+        console.log(image.created);
         let vulnerabilityColumn = '';
         let vulnerableInfo = this.state.vulnerableInfos[image.Id.replace(/^sha256:/, '')];
         let count;
