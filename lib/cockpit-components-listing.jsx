@@ -309,12 +309,14 @@ var Listing = createReactClass({
     // },
     getDefaultProps: function () {
         return {
+            
             fullWidth: true,
             columnTitles: [],
             actions: []
         };
     },
     render: function() {
+        // this.props.title = "nihao";
         var self = this;
         var bodyClasses = ["listing", "listing-ct"];
         if (this.props.fullWidth)
@@ -322,7 +324,10 @@ var Listing = createReactClass({
         var headerClasses;
         var headerRow;
         var selectableRows;
+        
+        
         if (!this.props.children || this.props.children.length === 0) {
+            console.log("head");
             headerClasses = "listing-ct-empty";
             headerRow = <tr><td>{this.props.emptyCaption}</td></tr>;
         } else if (this.props.columnTitles.length) {
@@ -348,7 +353,7 @@ var Listing = createReactClass({
                         var clickHandler = null;
                         if (self.props.columnTitleClick)
                             clickHandler = function() { self.props.columnTitleClick(index) };
-                        return <th key={index} onClick={clickHandler}>{title}</th>;
+                        return <th key={index} onClick={clickHandler}>{title}yugtyftyf</th>;
                     }) }
                 </tr>
             );
@@ -356,10 +361,14 @@ var Listing = createReactClass({
             headerRow = <tr />
         }
         var caption;
-        if (this.props.title || (this.props.actions && this.props.actions.length > 0))
+        if (this.props.title || (this.props.actions && this.props.actions.length > 0)) {
+            
+            // console.log("dcefef");
             caption = <caption className="cockpit-caption">{this.props.title}{this.props.actions}</caption>;
-
+        }
+        
         return (
+            
             <table className={ bodyClasses.join(" ") }>
                 {caption}
                 <thead className={headerClasses}>
