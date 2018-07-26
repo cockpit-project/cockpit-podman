@@ -353,7 +353,7 @@ var Listing = createReactClass({
                         var clickHandler = null;
                         if (self.props.columnTitleClick)
                             clickHandler = function() { self.props.columnTitleClick(index) };
-                        return <th key={index} onClick={clickHandler}>{title}yugtyftyf</th>;
+                        return <th key={index} onClick={clickHandler}>{title}</th>;
                     }) }
                 </tr>
             );

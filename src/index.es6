@@ -21,6 +21,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Application from './app.jsx';
+// import ModalExample from './ModalExample.js';
 
 
 document.addEventListener("DOMContentLoaded", function () {

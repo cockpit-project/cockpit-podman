@@ -5,6 +5,8 @@ import ImageDetails from './ImageDetails.js';
 import ContainersRunImageModal from './ContainersRunImageModal.js';
 const atomic = require('./atomic');
 const _ = cockpit.gettext;
+const $ = require("jquery");
+
 
 
 import ImageSecurity from './ImageSecurity.js';
@@ -46,7 +48,7 @@ class Images extends React.Component {
         cockpit.location.go([ 'image', image.id ]);
     }
 
-    showRunImageDialog(e) {
+    showRunImageDialog(event) {
         // return undefined;
         // alert("where is modal");
         e.preventDefault()
@@ -57,7 +59,6 @@ class Images extends React.Component {
     }
 
     renderRow(image) {
-        console.log(image.created);
         let vulnerabilityColumn = '';
         let vulnerableInfo = this.state.vulnerableInfos[image.Id.replace(/^sha256:/, '')];
         let count;
