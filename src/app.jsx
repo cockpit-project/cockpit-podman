@@ -121,7 +121,7 @@ class Application extends React.Component {
             dropDownValue: event.currentTarget.textContent
         });
     }
-
+ 
     componentDidMount() {
         this._asyncRequestVersion = varlinkCall(PODMAN, "io.projectatomic.podman.GetVersion")
             .then(reply => {

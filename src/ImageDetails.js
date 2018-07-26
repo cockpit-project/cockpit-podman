@@ -1,5 +1,6 @@
 import React from 'react';
 import cockpit from 'cockpit';
+
 const _ = cockpit.gettext;
 const moment = require('moment');
 
