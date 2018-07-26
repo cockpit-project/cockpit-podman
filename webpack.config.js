@@ -114,7 +114,7 @@ module.exports = {
     devtool: "source-map",
     resolve: {
         alias: {
-            "react$": path.resolve(nodedir, "react-lite/dist/react-lite.js")
+            // "react$": path.resolve(nodedir, "react-lite/dist/react-lite.js")
         }
     },
     module: {
@@ -156,6 +156,35 @@ module.exports = {
                 exclude: /node_modules/,
                 loader: extract.extract('css-loader!sass-loader'),
                 test: /\.scss$/
+            },
+            {
+                test: /\.js$/,
+                exclude: /\/node_modules\/.*\//, // exclude external dependencies
+                loader: 'strict-loader' // Adds "use strict"
+            },
+            {
+                test: /\.jsx$/,
+                loader: "babel-loader"
+            },
+            {
+                test: /\.es6$/,
+                loader: "babel-loader"
+            },
+            // {
+            //     test: /\.css$/,
+            //     loader: extract.extract("css-loader?minimize=&root=" + libdir)
+            // },
+            {
+                test: /\.less$/,
+                loader: extract.extract("css-loader?sourceMap&minimize=!less-loader?sourceMap&compress=false")
+            },
+            {
+                test: /views\/[^\/]+\.html$/,
+                loader: "ng-cache?prefix=[dir]"
+            },
+            {
+                test: /[\/]angular\.js$/,
+                loader: "exports?angular"
             }
         ]
     },

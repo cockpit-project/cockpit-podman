@@ -22,7 +22,10 @@ along with this package; If not, see <http://www.gnu.org/licenses/>.
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+
+
     <link rel="stylesheet" href="../base1/patternfly.css">
+    <link href="docker.css" type="text/css" rel="stylesheet" id="term-style">
     <link rel="stylesheet" href="index.css">
 
     <script type="text/javascript" src="../base1/cockpit.js"></script>
@@ -32,5 +35,155 @@ along with this package; If not, see <http://www.gnu.org/licenses/>.
 
 <body>
     <div id="app"></div>
+    <div class="modal" id="containers_run_image_dialog"
+       tabindex="-1" role="dialog"
+       data-backdrop="static">
+    <div class="modal-dialog">
+      <div class="modal-content">
+	<div class="modal-header">
+	  <h4 class="modal-title" translate>Run Image</h4>
+	</div>
+	<div class="modal-body">
+	  <table class="form-table-ct">
+	    <tr>
+	      <td><label class="control-label"
+			 translatable="yes">Image</label></td>
+	      <td colspan="4">
+		<span id="containers-run-image"></span>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="containers-run-image-name"
+			 translatable="yes">Container Name</label></td>
+	      <td colspan="4">
+		<input class="form-control" type="text" id="containers-run-image-name"/>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="containers-run-image-command"
+			 translatable="yes">Command</label></td>
+	      <td colspan="4">
+		<input class="form-control" type="text" id="containers-run-image-command"/>
+	      </td>
+	    </tr>
+	    <tr id="containers-run-image-memory">
+	      <td><label class="control-label" translatable="yes">Memory limit</label></td>
+	      <td class="shrink">
+		<input type="checkbox" />
+	      </td>
+	      <td>
+		<div class="slider" disabled='true' value="2">
+		  <div class="slider-bar">
+		    <div class="slider-thumb"></div>
+		  </div>
+		</div>
+	      </td>
+	      <td class="shrink">
+		<input class="form-control size-text-ct" type='text'/>
+	      </td>
+	      <td class="shrink" translatable="yes">MiB</td>
+	    </tr>
+	    <tr id="containers-run-image-cpu">
+	      <td><label class="control-label" translatable="yes">CPU priority</label></td>
+	      <td class="shrink">
+		<input type="checkbox" />
+	      </td>
+	      <td>
+		<div class="slider" disabled='true' value="1024">
+		  <div class="slider-bar">
+		    <div class="slider-thumb"></div>
+		  </div>
+		</div>
+	      </td>
+	      <td class="shrink">
+		<input class="form-control size-text-ct" type='text'/>
+	      </td>
+	      <td  class="shrink" translatable="yes">shares</td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="containers-run-image-with-terminal"
+			 translatable="yes">With terminal</label></td>
+	      <td class="shrink">
+		<input type="checkbox" id="containers-run-image-with-terminal" checked />
+	      </td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="link-containers" translatable="yes">Links</label></td>
+	      <td colspan="4">
+		<label>
+		  <input type="checkbox" name="link-containers" id="link-containers" checked="false"/>
+		  <span translate>Link to another container</span>
+		</label>
+		<div id="select-linked-containers" class="containers-run-inline">
+		</div>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="expose-ports" translatable="yes">Ports</label></td>
+	      <td colspan="4">
+		<label>
+		  <input type="checkbox" name="expose-ports" id="expose-ports" checked="false"/>
+		  <span translatable="yes">Expose container ports</span>
+		</label>
+		<div id="select-exposed-ports" class="containers-run-portmapping containers-run-inline">
+		</div>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="mount-volumes" translatable="yes">Volumes</label></td>
+	      <td colspan="4">
+		<label>
+		  <input type="checkbox" name="mount-volumes" id="mount-volumes" checked="false"/>
+		  <span translatable="yes">Mount container volumes</span>
+		</label>
+		<div id="select-mounted-volumes" class="containers-run-volumemount containers-run-inline">
+		</div>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="claim-envvars" translatable="yes">Environment</label></td>
+	      <td colspan="4">
+		<label>
+		  <input type="checkbox" name="claim-envvars" id="claim-envvars" checked="false"/>
+		  <span translatable="yes">Set container environment variables</span>
+		</label>
+		<div id="select-claimed-envvars" class="containers-run-envvarclaim containers-run-inline">
+		</div>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td><label class="control-label" for="restart-policy" translatable="yes">Restart Policy</label></td>
+	      <td colspan="3">
+		<div class="form-inline form-group">
+		  <div class="btn-group bootstrap-select dropdown form-control" id="restart-policy-select">
+		    <button aria-expanded="false" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+		      <span class="pull-left" translatable="yes" data-value="no">No</span>
+		      <span class="caret"></span>
+		    </button>
+		    <ul class="dropdown-menu" id="restart-policy-dropdown">
+		      <li><a translatable="yes" data-value="no">No</a></li>
+		      <li><a translatable="yes" data-value="on-failure">On Failure</a></li>
+		      <li><a translatable="yes" data-value="always">Always</a></li>
+		      <li><a translatable="yes" data-value="unless-stopped">Unless Stopped</a></li>
+		    </ul>
+		  </div>
+		  <div id="restart-policy-retries-container" class="hidden">
+		    <label class="control-label" for="restart-policy-retries" translatable="yes">Retries:</label>
+		    <input id="restart-policy-retries" class="form-control" type="number" value="0" min="0" name="restart-policy-retries">
+		  </div>
+		</div>
+	      </td>
+	    </tr>
+
+	  </table>
+	</div>
+	<div class="modal-footer">
+	  <button class="btn btn-default" translatable="yes" data-dismiss="modal">Cancel</button>
+	  <button class="btn btn-primary" id="containers-run-image-run" translatable="yes">Run</button>
+	</div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
