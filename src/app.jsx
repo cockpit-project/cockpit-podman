@@ -30,7 +30,7 @@ import './app.scss';
 const encoder = cockpit.utf8_encoder();
 const decoder = cockpit.utf8_decoder(true);
 
-const PODMAN = { unix: "/run/podman/io.projectatomic.podman" };
+const PODMAN = { unix: "/run/podman/io.podman" };
 
 /**
  * Do a varlink call on an existing channel. You must *never* call this
@@ -92,15 +92,15 @@ export class Application extends React.Component {
 
         this.state = { version: { version: "unknown" }, images: [], containers: [] };
 
-        varlinkCall(PODMAN, "io.projectatomic.podman.GetVersion")
+        varlinkCall(PODMAN, "io.podman.GetVersion")
             .then(reply => this.setState({ version: reply.version }))
             .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
 
-        varlinkCall(PODMAN, "io.projectatomic.podman.ListImages")
+        varlinkCall(PODMAN, "io.podman.ListImages")
             .then(reply => this.setState({ images: reply.images }))
             .catch(ex => console.error("Failed to do ListImages call:", JSON.stringify(ex)));
 
-        varlinkCall(PODMAN, "io.projectatomic.podman.ListContainers")
+        varlinkCall(PODMAN, "io.podman.ListContainers")
             .then(reply => this.setState({ containers: reply.containers || [] }))
             .catch(ex => console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString()));
     }
