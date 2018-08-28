@@ -78,24 +78,12 @@ info.files.forEach(function(value) {
 info.files = files;
 
 var plugins = [
-    new webpack.DefinePlugin({
-        'process.env': {
-            'NODE_ENV': JSON.stringify(production ? 'production' : 'development')
-        }
-    }),
     new copy(info.files),
     new extract("[name].css")
 ];
 
 /* Only minimize when in production mode */
 if (production) {
-    plugins.unshift(new webpack.optimize.UglifyJsPlugin({
-        beautify: true,
-        compress: {
-            warnings: false
-        },
-    }));
-
     /* Rename output files when minimizing */
     output.filename = "[name].min.js";
 
@@ -108,6 +96,7 @@ if (production) {
 }
 
 module.exports = {
+    mode: production ? 'production' : 'development',
     entry: info.entries,
     externals: externals,
     output: output,
