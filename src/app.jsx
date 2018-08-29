@@ -20,7 +20,7 @@
 
 import cockpit from 'cockpit';
 import React from 'react';
-import ContainerHeader from './ContainerHeader.jsx'
+import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as utils from './util.js';
@@ -47,8 +47,8 @@ class Application extends React.Component {
 
     onChange(value) {
         this.setState({
-            onlyShowRunning: value == "all" ? false : true
-        })
+            onlyShowRunning: value != "all"
+        });
     }
 
     updateContainers(newContainers) {
@@ -65,55 +65,54 @@ class Application extends React.Component {
 
     componentDidMount() {
         this._asyncRequestVersion = utils.varlinkCall(utils.PODMAN, "io.podman.GetVersion")
-            .then(reply => {
-                this._asyncRequestVersion = null;
-                this.setState({ version: reply.version });
-            })
-            .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
+                .then(reply => {
+                    this._asyncRequestVersion = null;
+                    this.setState({ version: reply.version });
+                })
+                .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
 
         this._asyncRequestImages = utils.varlinkCall(utils.PODMAN, "io.podman.ListImages")
-            .then(reply => {
-                this._asyncRequestImages = null;
-                this.setState({ imagesMeta: reply.images });
-                this.state.imagesMeta.map((img)=>{
-                    utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", JSON.parse('{"name":"' + img.id + '"}'))
-                        .then(reply => {
-                            const temp_imgs = this.state.images;
-                            temp_imgs.push(JSON.parse(reply.image));
-                            this.setState({images: temp_imgs});
-                        })
-                        .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
+                .then(reply => {
+                    this._asyncRequestImages = null;
+                    this.setState({ imagesMeta: reply.images });
+                    this.state.imagesMeta.map((img) => {
+                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", JSON.parse('{"name":"' + img.id + '"}'))
+                                .then(reply => {
+                                    const temp_imgs = this.state.images;
+                                    temp_imgs.push(JSON.parse(reply.image));
+                                    this.setState({images: temp_imgs});
+                                })
+                                .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
+                    });
                 })
-            })
-            .catch(ex => console.error("Failed to do ListImages call:", ex, JSON.stringify(ex)));
-
+                .catch(ex => console.error("Failed to do ListImages call:", ex, JSON.stringify(ex)));
 
         this._asyncRequestContainers = utils.varlinkCall(utils.PODMAN, "io.podman.ListContainers")
-            .then(reply => {
-                this._asyncRequestContainers = null;
-                this.setState({containersMeta: reply.containers || []});
-                this.state.containersMeta.map((container) => {
-                    utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", JSON.parse('{"name":"' + container.id + '"}'))
-                        .then(reply => {
-                            const temp_containers = this.state.containers;
-                            temp_containers.push(JSON.parse(reply.container));
-                            this.setState({containers: temp_containers});
-                        })
-                        .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
-                });
-                this.state.containersMeta.map((container) => {
-                    utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", JSON.parse('{"name":"' + container.id + '"}'))
-                        .then(reply => {
-                            const temp_container_stats = this.state.containersStats;
-                            if (reply.container) {
-                                temp_container_stats[container.id] = reply.container;
-                            }
-                            this.setState({containersStats: temp_container_stats});
-                        })
-                        .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
-                });
-            })
-            .catch(ex => console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString()));
+                .then(reply => {
+                    this._asyncRequestContainers = null;
+                    this.setState({containersMeta: reply.containers || []});
+                    this.state.containersMeta.map((container) => {
+                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", JSON.parse('{"name":"' + container.id + '"}'))
+                                .then(reply => {
+                                    const temp_containers = this.state.containers;
+                                    temp_containers.push(JSON.parse(reply.container));
+                                    this.setState({containers: temp_containers});
+                                })
+                                .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
+                    });
+                    this.state.containersMeta.map((container) => {
+                        utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", JSON.parse('{"name":"' + container.id + '"}'))
+                                .then(reply => {
+                                    const temp_container_stats = this.state.containersStats;
+                                    if (reply.container) {
+                                        temp_container_stats[container.id] = reply.container;
+                                    }
+                                    this.setState({containersStats: temp_container_stats});
+                                })
+                                .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
+                    });
+                })
+                .catch(ex => console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString()));
     }
 
     componentWillUnmount() {
@@ -136,15 +135,15 @@ class Application extends React.Component {
                 key={_("imageList")}
                 images={this.state.images}
                 updateImages={this.updateImages}
-            ></Images>;
-        containerList=
+            />;
+        containerList =
             <Containers
                 key={_("containerList")}
                 containers={this.state.containers}
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}
                 updateContainers={this.updateContainers}
-            ></Containers>
+            />;
 
         return (
             <div id="overview" key={"overview"}>
@@ -152,7 +151,7 @@ class Application extends React.Component {
                     <ContainerHeader
                         onlyShowRunning={this.state.onlyShowRunning}
                         onChange={this.onChange}
-                    ></ContainerHeader>
+                    />
                 </div>
                 <div key={"containerslists"} className="container-fluid">
                     {containerList}

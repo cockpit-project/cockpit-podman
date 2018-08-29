@@ -22,6 +22,6 @@ const ContainerRemoveErrorModal = (props) => {
             </Modal>
         </div>
     );
-}
+};
 
 export default ContainerRemoveErrorModal;

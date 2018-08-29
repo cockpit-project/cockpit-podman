@@ -8,6 +8,6 @@ const ContainersRunImageModal = (props) => {
             <button onClick={props.handleCancelRunImage}>Cancel</button>
         </Modal>
     );
-}
+};
 
 export default ContainersRunImageModal;

@@ -76,33 +76,33 @@ class Images extends React.Component {
             selectImageDeleteModal: false,
         });
         utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", JSON.parse('{"name":"' + image + '"}'))
-            .then((reply) => {
-                const idDel = reply.image ? reply.image : "";
-                const oldImages = this.props.images;
-                let newImages = oldImages.filter(elm => elm.Id !== idDel);
-                this.props.updateImages(newImages);
-            })
-            .catch(ex => {
-                this.imageRemoveErrorMsg = _(ex);
-                this.setState({
-                    setImageRemoveErrorModal: true,
+                .then((reply) => {
+                    const idDel = reply.image ? reply.image : "";
+                    const oldImages = this.props.images;
+                    let newImages = oldImages.filter(elm => elm.Id !== idDel);
+                    this.props.updateImages(newImages);
+                })
+                .catch(ex => {
+                    this.imageRemoveErrorMsg = _(ex);
+                    this.setState({
+                        setImageRemoveErrorModal: true,
+                    });
                 });
-            })
     }
 
     handleForceRemoveImage() {
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
         utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", JSON.parse('{"name":"' + id + '","force": true }'))
-        .then(reply => {
-            this.setState({
-                setImageRemoveErrorModal: false
-            })
-            const idDel = reply.image ? reply.image : "";
-            const oldImages = this.props.images;
-            let newImages = oldImages.filter(elm => elm.Id !== idDel);
-            this.props.updateImages(newImages);
-        })
-        .catch(ex => console.error("Failed to do RemoveImageForce call:", JSON.stringify(ex)));
+                .then(reply => {
+                    this.setState({
+                        setImageRemoveErrorModal: false
+                    });
+                    const idDel = reply.image ? reply.image : "";
+                    const oldImages = this.props.images;
+                    let newImages = oldImages.filter(elm => elm.Id !== idDel);
+                    this.props.updateImages(newImages);
+                })
+                .catch(ex => console.error("Failed to do RemoveImageForce call:", JSON.stringify(ex)));
     }
 
     renderRow(image) {
@@ -120,16 +120,16 @@ class Images extends React.Component {
                         &nbsp;
                         { cockpit.format(cockpit.ngettext('1 Vulnerability', '$0 Vulnerabilities', count), count) }
                     </div>
-            );
+                );
         }
-        //TODO: image waiting if - else
+        // TODO: image waiting if - else
         let element =
             <button
                 key={image.Id + "runimage"}
                 className="btn btn-default btn-control-ct fa fa-play"
                 onClick={ this.showRunImageDialog }
                 data-image={image.id}
-            />
+            />;
         let columns = [
             {name: image.RepoTags ? image.RepoTags[0] : "", header: true},
             vulnerabilityColumn,
@@ -171,17 +171,17 @@ class Images extends React.Component {
                     tabRenderers={tabs}
                     navigateToItem={this.navigateToImage(image)}
                     listingActions={actions}
-                />;
+        />;
     }
 
     handleSearchImageClick() {
-            return undefined;
+        return undefined;
     }
 
     handleCancelRunImage() {
-            this.setState(()=>({
-                setRunContainer: false
-            }));
+        this.setState(() => ({
+            setRunContainer: false
+        }));
     }
 
     handleCancelImageRemoveError() {
@@ -191,51 +191,51 @@ class Images extends React.Component {
     }
 
     render() {
-            const columnTitles = [ _("Name"), _(''), _("Created"), _("Size"), _('') ];
-            //TODO: emptyCaption = _("No Images");
-            let emptyCaption = _("No images that match the current filter");
-            const getNewImageAction =
+        const columnTitles = [ _("Name"), _(''), _("Created"), _("Size"), _('') ];
+        // TODO: emptyCaption = _("No Images");
+        let emptyCaption = _("No images that match the current filter");
+        const getNewImageAction =
                 [<a key={"searchImages"} role="link" tabIndex="0" onClick={this.handleSearchImageClick} className="card-pf-link-with-icon pull-right">
                     <span className="pficon pficon-add-circle-o" />{_("Get new image")}
                 </a>];
-            //TODO: filter images via filterText
-            let filtered = this.props.images;
-            let imageRows = filtered.map(this.renderRow, this);
-            const imageDeleteModal =
-                <ModalExample
+            // TODO: filter images via filterText
+        let filtered = this.props.images;
+        let imageRows = filtered.map(this.renderRow, this);
+        const imageDeleteModal =
+            <ModalExample
                     selectImageDeleteModal={this.state.selectImageDeleteModal}
                     imageWillDelete={this.state.imageWillDelete}
                     handleCancelImageDeleteModal={this.handleCancelImageDeleteModal}
                     handleRemoveImage={this.handleRemoveImage}
-                ></ModalExample>;
-            const imageRemoveErrorModal =
-                <ImageRemoveErrorModal
+            />;
+        const imageRemoveErrorModal =
+            <ImageRemoveErrorModal
                     setImageRemoveErrorModal={this.state.setImageRemoveErrorModal}
                     handleCancelImageRemoveError={this.handleCancelImageRemoveError}
                     handleForceRemoveImage={this.handleForceRemoveImage}
                     imageWillDelete={this.state.imageWillDelete}
                     imageRemoveErrorMsg={this.imageRemoveErrorMsg}
-                ></ImageRemoveErrorModal>
+            />;
 
-            return(
-                <div id="containers-images" key={"images"} className="container-fluid" >
-                        <Listing.Listing
+        return (
+            <div id="containers-images" key={"images"} className="container-fluid" >
+                <Listing.Listing
                             key={"ImagesListing"}
                             title={_("Images")}
                             columnTitles={columnTitles}
                             emptyCaption={emptyCaption}
                             actions={getNewImageAction}>
-                            {imageRows}
-                        </Listing.Listing>
-                    {/* TODO: {pendingRows} */}
-                        <ContainersRunImageModal
+                    {imageRows}
+                </Listing.Listing>
+                {/* TODO: {pendingRows} */}
+                <ContainersRunImageModal
                             show={this.state.setRunContainer}
                             handleCancelRunImage={this.handleCancelRunImage}
-                        ></ContainersRunImageModal>
-                        {imageDeleteModal}
-                        {imageRemoveErrorModal}
-                </div>
-            );
+                />
+                {imageDeleteModal}
+                {imageRemoveErrorModal}
+            </div>
+        );
     }
 }
 

@@ -22,6 +22,6 @@ const ContainerDeleteModal = (props) => {
             </Modal>
         </div>
     );
-}
+};
 
 export default ContainerDeleteModal;

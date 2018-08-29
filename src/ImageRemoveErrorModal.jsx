@@ -10,7 +10,7 @@ const ImageRemoveErrorModal = (props) => {
         <div>
             <Modal isOpen={props.setImageRemoveErrorModal} fade={false} >
                 <ModalHeader>
-                    {cockpit.format(_("Please confirm forced deletion of $0"),  _(repoTag))}
+                    {cockpit.format(_("Please confirm forced deletion of $0"), _(repoTag))}
                 </ModalHeader>
                 <ModalBody>
                     {_(props.imageRemoveErrorMsg)}
@@ -22,6 +22,6 @@ const ImageRemoveErrorModal = (props) => {
             </Modal>
         </div>
     );
-}
+};
 
 export default ImageRemoveErrorModal;
