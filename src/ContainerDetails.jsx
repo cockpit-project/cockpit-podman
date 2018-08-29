@@ -7,11 +7,11 @@ const _ = cockpit.gettext;
 const render_container_state = (state) => {
     if (state.Running) {
         const momentDate = moment(state.StartedAt);
-        return cockpit.format(_("Up since $0"), momentDate.isValid() ?
-                              momentDate.calendar() : state.startedAt);
+        return cockpit.format(_("Up since $0"), momentDate.isValid()
+            ? momentDate.calendar() : state.startedAt);
     }
     return cockpit.format(_("Exited $ExitCode"), state);
-}
+};
 
 const ContainerDetails = ({container}) => (
     <div className='listing-ct-body'>

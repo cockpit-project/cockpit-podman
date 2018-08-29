@@ -22,6 +22,6 @@ const ImageDeleteModal = (props) => {
             </Modal>
         </div>
     );
-}
+};
 
 export default ImageDeleteModal;

@@ -16,7 +16,7 @@ class Containers extends React.Component {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
             containerWillDelete: {}
-        }
+        };
         this.renderRow = this.renderRow.bind(this);
         this.restartContainer = this.restartContainer.bind(this);
         this.startContainer = this.startContainer.bind(this);
@@ -32,7 +32,7 @@ class Containers extends React.Component {
         cockpit.location.go([container.ID]);
     }
 
-    deleteContainer(container, event){
+    deleteContainer(container, event) {
         event.preventDefault();
         this.setState((prevState) => ({
             containerWillDelete: container,
@@ -40,21 +40,20 @@ class Containers extends React.Component {
         }));
     }
 
-    //TODO
+    // TODO
     stopContainer(container) {
         return undefined;
     }
 
-    //TODO
+    // TODO
     startContainer (container) {
         return undefined;
     }
 
-    //TODO
+    // TODO
     restartContainer (container) {
         return undefined;
     }
-
 
     renderRow(containersStats, container) {
         const containerStats = containersStats[container.ID] ? containersStats[container.ID] : undefined;
@@ -79,9 +78,9 @@ class Containers extends React.Component {
 
         let startStopActions = [];
         if (isRunning)
-            startStopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container)});
+            startStopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container) });
         else
-            startStopActions.push({ label: _("Start"), onActivate: () => this.startContainer(container)});
+            startStopActions.push({ label: _("Start"), onActivate: () => this.startContainer(container) });
 
         startStopActions.push({
             label: _("Restart"),
@@ -115,7 +114,7 @@ class Containers extends React.Component {
                     tabRenderers={tabs}
                     navigateToItem={() => this.navigateToContainer(container)}
                     listingActions={actions}
-                />;
+        />;
     }
 
     handleCancelContainerDeleteModal() {
@@ -129,26 +128,26 @@ class Containers extends React.Component {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
         this.setState({
             selectContainerDeleteModal: false
-        })
+        });
         utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", JSON.parse('{"name":"' + id + '"}'))
-            .then((reply) => {
-                const idDel = reply.container ? reply.container : "";
-                const oldContainers = this.props.containers;
-                let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
-                this.props.updateContainers(newContainers);
-            })
-            .catch((ex) => {
-                if (container.State.Running) {
-                    this.containerRemoveErrorMsg = _(ex);
-                } else {
-                    //TODO:
-                    this.containerRemoveErrorMsg = _("Container is currently marked as not running, but regular stopping failed.") +
-                        " " + _("Error message from Podman:") + " '" + ex;
-                }
-                this.setState({
-                    setContainerRemoveErrorModal: true
+                .then((reply) => {
+                    const idDel = reply.container ? reply.container : "";
+                    const oldContainers = this.props.containers;
+                    let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
+                    this.props.updateContainers(newContainers);
                 })
-            });
+                .catch((ex) => {
+                    if (container.State.Running) {
+                        this.containerRemoveErrorMsg = _(ex);
+                    } else {
+                    // TODO:
+                        this.containerRemoveErrorMsg = _("Container is currently marked as not running, but regular stopping failed.") +
+                        " " + _("Error message from Podman:") + " '" + ex;
+                    }
+                    this.setState({
+                        setContainerRemoveErrorModal: true
+                    });
+                });
     }
 
     handleCancelRemoveError() {
@@ -157,34 +156,32 @@ class Containers extends React.Component {
         });
     }
 
-    //TODO: force
+    // TODO: force
     handleForceRemoveContainer() {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
         utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", JSON.parse('{"name":"' + id + '","force": true }'))
-        .then(reply => {
-            this.setState({
-                setContainerRemoveErrorModal: false
-            })
-            const idDel = reply.container ? reply.container : "";
-            const oldContainers = this.props.containers;
-            let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
-            this.props.updateContainers(newContainers);
-        })
-        .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
-
+                .then(reply => {
+                    this.setState({
+                        setContainerRemoveErrorModal: false
+                    });
+                    const idDel = reply.container ? reply.container : "";
+                    const oldContainers = this.props.containers;
+                    let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
+                    this.props.updateContainers(newContainers);
+                })
+                .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
     }
 
     render() {
-
         const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("State")];
-        //TODO: emptyCaption
+        // TODO: emptyCaption
         let emptyCaption = _("No running containers");
         const renderRow = this.renderRow;
         const containersStats = this.props.containersStats;
-        //TODO: check filter text
+        // TODO: check filter text
         let filtered = this.props.containers.filter(container => (!this.props.onlyShowRunning || container.State.Running));
         let rows = filtered.map(function (container) {
-            return renderRow(containersStats, container)
+            return renderRow(containersStats, container);
         }, this);
         const containerDeleteModal =
             <ContainerDeleteModal
@@ -192,7 +189,7 @@ class Containers extends React.Component {
                 containerWillDelete={this.state.containerWillDelete}
                 handleCancelContainerDeleteModal={this.handleCancelContainerDeleteModal}
                 handleRemoveContainer={this.handleRemoveContainer}
-            ></ContainerDeleteModal>;
+            />;
         const containerRemoveErrorModal =
             <ContainerRemoveErrorModal
                 setContainerRemoveErrorModal={this.state.setContainerRemoveErrorModal}
@@ -200,19 +197,18 @@ class Containers extends React.Component {
                 handleForceRemoveContainer={this.handleForceRemoveContainer}
                 containerWillDelete={this.state.containerWillDelete}
                 containerRemoveErrorMsg={this.containerRemoveErrorMsg}
-            ></ContainerRemoveErrorModal>
+            />;
 
         return (
             <div id="containers-containers" className="container-fluid ">
-                    <Listing.Listing key={"ContainerListing"} title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
-                        {rows}
-                    </Listing.Listing>
-                    {containerDeleteModal}
-                    {containerRemoveErrorModal}
+                <Listing.Listing key={"ContainerListing"} title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
+                    {rows}
+                </Listing.Listing>
+                {containerDeleteModal}
+                {containerRemoveErrorModal}
             </div>
         );
     }
-
 }
 
 export default Containers;

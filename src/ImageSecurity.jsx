@@ -12,18 +12,18 @@ const ImageSecurity = (props) => {
         count: info.vulnerabilities.length
     };
 
-    //TODO: info.successful/vulnerabilities.length
+    // TODO: info.successful/vulnerabilities.length
     text = _("The scan from $time ($type) found no vulnerabilities.");
 
     rows = info.vulnerabilities.map(
         function (vulnerability) {
             return (
-            <div className="vulnerability-row-ct-docker" title={vulnerability.description}>
-                <span>{vulnerability.title}</span>
-                <span className="pull-right">{vulnerability.severity}</span>
-            </div>
+                <div className="vulnerability-row-ct-docker" title={vulnerability.description}>
+                    <span>{vulnerability.title}</span>
+                    <span className="pull-right">{vulnerability.severity}</span>
+                </div>
             );
-    });
+        });
 
     return (
         <div>
@@ -36,6 +36,6 @@ const ImageSecurity = (props) => {
         </div>
 
     );
-}
+};
 
 export default ImageSecurity;

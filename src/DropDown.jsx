@@ -1,6 +1,6 @@
 import React from 'react';
 
-//TODO
+// TODO
 const handleClick = (event) => {
     if (event.button !== 0)
         return;

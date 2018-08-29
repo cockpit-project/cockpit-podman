@@ -263,7 +263,7 @@ class ListingRow extends React.Component {
 ListingRow.defaultProps = {
     tabRenderers: [],
     navigateToItem: null,
-}
+};
 
 ListingRow.propTypes = {
     rowId: PropTypes.string,
@@ -327,7 +327,7 @@ const Listing = (props) => {
             </tr>
         );
     } else {
-        headerRow = <tr />
+        headerRow = <tr />;
     }
     let caption;
     if (props.title || (props.actions && props.actions.length > 0))
@@ -361,7 +361,7 @@ Listing.propTypes = {
         ])),
     columnTitleClick: PropTypes.func,
     actions: PropTypes.arrayOf(PropTypes.node)
-}
+};
 module.exports = {
     ListingRow: ListingRow,
     Listing: Listing,
