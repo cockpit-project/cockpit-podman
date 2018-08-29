@@ -19,7 +19,7 @@
 
 "use strict";
 import PropTypes from 'prop-types';
-let React = require('react');
+import React from 'react';
 require('./listing.less');
 
 /* entry for an alert in the listing, can be expanded (with details) or standard
@@ -46,7 +46,7 @@ require('./listing.less');
  * initiallyExpanded optional: the entry will be initially rendered as expanded, but then behaves normally
  * expandChanged optional: callback will be used if the row is either expanded or collapsed passing single `isExpanded` boolean argument
  */
-class ListingRow extends React.Component {
+export class ListingRow extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -289,7 +289,7 @@ ListingRow.propTypes = {
  *                     receives the column index as argument
  * - actions: additional listing-wide actions (displayed next to the list's title)
  */
-const Listing = (props) => {
+export const Listing = (props) => {
     let bodyClasses = ["listing", "listing-ct"];
     if (props.fullWidth)
         bodyClasses.push("listing-ct-wide");
@@ -361,8 +361,4 @@ Listing.propTypes = {
         ])),
     columnTitleClick: PropTypes.func,
     actions: PropTypes.arrayOf(PropTypes.node)
-};
-module.exports = {
-    ListingRow: ListingRow,
-    Listing: Listing,
 };

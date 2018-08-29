@@ -1,6 +1,6 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import Listing from '../lib/cockpit-components-listing.jsx';
+import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
 import Dropdown from './DropDown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';

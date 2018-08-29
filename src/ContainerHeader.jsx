@@ -1,6 +1,6 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import Select from '../lib/cockpit-components-select.jsx';
+import * as Select from '../lib/cockpit-components-select.jsx';
 const _ = cockpit.gettext;
 
 class ContainerHeader extends React.Component {
