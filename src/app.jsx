@@ -42,6 +42,7 @@ class Application extends React.Component {
         this.onChange = this.onChange.bind(this);
         this.updateContainers = this.updateContainers.bind(this);
         this.updateImages = this.updateImages.bind(this);
+        this.updateContainerStats = this.updateContainerStats.bind(this);
     }
 
     onChange(value) {
@@ -62,6 +63,12 @@ class Application extends React.Component {
         });
     }
 
+    updateContainerStats (newContainerStats) {
+        this.setState({
+            containersStats: newContainerStats
+        });
+    }
+
     componentDidMount() {
         this._asyncRequestVersion = utils.varlinkCall(utils.PODMAN, "io.podman.GetVersion")
                 .then(reply => {
@@ -75,7 +82,8 @@ class Application extends React.Component {
                     this._asyncRequestImages = null;
                     this.setState({ imagesMeta: reply.images });
                     this.state.imagesMeta.map((img) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", JSON.parse('{"name":"' + img.id + '"}'))
+                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", {name: img.id})
+
                                 .then(reply => {
                                     const temp_imgs = this.state.images;
                                     temp_imgs.push(JSON.parse(reply.image));
@@ -91,18 +99,25 @@ class Application extends React.Component {
                     this._asyncRequestContainers = null;
                     this.setState({containersMeta: reply.containers || []});
                     this.state.containersMeta.map((container) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", JSON.parse('{"name":"' + container.id + '"}'))
+                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", {name: container.id})
+
                                 .then(reply => {
-                                    const temp_containers = this.state.containers;
+                                    let temp_containers = this.state.containers;
                                     temp_containers.push(JSON.parse(reply.container));
                                     this.setState({containers: temp_containers});
                                 })
-                                .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
+                                .catch(ex => console.error("Failed to do InspectContainer call:", ex, JSON.stringify(ex)));
                     });
-                    this.state.containersMeta.map((container) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", JSON.parse('{"name":"' + container.id + '"}'))
+                    this.state.containersMeta.filter((ele) => {
+                        if (ele.status === "running") {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }).map((container) => {
+                        utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", {name: container.id})
                                 .then(reply => {
-                                    const temp_container_stats = this.state.containersStats;
+                                    let temp_container_stats = this.state.containersStats;
                                     if (reply.container) {
                                         temp_container_stats[container.id] = reply.container;
                                     }
@@ -112,6 +127,10 @@ class Application extends React.Component {
                     });
                 })
                 .catch(ex => console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString()));
+        this.setState({
+            containers:[],
+            containersStats:[]
+        });
     }
 
     componentWillUnmount() {
@@ -129,19 +148,26 @@ class Application extends React.Component {
     render() {
         let imageList;
         let containerList;
+        const imgprops = {
+            key: _("imageList"),
+            images: this.state.images,
+            updateImages: this.updateImages,
+            updateContainers: this.updateContainers
+        };
+        const ctrprops = {key:_("containerList"),
+                          containers: this.state.containers,
+                          containersStats: this.state.containersStats,
+                          onlyShowRunning: this.state.onlyShowRunning,
+                          updateContainers: this.updateContainers,
+                          updateContainerStats: this.updateContainerStats
+        };
         imageList =
             <Images
-                key={_("imageList")}
-                images={this.state.images}
-                updateImages={this.updateImages}
+                {...imgprops}
             />;
         containerList =
             <Containers
-                key={_("containerList")}
-                containers={this.state.containers}
-                containersStats={this.state.containersStats}
-                onlyShowRunning={this.state.onlyShowRunning}
-                updateContainers={this.updateContainers}
+                {...ctrprops}
             />;
 
         return (

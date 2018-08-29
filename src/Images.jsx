@@ -48,7 +48,10 @@ class Images extends React.Component {
     }
 
     navigateToImage(image) {
-        cockpit.location.go([ 'image', image.Id ]);
+        if (image) {
+            cockpit.location.go([ 'image', image.Id ]);
+        }
+        return undefined;
     }
 
     showRunImageDialog(e) {
@@ -70,17 +73,36 @@ class Images extends React.Component {
         }));
     }
 
+    updateContainersAfterEvent() {
+        utils.updateContainers()
+                .then((reply) => {
+                    this.props.updateContainers(reply.newContainers);
+                    document.body.classList.remove('busy-cursor');
+                })
+                .catch(ex => {
+                    console.error("Failed to do Update Container:", JSON.stringify(ex));
+                    document.body.classList.remove('busy-cursor');
+                });
+    }
+
+    updateImagesAfterEvents() {
+        utils.updateImages()
+                .then((reply) => {
+                    this.props.updateImages(reply);
+                })
+                .catch(ex => {
+                    console.error("Failed to Update Image:", JSON.stringify(ex));
+                });
+    }
+
     handleRemoveImage() {
         const image = this.state.imageWillDelete.Id;
         this.setState({
             selectImageDeleteModal: false,
         });
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", JSON.parse('{"name":"' + image + '"}'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", {name: image})
                 .then((reply) => {
-                    const idDel = reply.image ? reply.image : "";
-                    const oldImages = this.props.images;
-                    let newImages = oldImages.filter(elm => elm.Id !== idDel);
-                    this.props.updateImages(newImages);
+                    this.updateImagesAfterEvents();
                 })
                 .catch(ex => {
                     this.imageRemoveErrorMsg = _(ex);
@@ -91,23 +113,23 @@ class Images extends React.Component {
     }
 
     handleForceRemoveImage() {
+        document.body.classList.add('busy-cursor');
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", JSON.parse('{"name":"' + id + '","force": true }'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", {name: id, force: true})
                 .then(reply => {
+                    this.updateImagesAfterEvents();
+                    // update the container list in case the image deleted used by a container
+                    this.updateContainersAfterEvent();
                     this.setState({
                         setImageRemoveErrorModal: false
                     });
-                    const idDel = reply.image ? reply.image : "";
-                    const oldImages = this.props.images;
-                    let newImages = oldImages.filter(elm => elm.Id !== idDel);
-                    this.props.updateImages(newImages);
                 })
                 .catch(ex => console.error("Failed to do RemoveImageForce call:", JSON.stringify(ex)));
     }
 
     renderRow(image) {
         let vulnerabilityColumn = '';
-        let vulnerableInfo = this.state.vulnerableInfos[image.Id.replace(/^sha256:/, '')];
+        let vulnerableInfo = image ? this.state.vulnerableInfos[image.Id.replace(/^sha256:/, '')] : "";
         let count;
         let tabs = [];
 
@@ -125,16 +147,16 @@ class Images extends React.Component {
         // TODO: image waiting if - else
         let element =
             <button
-                key={image.Id + "runimage"}
+                key={image ? image.Id + "runimage" : "runimage"}
                 className="btn btn-default btn-control-ct fa fa-play"
                 onClick={ this.showRunImageDialog }
-                data-image={image.id}
+                data-image={image ? image.Id : ""}
             />;
         let columns = [
-            {name: image.RepoTags ? image.RepoTags[0] : "", header: true},
+            {name: image && image.RepoTags ? image.RepoTags[0] : "", header: true},
             vulnerabilityColumn,
-            moment(image.Created).isValid() ? moment(image.Created).calendar() : image.Created,
-            cockpit.format_bytes(image.VirtualSize),
+            image && moment(image.Created).isValid() ? moment(image.Created).calendar() : "",
+            image ? cockpit.format_bytes(image.VirtualSize) : "",
             {
                 element: element,
                 tight: true
@@ -159,17 +181,17 @@ class Images extends React.Component {
 
         let actions = [
             <button
-                key={image.Id + "delete"}
+                key={image ? image.Id + "delete" : "delete"}
                 className="btn btn-danger btn-delete pficon pficon-delete"
                 onClick={() => this.deleteImage(image)}
             />
         ];
         return <Listing.ListingRow
-                    key={image.Id}
-                    rowId={image.Id}
+                    key={image ? image.Id : "imageKey"}
+                    rowId={image ? image.Id : "rowId"}
                     columns={columns}
                     tabRenderers={tabs}
-                    navigateToItem={this.navigateToImage(image)}
+                    navigateToItem={image ? this.navigateToImage(image) : undefined}
                     listingActions={actions}
         />;
     }
@@ -219,15 +241,17 @@ class Images extends React.Component {
 
         return (
             <div id="containers-images" key={"images"} className="container-fluid" >
-                <Listing.Listing
+                <div key={"imageslist"}>
+                    <Listing.Listing
                             key={"ImagesListing"}
                             title={_("Images")}
                             columnTitles={columnTitles}
                             emptyCaption={emptyCaption}
                             actions={getNewImageAction}>
-                    {imageRows}
-                </Listing.Listing>
-                {/* TODO: {pendingRows} */}
+                        {imageRows}
+                    </Listing.Listing>
+                    {/* TODO: {pendingRows} */}
+                </div>
                 <ContainersRunImageModal
                             show={this.state.setRunContainer}
                             handleCancelRunImage={this.handleCancelRunImage}

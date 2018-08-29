@@ -2,7 +2,7 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
-import Dropdown from './DropDown.jsx';
+import Dropdown from './DropdownContainer.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
@@ -15,8 +15,10 @@ class Containers extends React.Component {
         this.state = {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
-            containerWillDelete: {}
+            containerWillDelete: {},
+            setWaitCursor: "",
         };
+
         this.renderRow = this.renderRow.bind(this);
         this.restartContainer = this.restartContainer.bind(this);
         this.startContainer = this.startContainer.bind(this);
@@ -40,19 +42,57 @@ class Containers extends React.Component {
         }));
     }
 
-    // TODO
-    stopContainer(container) {
-        return undefined;
+    updateContainersAfterEvent() {
+        utils.updateContainers()
+                .then((reply) => {
+                    this.props.updateContainers(reply.newContainers);
+                    document.body.classList.remove('busy-cursor');
+                })
+                .catch(ex => {
+                    console.error("Failed to do Update Container:", JSON.stringify(ex));
+                    document.body.classList.remove('busy-cursor');
+                });
     }
 
-    // TODO
+    stopContainer(container, timeout) {
+        document.body.classList.add('busy-cursor');
+        timeout = timeout || 10;
+        utils.varlinkCall(utils.PODMAN, "io.podman.StopContainer", {name: container.ID, timeout: timeout})
+                .then(reply => {
+                    this.updateContainersAfterEvent();
+                })
+                .catch(ex => {
+                    console.error("Failed to do StopContainer call:", JSON.stringify(ex));
+                    document.body.classList.remove('busy-cursor');
+                });
+    }
+
     startContainer (container) {
-        return undefined;
+        document.body.classList.add('busy-cursor');
+        const id = container.ID;
+        utils.varlinkCall(utils.PODMAN, "io.podman.StartContainer", {name: id})
+                .then(reply => {
+                    this.updateContainersAfterEvent();
+                })
+                .catch(ex => {
+                    console.error("Failed to do StartContainer call:", JSON.stringify(ex));
+                    document.body.classList.remove('busy-cursor');
+                });
     }
 
-    // TODO
-    restartContainer (container) {
-        return undefined;
+    restartContainer (container, timeout) {
+        document.body.classList.add('busy-cursor');
+        if (!timeout) {
+            timeout = 10;
+        }
+        utils.varlinkCall(utils.PODMAN, "io.podman.RestartContainer", {name: container.ID, timeout: timeout})
+                .then(reply => {
+                    this.updateContainersAfterEvent();
+                })
+                .catch(ex => {
+                    console.error("Failed to do RestartContainer call:", JSON.stringify(ex));
+                    document.body.classList.remove('busy-cursor');
+                });
     }
 
     renderRow(containersStats, container) {
@@ -64,11 +104,10 @@ class Containers extends React.Component {
         let columns = [
             { name: container.Name, header: true },
             image,
-            container.Config.Cmd.join(" "),
+            container.Config.Cmd ? container.Config.Cmd.join(" ") : undefined,
             container.State.Running ? utils.format_cpu_percent(container.HostConfig.CpuPercent) : "",
-            containerStats ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : "",
+            container.State.Running && containerStats ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : "",
             state /* TODO: i18n */,
-
         ];
         let tabs = [{
             name: _("Details"),
@@ -84,8 +123,7 @@ class Containers extends React.Component {
 
         startStopActions.push({
             label: _("Restart"),
-            // onActivate: this.restartContainer,
-            onActivate: this.restartContainer,
+            onActivate: () => this.restartContainer(container),
             disabled: !isRunning
         });
 
@@ -103,7 +141,6 @@ class Containers extends React.Component {
             >
                 {_("Commit")}
             </button>,
-            // TODO: stop or start dropdown menu
             <Dropdown key={_(container.ID)} actions={startStopActions} />
         ];
 
@@ -124,29 +161,27 @@ class Containers extends React.Component {
     }
 
     handleRemoveContainer() {
+        document.body.classList.add('busy-cursor');
         const container = this.state.containerWillDelete;
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
         this.setState({
             selectContainerDeleteModal: false
         });
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", JSON.parse('{"name":"' + id + '"}'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", {name: id})
                 .then((reply) => {
-                    const idDel = reply.container ? reply.container : "";
-                    const oldContainers = this.props.containers;
-                    let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
-                    this.props.updateContainers(newContainers);
+                    this.updateContainersAfterEvent();
                 })
                 .catch((ex) => {
                     if (container.State.Running) {
                         this.containerRemoveErrorMsg = _(ex);
                     } else {
-                    // TODO:
                         this.containerRemoveErrorMsg = _("Container is currently marked as not running, but regular stopping failed.") +
                         " " + _("Error message from Podman:") + " '" + ex;
                     }
                     this.setState({
                         setContainerRemoveErrorModal: true
                     });
+                    document.body.classList.remove('busy-cursor');
                 });
     }
 
@@ -156,18 +191,23 @@ class Containers extends React.Component {
         });
     }
 
-    // TODO: force
+    handleSetWaitCursor() {
+        this.setState((prevState) => ({
+            setWaitCursor: prevState.setWaitCursor === "" ? "wait-cursor" : ""
+        }));
+    }
+
     handleForceRemoveContainer() {
+        document.body.classList.add('busy-cursor');
+        this.handleSetWaitCursor();
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", JSON.parse('{"name":"' + id + '","force": true }'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", {name: id, force: true})
                 .then(reply => {
+                    this.updateContainersAfterEvent();
                     this.setState({
                         setContainerRemoveErrorModal: false
                     });
-                    const idDel = reply.container ? reply.container : "";
-                    const oldContainers = this.props.containers;
-                    let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
-                    this.props.updateContainers(newContainers);
+                    this.handleSetWaitCursor();
                 })
                 .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
     }
@@ -176,12 +216,11 @@ class Containers extends React.Component {
         const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("State")];
         // TODO: emptyCaption
         let emptyCaption = _("No running containers");
-        const renderRow = this.renderRow;
         const containersStats = this.props.containersStats;
         // TODO: check filter text
         let filtered = this.props.containers.filter(container => (!this.props.onlyShowRunning || container.State.Running));
         let rows = filtered.map(function (container) {
-            return renderRow(containersStats, container);
+            return this.renderRow(containersStats, container);
         }, this);
         const containerDeleteModal =
             <ContainerDeleteModal
@@ -197,15 +236,18 @@ class Containers extends React.Component {
                 handleForceRemoveContainer={this.handleForceRemoveContainer}
                 containerWillDelete={this.state.containerWillDelete}
                 containerRemoveErrorMsg={this.containerRemoveErrorMsg}
+                setWaitCursor={this.state.setWaitCursor}
             />;
 
         return (
             <div id="containers-containers" className="container-fluid ">
-                <Listing.Listing key={"ContainerListing"} title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
-                    {rows}
-                </Listing.Listing>
-                {containerDeleteModal}
-                {containerRemoveErrorModal}
+                <div>
+                    <Listing.Listing key={"ContainerListing"} title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
+                        {rows}
+                    </Listing.Listing>
+                    {containerDeleteModal}
+                    {containerRemoveErrorModal}
+                </div>
             </div>
         );
     }
