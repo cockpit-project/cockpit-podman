@@ -1,6 +1,6 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import Listing from '../lib/cockpit-components-listing.jsx';
+import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ImageDetails from './ImageDetails.jsx';
 import ContainersRunImageModal from './ContainersRunImageModal.jsx';
 import ImageSecurity from './ImageSecurity.jsx';
