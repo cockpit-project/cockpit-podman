@@ -28,7 +28,7 @@ function varlinkCallChannel(channel, method, parameters) {
 
             // FIXME: support answer in multiple chunks until null byte
             if (data[data.length - 1] != 0) {
-                reject("protocol error: expecting terminating 0");
+                reject(new Error("protocol error: expecting terminating 0"));
                 return;
             }
 
@@ -39,22 +39,22 @@ function varlinkCallChannel(channel, method, parameters) {
                 reject(msg);
             } else if (json.parameters) {
                 // debugging
-                resolve(json.parameters)
+                resolve(json.parameters);
             } else
-                reject("protocol error: reply has neither parameters nor error: " + reply);
+                reject(new Error("protocol error: reply has neither parameters nor error: " + reply));
         }
 
         channel.addEventListener("close", on_close);
         channel.addEventListener("message", on_message);
         channel.send(encoder.encode(JSON.stringify({ method, parameters: (parameters || {}) })));
         channel.send([0]); // message separator
-    })
+    });
 }
 
 function varlinkCallError(error) {
     let str = "";
-    error.error ? str += error.error.toString() : str;
-    error.parameters.reason ? str += " " + error.parameters.reason.toString() : str;
+    str = error.error ? str + error.error.toString() : str;
+    str = error.parameters ? str + " " + error.parameters.reason.toString() : str;
     return str;
 }
 
@@ -63,9 +63,10 @@ function varlinkCallError(error) {
  * `varlinkCallChannel()` but allows multiple parallel calls.
  */
 export function varlinkCall(channelOptions, method, parameters) {
-    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true, superuser: "require" }, channelOptions));
+    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true, superuser: "require"}, channelOptions));
+
     return varlinkCallChannel(channel, method, parameters).finally(() => {
-        channel.close()
+        channel.close();
     });
 }
 
@@ -105,4 +106,133 @@ export function format_memory_and_limit(usage, limit) {
     } else {
         return _("");
     }
+}
+
+export function container_stop(container, timeout) {
+    timeout = timeout || 10;
+    varlinkCall(PODMAN, "io.podman.StopContainer", {name: container.ID, timeout: timeout})
+            .then(reply => {
+                return reply.container;
+            })
+            .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
+}
+
+export function updateContainers() {
+    let newContainers = [];
+    let newContainersStats = [];
+    return new Promise((resolve, reject) => {
+        varlinkCall(PODMAN, "io.podman.ListContainers")
+                .then(reply => {
+                    let newContainersMeta = reply.containers;
+                    if (!newContainersMeta) {
+                        resolve({newContainers: newContainers, newContainersStats: newContainersStats});
+                        return;
+                    }
+                    const len = newContainersMeta.length;
+                    let inspectRet = [];
+                    newContainersMeta.map((container) => {
+                        let proEle = new Promise((resolve, reject) => {
+                            varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id})
+                                    .then(reply => {
+                                        resolve(JSON.parse(reply.container));
+                                    })
+                                    .catch(ex => {
+                                        reject(new Error("Failed to do InspectContainer call:", ex, JSON.stringify(ex)));
+                                    });
+                        });
+                        inspectRet.push(proEle);
+                    });
+                    Promise.all(inspectRet)
+                            .then((inspectRet) => {
+                                let runEle = newContainersMeta.filter((ele) => {
+                                    return ele.status === "running";
+                                });
+                                inspectRet.map((inspectRet) => {
+                                    newContainers.push(inspectRet);
+                                    if (runEle.length === 0 && newContainers.length === len) {
+                                        resolve({newContainers: newContainers, newContainersStats: newContainersStats});
+                                    }
+                                });
+                            })
+                            .catch(ex => {
+                                console.error("Failed to do InspectContainer call:", ex, JSON.stringify(ex));
+                            });
+                    let crtStatsRet = [];
+                    let runCtrArr = newContainersMeta.filter((ele) => {
+                        return ele.status === "running";
+                    }).map((container) => {
+                        let proEle = new Promise((resolve, reject) => {
+                            varlinkCall(PODMAN, "io.podman.GetContainerStats", {name: container.id})
+                                    .then(reply => {
+                                        resolve({ctrId: container.id, ctrStats:reply.container});
+                                    })
+                                    .catch(ex => {
+                                        console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex));
+                                        reject(new Error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
+                                    });
+                        });
+                        crtStatsRet.push(proEle);
+                    });
+
+                    Promise.all(crtStatsRet)
+                            .then((crtStatsRet) => {
+                                crtStatsRet.map((crtStatsRet) => {
+                                    newContainersStats[crtStatsRet.ctrId] = crtStatsRet.ctrStats;
+                                    if (newContainers.length === len && Object.keys(newContainersStats).length === runCtrArr.length) {
+                                        resolve({newContainers: newContainers, newContainersStats: newContainersStats});
+                                    }
+                                });
+                            })
+                            .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
+                })
+                .catch(ex => {
+                    console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString());
+                    reject(new Error("Failed to do ListContainers call"));
+                });
+    });
+}
+
+export function updateImages() {
+    let newImages = [];
+    let newImagesMeta = [];
+    return new Promise((resolve, reject) => {
+        varlinkCall(PODMAN, "io.podman.ListImages")
+                .then(reply => {
+                    newImagesMeta = reply.images;
+                    const len = newImagesMeta ? newImagesMeta.length : 0;
+                    if (!newImagesMeta) {
+                        resolve(newImages);
+                        return;
+                    }
+                    let inspectRet = [];
+                    newImagesMeta.map((img) => {
+                        let proEle = new Promise((resolve, reject) => {
+                            varlinkCall(PODMAN, "io.podman.InspectImage", {name: img.id})
+                                    .then(reply => {
+                                        resolve(JSON.parse(reply.image));
+                                    })
+                                    .catch(ex => {
+                                        reject(new Error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
+                                    });
+                        });
+                        inspectRet.push(proEle);
+                    });
+                    Promise.all(inspectRet)
+                            .then((inspectRet) => {
+                                inspectRet.map((inspectRet) => {
+                                    newImages.push(inspectRet);
+                                    if (newImages.length === len) {
+                                        resolve(newImages);
+                                    }
+                                });
+                            })
+                            .catch(ex => {
+                                console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex));
+                            });
+                })
+                .catch(ex => {
+                    console.error("Failed to do ListImages call:", ex, JSON.stringify(ex));
+                    reject(new Error("Failed to do ListImages call"));
+                });
+    });
 }

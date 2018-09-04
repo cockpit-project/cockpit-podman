@@ -27,36 +27,132 @@ class TestApplication(testlib.MachineCase):
 
         # show image listing toggle
         b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.wait_visible('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
 
         # run a container (will exit immediately)
-        m.execute("podman run -d --name swamped-crate busybox sh")
+        m.execute("podman run -d --name test-sh alpine sh")
+        # run a container
+        m.execute("podman run -d --name swamped-crate busybox sleep 1000")
 
-        # FIXME: UI needs to listen to change signals and update automatically
         b.reload()
-        b.wait_present("#content")
         b.enter_page("/podman")
         b.wait_present("#containers-containers-filter button")
 
-        # show all containers to interact with stopped ones
+        # show all containers and check status
         b.click("#containers-containers-filter button")
-        b.wait_visible("#containers-containers-filter .dropdown-menu")
+        b.wait_present("#containers-containers-filter .dropdown-menu")
         b.click("#containers-containers-filter li[data-data='all'] a")
         b.wait_present("#containers-containers")
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
-        b.wait_visible('#containers-containers tr:contains("busybox:latest")')
+        b.wait_present('#containers-containers tr:contains("alpine:latest")')
+        # check busybox is running and alpine is exited
+        b.wait_present('#containers-containers tr:contains("busybox:latest") td:contains("running")')
+        b.wait_present('#containers-containers tr:contains("alpine:latest") td:contains("exited")')
 
         # show container listing toggle
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
-
+        #show running container
         b.click("#containers-containers-filter button")
         b.wait_present("#containers-containers-filter .dropdown-menu")
         b.click("#containers-containers-filter li[data-data='running'] a")
+        b.wait_present('#containers-containers tr:contains("busybox:latest")')
+        b.wait_present('#containers-containers tr:contains("swamped-crate")')
+        b.wait_present('#containers-containers tr:contains("busybox:latest") + tr:contains("sleep 1000")')
+
+        # switch to all containers
+        b.wait_present("#containers-containers-filter button")
+        b.click("#containers-containers-filter button")
+        b.wait_present("#containers-containers-filter .dropdown-menu")
+        b.click("#containers-containers-filter li[data-data='all'] a")
         b.wait_present("#containers-containers")
-        b.wait_in_text("#containers-containers", "No running containers")
+        b.wait_present('#containers-containers tr:contains("busybox:latest") td:contains("running")')
+        b.wait_present('#containers-containers tr:contains("test-sh")')
+        b.wait_present('#containers-containers tr:contains("alpine:latest") td:contains("exited")')
+
+        # delete a stopped container
+        b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-delete')
+        b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-delete')
+        b.wait_present(".modal-dialog div")
+        b.wait_present(".modal-dialog div .btn-danger")
+        b.click(".modal-dialog div .btn-danger")
+        b.wait_present("#containers-containers")
+        b.wait_not_in_text("#containers-containers", "alpine:latest")
+
+        # delete a running container
+        self.pageReload()
+        self.loadAllContainerlist()
+        b.wait_present("#containers-containers")
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.wait_present(".modal-dialog div")
+        b.wait_present(".modal-dialog div .btn-danger")
+        b.click(".modal-dialog div .btn-danger")
+        self.confirm()
+        b.wait_not_in_text("#containers-containers", "busybox:latest")
+
+        # run a container for Stop test
+        m.execute("podman run -d --name swamped-crate busybox sleep 1000")
+        self.pageReload()
+        self.loadAllContainerlist()
+        b.wait_present('#containers-containers tr:contains("busybox:latest")')
+        b.wait_present('#containers-containers tr:contains("busybox:latest")')
+
+        # stop a running container
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains("Stop")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains("Stop")')
+        # wait for container to stop
+        testlib.wait(lambda: m.execute("podman ps -a | grep -c Exited"), delay=5)
+        b.wait_present('#containers-containers tr:contains("busybox:latest") td:contains("exited")')
+        # close the listing toggle
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+
+        # start the container
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains("Start")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains("Start")')
+        b.wait_present('#containers-containers tr:contains("busybox:latest") td:contains("running")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+
+        # restaet the container
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button#split-button-pull-right')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button#split-button-pull-right')
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr ul li:contains("Restart")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul li:contains("Restart")')
+        b.wait_present('#containers-containers tr:contains("busybox:latest") td:contains("running")')
+
+    # FIXME: UI needs to listen to change signals and update automatically
+
+    def confirm(self):
+        b = self.browser
+        b.wait_present(".modal-dialog div")
+        b.wait_present(".modal-dialog div .btn-danger")
+        b.click(".modal-dialog div .btn-danger")
+
+    def pageReload(self):
+        """Page reload and wait for it to be built up again"""
+        b = self.browser
+        b.reload()
+        b.enter_page("/podman")
+
+    def loadAllContainerlist(self):
+        """Load and expand the container list with all containers"""
+
+        b = self.browser
+        b.wait_present("#app")
+        b.wait_present(".content-filter div")
+        b.click("#containers-containers-filter button")
+        b.wait_present("#containers-containers")
+        # show all containers to interact with stopped ones
+        b.wait_present("#containers-containers-filter .dropdown-menu")
+        b.click("#containers-containers-filter li[data-data='all'] a")
+        b.wait_present("#containers-containers")
 
 
 if __name__ == '__main__':
