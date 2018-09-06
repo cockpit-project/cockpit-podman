@@ -17,10 +17,9 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-"use strict";
 import PropTypes from 'prop-types';
 import React from 'react';
-require('./listing.less');
+import './listing.less';
 
 /* entry for an alert in the listing, can be expanded (with details) or standard
  * rowId optional: an identifier for the row which will be set as "data-row-id" attribute on the <tr>
@@ -231,12 +230,12 @@ export class ListingRow extends React.Component {
             }
 
             return (
-                <tbody key={this.props.rowId} className="open">
+                <tbody className="open">
                     {listingItem}
                     <tr className="listing-ct-panel">
-                        <td key={this.props.rowId} colSpan={ headerEntries.length + (expandToggle ? 1 : 0) }>
-                            <div key={this.props.rowId} className="listing-ct-head">
-                                <div key={this.props.rowId} className="listing-ct-actions">
+                        <td colSpan={ headerEntries.length + (expandToggle ? 1 : 0) }>
+                            <div className="listing-ct-head">
+                                <div className="listing-ct-actions">
                                     {listingDetail}
                                     {this.props.listingActions}
                                 </div>
@@ -251,7 +250,7 @@ export class ListingRow extends React.Component {
             );
         } else {
             return (
-                <tbody key={this.props.rowId}>
+                <tbody>
                     {listingItem}
                     <tr className="listing-ct-panel" />
                 </tbody>
@@ -334,7 +333,7 @@ export const Listing = (props) => {
         caption = <caption className="cockpit-caption">{props.title}{props.actions}</caption>;
 
     return (
-        <table key={props.title} className={ bodyClasses.join(" ") }>
+        <table className={ bodyClasses.join(" ") }>
             {caption}
             <thead className={headerClasses}>
                 {headerRow}
@@ -345,13 +344,14 @@ export const Listing = (props) => {
 };
 
 Listing.defaultProps = {
+    title: '',
     fullWidth: true,
     columnTitles: [],
     actions: []
 };
 
 Listing.propTypes = {
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     fullWidth: PropTypes.bool,
     emptyCaption: PropTypes.string.isRequired,
     columnTitles: PropTypes.arrayOf(
