@@ -10,12 +10,12 @@ const truncate_id = (id) => {
 
 const ImageDetails = (props) => {
     const image = props.image;
-    let created = image.Created;
+    let created = image ? image.Created : "";
     let entrypoint = '';
     let command = '';
     let ports = [];
 
-    if (image.ContainerConfig) {
+    if (image && image.ContainerConfig) {
         entrypoint = image.ContainerConfig.Entrypoint;
         command = image.ContainerConfig.Cmd;
         ports = Object.keys(image.ContainerConfig.ExposedPorts || {});
@@ -25,9 +25,9 @@ const ImageDetails = (props) => {
         <div className='listing-ct-body'>
             <dl>
                 <dt>{_("ID")}</dt>
-                <dd title={image.Id}>{truncate_id(image.Id)}</dd>
+                <dd title={image ? image.Id : "id"}>{image ? truncate_id(image.Id) : ""}</dd>
                 <dt>{_("Tags")}</dt>
-                <dd>{image.RepoTags ? image.RepoTags.join(" ") : ""}</dd>
+                <dd>{image && image.RepoTags ? image.RepoTags.join(" ") : ""}</dd>
                 <dt>{_("Entrypoint")}</dt>
                 <dd>{entrypoint ? entrypoint.join(" ") : ""}</dd>
                 <dt>{_("Command")}</dt>
@@ -35,7 +35,7 @@ const ImageDetails = (props) => {
                 <dt>{_("Created")}</dt>
                 <dd title={created.toLocaleString()}>{moment(created).isValid() ? moment(created).calendar() : created}</dd>
                 <dt>{_("Author")}</dt>
-                <dd>{image.Author}</dd>
+                <dd>{image ? image.Author : ""}</dd>
                 <dt>{_("Ports")}</dt>
                 <dd>{ports.join(', ')}</dd>
             </dl>
