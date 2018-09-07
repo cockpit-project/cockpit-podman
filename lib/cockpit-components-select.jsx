@@ -16,14 +16,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
-"use strict";
 
-import ReactDOM from 'react-dom';
 import React from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import cockpit from "cockpit";
 
-require("./page.css");
+import "./page.css";
 
 const _ = cockpit.gettext;
 
@@ -75,6 +74,8 @@ export class StatelessSelect extends React.Component {
 
         if (ev.target.tagName === 'A') {
             const liElement = ev.target.offsetParent;
+            if (liElement.className.indexOf("disabled") >= 0)
+                return;
             let elementData;
             if ('data-data' in liElement.attributes)
                 elementData = liElement.attributes['data-data'].value;
@@ -132,7 +133,7 @@ export class StatelessSelect extends React.Component {
 }
 
 StatelessSelect.propTypes = {
-    selected: PropTypes.string,
+    selected: PropTypes.any,
     onChange: PropTypes.func,
     id: PropTypes.string,
     enabled: PropTypes.bool,
@@ -173,7 +174,7 @@ export class Select extends React.Component {
 }
 
 Select.propTypes = {
-    initial: PropTypes.string,
+    initial: PropTypes.any,
     onChange: PropTypes.func,
     id: PropTypes.string,
     enabled: PropTypes.bool,
@@ -184,13 +185,15 @@ Select.propTypes = {
  * Dynamic lists should make sure to also provide 'key' props for react to use
  * Expected properties:
  *  - data (required), will be passed to the select's onChange callback
+ *  - disabled (optional): whether or not the entry is disabled.
  * Example: <SelectEntry data="foo">Some entry</SelectEntry>
  */
 export class SelectEntry extends React.Component {
     render() {
         const value = (this.props.children !== undefined) ? this.props.children : textForUndefined;
         return (
-            <li key={value} data-value={value} data-data={this.props.data}>
+            <li key={value} className={this.props.disabled ? "disabled" : ""}
+                data-value={value} data-data={this.props.data}>
                 <a>{value}</a>
             </li>
         );
@@ -213,5 +216,5 @@ export const SelectHeader = ({ children }) => {
 };
 
 SelectEntry.propTypes = {
-    data: PropTypes.string.isRequired,
+    data: PropTypes.any.isRequired,
 };
