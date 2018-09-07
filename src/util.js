@@ -54,7 +54,7 @@ function varlinkCallChannel(channel, method, parameters) {
 function varlinkCallError(error) {
     let str = "";
     error.error ? str += error.error.toString() : str;
-    error.parameters.reason ? str += " " + error.parameters.reason.toString() : str;
+    (error.parameters && error.parameters.reason) ? str += " " + error.parameters.reason.toString() : str;
     return str;
 }
 
