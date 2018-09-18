@@ -33,6 +33,7 @@ class Images extends React.Component {
         this.handleRemoveImage = this.handleRemoveImage.bind(this);
         this.handleCancelImageRemoveError = this.handleCancelImageRemoveError.bind(this);
         this.handleForceRemoveImage = this.handleForceRemoveImage.bind(this);
+        this.renderRow = this.renderRow.bind(this);
     }
 
     vulnerableInfoChanged(event, infos) {
@@ -198,9 +199,10 @@ class Images extends React.Component {
                 [<a key={"searchImages"} role="link" tabIndex="0" onClick={this.handleSearchImageClick} className="card-pf-link-with-icon pull-right">
                     <span className="pficon pficon-add-circle-o" />{_("Get new image")}
                 </a>];
-            // TODO: filter images via filterText
-        let filtered = this.props.images;
-        let imageRows = filtered.map(this.renderRow, this);
+        // TODO: filter images via filterText
+        let filtered = [];
+        Object.keys(this.props.images).filter(id => { filtered.push(this.props.images[id]) });
+        let imageRows = filtered.map((img, id) => this.renderRow(img));
         const imageDeleteModal =
             <ModalExample
                     selectImageDeleteModal={this.state.selectImageDeleteModal}
