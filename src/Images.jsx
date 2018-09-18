@@ -75,7 +75,7 @@ class Images extends React.Component {
         this.setState({
             selectImageDeleteModal: false,
         });
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", JSON.parse('{"name":"' + image + '"}'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", {name: image})
                 .then((reply) => {
                     const idDel = reply.image ? reply.image : "";
                     const oldImages = this.props.images;
@@ -92,7 +92,7 @@ class Images extends React.Component {
 
     handleForceRemoveImage() {
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", JSON.parse('{"name":"' + id + '","force": true }'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", {name: id, force: true})
                 .then(reply => {
                     this.setState({
                         setImageRemoveErrorModal: false

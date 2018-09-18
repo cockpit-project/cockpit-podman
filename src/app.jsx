@@ -75,7 +75,7 @@ class Application extends React.Component {
                     this._asyncRequestImages = null;
                     this.setState({ imagesMeta: reply.images });
                     this.state.imagesMeta.map((img) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", JSON.parse('{"name":"' + img.id + '"}'))
+                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", {name: img.id})
                                 .then(reply => {
                                     const temp_imgs = this.state.images;
                                     temp_imgs.push(JSON.parse(reply.image));
@@ -91,7 +91,7 @@ class Application extends React.Component {
                     this._asyncRequestContainers = null;
                     this.setState({containersMeta: reply.containers || []});
                     this.state.containersMeta.map((container) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", JSON.parse('{"name":"' + container.id + '"}'))
+                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", {name: container.id})
                                 .then(reply => {
                                     const temp_containers = this.state.containers;
                                     temp_containers.push(JSON.parse(reply.container));
@@ -100,7 +100,7 @@ class Application extends React.Component {
                                 .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
                     });
                     this.state.containersMeta.map((container) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", JSON.parse('{"name":"' + container.id + '"}'))
+                        utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", {name: container.id})
                                 .then(reply => {
                                     const temp_container_stats = this.state.containersStats;
                                     if (reply.container) {

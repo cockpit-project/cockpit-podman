@@ -129,7 +129,7 @@ class Containers extends React.Component {
         this.setState({
             selectContainerDeleteModal: false
         });
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", JSON.parse('{"name":"' + id + '"}'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", {name: id})
                 .then((reply) => {
                     const idDel = reply.container ? reply.container : "";
                     const oldContainers = this.props.containers;
@@ -159,7 +159,7 @@ class Containers extends React.Component {
     // TODO: force
     handleForceRemoveContainer() {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", JSON.parse('{"name":"' + id + '","force": true }'))
+        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", {name: id, force: true})
                 .then(reply => {
                     this.setState({
                         setContainerRemoveErrorModal: false
