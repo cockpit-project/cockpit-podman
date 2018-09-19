@@ -26,6 +26,7 @@ class Containers extends React.Component {
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
+        this.renderRow = this.renderRow.bind(this);
     }
 
     navigateToContainer(container) {
@@ -176,13 +177,10 @@ class Containers extends React.Component {
         const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("State")];
         // TODO: emptyCaption
         let emptyCaption = _("No running containers");
-        const renderRow = this.renderRow;
         const containersStats = this.props.containersStats;
         // TODO: check filter text
-        let filtered = this.props.containers.filter(container => (!this.props.onlyShowRunning || container.State.Running));
-        let rows = filtered.map(function (container) {
-            return renderRow(containersStats, container);
-        }, this);
+        let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State.Running);
+        let rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
         const containerDeleteModal =
             <ContainerDeleteModal
                 selectContainerDeleteModal={this.state.selectContainerDeleteModal}

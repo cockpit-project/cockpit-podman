@@ -28,7 +28,7 @@ function varlinkCallChannel(channel, method, parameters) {
 
             // FIXME: support answer in multiple chunks until null byte
             if (data[data.length - 1] != 0) {
-                reject("protocol error: expecting terminating 0");
+                reject(new Error("protocol error: expecting terminating 0"));
                 return;
             }
 
@@ -39,16 +39,16 @@ function varlinkCallChannel(channel, method, parameters) {
                 reject(msg);
             } else if (json.parameters) {
                 // debugging
-                resolve(json.parameters)
+                resolve(json.parameters);
             } else
-                reject("protocol error: reply has neither parameters nor error: " + reply);
+                reject(new Error("protocol error: reply has neither parameters nor error: " + reply));
         }
 
         channel.addEventListener("close", on_close);
         channel.addEventListener("message", on_message);
         channel.send(encoder.encode(JSON.stringify({ method, parameters: (parameters || {}) })));
         channel.send([0]); // message separator
-    })
+    });
 }
 
 function varlinkCallError(error) {
@@ -63,9 +63,10 @@ function varlinkCallError(error) {
  * `varlinkCallChannel()` but allows multiple parallel calls.
  */
 export function varlinkCall(channelOptions, method, parameters) {
-    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true, superuser: "require" }, channelOptions));
+    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true, superuser: "require"}, channelOptions));
+
     return varlinkCallChannel(channel, method, parameters).finally(() => {
-        channel.close()
+        channel.close();
     });
 }
 
