@@ -179,9 +179,8 @@ class Containers extends React.Component {
         let emptyCaption = _("No running containers");
         const containersStats = this.props.containersStats;
         // TODO: check filter text
-        let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State.Running)
-                .reduce((obj, id) => { return {...obj, [id]: this.props.containers[id]} }, {});
-        let rows = Object.keys(filtered).map(id => this.renderRow(containersStats, this.props.containers[id]));
+        let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State.Running);
+        let rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
         const containerDeleteModal =
             <ContainerDeleteModal
                 selectContainerDeleteModal={this.state.selectContainerDeleteModal}
