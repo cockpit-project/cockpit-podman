@@ -31,9 +31,9 @@ class Application extends React.Component {
         super(props);
         this.state = {
             version: { version: "unknown" },
-            images: [], /* images[Id]: detail info of image with Id from InspectImage */
-            containers: [], /* containers[Id] detail info of container with Id from InspectContainer */
-            containersStats:[], /* containersStats[Id] memory usage of running container with Id */
+            images: {}, /* images[Id]: detail info of image with Id from InspectImage */
+            containers: {}, /* containers[Id] detail info of container with Id from InspectContainer */
+            containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
             onlyShowRunning: true,
             dropDownValue: 'Everything',
         };
@@ -75,10 +75,7 @@ class Application extends React.Component {
                     imagesMeta.map((img) => {
                         utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", {name: img.id})
                                 .then(reply => {
-                                    let temp_imgs = [];
-                                    Object.keys(this.state.images).filter(id => { temp_imgs[id] = this.state.images[id] });
-                                    temp_imgs[img.id] = JSON.parse(reply.image);
-                                    this.setState({images: temp_imgs});
+                                    this.setState({images: {...this.state.images, [img.id]: JSON.parse(reply.image)}});
                                 })
                                 .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
                     });
@@ -92,10 +89,7 @@ class Application extends React.Component {
                     containersMeta.map((container) => {
                         utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", {name: container.id})
                                 .then(reply => {
-                                    let temp_containers = [];
-                                    Object.keys(this.state.containers).filter(id => { temp_containers[id] = this.state.containers[id] });
-                                    temp_containers[container.id] = JSON.parse(reply.container);
-                                    this.setState({containers: temp_containers});
+                                    this.setState({containers: {...this.state.containers, [container.id]: JSON.parse(reply.container)}});
                                 })
                                 .catch(ex => console.error("Failed to do InspectContainer call:", ex, JSON.stringify(ex)));
                     });
@@ -104,10 +98,7 @@ class Application extends React.Component {
                     }).map((container) => {
                         utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", {name: container.id})
                                 .then(reply => {
-                                    let temp_container_stats = [];
-                                    Object.keys(this.state.containersStats).filter(id => { temp_container_stats[id] = this.state.containersStats[id] });
-                                    temp_container_stats[container.id] = reply.container;
-                                    this.setState({containersStats: temp_container_stats});
+                                    this.setState({containersStats: {...this.state.containersStats, [container.id]: reply.container}});
                                 })
                                 .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
                     });

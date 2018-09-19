@@ -200,9 +200,9 @@ class Images extends React.Component {
                     <span className="pficon pficon-add-circle-o" />{_("Get new image")}
                 </a>];
         // TODO: filter images via filterText
-        let filtered = [];
-        Object.keys(this.props.images).filter(id => { filtered.push(this.props.images[id]) });
-        let imageRows = filtered.map((img, id) => this.renderRow(img));
+        let filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].Id)
+                .reduce((obj, id) => { return {...obj, [id]: this.props.images[id]} }, {});
+        let imageRows = Object.keys(filtered).map(id => this.renderRow(this.props.images[id]));
         const imageDeleteModal =
             <ModalExample
                     selectImageDeleteModal={this.state.selectImageDeleteModal}
