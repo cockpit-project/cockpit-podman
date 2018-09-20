@@ -38,8 +38,7 @@ class Application extends React.Component {
             dropDownValue: 'Everything',
         };
         this.onChange = this.onChange.bind(this);
-        this.updateContainers = this.updateContainers.bind(this);
-        this.updateImages = this.updateImages.bind(this);
+        this.updateContainersAfterEvent = this.updateContainersAfterEvent.bind(this);
     }
 
     onChange(value) {
@@ -48,16 +47,17 @@ class Application extends React.Component {
         });
     }
 
-    updateContainers(newContainers) {
-        this.setState({
-            containers: newContainers
-        });
-    }
-
-    updateImages(newImages) {
-        this.setState({
-            images: newImages
-        });
+    updateContainersAfterEvent() {
+        utils.updateContainers()
+                .then((reply) => {
+                    this.setState({
+                        containers: reply.newContainers,
+                        containersStats: reply.newContainersStats
+                    });
+                })
+                .catch(ex => {
+                    console.error("Failed to do Update Container:", JSON.stringify(ex));
+                });
     }
 
     componentDidMount() {
@@ -82,28 +82,7 @@ class Application extends React.Component {
                 })
                 .catch(ex => console.error("Failed to do ListImages call:", ex, JSON.stringify(ex)));
 
-        this._asyncRequestContainers = utils.varlinkCall(utils.PODMAN, "io.podman.ListContainers")
-                .then(reply => {
-                    this._asyncRequestContainers = null;
-                    let containersMeta = reply.containers || [];
-                    containersMeta.map((container) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectContainer", {name: container.id})
-                                .then(reply => {
-                                    this.setState({containers: {...this.state.containers, [container.id]: JSON.parse(reply.container)}});
-                                })
-                                .catch(ex => console.error("Failed to do InspectContainer call:", ex, JSON.stringify(ex)));
-                    });
-                    containersMeta.filter((ele) => {
-                        return ele.status === "running";
-                    }).map((container) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.GetContainerStats", {name: container.id})
-                                .then(reply => {
-                                    this.setState({containersStats: {...this.state.containersStats, [container.id]: reply.container}});
-                                })
-                                .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
-                    });
-                })
-                .catch(ex => console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString()));
+        this.updateContainersAfterEvent();
     }
 
     componentWillUnmount() {
@@ -134,6 +113,7 @@ class Application extends React.Component {
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}
                 updateContainers={this.updateContainers}
+                updateContainersAfterEvent={this.updateContainersAfterEvent}
             />;
 
         return (

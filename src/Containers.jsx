@@ -26,7 +26,6 @@ class Containers extends React.Component {
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
-        this.renderRow = this.renderRow.bind(this);
     }
 
     navigateToContainer(container) {
