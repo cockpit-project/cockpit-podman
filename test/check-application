@@ -31,9 +31,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
 
         # make sure no running containers shown
-        b.click("#containers-containers-filter button")
-        b.wait_present("#containers-containers-filter .dropdown-menu")
-        b.click("#containers-containers-filter li[data-data='running'] a")
+        self.filter_continers('running')
         b.wait_present("#containers-containers")
         b.wait_in_text("#containers-containers", "No running containers")
 
@@ -78,7 +76,7 @@ class TestApplication(testlib.MachineCase):
         """Check the container with row_name has the expected_string shown in the row"""
         b = self.browser
         for str in expected_strings:
-            b.wait_in_text('#containers-containers tr:contains(' + row_name + ')', str)
+            b.wait_in_text('#containers-containers tr:contains(%s)' % row_name, str)
 
     def filter_continers(self, menu_text):
         """Use dropdown menu in the header to filter containers"""
@@ -86,7 +84,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#containers-containers-filter button")
         b.click("#containers-containers-filter button")
         b.wait_present("#containers-containers-filter .dropdown-menu")
-        b.click("#containers-containers-filter li[data-data=" + menu_text + "] a")
+        b.click("#containers-containers-filter li[data-data= %s] a" % menu_text)
 
 if __name__ == '__main__':
     testlib.test_main()
