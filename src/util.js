@@ -108,6 +108,11 @@ export function format_memory_and_limit(usage, limit) {
     }
 }
 
+// TODO: handle different kinds of errors
+function handleVarlinkCallError(ex) {
+    console.error("Failed to do varlinkcall:", ex, JSON.stringify(ex));
+}
+
 export function updateContainers() {
     let newContainers = {};
     let newContainersStats = {};
@@ -116,46 +121,37 @@ export function updateContainers() {
                 .then(reply => {
                     let newContainersMeta = reply.containers;
                     let inspectRet = newContainersMeta.map((container) => {
-                        return new Promise((resolve, reject) => {
-                            varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id})
-                                    .then(reply => resolve(JSON.parse(reply.container)))
-                                    .catch(ex => reject(new Error("Failed to do InspectContainer call:", ex, JSON.stringify(ex))));
-                        });
+                        return varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id});
                     });
-
                     Promise.all(inspectRet)
-                            .then((inspectRet) => {
-                                inspectRet.map((inspectRetEle) => {
-                                    newContainers[inspectRetEle.ID] = inspectRetEle;
+                            .then((replies) => {
+                                replies.map((reply) => {
+                                    let ctrInspectRet = JSON.parse(reply.container);
+                                    newContainers[ctrInspectRet.ID] = ctrInspectRet;
                                 });
-                                resolve({newContainers: newContainers, newContainersStats: newContainersStats});
                             })
-                            .catch(ex => console.error("Failed to do InspectContainer call:", ex, JSON.stringify(ex)));
+                            .catch(ex => {
+                                handleVarlinkCallError(ex);
+                                reject(ex);
+                            });
 
                     let containerStatsRet = newContainersMeta.filter(ele => ele.status === "running")
                             .map((container) => {
-                                return new Promise((resolve, reject) => {
-                                    varlinkCall(PODMAN, "io.podman.GetContainerStats", {name: container.id})
-                                            .then(reply => resolve({ctrId: container.id, ctrStats:reply.container}))
-                                            .catch(ex => {
-                                                console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex));
-                                                reject(new Error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
-                                            });
-                                });
+                                return varlinkCall(PODMAN, "io.podman.GetContainerStats", {name: container.id});
                             });
-
                     Promise.all(containerStatsRet)
-                            .then((containerStatsRet) => {
-                                containerStatsRet.map((containerStatsRetEle) => {
-                                    newContainersStats[containerStatsRetEle.ctrId] = containerStatsRetEle.ctrStats;
+                            .then((replies) => {
+                                replies.map((reply) => {
+                                    let ctrStatsRet = reply.container;
+                                    newContainersStats[ctrStatsRet.id] = ctrStatsRet;
                                 });
                                 resolve({newContainers: newContainers, newContainersStats: newContainersStats});
                             })
                             .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
                 })
                 .catch(ex => {
-                    console.error("Failed to do ListContainers call:", JSON.stringify(ex), ex.toString());
-                    reject(new Error("Failed to do ListContainers call"));
+                    handleVarlinkCallError(ex);
+                    reject(ex);
                 });
     });
 }
