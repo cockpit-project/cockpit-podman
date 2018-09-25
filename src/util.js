@@ -110,7 +110,7 @@ export function format_memory_and_limit(usage, limit) {
 
 // TODO: handle different kinds of errors
 function handleVarlinkCallError(ex) {
-    console.error("Failed to do varlinkcall:", ex, JSON.stringify(ex));
+    console.error("Failed to do varlinkcall:", JSON.stringify(ex));
 }
 
 export function updateContainers() {
@@ -120,12 +120,10 @@ export function updateContainers() {
         varlinkCall(PODMAN, "io.podman.ListContainers")
                 .then(reply => {
                     let newContainersMeta = reply.containers;
-                    let inspectRet = newContainersMeta.map((container) => {
-                        return varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id});
-                    });
+                    let inspectRet = newContainersMeta.map(container => varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id}));
                     Promise.all(inspectRet)
-                            .then((replies) => {
-                                replies.map((reply) => {
+                            .then(replies => {
+                                replies.map(reply => {
                                     let ctrInspectRet = JSON.parse(reply.container);
                                     newContainers[ctrInspectRet.ID] = ctrInspectRet;
                                 });
@@ -135,19 +133,22 @@ export function updateContainers() {
                                 reject(ex);
                             });
 
-                    let containerStatsRet = newContainersMeta.filter(ele => ele.status === "running")
-                            .map((container) => {
-                                return varlinkCall(PODMAN, "io.podman.GetContainerStats", {name: container.id});
-                            });
-                    Promise.all(containerStatsRet)
-                            .then((replies) => {
-                                replies.map((reply) => {
+                    let statsRet = newContainersMeta.filter(ele => ele.status === "running")
+                            .map(container => varlinkCall(PODMAN, "io.podman.GetContainerStats", {name: container.id}));
+                    Promise.all(statsRet)
+                            .then(replies => {
+                                replies.map(reply => {
                                     let ctrStatsRet = reply.container;
                                     newContainersStats[ctrStatsRet.id] = ctrStatsRet;
                                 });
-                                resolve({newContainers: newContainers, newContainersStats: newContainersStats});
                             })
-                            .catch(ex => console.error("Failed to do GetContainerStats call:", ex, JSON.stringify(ex)));
+                            .catch(ex => {
+                                handleVarlinkCallError(ex);
+                                reject(ex);
+                            });
+
+                    Promise.all(inspectRet.concat(statsRet))
+                            .then(replies => resolve({newContainers: newContainers, newContainersStats: newContainersStats}));
                 })
                 .catch(ex => {
                     handleVarlinkCallError(ex);
