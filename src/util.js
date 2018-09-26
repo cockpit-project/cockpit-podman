@@ -107,3 +107,52 @@ export function format_memory_and_limit(usage, limit) {
         return _("");
     }
 }
+
+// TODO: handle different kinds of errors
+function handleVarlinkCallError(ex) {
+    console.error("Failed to do varlinkcall:", JSON.stringify(ex));
+}
+
+export function updateContainers() {
+    let newContainers = {};
+    let newContainersStats = {};
+    return new Promise((resolve, reject) => {
+        varlinkCall(PODMAN, "io.podman.ListContainers")
+                .then(reply => {
+                    let newContainersMeta = reply.containers;
+                    let inspectRet = newContainersMeta.map(container => varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id}));
+                    Promise.all(inspectRet)
+                            .then(replies => {
+                                replies.map(reply => {
+                                    let ctrInspectRet = JSON.parse(reply.container);
+                                    newContainers[ctrInspectRet.ID] = ctrInspectRet;
+                                });
+                            })
+                            .catch(ex => {
+                                handleVarlinkCallError(ex);
+                                reject(ex);
+                            });
+
+                    let statsRet = newContainersMeta.filter(ele => ele.status === "running")
+                            .map(container => varlinkCall(PODMAN, "io.podman.GetContainerStats", {name: container.id}));
+                    Promise.all(statsRet)
+                            .then(replies => {
+                                replies.map(reply => {
+                                    let ctrStatsRet = reply.container;
+                                    newContainersStats[ctrStatsRet.id] = ctrStatsRet;
+                                });
+                            })
+                            .catch(ex => {
+                                handleVarlinkCallError(ex);
+                                reject(ex);
+                            });
+
+                    Promise.all(inspectRet.concat(statsRet))
+                            .then(replies => resolve({newContainers: newContainers, newContainersStats: newContainersStats}));
+                })
+                .catch(ex => {
+                    handleVarlinkCallError(ex);
+                    reject(ex);
+                });
+    });
+}
