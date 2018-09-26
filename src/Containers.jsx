@@ -131,10 +131,7 @@ class Containers extends React.Component {
         });
         utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", {name: id})
                 .then((reply) => {
-                    const idDel = reply.container ? reply.container : "";
-                    const oldContainers = this.props.containers;
-                    let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
-                    this.props.updateContainers(newContainers);
+                    this.props.updateContainersAfterEvent();
                 })
                 .catch((ex) => {
                     if (container.State.Running) {
@@ -164,10 +161,7 @@ class Containers extends React.Component {
                     this.setState({
                         setContainerRemoveErrorModal: false
                     });
-                    const idDel = reply.container ? reply.container : "";
-                    const oldContainers = this.props.containers;
-                    let newContainers = oldContainers.filter(elm => elm.ID !== idDel);
-                    this.props.updateContainers(newContainers);
+                    this.props.updateContainersAfterEvent();
                 })
                 .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
     }

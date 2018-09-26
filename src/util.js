@@ -119,7 +119,7 @@ export function updateContainers() {
     return new Promise((resolve, reject) => {
         varlinkCall(PODMAN, "io.podman.ListContainers")
                 .then(reply => {
-                    let newContainersMeta = reply.containers;
+                    let newContainersMeta = reply.containers || [];
                     let inspectRet = newContainersMeta.map(container => varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id}));
                     Promise.all(inspectRet)
                             .then(replies => {

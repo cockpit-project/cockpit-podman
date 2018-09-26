@@ -17,7 +17,7 @@ const ContainerRemoveErrorModal = (props) => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color="secondary" onClick={props.handleCancelRemoveError}>{_("Cancel")}</Button>
-                    <Button color="danger" onClick={props.handleForceRemoveContainer}>{_("Force Delete")}</Button>{' '}
+                    <Button color="danger" className="btn-ctr-focedelete" onClick={props.handleForceRemoveContainer}>{_("Force Delete")}</Button>{' '}
                 </ModalFooter>
             </Modal>
         </div>
