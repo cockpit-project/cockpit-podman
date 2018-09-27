@@ -156,3 +156,30 @@ export function updateContainers() {
                 });
     });
 }
+
+export function updateImages() {
+    let newImages = {};
+    return new Promise((resolve, reject) => {
+        varlinkCall(PODMAN, "io.podman.ListImages")
+                .then(reply => {
+                    let newImagesMeta = reply.images || [];
+                    let inspectRet = newImagesMeta.map(img => varlinkCall(PODMAN, "io.podman.InspectImage", {name: img.id}));
+                    Promise.all(inspectRet)
+                            .then(replies => {
+                                replies.map(reply => {
+                                    let imgInspectRet = JSON.parse(reply.image);
+                                    newImages[imgInspectRet.Id] = imgInspectRet;
+                                });
+                                resolve(newImages);
+                            })
+                            .catch(ex => {
+                                handleVarlinkCallError(ex);
+                                reject(ex);
+                            });
+                })
+                .catch(ex => {
+                    handleVarlinkCallError(ex);
+                    reject(ex);
+                });
+    });
+}

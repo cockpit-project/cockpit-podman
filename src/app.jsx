@@ -39,6 +39,7 @@ class Application extends React.Component {
         };
         this.onChange = this.onChange.bind(this);
         this.updateContainersAfterEvent = this.updateContainersAfterEvent.bind(this);
+        this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
     }
 
     onChange(value) {
@@ -60,6 +61,15 @@ class Application extends React.Component {
                 });
     }
 
+    updateImagesAfterEvent() {
+        utils.updateImages()
+                .then(reply => {
+                    this.setState({
+                        images: reply
+                    });
+                });
+    }
+
     componentDidMount() {
         this._asyncRequestVersion = utils.varlinkCall(utils.PODMAN, "io.podman.GetVersion")
                 .then(reply => {
@@ -68,20 +78,7 @@ class Application extends React.Component {
                 })
                 .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
 
-        this._asyncRequestImages = utils.varlinkCall(utils.PODMAN, "io.podman.ListImages")
-                .then(reply => {
-                    this._asyncRequestImages = null;
-                    let imagesMeta = reply.images || [];
-                    imagesMeta.map((img) => {
-                        utils.varlinkCall(utils.PODMAN, "io.podman.InspectImage", {name: img.id})
-                                .then(reply => {
-                                    this.setState({images: {...this.state.images, [img.id]: JSON.parse(reply.image)}});
-                                })
-                                .catch(ex => console.error("Failed to do InspectImage call:", ex, JSON.stringify(ex)));
-                    });
-                })
-                .catch(ex => console.error("Failed to do ListImages call:", ex, JSON.stringify(ex)));
-
+        this.updateImagesAfterEvent();
         this.updateContainersAfterEvent();
     }
 
@@ -115,7 +112,6 @@ class Application extends React.Component {
                 updateContainers={this.updateContainers}
                 updateContainersAfterEvent={this.updateContainersAfterEvent}
             />;
-
         return (
             <div id="overview" key={"overview"}>
                 <div key={"containerheader"} className="content-filter">
