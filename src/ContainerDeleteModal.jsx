@@ -17,7 +17,7 @@ const ContainerDeleteModal = (props) => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color="secondary" onClick={props.handleCancelContainerDeleteModal}>Cancel</Button>
-                    <Button color="danger" onClick={props.handleRemoveContainer}>{_("Delete")}</Button>{' '}
+                    <Button color="danger" className="btn-ctr-delete" onClick={props.handleRemoveContainer}>{_("Delete")}</Button>{' '}
                 </ModalFooter>
             </Modal>
         </div>
