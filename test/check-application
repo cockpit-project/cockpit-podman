@@ -31,7 +31,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
 
         # make sure no running containers shown
-        self.filter_continers('running')
+        self.filter_containers('running')
         b.wait_present("#containers-containers")
         b.wait_in_text("#containers-containers", "No running containers")
 
@@ -54,7 +54,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
         # show all containers and check status
-        self.filter_continers('all')
+        self.filter_containers('all')
 
         # exited alpine under everything list
         b.wait_present("#containers-containers")
@@ -66,7 +66,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
 
         # show running container
-        self.filter_continers('running')
+        self.filter_containers('running')
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sleep 1000', 'running'])
         # check exited alpine not in running list
@@ -79,7 +79,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-containers", "busybox:latest")
 
         # delete the exited alpine
-        self.filter_continers("all")
+        self.filter_containers("all")
         b.wait_present('#containers-containers tr:contains("alpine:latest")')
         b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
         b.wait_present('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-delete')
@@ -93,7 +93,7 @@ class TestApplication(testlib.MachineCase):
         for str in expected_strings:
             b.wait_in_text('#containers-containers tr:contains(%s)' % row_name, str)
 
-    def filter_continers(self, menu_text):
+    def filter_containers(self, menu_text):
         """Use dropdown menu in the header to filter containers"""
         b = self.browser
         b.wait_present("#containers-containers-filter button")
