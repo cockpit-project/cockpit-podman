@@ -65,6 +65,14 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
 
+        # test the container stop dropdown menu under the listing toggle
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button.dropdown-toggle')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button.dropdown-toggle')
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr ul:contains("Stop")')
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr ul:contains("Restart")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button.dropdown-toggle')
+        b.wait_not_present(".dropdown-menu ul")
+
         # show running container
         self.filter_containers('running')
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
