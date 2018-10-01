@@ -6,6 +6,7 @@ import Dropdown from './Dropdown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
+import ContainerCommitModal from './ContainerCommitModal.jsx';
 
 const _ = cockpit.gettext;
 
@@ -15,7 +16,8 @@ class Containers extends React.Component {
         this.state = {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
-            containerWillDelete: {}
+            containerWillDelete: {},
+            containerWillCommit: {},
         };
         this.renderRow = this.renderRow.bind(this);
         this.restartContainer = this.restartContainer.bind(this);
@@ -26,6 +28,9 @@ class Containers extends React.Component {
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
+        this.handleContainerCommitModal = this.handleContainerCommitModal.bind(this);
+        this.handleCancelContainerCommitModal = this.handleCancelContainerCommitModal.bind(this);
+        this.handleContainerCommit = this.handleContainerCommit.bind(this);
     }
 
     navigateToContainer(container) {
@@ -59,6 +64,24 @@ class Containers extends React.Component {
     // TODO
     restartContainer (container) {
         return undefined;
+    }
+
+    handleContainerCommitModal(event, container) {
+        this.setState((prevState) => ({
+            containerWillCommit: container,
+            setContainerCommitModal: !prevState.setContainerCommitModal
+        }));
+    }
+
+    handleCancelContainerCommitModal() {
+        this.setState((prevState) => ({
+            setContainerCommitModal: !prevState.setContainerCommitModal
+        }));
+    }
+
+    // TODO
+    handleContainerCommit(commitMsg) {
+
     }
 
     renderRow(containersStats, container) {
@@ -102,10 +125,11 @@ class Containers extends React.Component {
                 onClick={(event) => this.deleteContainer(container, event)} />,
             <button
                 key={container.ID + "commit"}
-                className="btn btn-default"
+                className="btn btn-default btn-commit"
                 disabled={isRunning}
                 data-container-id={container.ID}
                 data-toggle="modal" data-target="#container-commit-dialog"
+                onClick={(event) => this.handleContainerCommitModal(event, container)}
             >
                 {_("Commit")}
             </button>,
@@ -184,6 +208,14 @@ class Containers extends React.Component {
                 containerRemoveErrorMsg={this.containerRemoveErrorMsg}
             />;
 
+        const containerCommitModal =
+            <ContainerCommitModal
+                setContainerCommitModal={this.state.setContainerCommitModal}
+                handleContainerCommit={this.handleContainerCommit}
+                handleCancelContainerCommitModal={this.handleCancelContainerCommitModal}
+                containerWillCommit={this.state.containerWillCommit}
+            />;
+
         return (
             <div id="containers-containers" className="container-fluid ">
                 <Listing.Listing key={"ContainerListing"} title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
@@ -191,6 +223,7 @@ class Containers extends React.Component {
                 </Listing.Listing>
                 {containerDeleteModal}
                 {containerRemoveErrorModal}
+                {containerCommitModal}
             </div>
         );
     }

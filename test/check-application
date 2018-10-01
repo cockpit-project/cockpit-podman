@@ -86,6 +86,17 @@ class TestApplication(testlib.MachineCase):
         self.confirm_modal("btn-ctr-delete")
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
+        # run a container (will exit immediately) and test the display of commit modal
+        m.execute("podman run -d --name test-sh alpine sh")
+        b.reload()
+        b.enter_page("/podman")
+        self.filter_containers("all")
+        b.wait_present('#containers-containers tr:contains("alpine:latest")')
+        b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
+        b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
+        self.confirm_modal("btn-ctr-cancel-commit")
+
     def check_container(self, row_name, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
         b = self.browser
@@ -104,7 +115,7 @@ class TestApplication(testlib.MachineCase):
         """Wait for the pop up window and click the button with className as key_type"""
         b = self.browser
         b.wait_present(".modal-dialog div")
-        b.wait_present(".modal-dialog div .btn-danger")
+        b.wait_present(".modal-dialog div .%s" % key_type)
         b.click(".modal-dialog div .%s" % key_type)
         b.wait_not_present(".modal-dialog div")
 
