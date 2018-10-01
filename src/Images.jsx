@@ -193,14 +193,17 @@ class Images extends React.Component {
 
     render() {
         const columnTitles = [ _("Name"), _(''), _("Created"), _("Size"), _('') ];
-        // TODO: emptyCaption = _("No Images");
-        let emptyCaption = _("No images that match the current filter");
+        let emptyCaption = '';
+        if (this.props.filterText.length === 0 || this.props.filterText.length === '') {
+            emptyCaption = _("No images");
+        } else {
+            emptyCaption = _("No images that match the current filter");
+        }
         const getNewImageAction =
                 [<a key={"searchImages"} role="link" tabIndex="0" onClick={this.handleSearchImageClick} className="card-pf-link-with-icon pull-right">
                     <span className="pficon pficon-add-circle-o" />{_("Get new image")}
                 </a>];
-        // TODO: filter images via filterText
-        let filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].Id);
+        let filtered = Object.keys(this.props.images).filter(id => this.props.images[id].RepoTags && this.props.images[id].RepoTags[0].indexOf(this.props.filterText) >= 0);
         let imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
         const imageDeleteModal =
             <ModalExample

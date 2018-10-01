@@ -36,15 +36,23 @@ class Application extends React.Component {
             containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
             onlyShowRunning: true,
             dropDownValue: 'Everything',
+            filterText: '',
         };
         this.onChange = this.onChange.bind(this);
         this.updateContainersAfterEvent = this.updateContainersAfterEvent.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
+        this.filterTextChange = this.filterTextChange.bind(this);
     }
 
     onChange(value) {
         this.setState({
             onlyShowRunning: value != "all"
+        });
+    }
+
+    filterTextChange(text) {
+        this.setState({
+            filterText: text
         });
     }
 
@@ -97,20 +105,27 @@ class Application extends React.Component {
     render() {
         let imageList;
         let containerList;
+        const imgprops = {
+            key: _("imageList"),
+            images: this.state.images,
+            updateImages: this.updateImages,
+            filterText: this.state.filterText
+        };
+        const ctrprops = {
+            key:_("containerList"),
+            containers: this.state.containers,
+            containersStats: this.state.containersStats,
+            onlyShowRunning: this.state.onlyShowRunning,
+            updateContainersAfterEvent: this.updateContainersAfterEvent,
+            filterText: this.state.filterText
+        };
         imageList =
             <Images
-                key={_("imageList")}
-                images={this.state.images}
-                updateImages={this.updateImages}
+                {...imgprops}
             />;
         containerList =
             <Containers
-                key={_("containerList")}
-                containers={this.state.containers}
-                containersStats={this.state.containersStats}
-                onlyShowRunning={this.state.onlyShowRunning}
-                updateContainers={this.updateContainers}
-                updateContainersAfterEvent={this.updateContainersAfterEvent}
+                {...ctrprops}
             />;
         return (
             <div id="overview" key={"overview"}>
@@ -118,6 +133,7 @@ class Application extends React.Component {
                     <ContainerHeader
                         onlyShowRunning={this.state.onlyShowRunning}
                         onChange={this.onChange}
+                        filterTextChange={this.filterTextChange}
                     />
                 </div>
                 <div key={"containerslists"} className="container-fluid">

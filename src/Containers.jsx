@@ -168,11 +168,22 @@ class Containers extends React.Component {
 
     render() {
         const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("State")];
-        // TODO: emptyCaption
-        let emptyCaption = _("No running containers");
+        let emptyCaption = '';
+        if (this.props.onlyShowRunning) {
+            if (this.props.filterText === '' || this.props.filterText.length === 0) {
+                emptyCaption = _("No running containers");
+            } else {
+                emptyCaption = _("No running containers that match the current filter");
+            }
+        } else {
+            if (this.props.filterText === '' || this.props.filterText.length === 0) {
+                emptyCaption = _("No containers");
+            } else {
+                emptyCaption = _("No containers that match the current filter");
+            }
+        }
         const containersStats = this.props.containersStats;
-        // TODO: check filter text
-        let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State.Running);
+        let filtered = Object.keys(this.props.containers).filter(id => (!this.props.onlyShowRunning || this.props.containers[id].State.Running) && this.props.containers[id].Name.indexOf(this.props.filterText) >= 0);
         let rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
         const containerDeleteModal =
             <ContainerDeleteModal

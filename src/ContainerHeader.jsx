@@ -28,6 +28,7 @@ class ContainerHeader extends React.Component {
 
     handleFilterTextChange() {
         this.setState({ filterText: this.refs.filterTextInput.value }, this.filterChanged);
+        this.props.filterTextChange(this.refs.filterTextInput.value);
     }
 
     render() {
