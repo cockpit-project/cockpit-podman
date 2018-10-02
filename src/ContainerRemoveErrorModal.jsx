@@ -13,7 +13,7 @@ const ContainerRemoveErrorModal = (props) => {
                     {cockpit.format(_("Please confirm forced deletion of $0"), name)}
                 </ModalHeader>
                 <ModalBody>
-                    {props.containerRemoveErrorMsg}
+                    {_("Container is currently running.")}
                 </ModalBody>
                 <ModalFooter>
                     <Button color="secondary" onClick={props.handleCancelRemoveError}>{_("Cancel")}</Button>

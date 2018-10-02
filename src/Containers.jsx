@@ -33,11 +33,17 @@ class Containers extends React.Component {
     }
 
     deleteContainer(container, event) {
-        event.preventDefault();
-        this.setState((prevState) => ({
-            containerWillDelete: container,
-            selectContainerDeleteModal: !prevState.selectContainerDeleteModal,
-        }));
+        if (container.State.Running) {
+            this.setState((prevState) => ({
+                containerWillDelete: container,
+                setContainerRemoveErrorModal: true,
+            }));
+        } else {
+            this.setState((prevState) => ({
+                containerWillDelete: container,
+                selectContainerDeleteModal: true,
+            }));
+        }
     }
 
     // TODO
@@ -124,7 +130,6 @@ class Containers extends React.Component {
     }
 
     handleRemoveContainer() {
-        const container = this.state.containerWillDelete;
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
         this.setState({
             selectContainerDeleteModal: false
@@ -133,18 +138,7 @@ class Containers extends React.Component {
                 .then((reply) => {
                     this.props.updateContainersAfterEvent();
                 })
-                .catch((ex) => {
-                    if (container.State.Running) {
-                        this.containerRemoveErrorMsg = _(ex);
-                    } else {
-                    // TODO:
-                        this.containerRemoveErrorMsg = _("Container is currently marked as not running, but regular stopping failed.") +
-                        " " + _("Error message from Podman:") + " '" + ex;
-                    }
-                    this.setState({
-                        setContainerRemoveErrorModal: true
-                    });
-                });
+                .catch(ex => console.error("Failed to do RemoveContainer call:", JSON.stringify(ex)));
     }
 
     handleCancelRemoveError() {
