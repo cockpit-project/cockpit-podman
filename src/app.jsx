@@ -109,7 +109,6 @@ class Application extends React.Component {
                 containers={this.state.containers}
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}
-                updateContainers={this.updateContainers}
                 updateContainersAfterEvent={this.updateContainersAfterEvent}
             />;
         return (
