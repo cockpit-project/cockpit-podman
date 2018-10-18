@@ -1,5 +1,5 @@
 import React from 'react';
-import {Modal, Button} from 'patternfly-react';
+import {Modal, Button, FormGroup, Grid, Form, FormControl} from 'patternfly-react';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -90,21 +90,22 @@ class ContainerCommitModal extends React.Component {
                     </form>
                 </div>
             ));
-
         let commitContent =
             <div>
-                <form className="form-horizontal">
-                    {/* <tbody> */}
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Container Name")}</label>
-
-                        <div className="col-sm-9">
+                <Form horizontal>
+                    <FormGroup controlId="name" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Container Name")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
                             <span className="control-label" />{this.props.containerWillCommit.Name}
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Format")}</label>
-                        <div className="col-sm-9">
+                        </Grid.Col>
+                    </FormGroup>
+                    <FormGroup controlId="format" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Format")}
+                        </Grid.Col>
+                        <Grid.Col>
                             <label htmlFor="format-oci">
                                 <input type="radio" id="format-oci" value="oci" checked={this.state.selectedFormat === 'oci'} onChange={(event) => this.handleFormatChange(event)} />
                                 <span>oci</span>
@@ -113,59 +114,73 @@ class ContainerCommitModal extends React.Component {
                                 <input type="radio" id="format-docker" value="docker" checked={this.state.selectedFormat === 'docker'} onChange={(event) => this.handleFormatChange(event)} />
                                 <span>docker</span>
                             </label>
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Image Name")}</label>
-                        <div className="col-sm-9">
-                            <input name="imageName" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Tag")}</label>
-                        <div className="col-sm-9">
-                            <input name="tag" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Author")}</label>
-                        <div className="col-sm-9">
-                            <input name="author" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Message")}</label>
-                        <div className="col-sm-9">
-                            <input name="message" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Command")}</label>
-                        <div className="col-sm-9">
-                            <input name="command" className="form-control" type="text" defaultValue={this.props.containerWillCommit.Config ? this.props.containerWillCommit.Config.Cmd.join(" ") : ""} onChange={this.handleInputChange} />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("Pause")}</label>
-                        <div className="col-sm-9">
+                        </Grid.Col>
+                    </FormGroup>
+
+                    <FormGroup controlId="imageName" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Image Name")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
+                            <FormControl name="imageName" className="form-control" type="text" onChange={this.handleInputChange} />
+                        </Grid.Col>
+                    </FormGroup>
+                    <FormGroup controlId="tag" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Tag")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
+                            <FormControl name="tag" className="form-control" type="text" onChange={this.handleInputChange} />
+                        </Grid.Col>
+                    </FormGroup>
+                    <FormGroup controlId="author" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Author")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
+                            <FormControl name="author" className="form-control" type="text" onChange={this.handleInputChange} />
+                        </Grid.Col>
+                    </FormGroup>
+                    <FormGroup controlId="message" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Message")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
+                            <FormControl name="message" className="form-control" type="text" onChange={this.handleInputChange} />
+                        </Grid.Col>
+                    </FormGroup>
+                    <FormGroup controlId="command" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Command")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
+                            <FormControl name="command" className="form-control" type="text" onChange={this.handleInputChange} />
+                        </Grid.Col>
+                    </FormGroup>
+                    <FormGroup controlId="setonbuild" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("Pause")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
                             <label>
                                 <input name="pause" type="checkbox" defaultChecked onChange={this.handleInputChange} />
                                 <span>{_("pause the container")}</span>
                             </label>
-                            <div className="containers-run-inline" />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="col-sm-3 control-label">{_("On Build")}</label>
-                        <div className="col-sm-9">
+                        </Grid.Col>
+                    </FormGroup>
+                    <FormGroup controlId="setonbuild" disabled={false}>
+                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
+                            {_("On Build")}
+                        </Grid.Col>
+                        <Grid.Col sm={9}>
                             <label>
                                 <input name="setonbuild" className="container-label" type="checkbox" disabled={this.state.onbuildDisabled} onChange={this.handleInputChange} />
                                 <span>{_("Set container on build variables")}</span>
                             </label>
                             {(this.state.setonbuild && <div>{onbuilds}</div>) }
-                        </div>
-                    </div>
-                </form>
+                        </Grid.Col>
+                    </FormGroup>
+                </Form>
             </div>;
 
         return (
