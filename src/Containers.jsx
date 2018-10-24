@@ -7,6 +7,7 @@ import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
+import ContainerCommitErrorModal from './ContainerCommitErrorModal.jsx';
 
 const _ = cockpit.gettext;
 
@@ -16,6 +17,8 @@ class Containers extends React.Component {
         this.state = {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
+            setContainerCommitErrorModal: false,
+            commitErr: "",
             containerWillDelete: {},
             containerWillCommit: {},
         };
@@ -31,6 +34,7 @@ class Containers extends React.Component {
         this.handleContainerCommitModal = this.handleContainerCommitModal.bind(this);
         this.handleCancelContainerCommitModal = this.handleCancelContainerCommitModal.bind(this);
         this.handleContainerCommit = this.handleContainerCommit.bind(this);
+        this.handleCloseCommitError = this.handleCloseCommitError.bind(this);
     }
 
     navigateToContainer(container) {
@@ -79,9 +83,60 @@ class Containers extends React.Component {
         }));
     }
 
-    // TODO
-    handleContainerCommit(commitMsg) {
+    handleCloseCommitError() {
+        this.setState(() => ({
+            setContainerCommitErrorModal: false,
+        }));
+    }
 
+    handleContainerCommit(commitMsg) {
+        if (!commitMsg.imageName) {
+            this.setState(() => ({
+                setContainerCommitErrorModal: true,
+                commitErr: "image name is required",
+            }));
+            return;
+        }
+        let cmdStr = "";
+        if (commitMsg.command.trim() === "") {
+            cmdStr = this.state.containerWillCommit.Config ? this.state.containerWillCommit.Config.Cmd.join(" ") : "";
+        } else {
+            cmdStr = commitMsg.command.trim();
+        }
+
+        let commitData = {};
+        commitData.name = this.state.containerWillCommit.ID;
+        commitData.image_name = commitMsg.tag ? commitMsg.imageName + ":" + commitMsg.tag : commitMsg.imageName;
+        commitData.author = commitMsg.author;
+        commitData.message = commitMsg.message;
+        commitData.pause = commitMsg.pause;
+        commitData.format = commitMsg.format;
+
+        commitData.changes = [];
+        let cmdData = "CMD=" + cmdStr;
+        commitData.changes.push(cmdData);
+
+        let onbuildsArr = [];
+        if (commitMsg.setonbuild) {
+            onbuildsArr = utils.getCommitArr(commitMsg.onbuild, "ONBUILD");
+        }
+        commitData.changes.push(...onbuildsArr);
+
+        utils.varlinkCall(utils.PODMAN, "io.podman.Commit", commitData)
+                .then(reply => {
+                    this.props.updateImagesAfterEvent();
+                    this.props.updateContainersAfterEvent();
+                    this.setState((prevState) => ({
+                        setContainerCommitModal: !prevState.setContainerCommitModal
+                    }));
+                })
+                .catch(ex => {
+                    this.setState(() => ({
+                        setContainerCommitErrorModal: true,
+                        commitErr: JSON.stringify(ex),
+                    }));
+                    console.error("Failed to do Commit call:", ex, JSON.stringify(ex));
+                });
     }
 
     renderRow(containersStats, container) {
@@ -215,6 +270,12 @@ class Containers extends React.Component {
                 handleCancelContainerCommitModal={this.handleCancelContainerCommitModal}
                 containerWillCommit={this.state.containerWillCommit}
             />;
+        const containerCommitErrorModal =
+            <ContainerCommitErrorModal
+                setContainerCommitErrorModal={this.state.setContainerCommitErrorModal}
+                commitErr={this.state.commitErr}
+                handleCloseCommitError={this.handleCloseCommitError}
+            />;
 
         return (
             <div id="containers-containers" className="container-fluid ">
@@ -224,6 +285,7 @@ class Containers extends React.Component {
                 {containerDeleteModal}
                 {containerRemoveErrorModal}
                 {containerCommitModal}
+                {containerCommitErrorModal}
             </div>
         );
     }

@@ -67,9 +67,9 @@ class ContainerCommitModal extends React.Component {
         });
     }
 
-    // TODO
     handleCommit() {
-
+        this.props.handleContainerCommit(this.state);
+        this.setState(this.initialState);
     }
 
     handleCancel() {

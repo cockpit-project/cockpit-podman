@@ -110,6 +110,7 @@ class Application extends React.Component {
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}
                 updateContainersAfterEvent={this.updateContainersAfterEvent}
+                updateImagesAfterEvent={this.updateImagesAfterEvent}
             />;
         return (
             <div id="overview" key={"overview"}>
