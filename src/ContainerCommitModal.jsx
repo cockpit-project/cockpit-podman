@@ -1,5 +1,5 @@
 import React from 'react';
-import {Modal, Button, FormGroup, Grid, Form, FormControl} from 'patternfly-react';
+import {Alert, Modal, Button, FormGroup, Grid, Form, FormControl} from 'patternfly-react';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -193,6 +193,7 @@ class ContainerCommitModal extends React.Component {
                     {commitContent}
                 </Modal.Body>
                 <Modal.Footer>
+                    {this.props.dialogError && (<Alert onDismiss={this.props.dialogErrorDismiss}> {this.props.dialogError} </Alert>)}
                     <Button className="btn-ctr-cancel-commit" onClick={this.handleCancel}>{_("Cancel")}</Button>
                     <Button bsStyle="primary" className="btn-ctr-commit" onClick={this.handleCommit}>{_("Commit")}</Button>
                 </Modal.Footer>

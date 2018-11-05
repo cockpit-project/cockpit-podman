@@ -7,7 +7,6 @@ import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
-import ContainerCommitErrorModal from './ContainerCommitErrorModal.jsx';
 
 const _ = cockpit.gettext;
 
@@ -17,8 +16,7 @@ class Containers extends React.Component {
         this.state = {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
-            setContainerCommitErrorModal: false,
-            commitErr: "",
+            containerCommitErrorMsg: "",
             containerWillDelete: {},
             containerWillCommit: {},
         };
@@ -27,6 +25,7 @@ class Containers extends React.Component {
         this.startContainer = this.startContainer.bind(this);
         this.stopContainer = this.stopContainer.bind(this);
         this.deleteContainer = this.deleteContainer.bind(this);
+        this.dialogErrorDismiss = this.dialogErrorDismiss.bind(this);
         this.handleCancelContainerDeleteModal = this.handleCancelContainerDeleteModal.bind(this);
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
@@ -34,11 +33,14 @@ class Containers extends React.Component {
         this.handleContainerCommitModal = this.handleContainerCommitModal.bind(this);
         this.handleCancelContainerCommitModal = this.handleCancelContainerCommitModal.bind(this);
         this.handleContainerCommit = this.handleContainerCommit.bind(this);
-        this.handleCloseCommitError = this.handleCloseCommitError.bind(this);
     }
 
     navigateToContainer(container) {
         cockpit.location.go([container.ID]);
+    }
+
+    dialogErrorDismiss() {
+        this.setState({ containerCommitErrorMsg: undefined });
     }
 
     deleteContainer(container, event) {
@@ -83,18 +85,9 @@ class Containers extends React.Component {
         }));
     }
 
-    handleCloseCommitError() {
-        this.setState(() => ({
-            setContainerCommitErrorModal: false,
-        }));
-    }
-
     handleContainerCommit(commitMsg) {
         if (!commitMsg.imageName) {
-            this.setState(() => ({
-                setContainerCommitErrorModal: true,
-                commitErr: "image name is required",
-            }));
+            this.setState({ containerCommitErrorMsg: "Image name is required" });
             return;
         }
         let cmdStr = "";
@@ -126,15 +119,10 @@ class Containers extends React.Component {
                 .then(reply => {
                     this.props.updateImagesAfterEvent();
                     this.props.updateContainersAfterEvent();
-                    this.setState((prevState) => ({
-                        setContainerCommitModal: !prevState.setContainerCommitModal
-                    }));
+                    this.setState({ setContainerCommitModal: false });
                 })
                 .catch(ex => {
-                    this.setState(() => ({
-                        setContainerCommitErrorModal: true,
-                        commitErr: JSON.stringify(ex),
-                    }));
+                    this.setState({ containerCommitErrorMsg: JSON.stringify(ex) });
                     console.error("Failed to do Commit call:", ex, JSON.stringify(ex));
                 });
     }
@@ -269,12 +257,8 @@ class Containers extends React.Component {
                 handleContainerCommit={this.handleContainerCommit}
                 handleCancelContainerCommitModal={this.handleCancelContainerCommitModal}
                 containerWillCommit={this.state.containerWillCommit}
-            />;
-        const containerCommitErrorModal =
-            <ContainerCommitErrorModal
-                setContainerCommitErrorModal={this.state.setContainerCommitErrorModal}
-                commitErr={this.state.commitErr}
-                handleCloseCommitError={this.handleCloseCommitError}
+                dialogError={this.state.containerCommitErrorMsg}
+                dialogErrorDismiss={this.dialogErrorDismiss}
             />;
 
         return (
@@ -285,7 +269,6 @@ class Containers extends React.Component {
                 {containerDeleteModal}
                 {containerRemoveErrorModal}
                 {containerCommitModal}
-                {containerCommitErrorModal}
             </div>
         );
     }

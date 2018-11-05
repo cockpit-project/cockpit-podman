@@ -119,19 +119,18 @@ class TestApplication(testlib.MachineCase):
         b.wait_present(".modal-dialog div")
         # check required field error
         b.click(".modal-dialog div .btn-ctr-commit")
-        b.wait_present(".modal-dialog div")
-        b.wait_present('.modal-dialog div:contains("image name is required")')
-        b.wait_present(".modal-dialog div .%s" % "btn-ctr-close-commiterror")
-        b.click(".modal-dialog div .%s" % "btn-ctr-close-commiterror")
-        b.wait_not_present(".modal-dialog div .%s" % "btn-ctr-close-commiterror")
+        b.wait_present('.modal-dialog div:contains("Image name is required")')
+        b.wait_present(".modal-dialog div .alert .close")
+        b.click(".modal-dialog div .alert .close")
+        b.wait_not_present(".modal-dialog div .alert")
         # check varlink error
         b.set_input_text("#imageName", "TEST")
         b.click(".modal-dialog div .btn-ctr-commit")
         b.wait_present(".modal-dialog div")
         b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
-        b.wait_present(".modal-dialog div .%s" % "btn-ctr-close-commiterror")
-        b.click(".modal-dialog div .%s" % "btn-ctr-close-commiterror")
-        b.wait_not_present(".modal-dialog div .%s" % "btn-ctr-close-commiterror")
+        b.wait_present(".modal-dialog div .alert .close")
+        b.click(".modal-dialog div .alert .close")
+        b.wait_not_present(".modal-dialog div .alert")
 
     def check_container(self, row_name, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
