@@ -16,6 +16,7 @@ class Containers extends React.Component {
         this.state = {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
+            containerCommitErrorMsg: "",
             containerWillDelete: {},
             containerWillCommit: {},
         };
@@ -24,6 +25,7 @@ class Containers extends React.Component {
         this.startContainer = this.startContainer.bind(this);
         this.stopContainer = this.stopContainer.bind(this);
         this.deleteContainer = this.deleteContainer.bind(this);
+        this.dialogErrorDismiss = this.dialogErrorDismiss.bind(this);
         this.handleCancelContainerDeleteModal = this.handleCancelContainerDeleteModal.bind(this);
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
@@ -35,6 +37,10 @@ class Containers extends React.Component {
 
     navigateToContainer(container) {
         cockpit.location.go([container.ID]);
+    }
+
+    dialogErrorDismiss() {
+        this.setState({ containerCommitErrorMsg: undefined });
     }
 
     deleteContainer(container, event) {
@@ -79,9 +85,46 @@ class Containers extends React.Component {
         }));
     }
 
-    // TODO
     handleContainerCommit(commitMsg) {
+        if (!commitMsg.imageName) {
+            this.setState({ containerCommitErrorMsg: "Image name is required" });
+            return;
+        }
+        let cmdStr = "";
+        if (commitMsg.command.trim() === "") {
+            cmdStr = this.state.containerWillCommit.Config ? this.state.containerWillCommit.Config.Cmd.join(" ") : "";
+        } else {
+            cmdStr = commitMsg.command.trim();
+        }
 
+        let commitData = {};
+        commitData.name = this.state.containerWillCommit.ID;
+        commitData.image_name = commitMsg.tag ? commitMsg.imageName + ":" + commitMsg.tag : commitMsg.imageName;
+        commitData.author = commitMsg.author;
+        commitData.message = commitMsg.message;
+        commitData.pause = commitMsg.pause;
+        commitData.format = commitMsg.format;
+
+        commitData.changes = [];
+        let cmdData = "CMD=" + cmdStr;
+        commitData.changes.push(cmdData);
+
+        let onbuildsArr = [];
+        if (commitMsg.setonbuild) {
+            onbuildsArr = utils.getCommitArr(commitMsg.onbuild, "ONBUILD");
+        }
+        commitData.changes.push(...onbuildsArr);
+
+        utils.varlinkCall(utils.PODMAN, "io.podman.Commit", commitData)
+                .then(reply => {
+                    this.props.updateImagesAfterEvent();
+                    this.props.updateContainersAfterEvent();
+                    this.setState({ setContainerCommitModal: false });
+                })
+                .catch(ex => {
+                    this.setState({ containerCommitErrorMsg: JSON.stringify(ex) });
+                    console.error("Failed to do Commit call:", ex, JSON.stringify(ex));
+                });
     }
 
     renderRow(containersStats, container) {
@@ -214,6 +257,8 @@ class Containers extends React.Component {
                 handleContainerCommit={this.handleContainerCommit}
                 handleCancelContainerCommitModal={this.handleCancelContainerCommitModal}
                 containerWillCommit={this.state.containerWillCommit}
+                dialogError={this.state.containerCommitErrorMsg}
+                dialogErrorDismiss={this.dialogErrorDismiss}
             />;
 
         return (
