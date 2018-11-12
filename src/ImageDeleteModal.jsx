@@ -17,7 +17,7 @@ const ImageDeleteModal = (props) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={props.handleCancelImageDeleteModal}>Cancel</Button>
-                    <Button bsStyle="danger" onClick={props.handleRemoveImage}>{_("Delete")}</Button>{' '}
+                    <Button id="btn-img-delete" bsStyle="danger" onClick={props.handleRemoveImage}>{_("Delete")}</Button>{' '}
                 </Modal.Footer>
             </Modal>
         </div>

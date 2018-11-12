@@ -17,7 +17,7 @@ const ImageRemoveErrorModal = (props) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={props.handleCancelImageRemoveError}>{_("Cancel")}</Button>
-                    <Button bsStyle="danger" onClick={props.handleForceRemoveImage}>{_("Force Delete")}</Button>
+                    <Button id="btn-img-deleteerror" bsStyle="danger" onClick={props.handleForceRemoveImage}>{_("Force Delete")}</Button>
                 </Modal.Footer>
             </Modal>
         </div>

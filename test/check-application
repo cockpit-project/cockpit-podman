@@ -132,6 +132,32 @@ class TestApplication(testlib.MachineCase):
         b.click(".modal-dialog div .alert .close")
         b.wait_not_present(".modal-dialog div .alert")
 
+        # delete image busybox that hasn't been used
+        b.wait_present('#containers-images tr:contains("busybox:latest")')
+        b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.click('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.wait_present(".modal-dialog div")
+        b.wait_present(".modal-dialog div #btn-img-delete")
+        b.click(".modal-dialog div #btn-img-delete")
+        b.wait_not_present("modal-dialog div #btn-img-delete")
+        b.wait_not_in_text("#containers-images", "busybox:latest")
+
+        # delete image alpine that has been used by a container
+        b.wait_present('#containers-images tr:contains("alpine:latest")')
+        b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-images tbody tr:contains("alpine:latest") + tr button.btn-delete')
+        b.click('#containers-images tbody tr:contains("alpine:latest") + tr button.btn-delete')
+        b.wait_present(".modal-dialog div")
+        b.wait_present(".modal-dialog div #btn-img-delete")
+        b.click(".modal-dialog div #btn-img-delete")
+        b.wait_not_present("modal-dialog div #btn-img-delete")
+        b.wait_present(".modal-dialog div")
+        b.wait_present(".modal-dialog div #btn-img-deleteerror")
+        b.click(".modal-dialog div #btn-img-deleteerror")
+        b.wait_not_present("modal-dialog div #btn-img-deleteerror")
+        b.wait_not_in_text("#containers-images", "alpine:latest")
+
     def check_container(self, row_name, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
         b = self.browser
@@ -152,7 +178,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present(".modal-dialog div")
         b.wait_present(".modal-dialog div .%s" % key_type)
         b.click(".modal-dialog div .%s" % key_type)
-        b.wait_not_present(".modal-dialog div")
+        b.wait_not_present(".modal-dialog div .%s" % key_type)
 
 if __name__ == '__main__':
     testlib.test_main()
