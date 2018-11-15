@@ -101,7 +101,8 @@ class Application extends React.Component {
             <Images
                 key={_("imageList")}
                 images={this.state.images}
-                updateImages={this.updateImages}
+                updateContainersAfterEvent={this.updateContainersAfterEvent}
+                updateImagesAfterEvent={this.updateImagesAfterEvent}
             />;
         containerList =
             <Containers
