@@ -15,10 +15,10 @@ const ImageDetails = (props) => {
     let command = '';
     let ports = [];
 
-    if (image.ContainerConfig) {
-        entrypoint = image.ContainerConfig.Entrypoint;
-        command = image.ContainerConfig.Cmd;
-        ports = Object.keys(image.ContainerConfig.ExposedPorts || {});
+    if (image.Config) {
+        entrypoint = image.Config.Entrypoint;
+        command = image.Config.Cmd;
+        ports = Object.keys(image.Config.ExposedPorts || {});
     }
 
     return (
