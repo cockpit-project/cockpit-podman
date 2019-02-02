@@ -16,7 +16,7 @@ export function format_cpu_percent(cpuPercent) {
     if (cpuPercent === undefined || isNaN(cpuPercent)) {
         return _("");
     }
-    return _(cpuPercent + "%");
+    return _(cpuPercent.toFixed() + "%");
 }
 
 export function format_memory_and_limit(usage, limit) {
@@ -49,47 +49,30 @@ function handleVarlinkCallError(ex) {
 }
 
 export function updateContainers() {
-    let newContainers = {};
-    let newContainersStats = {};
-    return new Promise((resolve, reject) => {
-        varlink.call(PODMAN_ADDRESS, "io.podman.ListContainers")
-                .then(reply => {
-                    let newContainersMeta = reply.containers || [];
-                    let inspectRet = newContainersMeta.map(container => varlink.call(PODMAN_ADDRESS, "io.podman.InspectContainer", {name: container.id}));
-                    Promise.all(inspectRet)
-                            .then(replies => {
-                                replies.map(reply => {
-                                    let ctrInspectRet = JSON.parse(reply.container);
-                                    newContainers[ctrInspectRet.ID] = ctrInspectRet;
-                                });
-                            })
-                            .catch(ex => {
-                                handleVarlinkCallError(ex);
-                                reject(ex);
-                            });
+    return varlink.call(PODMAN_ADDRESS, "io.podman.ListContainers")
+            .then(reply => {
+                let containers = {};
+                let promises = [];
 
-                    let statsRet = newContainersMeta.filter(ele => ele.status === "running")
-                            .map(container => varlink.call(PODMAN_ADDRESS, "io.podman.GetContainerStats", {name: container.id}));
-                    Promise.all(statsRet)
-                            .then(replies => {
-                                replies.map(reply => {
-                                    let ctrStatsRet = reply.container;
-                                    newContainersStats[ctrStatsRet.id] = ctrStatsRet;
-                                });
-                            })
-                            .catch(ex => {
-                                handleVarlinkCallError(ex);
-                                reject(ex);
-                            });
+                for (let container of reply.containers || []) {
+                    containers[container.id] = container;
+                    if (container.status === "running")
+                        promises.push(varlink.call(PODMAN_ADDRESS, "io.podman.GetContainerStats", { name: container.id }));
+                }
 
-                    Promise.all(inspectRet.concat(statsRet))
-                            .then(replies => resolve({newContainers: newContainers, newContainersStats: newContainersStats}));
-                })
-                .catch(ex => {
-                    handleVarlinkCallError(ex);
-                    reject(ex);
-                });
-    });
+                return Promise.all(promises)
+                        .then(replies => {
+                            let stats = {};
+                            for (let reply of replies)
+                                stats[reply.container.id] = reply.container;
+
+                            return { newContainers: containers, newContainersStats: stats };
+                        });
+            })
+            .catch(ex => {
+                handleVarlinkCallError(ex);
+                throw ex;
+            });
 }
 
 export function updateImages() {

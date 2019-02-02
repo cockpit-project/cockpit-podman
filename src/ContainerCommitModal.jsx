@@ -12,7 +12,7 @@ class ContainerCommitModal extends React.Component {
             tag: "",
             author:"",
             message: "",
-            command: this.props.containerWillCommit.Config ? this.props.containerWillCommit.Config.Cmd.join(" ") : "",
+            command: this.props.containerWillCommit.command ? this.props.containerWillCommit.command.join(" ") : "",
             pause: true,
             setonbuild: false,
             onbuild: [""],
@@ -96,7 +96,7 @@ class ContainerCommitModal extends React.Component {
                             {_("Container Name")}
                         </Grid.Col>
                         <Grid.Col sm={9}>
-                            <span className="control-label" />{this.props.containerWillCommit.Name}
+                            <span className="control-label" />{this.props.containerWillCommit.names}
                         </Grid.Col>
                     </FormGroup>
                     <FormGroup controlId="format" disabled={false}>
