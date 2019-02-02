@@ -1,76 +1,9 @@
 import cockpit from 'cockpit';
-/***
- * varlink protocol helpers
- * https://github.com/varlink/varlink.github.io/wiki
- */
-const encoder = cockpit.utf8_encoder();
-const decoder = cockpit.utf8_decoder(true);
+import varlink from './varlink.js';
+
 const _ = cockpit.gettext;
 
-export const PODMAN = { unix: "/run/podman/io.podman" };
-/**
- * Do a varlink call on an existing channel. You must *never* call this
- * multiple times in parallel on the same channel! Serialize the calls or use
- * `varlinkCall()`.
- *
- * Returns a promise that resolves with the result parameters or rejects with
- * an error message.
- */
-function varlinkCallChannel(channel, method, parameters) {
-    return new Promise((resolve, reject) => {
-        function on_close(event, options) {
-            reject(options.problem || options);
-        }
-
-        function on_message(event, data) {
-            channel.removeEventListener("message", on_message);
-            channel.removeEventListener("close", on_close);
-
-            // FIXME: support answer in multiple chunks until null byte
-            if (data[data.length - 1] != 0) {
-                reject(new Error("protocol error: expecting terminating 0"));
-                return;
-            }
-
-            var reply = decoder.decode(data.slice(0, -1));
-            var json = JSON.parse(reply);
-            if (json.error) {
-                let msg = varlinkCallError(json);
-                reject(msg);
-            } else if (json.parameters) {
-                // debugging
-                resolve(json.parameters);
-            } else
-                reject(new Error("protocol error: reply has neither parameters nor error: " + reply));
-        }
-
-        channel.addEventListener("close", on_close);
-        channel.addEventListener("message", on_message);
-        channel.send(encoder.encode(JSON.stringify({ method, parameters: (parameters || {}) })));
-        channel.send([0]); // message separator
-    });
-}
-
-function varlinkCallError(error) {
-    let str = "";
-    if (error.error)
-        str += error.error.toString();
-    if (error.parameters && error.parameters.reason)
-        str += " " + error.parameters.reason.toString();
-    return str;
-}
-
-/**
- * Do a varlink call on a new channel. This is more expensive than
- * `varlinkCallChannel()` but allows multiple parallel calls.
- */
-export function varlinkCall(channelOptions, method, parameters) {
-    var channel = cockpit.channel(Object.assign({payload: "stream", binary: true, superuser: "require"}, channelOptions));
-
-    return varlinkCallChannel(channel, method, parameters).finally(() => {
-        channel.close();
-    });
-}
+export const PODMAN_ADDRESS = "unix:/run/podman/io.podman";
 
 export function truncate_id(id) {
     if (!id) {
@@ -119,10 +52,10 @@ export function updateContainers() {
     let newContainers = {};
     let newContainersStats = {};
     return new Promise((resolve, reject) => {
-        varlinkCall(PODMAN, "io.podman.ListContainers")
+        varlink.call(PODMAN_ADDRESS, "io.podman.ListContainers")
                 .then(reply => {
                     let newContainersMeta = reply.containers || [];
-                    let inspectRet = newContainersMeta.map(container => varlinkCall(PODMAN, "io.podman.InspectContainer", {name: container.id}));
+                    let inspectRet = newContainersMeta.map(container => varlink.call(PODMAN_ADDRESS, "io.podman.InspectContainer", {name: container.id}));
                     Promise.all(inspectRet)
                             .then(replies => {
                                 replies.map(reply => {
@@ -136,7 +69,7 @@ export function updateContainers() {
                             });
 
                     let statsRet = newContainersMeta.filter(ele => ele.status === "running")
-                            .map(container => varlinkCall(PODMAN, "io.podman.GetContainerStats", {name: container.id}));
+                            .map(container => varlink.call(PODMAN_ADDRESS, "io.podman.GetContainerStats", {name: container.id}));
                     Promise.all(statsRet)
                             .then(replies => {
                                 replies.map(reply => {
@@ -162,10 +95,10 @@ export function updateContainers() {
 export function updateImages() {
     let newImages = {};
     return new Promise((resolve, reject) => {
-        varlinkCall(PODMAN, "io.podman.ListImages")
+        varlink.call(PODMAN_ADDRESS, "io.podman.ListImages")
                 .then(reply => {
                     let newImagesMeta = reply.images || [];
-                    let inspectRet = newImagesMeta.map(img => varlinkCall(PODMAN, "io.podman.InspectImage", {name: img.id}));
+                    let inspectRet = newImagesMeta.map(img => varlink.call(PODMAN_ADDRESS, "io.podman.InspectImage", {name: img.id}));
                     Promise.all(inspectRet)
                             .then(replies => {
                                 replies.map(reply => {

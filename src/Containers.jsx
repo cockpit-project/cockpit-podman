@@ -7,6 +7,7 @@ import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
+import varlink from './varlink.js';
 
 const _ = cockpit.gettext;
 
@@ -115,7 +116,7 @@ class Containers extends React.Component {
         }
         commitData.changes.push(...onbuildsArr);
 
-        utils.varlinkCall(utils.PODMAN, "io.podman.Commit", commitData)
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.Commit", commitData)
                 .then(reply => {
                     this.props.updateImagesAfterEvent();
                     this.props.updateContainersAfterEvent();
@@ -201,7 +202,7 @@ class Containers extends React.Component {
         this.setState({
             selectContainerDeleteModal: false
         });
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", {name: id})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", {name: id})
                 .then((reply) => {
                     this.props.updateContainersAfterEvent();
                 })
@@ -217,7 +218,7 @@ class Containers extends React.Component {
     // TODO: force
     handleForceRemoveContainer() {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveContainer", {name: id, force: true})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", {name: id, force: true})
                 .then(reply => {
                     this.setState({
                         setContainerRemoveErrorModal: false

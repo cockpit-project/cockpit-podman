@@ -23,6 +23,7 @@ import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as utils from './util.js';
+import varlink from './varlink';
 
 const _ = cockpit.gettext;
 
@@ -71,7 +72,7 @@ class Application extends React.Component {
     }
 
     componentDidMount() {
-        utils.varlinkCall(utils.PODMAN, "io.podman.GetVersion")
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.GetVersion")
                 .then(reply => {
                     this.setState({ version: reply.version });
                 })

@@ -8,6 +8,7 @@ import ModalExample from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import atomic from './atomic.jsx';
+import varlink from './varlink.js';
 
 const moment = require('moment');
 const _ = cockpit.gettext;
@@ -76,7 +77,7 @@ class Images extends React.Component {
         this.setState({
             selectImageDeleteModal: false,
         });
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", {name: image})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", {name: image})
                 .then(() => {
                     this.props.updateImagesAfterEvent();
                 })
@@ -90,7 +91,7 @@ class Images extends React.Component {
 
     handleForceRemoveImage() {
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
-        utils.varlinkCall(utils.PODMAN, "io.podman.RemoveImage", {name: id, force: true})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", {name: id, force: true})
                 .then(reply => {
                     this.setState({
                         setImageRemoveErrorModal: false
