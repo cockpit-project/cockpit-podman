@@ -37,7 +37,7 @@ class Containers extends React.Component {
     }
 
     navigateToContainer(container) {
-        cockpit.location.go([container.ID]);
+        cockpit.location.go([container.id]);
     }
 
     dialogErrorDismiss() {
@@ -45,7 +45,7 @@ class Containers extends React.Component {
     }
 
     deleteContainer(container, event) {
-        if (container.State.Running) {
+        if (container.status == "running") {
             this.setState((prevState) => ({
                 containerWillDelete: container,
                 setContainerRemoveErrorModal: true,
@@ -99,7 +99,7 @@ class Containers extends React.Component {
         }
 
         let commitData = {};
-        commitData.name = this.state.containerWillCommit.ID;
+        commitData.name = this.state.containerWillCommit.id;
         commitData.image_name = commitMsg.tag ? commitMsg.imageName + ":" + commitMsg.tag : commitMsg.imageName;
         commitData.author = commitMsg.author;
         commitData.message = commitMsg.message;
@@ -129,18 +129,17 @@ class Containers extends React.Component {
     }
 
     renderRow(containersStats, container) {
-        const containerStats = containersStats[container.ID] ? containersStats[container.ID] : undefined;
-        const isRunning = !!container.State.Running;
-        const image = container.ImageName;
-        const state = container.State.Status;
+        const containerStats = containersStats[container.id];
+        const isRunning = container.status == "running";
+        const image = container.image;
 
         let columns = [
-            { name: container.Name, header: true },
+            { name: container.names, header: true },
             image,
-            container.Config.Cmd.join(" "),
-            container.State.Running ? utils.format_cpu_percent(container.HostConfig.CpuPercent) : "",
+            container.command.join(" "),
+            isRunning ? utils.format_cpu_percent(containerStats.cpu * 100) : "",
             containerStats ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : "",
-            state /* TODO: i18n */,
+            container.status /* TODO: i18n */,
 
         ];
         let tabs = [{
@@ -164,26 +163,26 @@ class Containers extends React.Component {
 
         var actions = [
             <button
-                key={container.ID + "delete"}
+                key={container.id + "delete"}
                 className="btn btn-danger btn-delete pficon pficon-delete"
                 onClick={(event) => this.deleteContainer(container, event)} />,
             <button
-                key={container.ID + "commit"}
+                key={container.id + "commit"}
                 className="btn btn-default btn-commit"
                 disabled={isRunning}
-                data-container-id={container.ID}
+                data-container-id={container.id}
                 data-toggle="modal" data-target="#container-commit-dialog"
                 onClick={(event) => this.handleContainerCommitModal(event, container)}
             >
                 {_("Commit")}
             </button>,
             // TODO: stop or start dropdown menu
-            <Dropdown key={_(container.ID)} actions={startStopActions} />
+            <Dropdown key={_(container.id)} actions={startStopActions} />
         ];
 
         return <Listing.ListingRow
-                    key={container.ID}
-                    rowId={container.ID}
+                    key={container.id}
+                    rowId={container.id}
                     columns={columns}
                     tabRenderers={tabs}
                     navigateToItem={() => this.navigateToContainer(container)}
@@ -198,7 +197,7 @@ class Containers extends React.Component {
     }
 
     handleRemoveContainer() {
-        const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
+        const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
         this.setState({
             selectContainerDeleteModal: false
         });
@@ -217,7 +216,7 @@ class Containers extends React.Component {
 
     // TODO: force
     handleForceRemoveContainer() {
-        const id = this.state.containerWillDelete ? this.state.containerWillDelete.ID : "";
+        const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", {name: id, force: true})
                 .then(reply => {
                     this.setState({
@@ -234,7 +233,7 @@ class Containers extends React.Component {
         let emptyCaption = _("No running containers");
         const containersStats = this.props.containersStats;
         // TODO: check filter text
-        let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State.Running);
+        let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].status == "running");
         let rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
         const containerDeleteModal =
             <ContainerDeleteModal
