@@ -107,28 +107,12 @@ module.exports = {
                 enforce: 'pre',
                 exclude: /node_modules/,
                 loader: 'eslint-loader',
-                test: /\.jsx$/
-            },
-            {
-                enforce: 'pre',
-                exclude: /node_modules/,
-                loader: 'eslint-loader',
-                test: /\.es6$/
+                test: /\.(jsx|es6|js)$/
             },
             {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
-                test: /\.js$/
-            },
-            {
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                test: /\.jsx$/
-            },
-            {
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                test: /\.es6$/
+                test: /\.(jsx|es6|js)$/
             },
             {
                 exclude: /node_modules/,
