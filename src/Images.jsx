@@ -7,9 +7,9 @@ import ImageSecurity from './ImageSecurity.jsx';
 import ModalExample from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
 import * as utils from './util.js';
+import atomic from './atomic.jsx';
 
 const moment = require('moment');
-const atomic = require('./atomic.jsx');
 const _ = cockpit.gettext;
 
 class Images extends React.Component {
