@@ -92,4 +92,4 @@ function visibilityChanged() {
 cockpit.onvisibilitychange = visibilityChanged;
 visibilityChanged();
 
-module.exports = atomic;
+export default atomic;
