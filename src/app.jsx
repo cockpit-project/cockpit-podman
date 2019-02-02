@@ -71,27 +71,14 @@ class Application extends React.Component {
     }
 
     componentDidMount() {
-        this._asyncRequestVersion = utils.varlinkCall(utils.PODMAN, "io.podman.GetVersion")
+        utils.varlinkCall(utils.PODMAN, "io.podman.GetVersion")
                 .then(reply => {
-                    this._asyncRequestVersion = null;
                     this.setState({ version: reply.version });
                 })
                 .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
 
         this.updateImagesAfterEvent();
         this.updateContainersAfterEvent();
-    }
-
-    componentWillUnmount() {
-        if (this._asyncRequestVersion) {
-            this._asyncRequestVersion.cancel();
-        }
-        if (this._asyncRequestImages) {
-            this._asyncRequestImages.cancel();
-        }
-        if (this._asyncRequestContainers) {
-            this._asyncRequestContainers.cancel();
-        }
     }
 
     render() {
