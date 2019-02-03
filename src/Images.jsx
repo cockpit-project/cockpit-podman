@@ -130,7 +130,7 @@ class Images extends React.Component {
         let columns = [
             {name: image.repoTags ? image.repoTags[0] : "", header: true},
             vulnerabilityColumn,
-            moment(image.created).isValid() ? moment(image.created).calendar() : image.created,
+            moment(image.created, utils.GOLANG_TIME_FORMAT).calendar(),
             cockpit.format_bytes(image.size),
             {
                 element: element,

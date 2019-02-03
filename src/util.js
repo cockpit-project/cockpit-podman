@@ -5,6 +5,16 @@ const _ = cockpit.gettext;
 
 export const PODMAN_ADDRESS = "unix:/run/podman/io.podman";
 
+/*
+ * Podman returns dates in the format that golang's time.String() exports. Use
+ * this format specifier for converting that to moment.js time, e.g.:
+ *
+ *     moment(date, util.GOLANG_TIME_FORMAT)
+ *
+ * https://github.com/containers/libpod/issues/2260
+ */
+export const GOLANG_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.S Z';
+
 export function truncate_id(id) {
     if (!id) {
         return _("");
