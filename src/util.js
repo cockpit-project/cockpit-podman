@@ -76,30 +76,42 @@ export function updateContainers() {
 }
 
 export function updateImages() {
-    let newImages = {};
-    return new Promise((resolve, reject) => {
-        varlink.call(PODMAN_ADDRESS, "io.podman.ListImages")
-                .then(reply => {
-                    let newImagesMeta = reply.images || [];
-                    let inspectRet = newImagesMeta.map(img => varlink.call(PODMAN_ADDRESS, "io.podman.InspectImage", {name: img.id}));
-                    Promise.all(inspectRet)
-                            .then(replies => {
-                                replies.map(reply => {
-                                    let imgInspectRet = JSON.parse(reply.image);
-                                    newImages[imgInspectRet.Id] = imgInspectRet;
-                                });
-                                resolve(newImages);
-                            })
-                            .catch(ex => {
-                                handleVarlinkCallError(ex);
-                                reject(ex);
-                            });
-                })
-                .catch(ex => {
-                    handleVarlinkCallError(ex);
-                    reject(ex);
-                });
-    });
+    return varlink.call(PODMAN_ADDRESS, "io.podman.ListImages")
+            .then(reply => {
+                // Some information about images is only available in the OCI
+                // data. Grab what we need and add it to the image itself until
+                // podman's API does it for us
+
+                let images = {};
+                let promises = [];
+
+                for (let image of reply.images || []) {
+                    images[image.id] = image;
+                    promises.push(varlink.call(PODMAN_ADDRESS, "io.podman.InspectImage", { name: image.id }));
+                }
+
+                return Promise.all(promises)
+                        .then(replies => {
+                            for (let reply of replies) {
+                                let info = JSON.parse(reply.image);
+                                let image = images[info.Id];
+
+                                if (info.Config) {
+                                    image.entrypoint = info.Config.EntryPoint;
+                                    image.command = info.Config.Cmd;
+                                    image.ports = Object.keys(info.Config.ExposedPorts || {});
+                                }
+
+                                image.author = info.Author;
+                            }
+
+                            return images;
+                        });
+            })
+            .catch(ex => {
+                handleVarlinkCallError(ex);
+                throw ex;
+            });
 }
 
 export function getCommitArr(arr, cmd) {

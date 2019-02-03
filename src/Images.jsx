@@ -50,7 +50,7 @@ class Images extends React.Component {
     }
 
     navigateToImage(image) {
-        cockpit.location.go([ 'image', image.Id ]);
+        cockpit.location.go([ 'image', image.id ]);
     }
 
     showRunImageDialog(e) {
@@ -73,7 +73,7 @@ class Images extends React.Component {
     }
 
     handleRemoveImage() {
-        const image = this.state.imageWillDelete.Id;
+        const image = this.state.imageWillDelete.id;
         this.setState({
             selectImageDeleteModal: false,
         });
@@ -82,7 +82,7 @@ class Images extends React.Component {
                     this.props.updateImagesAfterEvent();
                 })
                 .catch(ex => {
-                    this.imageRemoveErrorMsg = _(ex);
+                    this.imageRemoveErrorMsg = ex.parameters.reason;
                     this.setState({
                         setImageRemoveErrorModal: true,
                     });
@@ -90,7 +90,7 @@ class Images extends React.Component {
     }
 
     handleForceRemoveImage() {
-        const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
+        const id = this.state.imageWillDelete ? this.state.imageWillDelete.id : "";
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", {name: id, force: true})
                 .then(reply => {
                     this.setState({
@@ -104,7 +104,7 @@ class Images extends React.Component {
 
     renderRow(image) {
         let vulnerabilityColumn = '';
-        let vulnerableInfo = this.state.vulnerableInfos[image.Id.replace(/^sha256:/, '')];
+        let vulnerableInfo = this.state.vulnerableInfos[image.id.replace(/^sha256:/, '')];
         let count;
         let tabs = [];
 
@@ -122,16 +122,16 @@ class Images extends React.Component {
         // TODO: image waiting if - else
         let element =
             <button
-                key={image.Id + "runimage"}
+                key={image.id + "runimage"}
                 className="btn btn-default btn-control-ct fa fa-play"
                 onClick={ this.showRunImageDialog }
                 data-image={image.id}
             />;
         let columns = [
-            {name: image.RepoTags ? image.RepoTags[0] : "", header: true},
+            {name: image.repoTags ? image.repoTags[0] : "", header: true},
             vulnerabilityColumn,
-            moment(image.Created).isValid() ? moment(image.Created).calendar() : image.Created,
-            cockpit.format_bytes(image.VirtualSize),
+            moment(image.created).isValid() ? moment(image.created).calendar() : image.created,
+            cockpit.format_bytes(image.size),
             {
                 element: element,
                 tight: true
@@ -156,14 +156,14 @@ class Images extends React.Component {
 
         let actions = [
             <button
-                key={image.Id + "delete"}
+                key={image.id + "delete"}
                 className="btn btn-danger btn-delete pficon pficon-delete"
                 onClick={() => this.deleteImage(image)}
             />
         ];
         return <Listing.ListingRow
-                    key={image.Id}
-                    rowId={image.Id}
+                    key={image.id}
+                    rowId={image.id}
                     columns={columns}
                     tabRenderers={tabs}
                     navigateToItem={this.navigateToImage(image)}
@@ -196,7 +196,7 @@ class Images extends React.Component {
                     <span className="pficon pficon-add-circle-o" />{_("Get new image")}
                 </a>];
         // TODO: filter images via filterText
-        let filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].Id);
+        let filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].id);
         let imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
         const imageDeleteModal =
             <ModalExample
