@@ -158,6 +158,29 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("modal-dialog div #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", "alpine:latest")
 
+    def testLifecycleOperations(self):
+        b = self.browser
+        m = self.machine
+
+        # run a container
+        m.execute("podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
+        b.wait(lambda: m.execute("podman ps --all | grep -e swamped-crate -e Exited"))
+
+        self.login_and_go("/podman")
+        b.wait_present("#app")
+        b.wait_present(".content-filter div")
+        self.filter_containers('all')
+
+        b.wait_present("#containers-containers")
+        b.wait_present('#containers-containers tr:contains("swamped-crate")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+
+        # Start the container
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Start)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Start)')
+
+        self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'running'])
+
     def check_container(self, row_name, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
         b = self.browser

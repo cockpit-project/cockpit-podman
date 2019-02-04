@@ -1,15 +1,14 @@
 import React from 'react';
 
-// TODO
-const handleClick = (event) => {
-    if (event.button !== 0)
-        return;
-    var action = this.props.actions[event.currentTarget.getAttribute('data-value')];
-    if (!action.disabled && action.onActivate)
-        action.onActivate();
-};
-
 const DropDown = (props) => {
+    const handleClick = (event) => {
+        if (event.button !== 0)
+            return;
+        var action = props.actions[event.currentTarget.getAttribute('data-value')];
+        if (!action.disabled && action.onActivate)
+            action.onActivate();
+    };
+
     return (
         <div className="btn-group">
             <button className="btn btn-default" type="button" data-value="0" onClick={handleClick}>

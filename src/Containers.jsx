@@ -1,4 +1,6 @@
 import React from 'react';
+import { Alert } from 'patternfly-react';
+
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
@@ -63,9 +65,13 @@ class Containers extends React.Component {
         return undefined;
     }
 
-    // TODO
-    startContainer (container) {
-        return undefined;
+    startContainer(container) {
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.StartContainer", { name: container.names })
+                .then(() => this.props.updateContainersAfterEvent())
+                .catch(ex => this.setState({
+                    actionError: cockpit.format(_("Failed to start container $0"), container.names),
+                    actionErrorDetail: ex.parameters && ex.parameters.reason
+                }));
     }
 
     // TODO
@@ -260,9 +266,16 @@ class Containers extends React.Component {
                 dialogError={this.state.containerCommitErrorMsg}
                 dialogErrorDismiss={this.dialogErrorDismiss}
             />;
+        const { actionError, actionErrorDetail } = this.state;
 
         return (
             <div id="containers-containers" className="container-fluid ">
+                {actionError && <Alert onDismiss={() => this.setState({actionError: undefined})}>
+                    <strong>
+                        {actionError}
+                    </strong>
+                    { actionErrorDetail && <p> {_("Error message")}: <samp>{actionErrorDetail}</samp> </p> }
+                </Alert> }
                 <Listing.Listing key={"ContainerListing"} title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
                     {rows}
                 </Listing.Listing>
