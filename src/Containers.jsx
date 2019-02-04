@@ -78,9 +78,13 @@ class Containers extends React.Component {
                 }));
     }
 
-    // TODO
     restartContainer (container) {
-        return undefined;
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RestartContainer", { name: container.names })
+                .then(() => this.props.updateContainersAfterEvent())
+                .catch(ex => this.setState({
+                    actionError: cockpit.format(_("Failed to restart container $0"), container.names),
+                    actionErrorDetail: ex.parameters && ex.parameters.reason
+                }));
     }
 
     handleContainerCommitModal(event, container) {
@@ -166,7 +170,6 @@ class Containers extends React.Component {
 
         startStopActions.push({
             label: _("Restart"),
-            // onActivate: this.restartContainer,
             onActivate: this.restartContainer,
             disabled: !isRunning
         });

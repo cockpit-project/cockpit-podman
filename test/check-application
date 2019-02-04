@@ -181,6 +181,25 @@ class TestApplication(testlib.MachineCase):
 
         self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'running'])
 
+        # Restart the container
+        old_pid = m.execute("podman inspect --format '{{.State.Pid}}' swamped-crate".strip());
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Restart)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Restart)')
+        # We don't receive signals yet so restarting container will not update the state like running->stopped->running
+        # but we 'll probably see no change at all.
+        # Instead check that the PID of the container has changed.
+        new_pid = m.execute("podman inspect --format '{{.State.Pid}}' swamped-crate".strip());
+        self.assertNotEqual(old_pid, new_pid)
+
+        # Reload page after restarting the container since we don't implement proper monitoring and guessing the state
+        # can lead to unexpected behavior.
+        b.reload()
+        b.enter_page("/podman")
+        self.filter_containers('all')
+        b.wait_present("#containers-containers")
+        b.wait_present('#containers-containers tr:contains("swamped-crate")')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+
         # Stop the container
         b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Stop)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Stop)')
