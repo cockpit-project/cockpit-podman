@@ -60,9 +60,13 @@ class Containers extends React.Component {
         }
     }
 
-    // TODO
     stopContainer(container) {
-        return undefined;
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.StopContainer", { name: container.names })
+                .then(() => this.props.updateContainersAfterEvent())
+                .catch(ex => this.setState({
+                    actionError: cockpit.format(_("Failed to stop container $0"), container.names),
+                    actionErrorDetail: ex.parameters && ex.parameters.reason
+                }));
     }
 
     startContainer(container) {

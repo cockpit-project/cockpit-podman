@@ -181,6 +181,12 @@ class TestApplication(testlib.MachineCase):
 
         self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'running'])
 
+        # Stop the container
+        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Stop)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button span:contains(Stop)')
+
+        self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'stopped'])
+
     def check_container(self, row_name, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
         b = self.browser
