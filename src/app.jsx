@@ -31,7 +31,6 @@ class Application extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            version: { version: "unknown" },
             images: {}, /* images[Id]: detail info of image with Id from InspectImage */
             containers: {}, /* containers[Id] detail info of container with Id from InspectContainer */
             containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
@@ -74,12 +73,10 @@ class Application extends React.Component {
     componentDidMount() {
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.GetVersion")
                 .then(reply => {
-                    this.setState({ version: reply.version });
+                    this.updateImagesAfterEvent();
+                    this.updateContainersAfterEvent();
                 })
                 .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
-
-        this.updateImagesAfterEvent();
-        this.updateContainersAfterEvent();
     }
 
     render() {
