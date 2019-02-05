@@ -57,6 +57,8 @@ function connect(address) {
     });
 
     channel.addEventListener("close", (event, options) => {
+        pending.forEach(p => p.reject({ error: "ConnectionClosed", problem: options.problem }));
+        pending = [];
         if (connection.onclosed)
             connection.onclosed(options.problem);
     });
@@ -74,6 +76,7 @@ function connect(address) {
 
     connection.close = function () {
         pending.forEach(p => p.reject({ error: "ConnectionClosed" }));
+        pending = [];
         channel.close();
     };
 
