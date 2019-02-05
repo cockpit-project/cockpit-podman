@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Modal} from 'patternfly-react';
+import { Button, Modal } from 'patternfly-react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 

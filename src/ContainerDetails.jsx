@@ -12,7 +12,7 @@ const render_container_state = (container) => {
     return cockpit.format(_("Exited"));
 };
 
-const ContainerDetails = ({container}) => (
+const ContainerDetails = ({ container }) => (
     <div className='listing-ct-body'>
         <dl>
             <dt>{_("ID")}</dt>

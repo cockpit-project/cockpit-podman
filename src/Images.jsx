@@ -77,7 +77,7 @@ class Images extends React.Component {
         this.setState({
             selectImageDeleteModal: false,
         });
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", {name: image})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", { name: image })
                 .then(() => {
                     this.props.updateImagesAfterEvent();
                 })
@@ -91,7 +91,7 @@ class Images extends React.Component {
 
     handleForceRemoveImage() {
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.id : "";
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", {name: id, force: true})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", { name: id, force: true })
                 .then(reply => {
                     this.setState({
                         setImageRemoveErrorModal: false
@@ -128,7 +128,7 @@ class Images extends React.Component {
                 data-image={image.id}
             />;
         let columns = [
-            {name: image.repoTags ? image.repoTags[0] : "", header: true},
+            { name: image.repoTags ? image.repoTags[0] : "", header: true },
             vulnerabilityColumn,
             moment(image.created, utils.GOLANG_TIME_FORMAT).calendar(),
             cockpit.format_bytes(image.size),
