@@ -211,6 +211,48 @@ class TestApplication(testlib.MachineCase):
 
         self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'stopped'])
 
+    def testNotRunning(self):
+        b = self.browser
+        m = self.machine
+
+        m.execute("systemctl disable --now io.podman.socket")
+
+        self.login_and_go("/podman")
+        b.wait_present("#app .blank-slate-pf")
+
+        # Troubleshoot action
+        b.wait_present("#app .blank-slate-pf button.btn-default")
+        b.click("#app .blank-slate-pf button.btn-default")
+        b.enter_page("/system/services")
+        b.wait_present("#service-unit")
+        b.wait_in_text("#service-unit", "io.podman.socket")
+
+        # Start action, with enabling (by default)
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app .blank-slate-pf button.btn-primary")
+        b.click("#app .blank-slate-pf button.btn-primary")
+
+        b.wait_present("#containers-containers")
+
+        self.assertEqual(m.execute("systemctl is-enabled io.podman.socket").strip(), "enabled")
+        self.assertEqual(m.execute("systemctl is-active io.podman.socket").strip(), "active")
+
+        # Start action, without enabling
+        m.execute("systemctl disable --now io.podman.socket")
+        b.reload()
+        b.enter_page("/podman")
+        b.wait_present("#app .blank-slate-pf input[type=checkbox]")
+        b.click("#app .blank-slate-pf input[type=checkbox]")
+        b.wait_present("#app .blank-slate-pf button.btn-primary")
+        b.click("#app .blank-slate-pf button.btn-primary")
+
+        b.wait_present("#containers-containers")
+        self.assertEqual(m.execute("! systemctl is-enabled io.podman.socket").strip(), "disabled")
+        self.assertEqual(m.execute("systemctl is-active io.podman.socket").strip(), "active")
+
+        self.allow_journal_messages("/run/podman/io.podman: couldn't connect.*")
+
     def check_container(self, row_name, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
         b = self.browser

@@ -31,6 +31,8 @@ class Application extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            serviceAvailable: null,
+            enableService: true,
             images: {}, /* images[Id]: detail info of image with Id from InspectImage */
             containers: {}, /* containers[Id] detail info of container with Id from InspectContainer */
             containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
@@ -40,6 +42,8 @@ class Application extends React.Component {
         this.onChange = this.onChange.bind(this);
         this.updateContainersAfterEvent = this.updateContainersAfterEvent.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
+        this.startService = this.startService.bind(this);
+        this.goToServicePage = this.goToServicePage.bind(this);
     }
 
     onChange(value) {
@@ -70,16 +74,83 @@ class Application extends React.Component {
                 });
     }
 
-    componentDidMount() {
+    init() {
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.GetVersion")
                 .then(reply => {
+                    this.setState({ serviceAvailable: true });
                     this.updateImagesAfterEvent();
                     this.updateContainersAfterEvent();
                 })
-                .catch(ex => console.error("Failed to do GetVersion call:", JSON.stringify(ex)));
+                .catch(ex => {
+                    if (ex.problem === 'not-found')
+                        this.setState({ serviceAvailable: false });
+                    else
+                        console.error("Failed to do GetVersion call:", JSON.stringify(ex));
+                });
+    }
+
+    componentDidMount() {
+        this.init();
+    }
+
+    startService(e) {
+        if (!e || e.button !== 0)
+            return;
+
+        let argv;
+        if (this.state.enableService)
+            argv = ["systemctl", "enable", "--now", "io.podman.socket"];
+        else
+            argv = ["systemctl", "start", "io.podman.socket"];
+
+        cockpit.spawn(argv, { superuser: "require", err: "message" })
+                .then(() => this.init())
+                .catch(err => console.error("Failed to start io.podman.socket:", JSON.stringify(err)));
+    }
+
+    goToServicePage(e) {
+        if (!e || e.button !== 0)
+            return;
+        cockpit.jump("/system/services#/io.podman.socket");
     }
 
     render() {
+        if (this.state.serviceAvailable === null) // not detected yet
+            return null;
+
+        if (!this.state.serviceAvailable) {
+            return (
+                <div className="curtains-ct blank-slate-pf">
+                    <div className="blank-slate-pf-icon">
+                        <span className="fa fa-exclamation-circle" />
+                    </div>
+                    <h1 className="header" id="slate-header">
+                        { _("Podman Service is Not Active") }
+                    </h1>
+                    <div className="checkbox">
+                        <label>
+                            <input type="checkbox"
+                                   checked={this.state.enableService}
+                                   onChange={ e => this.setState({ enableService: e.target.checked }) } />
+                            {_("Automatically start podman on boot")}
+                        </label>
+                    </div>
+
+                    <div className="blank-slate-pf-main-action">
+                        <button className="btn btn-primary btn-lg"
+                                onClick={this.startService}>
+                            {_("Start podman")}
+                        </button>
+                    </div>
+                    <div className="blank-slate-pf-secondary-action">
+                        <button className="btn btn-default"
+                                onClick={this.goToServicePage}>
+                            {_("Troubleshoot")}
+                        </button>
+                    </div>
+                </div>);
+        }
+
         let imageList;
         let containerList;
         imageList =
