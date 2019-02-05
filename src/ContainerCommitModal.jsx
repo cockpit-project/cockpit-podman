@@ -1,5 +1,5 @@
 import React from 'react';
-import {Alert, Modal, Button, FormGroup, Grid, Form, FormControl} from 'patternfly-react';
+import { Alert, Modal, Button, FormGroup, Grid, Form, FormControl } from 'patternfly-react';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -20,7 +20,7 @@ class ContainerCommitModal extends React.Component {
             selectedFormat: "oci",
             onbuildDisabled: true,
         };
-        this.state = {...this.initialState};
+        this.state = { ...this.initialState };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
         this.handleCommit = this.handleCommit.bind(this);
@@ -38,15 +38,15 @@ class ContainerCommitModal extends React.Component {
             return bud;
         });
 
-        this.setState({onbuild: newOnbuilds});
+        this.setState({ onbuild: newOnbuilds });
     }
 
     handleAddOnBuild() {
-        this.setState({onbuild: this.state.onbuild.concat([""])});
+        this.setState({ onbuild: this.state.onbuild.concat([""]) });
     }
 
     handleRemoveOnBuild(idx) {
-        this.setState({onbuild: this.state.onbuild.filter((bud, sidx) => idx !== sidx)});
+        this.setState({ onbuild: this.state.onbuild.filter((bud, sidx) => idx !== sidx) });
     }
 
     handleInputChange(event) {

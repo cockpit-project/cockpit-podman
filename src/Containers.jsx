@@ -226,7 +226,7 @@ class Containers extends React.Component {
         this.setState({
             selectContainerDeleteModal: false
         });
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", {name: id})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", { name: id })
                 .then((reply) => {
                     this.props.updateContainersAfterEvent();
                 })
@@ -242,7 +242,7 @@ class Containers extends React.Component {
     // TODO: force
     handleForceRemoveContainer() {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", {name: id, force: true})
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", { name: id, force: true })
                 .then(reply => {
                     this.setState({
                         setContainerRemoveErrorModal: false
@@ -289,7 +289,7 @@ class Containers extends React.Component {
 
         return (
             <div id="containers-containers" className="container-fluid ">
-                {actionError && <Alert onDismiss={() => this.setState({actionError: undefined})}>
+                {actionError && <Alert onDismiss={() => this.setState({ actionError: undefined })}>
                     <strong>
                         {actionError}
                     </strong>

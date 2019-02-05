@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Modal} from 'patternfly-react';
+import { Button, Modal } from 'patternfly-react';
 
 const ContainersRunImageModal = (props) => {
     return (
