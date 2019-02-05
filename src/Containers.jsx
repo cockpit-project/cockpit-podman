@@ -60,8 +60,12 @@ class Containers extends React.Component {
         }
     }
 
-    stopContainer(container) {
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.StopContainer", { name: container.names })
+    stopContainer(container, force) {
+        let args = { name: container.names };
+
+        if (force)
+            args.timeout = 0;
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.StopContainer", args)
                 .then(() => this.props.updateContainersAfterEvent())
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to stop container $0"), container.names),
@@ -78,8 +82,12 @@ class Containers extends React.Component {
                 }));
     }
 
-    restartContainer (container) {
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RestartContainer", { name: container.names })
+    restartContainer (container, force) {
+        let args = { name: container.names };
+
+        if (force)
+            args.timeout = 0;
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RestartContainer", args)
                 .then(() => this.props.updateContainersAfterEvent())
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to restart container $0"), container.names),
@@ -162,18 +170,6 @@ class Containers extends React.Component {
             data: { container: container }
         }];
 
-        let startStopActions = [];
-        if (isRunning)
-            startStopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container) });
-        else
-            startStopActions.push({ label: _("Start"), onActivate: () => this.startContainer(container) });
-
-        startStopActions.push({
-            label: _("Restart"),
-            onActivate: this.restartContainer,
-            disabled: !isRunning
-        });
-
         var actions = [
             <button
                 key={container.id + "delete"}
@@ -189,9 +185,25 @@ class Containers extends React.Component {
             >
                 {_("Commit")}
             </button>,
-            // TODO: stop or start dropdown menu
-            <Dropdown key={_(container.id)} actions={startStopActions} />
         ];
+        if (!isRunning) {
+            actions.push(
+                <button key={container.ID + "start"} className="btn btn-default" type="button" onClick={() => this.startContainer(container)}>
+                    {_("Start")}
+                </button>
+            );
+        } else {
+            let restartActions = [];
+            let stopActions = [];
+
+            restartActions.push({ label: _("Restart"), onActivate: () => this.restartContainer(container) });
+            restartActions.push({ label: _("Force Restart"), onActivate: () => this.restartContainer(container, true) });
+            actions.push(<Dropdown key={_(container.ID) + "restart"} actions={restartActions} />);
+
+            stopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container) });
+            stopActions.push({ label: _("Force Stop"), onActivate: () => this.stopContainer(container, true) });
+            actions.push(<Dropdown key={_(container.ID) + "stop"} actions={stopActions} />);
+        }
 
         return <Listing.ListingRow
                     key={container.id}

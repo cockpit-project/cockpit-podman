@@ -1,34 +1,24 @@
 import React from 'react';
+import { DropdownButton, MenuItem } from 'patternfly-react';
 
 const DropDown = (props) => {
-    const handleClick = (event) => {
-        if (event.button !== 0)
-            return;
-        var action = props.actions[event.currentTarget.getAttribute('data-value')];
-        if (!action.disabled && action.onActivate)
-            action.onActivate();
-    };
+    const actions = props.actions;
+    const buttonsHtml = actions
+            .map((button, index) => {
+                return (
+                    <MenuItem key={index} eventKey={index} onClick={button.onActivate}>
+                        {button.label}
+                    </MenuItem>
+                );
+            });
 
     return (
-        <div className="btn-group">
-            <button className="btn btn-default" type="button" data-value="0" onClick={handleClick}>
-                <span>{props.actions[0].label}</span>
-            </button>
-            <button className="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                <div className="caret" />
-            </button>
-            <ul className="dropdown-menu dropdown-menu-right" role="menu">
-                {
-                    props.actions.map((action, index) => {
-                        return (
-                            <li key={index} className={ action.disabled ? 'disabled' : '' }>
-                                <a data-value={index} role="link" tabIndex="0" onClick={handleClick}>{action.label}</a>
-                            </li>
-                        );
-                    })
-                }
-            </ul>
-        </div>
+        <DropdownButton
+            bsStyle="default"
+            title={actions[0].label}
+            id={actions[0].label + "-dropdown"}>
+            {buttonsHtml}
+        </DropdownButton>
     );
 };
 
