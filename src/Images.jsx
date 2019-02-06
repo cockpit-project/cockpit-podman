@@ -1,8 +1,10 @@
 import React from 'react';
+import { Button } from 'patternfly-react';
+
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ImageDetails from './ImageDetails.jsx';
-import ContainersRunImageModal from './ContainersRunImageModal.jsx';
+import { ImageRunModal } from './ImageRunModal.jsx';
 import ImageSecurity from './ImageSecurity.jsx';
 import ModalExample from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
@@ -18,7 +20,6 @@ class Images extends React.Component {
         super(props);
         this.state = {
             imageDetail: undefined,
-            setRunContainer: false,
             vulnerableInfos: {},
             selectImageDeleteModal: false,
             setImageRemoveErrorModal: false,
@@ -27,8 +28,6 @@ class Images extends React.Component {
 
         this.vulnerableInfoChanged = this.vulnerableInfoChanged.bind(this);
         this.handleSearchImageClick = this.handleSearchImageClick.bind(this);
-        this.showRunImageDialog = this.showRunImageDialog.bind(this);
-        this.handleCancelRunImage = this.handleCancelRunImage.bind(this);
         this.deleteImage = this.deleteImage.bind(this);
         this.handleCancelImageDeleteModal = this.handleCancelImageDeleteModal.bind(this);
         this.handleRemoveImage = this.handleRemoveImage.bind(this);
@@ -51,12 +50,6 @@ class Images extends React.Component {
 
     navigateToImage(image) {
         cockpit.location.go([ 'image', image.id ]);
-    }
-
-    showRunImageDialog(e) {
-        this.setState({
-            setRunContainer: true
-        });
     }
 
     deleteImage(image) {
@@ -120,20 +113,19 @@ class Images extends React.Component {
                 );
         }
         // TODO: image waiting if - else
-        let element =
-            <button
-                key={image.id + "runimage"}
+        let runImage = (
+            <Button key={image.id + "create"}
                 className="btn btn-default btn-control-ct fa fa-play"
-                onClick={ this.showRunImageDialog }
-                data-image={image.id}
-            />;
+                onClick={ () => this.setState({ showRunImageModal: image }) }
+                data-image={image.id} />
+        );
         let columns = [
             { name: image.repoTags ? image.repoTags[0] : "", header: true },
             vulnerabilityColumn,
             moment(image.created, utils.GOLANG_TIME_FORMAT).calendar(),
             cockpit.format_bytes(image.size),
             {
-                element: element,
+                element: runImage,
                 tight: true
             }
         ];
@@ -161,24 +153,19 @@ class Images extends React.Component {
                 onClick={() => this.deleteImage(image)}
             />
         ];
-        return <Listing.ListingRow
+        return (
+            <Listing.ListingRow
                     key={image.id}
                     rowId={image.id}
                     columns={columns}
                     tabRenderers={tabs}
                     navigateToItem={this.navigateToImage(image)}
-                    listingActions={actions}
-        />;
+                    listingActions={actions} />
+        );
     }
 
     handleSearchImageClick() {
         return undefined;
-    }
-
-    handleCancelRunImage() {
-        this.setState(() => ({
-            setRunContainer: false
-        }));
     }
 
     handleCancelImageRemoveError() {
@@ -225,12 +212,13 @@ class Images extends React.Component {
                     {imageRows}
                 </Listing.Listing>
                 {/* TODO: {pendingRows} */}
-                <ContainersRunImageModal
-                            show={this.state.setRunContainer}
-                            handleCancelRunImage={this.handleCancelRunImage}
-                />
                 {imageDeleteModal}
                 {imageRemoveErrorModal}
+                {this.state.showRunImageModal &&
+                <ImageRunModal
+                    close={() => this.setState({ showRunImageModal: undefined })}
+                    image={this.state.showRunImageModal}
+                    updateContainersAfterEvent={this.props.updateContainersAfterEvent} /> }
             </div>
         );
     }
