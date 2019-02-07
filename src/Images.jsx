@@ -5,12 +5,15 @@ import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ImageDetails from './ImageDetails.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
+import { ImageSearchModal } from './ImageSearchModal.jsx';
 import ImageSecurity from './ImageSecurity.jsx';
 import ModalExample from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import atomic from './atomic.jsx';
 import varlink from './varlink.js';
+
+import './Images.css';
 
 const moment = require('moment');
 const _ = cockpit.gettext;
@@ -27,8 +30,8 @@ class Images extends React.Component {
         };
 
         this.vulnerableInfoChanged = this.vulnerableInfoChanged.bind(this);
-        this.handleSearchImageClick = this.handleSearchImageClick.bind(this);
         this.deleteImage = this.deleteImage.bind(this);
+        this.downloadImage = this.downloadImage.bind(this);
         this.handleCancelImageDeleteModal = this.handleCancelImageDeleteModal.bind(this);
         this.handleRemoveImage = this.handleRemoveImage.bind(this);
         this.handleCancelImageRemoveError = this.handleCancelImageRemoveError.bind(this);
@@ -57,6 +60,29 @@ class Images extends React.Component {
             selectImageDeleteModal: !prevState.selectImageDeleteModal,
             imageWillDelete: image,
         }));
+    }
+
+    downloadImage(imageName) {
+        this.setState({ imageDownloadInProgress: imageName });
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.PullImage", { name: imageName })
+                .then(() => {
+                    this.setState({ imageDownloadInProgress: undefined });
+                    return this.props.updateImagesAfterEvent();
+                })
+                .catch(ex => {
+                    let error = (
+                        <React.Fragment>
+                            <strong>
+                                {cockpit.format(_("Failed to download image $0"), imageName)}
+                            </strong>
+                            <p> {_("Error message")}:
+                                <samp>{cockpit.format("$0 $1", ex.error, ex.parameters && ex.parameters.reason)}</samp>
+                            </p>
+                        </React.Fragment>
+                    );
+                    this.setState({ imageDownloadInProgress: undefined });
+                    this.props.onAddNotification({ type: 'error', children: error });
+                });
     }
 
     handleCancelImageDeleteModal() {
@@ -164,10 +190,6 @@ class Images extends React.Component {
         );
     }
 
-    handleSearchImageClick() {
-        return undefined;
-    }
-
     handleCancelImageRemoveError() {
         this.setState({
             setImageRemoveErrorModal: false
@@ -178,10 +200,14 @@ class Images extends React.Component {
         const columnTitles = [ _("Name"), _(''), _("Created"), _("Size"), _('') ];
         // TODO: emptyCaption = _("No Images");
         let emptyCaption = _("No images that match the current filter");
-        const getNewImageAction =
-                [<a key={"searchImages"} role="link" tabIndex="0" onClick={this.handleSearchImageClick} className="card-pf-link-with-icon pull-right">
-                    <span className="pficon pficon-add-circle-o" />{_("Get new image")}
-                </a>];
+        const getNewImageAction = [
+            <a key="get-new-image-action" role="link" tabIndex="0"
+               onClick={() => this.setState({ showSearchImageModal: true })}
+               className="card-pf-link-with-icon pull-right">
+                <span className="pficon pficon-add-circle-o" />
+                {_("Get new image")}
+            </a>
+        ];
         // TODO: filter images via filterText
         let filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].id);
         let imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
@@ -211,7 +237,6 @@ class Images extends React.Component {
                             actions={getNewImageAction}>
                     {imageRows}
                 </Listing.Listing>
-                {/* TODO: {pendingRows} */}
                 {imageDeleteModal}
                 {imageRemoveErrorModal}
                 {this.state.showRunImageModal &&
@@ -219,6 +244,11 @@ class Images extends React.Component {
                     close={() => this.setState({ showRunImageModal: undefined })}
                     image={this.state.showRunImageModal}
                     updateContainersAfterEvent={this.props.updateContainersAfterEvent} /> }
+                {this.state.showSearchImageModal &&
+                <ImageSearchModal
+                    close={() => this.setState({ showSearchImageModal: false })}
+                    downloadImage={this.downloadImage} /> }
+                {this.state.imageDownloadInProgress && <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>}
             </div>
         );
     }
