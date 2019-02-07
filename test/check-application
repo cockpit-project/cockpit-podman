@@ -12,6 +12,13 @@ sys.path.append(os.path.join(TEST_DIR, "common"))
 sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
 import testlib
 
+REGISTRIES_CONF="""
+[registries.search]
+registries = ['localhost:5000']
+
+[registries.insecure]
+registries = ['localhost:5000']
+"""
 
 class TestApplication(testlib.MachineCase):
 
@@ -157,6 +164,56 @@ class TestApplication(testlib.MachineCase):
         b.click(".modal-dialog div #btn-img-deleteerror")
         b.wait_not_present("modal-dialog div #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", "alpine:latest")
+
+    def testDownloadImage(self):
+        b = self.browser
+        m = self.machine
+
+        # Create and start registry container
+        m.execute("podman run -d -p 5000:5000 --name registry registry:2")
+
+        # Add local insecure registry into resgitries conf
+        m.execute("echo \"{0}\" > /etc/containers/registries.conf && systemctl stop io.podman.service".format(REGISTRIES_CONF))
+
+        # Push busybox image to the local registry
+        m.execute("podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+
+        # Untag busybox image which duplicates the image we are about to download
+        m.execute("podman rmi -f busybox")
+
+        self.login_and_go("/podman")
+        b.wait_present("#app")
+
+        # Open get new image modal
+        b.wait_present("caption a:contains(Get new image)")
+        b.click("caption a:contains(Get new image)")
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+
+        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
+
+        # Search for the my-busybox image we just pushed
+        b.wait_present("#search-image-dialog-name")
+        b.set_input_text("#search-image-dialog-name", "my-busybox")
+        b.wait_present("div.list-group div.image-list-item label:contains(my-busybox)")
+
+        # Select and download the my-busybox image
+        b.click("div.list-group div.image-list-item label:contains(my-busybox)")
+        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):not([disabled])")
+        b.click("div.modal-dialog div.modal-footer button:contains(Download)")
+        b.wait_not_present('div.modal-dialog')
+
+        # Confirm that the image got downloaded
+        b.wait_present('#containers-images tr:contains("my-busybox")')
+
+        # Open get new image modal
+        b.wait_present("caption a:contains(Get new image)")
+        b.click("caption a:contains(Get new image)")
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+
+        # Search for an non-existing image
+        b.wait_present("#search-image-dialog-name")
+        b.set_input_text("#search-image-dialog-name", "foobar")
+        b.wait_present("div.modal-body:contains(No results for foobar)")
 
     def testLifecycleOperations(self):
         b = self.browser
