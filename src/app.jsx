@@ -17,8 +17,10 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import cockpit from 'cockpit';
 import React from 'react';
+import { ToastNotificationList, ToastNotification } from 'patternfly-react';
+
+import cockpit from 'cockpit';
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
@@ -38,12 +40,36 @@ class Application extends React.Component {
             containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
             onlyShowRunning: true,
             dropDownValue: 'Everything',
+            notifications: [],
         };
+        this.onAddNotification = this.onAddNotification.bind(this);
+        this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onChange = this.onChange.bind(this);
         this.updateContainersAfterEvent = this.updateContainersAfterEvent.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
+    }
+
+    onAddNotification(notification) {
+        notification.index = this.state.notifications.length;
+
+        this.setState({
+            notifications: [
+                ...this.state.notifications,
+                notification
+            ]
+        });
+    }
+
+    onDismissNotification(notificationIndex) {
+        let notificationsArray = this.state.notifications.concat();
+        let index = notificationsArray.findIndex(current => current.index == notificationIndex);
+
+        if (index !== -1) {
+            notificationsArray.splice(index, 1);
+            this.setState({ notifications: notificationsArray });
+        }
     }
 
     onChange(value) {
@@ -159,6 +185,7 @@ class Application extends React.Component {
                 images={this.state.images}
                 updateContainersAfterEvent={this.updateContainersAfterEvent}
                 updateImagesAfterEvent={this.updateImagesAfterEvent}
+                onAddNotification={this.onAddNotification}
             />;
         containerList =
             <Containers
@@ -169,6 +196,18 @@ class Application extends React.Component {
                 updateContainersAfterEvent={this.updateContainersAfterEvent}
                 updateImagesAfterEvent={this.updateImagesAfterEvent}
             />;
+        const notificationList = (
+            <ToastNotificationList>
+                {this.state.notifications.map((notification, index) => {
+                    return (
+                        <ToastNotification key={index} type={notification.type}
+                                           onDismiss={() => this.onDismissNotification(notification.index)}>
+                            {notification.children}
+                        </ToastNotification>
+                    );
+                })}
+            </ToastNotificationList>
+        );
         return (
             <div id="overview" key={"overview"}>
                 <div key={"containerheader"} className="content-filter">
@@ -182,6 +221,9 @@ class Application extends React.Component {
                 </div>
                 <div key={"imageslists"} className="container-fluid">
                     {imageList}
+                </div>
+                <div style={null}>
+                    {notificationList}
                 </div>
             </div>
         );
