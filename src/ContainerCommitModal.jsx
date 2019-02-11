@@ -1,6 +1,8 @@
 import React from 'react';
-import { Alert, Modal, Button, FormGroup, Grid, Form, FormControl } from 'patternfly-react';
+import { Alert, Modal, Button, FormGroup, FormControl } from 'patternfly-react';
 import cockpit from 'cockpit';
+
+import '../lib/form-layout.less';
 
 const _ = cockpit.gettext;
 
@@ -89,96 +91,76 @@ class ContainerCommitModal extends React.Component {
                 </div>
             ));
         let commitContent =
-            <div>
-                <Form horizontal>
-                    <FormGroup controlId="name" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Container Name")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <span className="control-label" />{this.props.containerWillCommit.names}
-                        </Grid.Col>
-                    </FormGroup>
-                    <FormGroup controlId="format" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Format")}
-                        </Grid.Col>
-                        <Grid.Col>
-                            <label htmlFor="format-oci">
-                                <input type="radio" id="format-oci" value="oci" checked={this.state.selectedFormat === 'oci'} onChange={(event) => this.handleFormatChange(event)} />
-                                <span>oci</span>
-                            </label>
-                            <label htmlFor="format-docker">
-                                <input type="radio" id="format-docker" value="docker" checked={this.state.selectedFormat === 'docker'} onChange={(event) => this.handleFormatChange(event)} />
-                                <span>docker</span>
-                            </label>
-                        </Grid.Col>
-                    </FormGroup>
+            <div className="ct-form-layout">
+                <label className="control-label" htmlFor="commit-dialog-container-name">
+                    {_("Container Name")}
+                </label>
+                <span id="commit-dialog-container-name">
+                    {this.props.containerWillCommit.names}
+                </span>
 
-                    <FormGroup controlId="imageName" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Image Name")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <FormControl name="imageName" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </Grid.Col>
-                    </FormGroup>
-                    <FormGroup controlId="tag" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Tag")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <FormControl name="tag" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </Grid.Col>
-                    </FormGroup>
-                    <FormGroup controlId="author" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Author")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <FormControl name="author" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </Grid.Col>
-                    </FormGroup>
-                    <FormGroup controlId="message" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Message")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <FormControl name="message" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </Grid.Col>
-                    </FormGroup>
-                    <FormGroup controlId="command" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Command")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <FormControl name="command" className="form-control" type="text" onChange={this.handleInputChange} />
-                        </Grid.Col>
-                    </FormGroup>
-                    <FormGroup controlId="setonbuild" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("Pause")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <label>
-                                <input name="pause" type="checkbox" defaultChecked onChange={this.handleInputChange} />
-                                <span>{_("pause the container")}</span>
-                            </label>
-                        </Grid.Col>
-                    </FormGroup>
-                    <FormGroup controlId="setonbuild" disabled={false}>
-                        <Grid.Col componentClass={Form.ControlLabel} sm={3}>
-                            {_("On Build")}
-                        </Grid.Col>
-                        <Grid.Col sm={9}>
-                            <label>
-                                <input name="setonbuild" className="container-label" type="checkbox" disabled={this.state.onbuildDisabled} onChange={this.handleInputChange} />
-                                <span>{_("Set container on build variables")}</span>
-                            </label>
-                            {(this.state.setonbuild && <div>{onbuilds}</div>) }
-                        </Grid.Col>
-                    </FormGroup>
-                </Form>
+                <label className="control-label" htmlFor="commit-dialog-format">
+                    {_("Format")}
+                </label>
+
+                <fieldset className='form-inline'>
+                    <div className='radio'>
+                        <label htmlFor="format-oci">
+                            <input type="radio" id="format-oci" value="oci"
+                                   checked={this.state.selectedFormat === 'oci'}
+                                   onChange={(event) => this.handleFormatChange(event)} />
+                            oci
+                        </label>
+                        <label htmlFor="format-docker">
+                            <input type="radio" id="format-docker" value="docker"
+                                   checked={this.state.selectedFormat === 'docker'}
+                                   onChange={(event) => this.handleFormatChange(event)} />
+                            docker
+                        </label>
+                    </div>
+                </fieldset>
+
+                <label className="control-label" htmlFor="commit-dialog-image-name">
+                    {_("Image Name")}
+                </label>
+                <FormControl name="imageName" id="commit-dialog-image-name" type="text" onChange={this.handleInputChange} />
+
+                <label className="control-label" htmlFor="commit-dialog-image-tag">
+                    {_("Tag")}
+                </label>
+                <FormControl name="tag" id="commit-dialog-image-tag" type="text" onChange={this.handleInputChange} />
+
+                <label className="control-label" htmlFor="commit-dialog-author">
+                    {_("Author")}
+                </label>
+                <FormControl name="author" id="commit-dialog-author" type="text" onChange={this.handleInputChange} />
+
+                <label className="control-label" htmlFor="commit-dialog-message">
+                    {_("Message")}
+                </label>
+                <FormControl name="message" id="commit-dialog-message" type="text" onChange={this.handleInputChange} />
+
+                <label className="control-label" htmlFor="commit-dialog-command">
+                    {_("Command")}
+                </label>
+                <FormControl name="command" id="commit-dialog-command" type="text" onChange={this.handleInputChange} />
+
+                <label className="control-label" htmlFor="commit-dialog-pause">
+                    {_("Pause")}
+                </label>
+                <label className="checkbox-inline">
+                    <input name="pause" id="commit-dialog-pause" type="checkbox" defaultChecked onChange={this.handleInputChange} />
+                    {_("Pause the container")}
+                </label>
+
+                <label className="control-label" htmlFor="commit-dialog-setonbuild">
+                    {_("On Build")}
+                </label>
+                <label id="commit-dialog-setonbuild-label" className="checkbox-inline">
+                    <input name="setonbuild" id="commit-dialog-setonbuild" type="checkbox" disabled={this.state.onbuildDisabled} onChange={this.handleInputChange} />
+                    {_("Set container on build variables")}
+                </label>
+                {this.state.setonbuild && onbuilds}
             </div>;
 
         return (
