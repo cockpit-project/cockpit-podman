@@ -34,8 +34,6 @@ class ContainerCommitModal extends React.Component {
     handleOnBuildsInputChange(idx, evt) {
         const newOnbuilds = this.state.onbuild.map((bud, sidx) => {
             if (idx !== sidx) return bud;
-            console.log(bud);
-            console.log(evt.target.value);
             bud = evt.target.value;
             return bud;
         });
