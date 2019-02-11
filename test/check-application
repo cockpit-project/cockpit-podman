@@ -101,10 +101,10 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
         b.wait_present(".modal-dialog div")
         # set commit parameters
-        b.set_input_text("#imageName", "testimg")
-        b.set_input_text("#tag", "testtag")
-        b.set_input_text("#author", "tester")
-        b.set_input_text("#command", "sleep 6000")
+        b.set_input_text("#commit-dialog-image-name", "testimg")
+        b.set_input_text("#commit-dialog-image-tag", "testtag")
+        b.set_input_text("#commit-dialog-author", "tester")
+        b.set_input_text("#commit-dialog-command", "sleep 6000")
         b.click(".modal-dialog div .btn-ctr-commit")
         b.wait_not_present(".modal-dialog div")
         b.wait_present('#containers-images tr:contains("testimg:testtag")')
@@ -124,7 +124,7 @@ class TestApplication(testlib.MachineCase):
         b.click(".modal-dialog div .alert .close")
         b.wait_not_present(".modal-dialog div .alert")
         # check varlink error
-        b.set_input_text("#imageName", "TEST")
+        b.set_input_text("#commit-dialog-image-name", "TEST")
         b.click(".modal-dialog div .btn-ctr-commit")
         b.wait_present(".modal-dialog div")
         b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
