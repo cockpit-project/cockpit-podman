@@ -81,11 +81,11 @@ class Application extends React.Component {
                     this.updateImagesAfterEvent();
                     this.updateContainersAfterEvent();
                 })
-                .catch(ex => {
-                    if (ex.problem === 'not-found')
+                .catch(error => {
+                    if (error.name === "ConnectionClosed")
                         this.setState({ serviceAvailable: false });
                     else
-                        console.error("Failed to do GetVersion call:", JSON.stringify(ex));
+                        console.error("Failed to call GetVersion():", error);
                 });
     }
 

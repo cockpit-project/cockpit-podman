@@ -4,6 +4,15 @@ import cockpit from "cockpit";
 const encoder = cockpit.utf8_encoder();
 const decoder = cockpit.utf8_decoder();
 
+class VarlinkError extends Error {
+    constructor(name, parameters) {
+        super(JSON.stringify(parameters));
+
+        this.name = name;
+        this.parameters = parameters;
+    }
+}
+
 /*
  * Connect to a varlink service.
  *
@@ -57,7 +66,7 @@ function connect(address) {
     });
 
     channel.addEventListener("close", (event, options) => {
-        pending.forEach(p => p.reject({ error: "ConnectionClosed", problem: options.problem }));
+        pending.forEach(p => p.reject(new VarlinkError("ConnectionClosed", { problem: options.problem })));
         pending = [];
         if (connection.onclosed)
             connection.onclosed(options.problem);
@@ -80,7 +89,22 @@ function connect(address) {
         channel.close();
     };
 
-    return connection;
+    return new Promise((resolve, reject) => {
+        function ready(event, options) {
+            channel.removeEventListener("ready", ready);
+            channel.removeEventListener("close", closed);
+            resolve(connection);
+        }
+
+        function close(event, options) {
+            channel.removeEventListener("ready", ready);
+            channel.removeEventListener("close", closed);
+            reject(new VarlinkError("ConnectionClosed", { problem: options.problem }));
+        }
+
+        channel.addEventListener("ready", ready);
+        channel.addEventListener("close", close);
+    });
 }
 
 /*
