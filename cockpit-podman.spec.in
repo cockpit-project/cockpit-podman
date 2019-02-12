@@ -6,6 +6,7 @@ License: LGPLv2+
 
 Source: cockpit-podman-%{version}.tar.gz
 BuildArch: noarch
+BuildRequires:  libappstream-glib
 
 Requires: cockpit-bridge >= 138
 Requires: cockpit-shell >= 138
@@ -21,6 +22,7 @@ The Cockpit user interface for Podman containers.
 
 %install
 %make_install
+appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*
 
 %files
 %{_datadir}/cockpit/*
