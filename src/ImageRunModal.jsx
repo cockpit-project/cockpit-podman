@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Button, Modal } from 'patternfly-react';
 import * as dockerNames from 'docker-names';
 
@@ -27,6 +28,101 @@ const units = {
     },
 };
 
+class PublishPortsForm extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            publish: [{ key: 0, containerPort: null, hostPort: null, protocol: 'TCP' }],
+        };
+        this.keyCounter = 1;
+        this.removePort = this.removePort.bind(this);
+        this.addPort = this.addPort.bind(this);
+        this.onPortChange = this.onPortChange.bind(this);
+    }
+
+    removePort(idx, field, value) {
+        this.setState(state => {
+            let ports = state.publish.concat();
+            ports.splice(idx, 1);
+            if (ports.length === 0)
+                ports.push({ key: this.keyCounter++, containerPort: null, hostPort: null, protocol: 'TCP' });
+            return { publish: ports };
+        }, () => this.props.onChange(this.state.publish.concat()));
+    }
+
+    addPort() {
+        this.setState(state => {
+            return { publish: [...state.publish, { key: this.keyCounter++, containerPort: null, hostPort: null, protocol: 'TCP' }] };
+        }, () => this.props.onChange(this.state.publish.concat()));
+    }
+
+    onPortChange(idx, field, value) {
+        this.setState(state => {
+            let ports = state.publish.concat();
+            ports[idx][field] = value || null;
+            return { publish: ports };
+        }, () => this.props.onChange(this.state.publish.concat()));
+    }
+
+    render () {
+        const { id } = this.props;
+        const dialogValues = this.state;
+        return (
+            <React.Fragment>
+                {
+                    dialogValues.publish.map((port, idx) =>
+                        (
+                            <div className='publish-port-form ct-form-layout' key={ port.key }>
+                                <div role='group' className='ct-form-layout-split'>
+                                    <input className='form-control'
+                                           id={ (idx === 0 && id) || undefined }
+                                           type='number'
+                                           step={1}
+                                           min={1}
+                                           max={65535}
+                                           placeholder={_("Container port")}
+                                           value={port.containerPort || ''}
+                                           onChange={e => this.onPortChange(idx, 'containerPort', e.target.value)} />
+                                    <Select.Select className='form-control'
+                                                   initial={port.protocol}
+                                                   onChange={value => this.onPortChange(idx, 'protocol', value)} >
+                                        <Select.SelectEntry data='TCP' key='TCP'>
+                                            {_("TCP")}
+                                        </Select.SelectEntry>
+                                        <Select.SelectEntry data='UDP' key='UDP'>
+                                            {_("UDP")}
+                                        </Select.SelectEntry>
+                                    </Select.Select>
+                                    <input className='form-control'
+                                           type='number'
+                                           step={1}
+                                           min={1}
+                                           max={65535}
+                                           placeholder={_("Host port")}
+                                           value={port.hostPort || ''}
+                                           onChange={e => this.onPortChange(idx, 'hostPort', e.target.value)} />
+                                </div>
+                                <div role='group' className='ct-form-layout-split'>
+                                    <Button bsStyle='default' className='pficon-close'
+                                            disabled={dialogValues.publish.length === 1 &&
+                                                      (!dialogValues.publish[0]['containerPort'] ||
+                                                       !dialogValues.publish[0]['hostPort'])}
+                                            onClick={() => this.removePort(idx)} />
+                                    <Button bsStyle='default' className='fa fa-plus' onClick={this.addPort} />
+                                </div>
+                            </div>
+                        )
+                    )
+                }
+            </React.Fragment>
+        );
+    }
+}
+PublishPortsForm.propTypes = {
+    onChange: PropTypes.func.isRequired,
+    id: PropTypes.string.isRequired,
+};
+
 export class ImageRunModal extends React.Component {
     constructor(props) {
         super(props);
@@ -34,6 +130,7 @@ export class ImageRunModal extends React.Component {
             command: 'sh',
             containerName: dockerNames.getRandomName(),
             hasTTY: true,
+            publish: [],
             image: props.image,
             memory: 512,
             memoryConfigure: false,
@@ -58,6 +155,10 @@ export class ImageRunModal extends React.Component {
             createConfig.resources.memory = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
         if (this.state.hasTTY)
             createConfig.tty = true;
+        if (this.state.publish.length > 0)
+            createConfig.publish = this.state.publish
+                    .filter(port => port.hostPort && port.containerPort)
+                    .map(port => port.hostPort + ':' + port.containerPort + '/' + port.protocol);
 
         return createConfig;
     }
@@ -152,6 +253,9 @@ export class ImageRunModal extends React.Component {
                            checked={this.state.hasTTY}
                            onChange={e => this.onValueChanged('hasTTY', e.target.checked)} />
                 </label>
+
+                <label className='control-label' htmlFor='run-image-dialog-publish'>{ _("Ports") }</label>
+                <PublishPortsForm id='run-image-dialog-publish' onChange={value => this.onValueChanged('publish', value)} />
             </div>
         );
 
