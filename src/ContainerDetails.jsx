@@ -12,6 +12,18 @@ const render_container_state = (container) => {
     return cockpit.format(_("Exited"));
 };
 
+const render_container_published_ports = ({ ports }) => {
+    let result = [];
+    if (!ports)
+        return result;
+    for (let i = 0; i < ports.length; ++i)
+        result.push(
+            <React.Fragment key={ ports[i].protocol + ports[i].host_port + ports[i].container_port }>
+                { ports[i].host_ip || '0.0.0.0' }:{ ports[i].host_port } &rarr; { ports[i].container_port }/{ ports[i].protocol }{ i < ports.length - 1 && ', ' }
+            </React.Fragment>);
+    return result;
+};
+
 const ContainerDetails = ({ container }) => (
     <div className='listing-ct-body'>
         <dl>
@@ -25,6 +37,8 @@ const ContainerDetails = ({ container }) => (
             <dd>{container.command ? container.command.join(" ") : ""}</dd>
             <dt>{_("State")}</dt>
             <dd>{render_container_state(container)}</dd>
+            <dt>{_("Ports")}</dt>
+            <dd>{render_container_published_ports(container)}</dd>
         </dl>
     </div>
 );
