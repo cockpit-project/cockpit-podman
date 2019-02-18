@@ -46,20 +46,20 @@ export class ImageRunModal extends React.Component {
     }
 
     getCreateConfig() {
-        let props = {};
+        let createConfig = {};
 
-        props.image = this.state.image.repoTags ? this.state.image.repoTags[0] : "";
-        props.resources = {};
+        createConfig.image = this.state.image.repoTags ? this.state.image.repoTags[0] : "";
+        createConfig.resources = {};
         if (this.state.containerName)
-            props.name = this.state.containerName;
+            createConfig.name = this.state.containerName;
         if (this.state.command)
-            props.command = [this.state.command];
+            createConfig.command = [this.state.command];
         if (this.state.memoryConfigure && this.state.memory)
-            props.resources.memory = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
+            createConfig.resources.memory = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
         if (this.state.hasTTY)
-            props.tty = true;
+            createConfig.tty = true;
 
-        return props;
+        return createConfig;
     }
 
     onRunClicked() {
