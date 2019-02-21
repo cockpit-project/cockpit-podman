@@ -28,88 +28,99 @@ const units = {
     },
 };
 
-class PublishPortsForm extends React.Component {
+const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
+    (
+        <React.Fragment>
+            <div role='group' className='ct-form-layout-split'>
+                <input className='form-control'
+                       id={id}
+                       type='number'
+                       step={1}
+                       min={1}
+                       max={65535}
+                       placeholder={_("Container port")}
+                       value={item.containerPort || ''}
+                       onChange={e => onChange(idx, 'containerPort', e.target.value)} />
+                <Select.Select className='form-control'
+                               initial={item.protocol}
+                               onChange={value => onChange(idx, 'protocol', value)} >
+                    <Select.SelectEntry data='TCP' key='TCP'>
+                        {_("TCP")}
+                    </Select.SelectEntry>
+                    <Select.SelectEntry data='UDP' key='UDP'>
+                        {_("UDP")}
+                    </Select.SelectEntry>
+                </Select.Select>
+                <input className='form-control'
+                       type='number'
+                       step={1}
+                       min={1}
+                       max={65535}
+                       placeholder={_("Host port")}
+                       value={item.hostPort || ''}
+                       onChange={e => onChange(idx, 'hostPort', e.target.value)} />
+            </div>
+            <div role='group' className='ct-form-layout-split'>
+                <Button bsStyle='default' className='pficon-close'
+                        disabled={ idx === 0 && !item.hostPort && !item.containerPort }
+                        onClick={() => removeitem(idx)} />
+                <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
+            </div>
+        </React.Fragment>
+    );
+
+class DynamicListForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            publish: [{ key: 0, containerPort: null, hostPort: null, protocol: 'TCP' }],
+            list: [Object.assign({ key: 0 }, props.default)],
         };
         this.keyCounter = 1;
-        this.removePort = this.removePort.bind(this);
-        this.addPort = this.addPort.bind(this);
-        this.onPortChange = this.onPortChange.bind(this);
+        this.removeItem = this.removeItem.bind(this);
+        this.addItem = this.addItem.bind(this);
+        this.onItemChange = this.onItemChange.bind(this);
     }
 
-    removePort(idx, field, value) {
+    removeItem(idx, field, value) {
         this.setState(state => {
-            let ports = state.publish.concat();
-            ports.splice(idx, 1);
-            if (ports.length === 0)
-                ports.push({ key: this.keyCounter++, containerPort: null, hostPort: null, protocol: 'TCP' });
-            return { publish: ports };
-        }, () => this.props.onChange(this.state.publish.concat()));
+            let items = state.list.concat();
+            items.splice(idx, 1);
+            if (items.length === 0)
+                items.push(Object.assign({ key: this.keyCounter++ }, this.props.default));
+            return { list: items };
+        }, () => this.props.onChange(this.state.list.concat()));
     }
 
-    addPort() {
+    addItem() {
         this.setState(state => {
-            return { publish: [...state.publish, { key: this.keyCounter++, containerPort: null, hostPort: null, protocol: 'TCP' }] };
-        }, () => this.props.onChange(this.state.publish.concat()));
+            return { list: [...state.list, Object.assign({ key: this.keyCounter++ }, this.props.default)] };
+        }, () => this.props.onChange(this.state.list.concat()));
     }
 
-    onPortChange(idx, field, value) {
+    onItemChange(idx, field, value) {
         this.setState(state => {
-            let ports = state.publish.concat();
-            ports[idx][field] = value || null;
-            return { publish: ports };
-        }, () => this.props.onChange(this.state.publish.concat()));
+            let items = state.list.concat();
+            items[idx][field] = value || null;
+            return { list: items };
+        }, () => this.props.onChange(this.state.list.concat()));
     }
 
     render () {
-        const { id } = this.props;
+        const { id, formclass } = this.props;
         const dialogValues = this.state;
         return (
             <React.Fragment>
                 {
-                    dialogValues.publish.map((port, idx) =>
+                    dialogValues.list.map((item, idx) =>
                         (
-                            <div className='publish-port-form ct-form-layout' key={ port.key }>
-                                <div role='group' className='ct-form-layout-split'>
-                                    <input className='form-control'
-                                           id={ (idx === 0 && id) || undefined }
-                                           type='number'
-                                           step={1}
-                                           min={1}
-                                           max={65535}
-                                           placeholder={_("Container port")}
-                                           value={port.containerPort || ''}
-                                           onChange={e => this.onPortChange(idx, 'containerPort', e.target.value)} />
-                                    <Select.Select className='form-control'
-                                                   initial={port.protocol}
-                                                   onChange={value => this.onPortChange(idx, 'protocol', value)} >
-                                        <Select.SelectEntry data='TCP' key='TCP'>
-                                            {_("TCP")}
-                                        </Select.SelectEntry>
-                                        <Select.SelectEntry data='UDP' key='UDP'>
-                                            {_("UDP")}
-                                        </Select.SelectEntry>
-                                    </Select.Select>
-                                    <input className='form-control'
-                                           type='number'
-                                           step={1}
-                                           min={1}
-                                           max={65535}
-                                           placeholder={_("Host port")}
-                                           value={port.hostPort || ''}
-                                           onChange={e => this.onPortChange(idx, 'hostPort', e.target.value)} />
-                                </div>
-                                <div role='group' className='ct-form-layout-split'>
-                                    <Button bsStyle='default' className='pficon-close'
-                                            disabled={dialogValues.publish.length === 1 &&
-                                                      (!dialogValues.publish[0]['containerPort'] ||
-                                                       !dialogValues.publish[0]['hostPort'])}
-                                            onClick={() => this.removePort(idx)} />
-                                    <Button bsStyle='default' className='fa fa-plus' onClick={this.addPort} />
-                                </div>
+
+                            <div className={ (formclass || '') + ' ct-form-layout' } key={ item.key }>
+                                {
+                                    React.cloneElement(this.props.itemcomponent, {
+                                        idx: idx, item: item, id: (idx === 0 && id) || undefined,
+                                        onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem
+                                    })
+                                }
                             </div>
                         )
                     )
@@ -118,7 +129,7 @@ class PublishPortsForm extends React.Component {
         );
     }
 }
-PublishPortsForm.propTypes = {
+DynamicListForm.propTypes = {
     onChange: PropTypes.func.isRequired,
     id: PropTypes.string.isRequired,
 };
@@ -255,10 +266,13 @@ export class ImageRunModal extends React.Component {
                 </label>
 
                 <label className='control-label' htmlFor='run-image-dialog-publish'>{ _("Ports") }</label>
-                <PublishPortsForm id='run-image-dialog-publish' onChange={value => this.onValueChanged('publish', value)} />
+                <DynamicListForm id='run-image-dialog-publish'
+                                 formclass='publish-port-form'
+                                 onChange={value => this.onValueChanged('publish', value)}
+                                 default={{ containerPort: null, hostPort: null, protocol: 'TCP' }}
+                                 itemcomponent={ <PublishPort />} />
             </div>
         );
-
         return (
             <Modal show onHide={this.props.close}>
                 <Modal.Header>
