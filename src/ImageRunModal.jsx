@@ -69,6 +69,31 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
         </React.Fragment>
     );
 
+const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
+    (
+        <React.Fragment>
+            <div role='group' className='ct-form-layout-split'>
+                <input className='form-control'
+                       id={id}
+                       type='text'
+                       placeholder={_("Key")}
+                       value={item.envKey || ''}
+                       onChange={e => onChange(idx, 'envKey', e.target.value)} />
+                <input className='form-control'
+                       type='text'
+                       placeholder={_("Value")}
+                       value={item.envValue || ''}
+                       onChange={e => onChange(idx, 'envValue', e.target.value)} />
+            </div>
+            <div role='group' className='ct-form-layout-split'>
+                <Button bsStyle='default' className='pficon-close'
+                        disabled={ idx === 0 && !item.envKey && !item.envValue }
+                        onClick={() => removeitem(idx)} />
+                <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
+            </div>
+        </React.Fragment>
+    );
+
 class DynamicListForm extends React.Component {
     constructor(props) {
         super(props);
@@ -114,7 +139,7 @@ class DynamicListForm extends React.Component {
                     dialogValues.list.map((item, idx) =>
                         (
 
-                            <div className={ (formclass || '') + ' ct-form-layout' } key={ item.key }>
+                            <div className={ (formclass || '') + ' ct-form-layout' } key={ item.key } data-key={ item.key }>
                                 {
                                     React.cloneElement(this.props.itemcomponent, {
                                         idx: idx, item: item, id: (idx === 0 && id) || undefined,
@@ -132,6 +157,8 @@ class DynamicListForm extends React.Component {
 DynamicListForm.propTypes = {
     onChange: PropTypes.func.isRequired,
     id: PropTypes.string.isRequired,
+    itemcomponent: PropTypes.object.isRequired,
+    formclass: PropTypes.string,
 };
 
 export class ImageRunModal extends React.Component {
@@ -140,6 +167,7 @@ export class ImageRunModal extends React.Component {
         this.state = {
             command: 'sh',
             containerName: dockerNames.getRandomName(),
+            env: [],
             hasTTY: true,
             publish: [],
             image: props.image,
@@ -170,6 +198,11 @@ export class ImageRunModal extends React.Component {
             createConfig.publish = this.state.publish
                     .filter(port => port.hostPort && port.containerPort)
                     .map(port => port.hostPort + ':' + port.containerPort + '/' + port.protocol);
+        if (this.state.env) {
+            createConfig.env = {};
+            for (let item of this.state.env)
+                createConfig.env[item.envKey] = item.envValue;
+        }
 
         return createConfig;
     }
@@ -271,6 +304,13 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ containerPort: null, hostPort: null, protocol: 'TCP' }}
                                  itemcomponent={ <PublishPort />} />
+
+                <label className='control-label' htmlFor='run-image-dialog-env'>{ _("Environment") }</label>
+                <DynamicListForm id='run-image-dialog-env'
+                                 formclass='env-form'
+                                 onChange={value => this.onValueChanged('env', value)}
+                                 default={{ envKey: null, envValue: null }}
+                                 itemcomponent={ <EnvVar />} />
             </div>
         );
         return (
