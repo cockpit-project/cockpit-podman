@@ -5,11 +5,14 @@ import * as dockerNames from 'docker-names';
 
 import * as Select from '../lib/cockpit-components-select.jsx';
 import { ErrorNotification } from './Notification.jsx';
+import { FileAutoComplete } from '../lib/cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
 import varlink from './varlink.js';
 import cockpit from 'cockpit';
 
 import '../lib/form-layout.less';
+
+import './podman.scss';
 
 const _ = cockpit.gettext;
 
@@ -94,6 +97,39 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
         </React.Fragment>
     );
 
+const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
+    (
+        <React.Fragment>
+            <div role='group' className='ct-form-layout-split'>
+                <FileAutoComplete id={id || ''}
+                                  placeholder={_("Host path")}
+                                  value={item.hostPath || ''}
+                                  onChange={ value => onChange(idx, 'hostPath', value) } />
+                <input className='form-control ct-form-layout-relax'
+                       type='text'
+                       placeholder={_("Container path")}
+                       value={item.containerPath || ''}
+                       onChange={e => onChange(idx, 'containerPath', e.target.value)} />
+                <Select.Select className='form-control'
+                               initial={item.mode}
+                               onChange={value => onChange(idx, 'mode', value)} >
+                    <Select.SelectEntry data='ro' key='ro'>
+                        {_("ReadOnly")}
+                    </Select.SelectEntry>
+                    <Select.SelectEntry data='rw' key='rw'>
+                        {_("ReadWrite")}
+                    </Select.SelectEntry>
+                </Select.Select>
+            </div>
+            <div role='group' className='ct-form-layout-split'>
+                <Button bsStyle='default' className='pficon-close'
+                        disabled={ idx === 0 && !item.containerPath && !item.hostPath }
+                        onClick={() => removeitem(idx)} />
+                <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
+            </div>
+        </React.Fragment>
+    );
+
 class DynamicListForm extends React.Component {
     constructor(props) {
         super(props);
@@ -139,7 +175,7 @@ class DynamicListForm extends React.Component {
                     dialogValues.list.map((item, idx) =>
                         (
 
-                            <div className={ (formclass || '') + ' ct-form-layout' } key={ item.key } data-key={ item.key }>
+                            <div className={ (formclass || '') + ' ct-form-layout form-list-control' } key={ item.key } data-key={ item.key }>
                                 {
                                     React.cloneElement(this.props.itemcomponent, {
                                         idx: idx, item: item, id: (idx === 0 && id) || undefined,
@@ -175,6 +211,7 @@ export class ImageRunModal extends React.Component {
             memoryConfigure: false,
             memoryUnit: 'MiB',
             validationFailed: {},
+            volumes: [],
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onRunClicked = this.onRunClicked.bind(this);
@@ -202,6 +239,15 @@ export class ImageRunModal extends React.Component {
             createConfig.env = {};
             for (let item of this.state.env)
                 createConfig.env[item.envKey] = item.envValue;
+        }
+        if (this.state.volumes) {
+            createConfig.volumes = this.state.volumes
+                    .filter(volume => volume.hostPath && volume.containerPath)
+                    .map(volume => {
+                        if (volume.mode)
+                            return volume.hostPath + ':' + volume.containerPath + ':' + volume.mode;
+                        return volume.hostPath + ':' + volume.containerPath;
+                    });
         }
 
         return createConfig;
@@ -304,6 +350,13 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ containerPort: null, hostPort: null, protocol: 'TCP' }}
                                  itemcomponent={ <PublishPort />} />
+
+                <label className='control-label' htmlFor='run-image-dialog-env'>{ _("Volumes") }</label>
+                <DynamicListForm id='run-image-dialog-volume'
+                                 formclass='volume-form'
+                                 onChange={value => this.onValueChanged('volumes', value)}
+                                 default={{ containerPath: null, hostPath: null, mode: 'rw' }}
+                                 itemcomponent={ <Volume />} />
 
                 <label className='control-label' htmlFor='run-image-dialog-env'>{ _("Environment") }</label>
                 <DynamicListForm id='run-image-dialog-env'
