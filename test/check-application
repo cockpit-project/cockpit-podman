@@ -5,6 +5,7 @@
 
 import os
 import sys
+import time
 
 # import Cockpit's machinery for test VMs and its browser test API
 TEST_DIR = os.path.dirname(__file__)
@@ -450,6 +451,27 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('.env-form[data-key="3"] input:first-child', 'RHUBARB')
         b.set_input_text('.env-form[data-key="3"] input:last-child', 'STRAWBERRY')
 
+        # Configure volumes
+        rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
+        b.wait_present('.volume-form[data-key="0"]')
+        b.click('.volume-form[data-key="0"] button.dropdown-toggle:contains("ReadWrite")')
+        b.wait_visible('.volume-form[data-key="0"] .dropdown-menu a:contains("ReadOnly")')
+        b.click('.volume-form[data-key="0"] .dropdown-menu a:contains("ReadOnly")')
+        b.set_input_text('.volume-form[data-key="0"] input:first-child', rodir)
+        b.set_input_text('.volume-form[data-key="0"] input:nth-child(2)', '/tmp/ro')
+        b.wait_val('.volume-form[data-key="0"] input:first-child', rodir)
+        b.wait_not_present('.volume-form[data-key="0"] .pending-callback')
+        b.click('.volume-form[data-key="0"] .fa-plus')
+        b.wait_present('.volume-form[data-key="1"]')
+        b.click('.volume-form[data-key="1"] .pficon-close')
+        b.wait_not_present('.volume-form[data-key="1"]')
+        b.click('.volume-form[data-key="0"] .fa-plus')
+        b.wait_present('.volume-form[data-key="2"]')
+        b.set_input_text('.volume-form[data-key="2"] input:first-child', rwdir)
+        b.set_input_text('.volume-form[data-key="2"] input:nth-child(2)', '/tmp/rw')
+        b.wait_val('.volume-form[data-key="2"] input:first-child', rwdir)
+        b.wait_not_present('.volume-form[data-key="2"] .pending-callback')
+
         b.click('div.modal-footer button:contains("Run")')
         b.wait_not_present("div.modal-dialog")
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
@@ -474,6 +496,13 @@ class TestApplication(testlib.MachineCase):
         self.assertIn('PEAR=BANANA', env)
         self.assertIn('RHUBARB=STRAWBERRY', env)
         self.assertNotIn('MELON=GRAPE', env)
+
+        romnt = m.execute("podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro")
+        self.assertIn('ro', romnt)
+        self.assertIn(rodir[4:], romnt)
+        rwmnt = m.execute("podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/rw")
+        self.assertIn('rw', rwmnt)
+        self.assertIn(rwdir[4:], rwmnt)
 
         # Create another instance without port publishing
         b.wait_present('#containers-images tr:contains("busybox:latest")')
