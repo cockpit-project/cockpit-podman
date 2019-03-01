@@ -12,8 +12,6 @@ import cockpit from 'cockpit';
 
 import '../lib/form-layout.less';
 
-import './podman.scss';
-
 const _ = cockpit.gettext;
 
 const units = {
@@ -44,6 +42,14 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                        placeholder={_("Container port")}
                        value={item.containerPort || ''}
                        onChange={e => onChange(idx, 'containerPort', e.target.value)} />
+                <input className='form-control'
+                       type='number'
+                       step={1}
+                       min={1}
+                       max={65535}
+                       placeholder={_("Host port")}
+                       value={item.hostPort || ''}
+                       onChange={e => onChange(idx, 'hostPort', e.target.value)} />
                 <Select.Select className='form-control'
                                initial={item.protocol}
                                onChange={value => onChange(idx, 'protocol', value)} >
@@ -54,14 +60,6 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                         {_("UDP")}
                     </Select.SelectEntry>
                 </Select.Select>
-                <input className='form-control'
-                       type='number'
-                       step={1}
-                       min={1}
-                       max={65535}
-                       placeholder={_("Host port")}
-                       value={item.hostPort || ''}
-                       onChange={e => onChange(idx, 'hostPort', e.target.value)} />
             </div>
             <div role='group' className='ct-form-layout-split'>
                 <Button bsStyle='default' className='pficon-close'

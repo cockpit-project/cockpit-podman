@@ -631,6 +631,10 @@ table.drive-list td:nth-child(2) img {
 
 /* Align the buttons on DynamicListForms to the right */
 .form-list-control > div:last-child {
-    grid-column-start: 4;
-    justify-self: end;
+    grid-column-start: 4 !important;
+    justify-self: end !important;
+}
+
+.form-list-control input {
+    width: 125px !important;
 }
