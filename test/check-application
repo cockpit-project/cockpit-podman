@@ -169,87 +169,119 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        # Create and start registry container
-        m.execute("podman run -d -p 5000:5000 --name registry registry:2")
+        def prepare():
+            # Create and start registry container
+            m.execute("podman run -d -p 5000:5000 --name registry registry:2")
+            # Add local insecure registry into resgitries conf
+            m.execute("echo \"{0}\" > /etc/containers/registries.conf && systemctl stop io.podman.service".format(REGISTRIES_CONF))
+            # Push busybox image to the local registry
+            m.execute("podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+            # Untag busybox image which duplicates the image we are about to download
+            m.execute("podman rmi -f busybox")
 
-        # Add local insecure registry into resgitries conf
-        m.execute("echo \"{0}\" > /etc/containers/registries.conf && systemctl stop io.podman.service".format(REGISTRIES_CONF))
+        class DownloadImageDialog:
+            def __init__(self, imageName, imageTag=None):
+                self.imageName = imageName
+                self.imageTag = imageTag
 
-        # Push busybox image to the local registry
-        m.execute("podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+            def openDialog(self):
+                # Open get new image modal
+                b.wait_present("caption a:contains(Get new image)")
+                b.click("caption a:contains(Get new image)")
+                b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+                b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
 
-        # Untag busybox image which duplicates the image we are about to download
-        m.execute("podman rmi -f busybox")
+                return self
+
+            def fillDialog(self):
+                # Search for image specied with self.imageName and self.imageTag
+                b.wait_present("#search-image-dialog-name")
+                b.set_input_text("#search-image-dialog-name", self.imageName)
+                if self.imageTag:
+                    b.wait_present(".image-tag-entry")
+                    b.set_input_text(".image-tag-entry", self.imageTag)
+
+                return self
+
+            def selectImageAndDownload(self):
+                # Select and download the self.imageName image
+                b.wait_present("div.list-group div.image-list-item label:contains({0})".format(self.imageName))
+                b.click("div.list-group div.image-list-item label:contains({0})".format(self.imageName))
+                b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):not([disabled])")
+                b.click("div.modal-dialog div.modal-footer button:contains(Download)")
+
+                return self
+
+            def expectDownloadErrorForNonExistingTag(self):
+                b.wait_not_present('div.modal-dialog')
+                b.wait_present('div.alert:contains("Failed to download image localhost:5000/{0}:{1}")'.format(self.imageName, self.imageTag))
+
+                return self
+
+            def expectSearchErrorForNotExistingImage(self):
+                b.wait_present("div.modal-body:contains(No results for {0})".format(self.imageName))
+
+                return self
+
+            def expectDownloadSuccess(self):
+                # Confirm that the modal dialog is not open anymore
+                b.wait_not_present('div.modal-dialog')
+                # Confirm that the image got downloaded
+                b.wait_present('#containers-images tr:contains("{0}")'.format(self.imageName))
+
+                return self
+
+            def deleteImage(self):
+                if self.imageTag:
+                    imageTagSuffix =  ":" + self.imageTag
+                else:
+                    imageTagSuffix = ""
+
+                # Select the image row
+                b.click('#containers-images tbody tr:contains("{0}{1}") td.listing-ct-toggle'.format(self.imageName, imageTagSuffix))
+
+                # Click the delete icon on the image row
+                b.wait_present('#containers-images tbody tr:contains("{0}{1}") + tr button.btn-delete'.format(self.imageName, imageTagSuffix))
+                b.click('#containers-images tbody tr:contains("{0}{1}") + tr button.btn-delete'.format(self.imageName, imageTagSuffix))
+
+                # Confirm deletion in the delete dialog
+                b.wait_present(".modal-dialog div")
+                b.wait_present(".modal-dialog div #btn-img-delete")
+                b.click(".modal-dialog div #btn-img-delete")
+
+                b.wait_not_present('#containers-images tr:contains("{0}")'.format(self.imageName))
+
+                return self
+
+        prepare()
 
         self.login_and_go("/podman")
         b.wait_present("#app")
 
-        # Open get new image modal
-        b.wait_present("caption a:contains(Get new image)")
-        b.click("caption a:contains(Get new image)")
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+        dialog = DownloadImageDialog('my-busybox')
+        dialog.openDialog() \
+              .fillDialog() \
+              .selectImageAndDownload() \
+              .expectDownloadSuccess() \
+              .deleteImage()
 
-        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
+        dialog = DownloadImageDialog('my-busybox', 'latest')
+        dialog.openDialog() \
+              .fillDialog() \
+              .selectImageAndDownload() \
+              .expectDownloadSuccess() \
+              .deleteImage()
 
-        # Search for the my-busybox image we just pushed
-        b.wait_present("#search-image-dialog-name")
-        b.set_input_text("#search-image-dialog-name", "my-busybox")
-        b.wait_present("div.list-group div.image-list-item label:contains(my-busybox)")
+        dialog = DownloadImageDialog('foobar')
+        dialog.openDialog() \
+              .fillDialog() \
+              .expectSearchErrorForNotExistingImage()
 
-        # Select and download the my-busybox image
-        b.click("div.list-group div.image-list-item label:contains(my-busybox)")
-        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):not([disabled])")
-        b.click("div.modal-dialog div.modal-footer button:contains(Download)")
-        b.wait_not_present('div.modal-dialog')
-
-        # Confirm that the image got downloaded
-        b.wait_present('#containers-images tr:contains("my-busybox")')
-
-        # Delete the image and restart the process
-        b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
-        b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
-        b.click('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
-        b.wait_present(".modal-dialog div")
-        b.wait_present(".modal-dialog div #btn-img-delete")
-        b.click(".modal-dialog div #btn-img-delete")
-
-        # Try to download my-busybox image again but now specifying the tag name (latest)
-        b.click("caption a:contains(Get new image)")
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
-        b.wait_present(".image-tag-entry")
-        b.set_input_text(".image-tag-entry", "latest")
-        b.wait_present("#search-image-dialog-name")
-        b.set_input_text("#search-image-dialog-name", "my-busybox")
-        b.wait_present("div.list-group div.image-list-item label:contains(my-busybox)")
-
-        # Select and download the my-busybox:latest image
-        b.click("div.list-group div.image-list-item label:contains(my-busybox)")
-        b.click("div.modal-dialog div.modal-footer button:contains(Download)")
-        b.wait_not_present('div.modal-dialog')
-
-        # Confirm that the image got downloaded
-        b.wait_present('#containers-images tr:contains("my-busybox")')
-
-        # Open get new image modal
-        b.wait_present("caption a:contains(Get new image)")
-        b.click("caption a:contains(Get new image)")
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
-
-        # Search for an non-existing image
-        b.wait_present("#search-image-dialog-name")
-        b.set_input_text("#search-image-dialog-name", "foobar")
-        b.wait_present("div.modal-body:contains(No results for foobar)")
-
-        # Search for an existing image but non-existing tag
-        b.set_input_text("#search-image-dialog-name", "my-busybox")
-        b.wait_present("div.list-group div.image-list-item label:contains(my-busybox)")
-        b.set_input_text(".image-tag-entry", "nonexistingtag")
-
-        # Select and try to download the my-busybox:nonexistingtag image
-        b.click("div.list-group div.image-list-item label:contains(my-busybox)")
-        b.click("div.modal-dialog div.modal-footer button:contains(Download)")
-        b.wait_not_present('div.modal-dialog')
-        b.wait_present('div.alert:contains("Failed to download image localhost:5000/my-busybox:nonexistingtag")')
+        dialog = DownloadImageDialog('my-busybox', 'foobar')
+        dialog.openDialog() \
+              .fillDialog() \
+              .selectImageAndDownload() \
+              .expectDownloadErrorForNonExistingTag()
 
     def testLifecycleOperations(self):
         b = self.browser
