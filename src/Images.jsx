@@ -62,9 +62,13 @@ class Images extends React.Component {
         }));
     }
 
-    downloadImage(imageName) {
+    downloadImage(imageName, imageTag) {
+        let pullImageId = imageName;
+        if (imageTag)
+            pullImageId += ":" + imageTag;
+
         this.setState({ imageDownloadInProgress: imageName });
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.PullImage", { name: imageName })
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.PullImage", { name: pullImageId })
                 .then(() => {
                     this.setState({ imageDownloadInProgress: undefined });
                     return this.props.updateImagesAfterEvent();
@@ -73,7 +77,7 @@ class Images extends React.Component {
                     let error = (
                         <React.Fragment>
                             <strong>
-                                {cockpit.format(_("Failed to download image $0"), imageName)}
+                                {cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest")}
                             </strong>
                             <p> {_("Error message")}:
                                 <samp>{cockpit.format("$0 $1", ex.error, ex.parameters && ex.parameters.reason)}</samp>
