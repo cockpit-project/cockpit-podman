@@ -205,6 +205,31 @@ class TestApplication(testlib.MachineCase):
         # Confirm that the image got downloaded
         b.wait_present('#containers-images tr:contains("my-busybox")')
 
+        # Delete the image and restart the process
+        b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.click('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.wait_present(".modal-dialog div")
+        b.wait_present(".modal-dialog div #btn-img-delete")
+        b.click(".modal-dialog div #btn-img-delete")
+
+        # Try to download my-busybox image again but now specifying the tag name (latest)
+        b.click("caption a:contains(Get new image)")
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+        b.wait_present(".image-tag-entry")
+        b.set_input_text(".image-tag-entry", "latest")
+        b.wait_present("#search-image-dialog-name")
+        b.set_input_text("#search-image-dialog-name", "my-busybox")
+        b.wait_present("div.list-group div.image-list-item label:contains(my-busybox)")
+
+        # Select and download the my-busybox:latest image
+        b.click("div.list-group div.image-list-item label:contains(my-busybox)")
+        b.click("div.modal-dialog div.modal-footer button:contains(Download)")
+        b.wait_not_present('div.modal-dialog')
+
+        # Confirm that the image got downloaded
+        b.wait_present('#containers-images tr:contains("my-busybox")')
+
         # Open get new image modal
         b.wait_present("caption a:contains(Get new image)")
         b.click("caption a:contains(Get new image)")
@@ -214,6 +239,17 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#search-image-dialog-name")
         b.set_input_text("#search-image-dialog-name", "foobar")
         b.wait_present("div.modal-body:contains(No results for foobar)")
+
+        # Search for an existing image but non-existing tag
+        b.set_input_text("#search-image-dialog-name", "my-busybox")
+        b.wait_present("div.list-group div.image-list-item label:contains(my-busybox)")
+        b.set_input_text(".image-tag-entry", "nonexistingtag")
+
+        # Select and try to download the my-busybox:nonexistingtag image
+        b.click("div.list-group div.image-list-item label:contains(my-busybox)")
+        b.click("div.modal-dialog div.modal-footer button:contains(Download)")
+        b.wait_not_present('div.modal-dialog')
+        b.wait_present('div.alert:contains("Failed to download image localhost:5000/my-busybox:nonexistingtag")')
 
     def testLifecycleOperations(self):
         b = self.browser
