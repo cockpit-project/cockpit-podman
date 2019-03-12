@@ -67,10 +67,10 @@ export class ImageSearchModal extends React.Component {
                 .then(connection => {
                     this.activeConnection = connection;
 
-                    connection.call("io.podman.SearchImage", { name: this.state.imageIdentifier })
+                    connection.call("io.podman.SearchImages", { query: this.state.imageIdentifier })
                             .then(reply => {
                                 if (this._isMounted)
-                                    this.setState({ imageList: reply.images || [], searchInProgress: false, searchFinished: true });
+                                    this.setState({ imageList: reply.results || [], searchInProgress: false, searchFinished: true });
                             })
                             .catch(ex => {
                                 // We expect new searches to close the connection for ongoing searches
