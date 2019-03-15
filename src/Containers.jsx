@@ -19,31 +19,21 @@ class Containers extends React.Component {
         this.state = {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
-            containerCommitErrorMsg: "",
             containerWillDelete: {},
-            containerWillCommit: {},
         };
         this.renderRow = this.renderRow.bind(this);
         this.restartContainer = this.restartContainer.bind(this);
         this.startContainer = this.startContainer.bind(this);
         this.stopContainer = this.stopContainer.bind(this);
         this.deleteContainer = this.deleteContainer.bind(this);
-        this.dialogErrorDismiss = this.dialogErrorDismiss.bind(this);
         this.handleCancelContainerDeleteModal = this.handleCancelContainerDeleteModal.bind(this);
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
-        this.handleContainerCommitModal = this.handleContainerCommitModal.bind(this);
-        this.handleCancelContainerCommitModal = this.handleCancelContainerCommitModal.bind(this);
-        this.handleContainerCommit = this.handleContainerCommit.bind(this);
     }
 
     navigateToContainer(container) {
         cockpit.location.go([container.id]);
-    }
-
-    dialogErrorDismiss() {
-        this.setState({ containerCommitErrorMsg: undefined });
     }
 
     deleteContainer(container, event) {
@@ -95,61 +85,6 @@ class Containers extends React.Component {
                 }));
     }
 
-    handleContainerCommitModal(event, container) {
-        this.setState((prevState) => ({
-            containerWillCommit: container,
-            setContainerCommitModal: !prevState.setContainerCommitModal
-        }));
-    }
-
-    handleCancelContainerCommitModal() {
-        this.setState((prevState) => ({
-            setContainerCommitModal: !prevState.setContainerCommitModal
-        }));
-    }
-
-    handleContainerCommit(commitMsg) {
-        if (!commitMsg.imageName) {
-            this.setState({ containerCommitErrorMsg: "Image name is required" });
-            return;
-        }
-        let cmdStr = "";
-        if (commitMsg.command.trim() === "") {
-            cmdStr = this.state.containerWillCommit.Config ? this.state.containerWillCommit.Config.Cmd.join(" ") : "";
-        } else {
-            cmdStr = commitMsg.command.trim();
-        }
-
-        let commitData = {};
-        commitData.name = this.state.containerWillCommit.id;
-        commitData.image_name = commitMsg.tag ? commitMsg.imageName + ":" + commitMsg.tag : commitMsg.imageName;
-        commitData.author = commitMsg.author;
-        commitData.message = commitMsg.message;
-        commitData.pause = commitMsg.pause;
-        commitData.format = commitMsg.format;
-
-        commitData.changes = [];
-        let cmdData = "CMD=" + cmdStr;
-        commitData.changes.push(cmdData);
-
-        let onbuildsArr = [];
-        if (commitMsg.setonbuild) {
-            onbuildsArr = utils.getCommitArr(commitMsg.onbuild, "ONBUILD");
-        }
-        commitData.changes.push(...onbuildsArr);
-
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.Commit", commitData)
-                .then(reply => {
-                    this.props.updateImagesAfterEvent();
-                    this.props.updateContainersAfterEvent();
-                    this.setState({ setContainerCommitModal: false });
-                })
-                .catch(ex => {
-                    this.setState({ containerCommitErrorMsg: JSON.stringify(ex) });
-                    console.error("Failed to do Commit call:", ex, JSON.stringify(ex));
-                });
-    }
-
     renderRow(containersStats, container) {
         const containerStats = containersStats[container.id];
         const isRunning = container.status == "running";
@@ -181,7 +116,7 @@ class Containers extends React.Component {
                 disabled={isRunning}
                 data-container-id={container.id}
                 data-toggle="modal" data-target="#container-commit-dialog"
-                onClick={(event) => this.handleContainerCommitModal(event, container)}
+                onClick={() => this.setState({ showCommitModal: true, containerWillCommit: container })}
             >
                 {_("Commit")}
             </button>,
@@ -278,12 +213,10 @@ class Containers extends React.Component {
 
         const containerCommitModal =
             <ContainerCommitModal
-                setContainerCommitModal={this.state.setContainerCommitModal}
-                handleContainerCommit={this.handleContainerCommit}
-                handleCancelContainerCommitModal={this.handleCancelContainerCommitModal}
-                containerWillCommit={this.state.containerWillCommit}
-                dialogError={this.state.containerCommitErrorMsg}
-                dialogErrorDismiss={this.dialogErrorDismiss}
+                updateContainersAfterEvent={this.props.updateContainersAfterEvent}
+                updateImagesAfterEvent={this.props.updateImagesAfterEvent}
+                onHide={() => this.setState({ showCommitModal: false })}
+                container={this.state.containerWillCommit}
             />;
         const { actionError, actionErrorDetail } = this.state;
 
@@ -300,7 +233,7 @@ class Containers extends React.Component {
                 </Listing.Listing>
                 {containerDeleteModal}
                 {containerRemoveErrorModal}
-                {containerCommitModal}
+                {this.state.showCommitModal && containerCommitModal}
             </div>
         );
     }

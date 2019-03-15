@@ -1,6 +1,10 @@
 import React from 'react';
-import { Alert, Modal, Button, FormGroup, FormControl } from 'patternfly-react';
+import { Modal, Button, FormGroup, FormControl } from 'patternfly-react';
 import cockpit from 'cockpit';
+
+import * as utils from './util.js';
+import varlink from './varlink.js';
+import { ErrorNotification } from './Notification.jsx';
 
 import '../lib/form-layout.less';
 
@@ -9,12 +13,12 @@ const _ = cockpit.gettext;
 class ContainerCommitModal extends React.Component {
     constructor(props) {
         super(props);
-        this.initialState = {
+        this.state = {
             imageName: "",
             tag: "",
             author:"",
             message: "",
-            command: this.props.containerWillCommit.command ? this.props.containerWillCommit.command.join(" ") : "",
+            command: props.container.command ? props.container.command.join(" ") : "",
             pause: true,
             setonbuild: false,
             onbuild: [""],
@@ -22,9 +26,8 @@ class ContainerCommitModal extends React.Component {
             selectedFormat: "oci",
             onbuildDisabled: true,
         };
-        this.state = { ...this.initialState };
+
         this.handleInputChange = this.handleInputChange.bind(this);
-        this.handleCancel = this.handleCancel.bind(this);
         this.handleCommit = this.handleCommit.bind(this);
         this.handleOnBuildsInputChange = this.handleOnBuildsInputChange.bind(this);
         this.handleAddOnBuild = this.handleAddOnBuild.bind(this);
@@ -58,6 +61,50 @@ class ContainerCommitModal extends React.Component {
         });
     }
 
+    handleCommit() {
+        if (!this.state.imageName) {
+            this.setState({ dialogError: "Image name is required" });
+            return;
+        }
+        let cmdStr = "";
+        if (this.state.command.trim() === "") {
+            cmdStr = this.props.container.Config ? this.props.container.Config.Cmd.join(" ") : "";
+        } else {
+            cmdStr = this.state.command.trim();
+        }
+
+        let commitData = {};
+        commitData.name = this.props.container.id;
+        commitData.image_name = this.state.tag ? this.state.imageName + ":" + this.state.tag : this.state.imageName;
+        commitData.author = this.state.author;
+        commitData.message = this.state.message;
+        commitData.pause = this.state.pause;
+        commitData.format = this.state.format;
+
+        commitData.changes = [];
+        let cmdData = "CMD=" + cmdStr;
+        commitData.changes.push(cmdData);
+
+        let onbuildsArr = [];
+        if (this.state.setonbuild) {
+            onbuildsArr = utils.getCommitArr(this.state.onbuild, "ONBUILD");
+        }
+        commitData.changes.push(...onbuildsArr);
+
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.Commit", commitData)
+                .then(() => {
+                    this.props.updateImagesAfterEvent();
+                    this.props.updateContainersAfterEvent();
+                    this.props.onHide();
+                })
+                .catch(ex => {
+                    this.setState({
+                        dialogError: cockpit.format(_("Failed to commit container $0"), this.props.container.names),
+                        dialogErrorDetail: cockpit.format("$0: $1", ex.error, ex.parameters && ex.parameters.reason)
+                    });
+                });
+    }
+
     handleFormatChange(event) {
         const selectItem = event.target.value;
         this.setState({
@@ -65,16 +112,6 @@ class ContainerCommitModal extends React.Component {
             format: selectItem,
             onbuildDisabled: selectItem === "oci"
         });
-    }
-
-    handleCommit() {
-        this.props.handleContainerCommit(this.state);
-        this.setState(this.initialState);
-    }
-
-    handleCancel() {
-        this.props.handleCancelContainerCommitModal();
-        this.setState(this.initialState);
     }
 
     render() {
@@ -94,7 +131,7 @@ class ContainerCommitModal extends React.Component {
                     {_("Container Name")}
                 </label>
                 <span id="commit-dialog-container-name">
-                    {this.props.containerWillCommit.names}
+                    {this.props.container.names}
                 </span>
 
                 <label className="control-label" htmlFor="commit-dialog-format">
@@ -162,10 +199,7 @@ class ContainerCommitModal extends React.Component {
             </div>;
 
         return (
-            <Modal
-                show={this.props.setContainerCommitModal}
-                aria-labelledby="contained-modal-title-lg"
-            >
+            <Modal show aria-labelledby="contained-modal-title-lg">
                 <Modal.Header>
                     <Modal.Title id="contained-modal-title-lg">{_("Commit Image")}</Modal.Title>
                 </Modal.Header>
@@ -173,8 +207,8 @@ class ContainerCommitModal extends React.Component {
                     {commitContent}
                 </Modal.Body>
                 <Modal.Footer>
-                    {this.props.dialogError && (<Alert onDismiss={this.props.dialogErrorDismiss}> {this.props.dialogError} </Alert>)}
-                    <Button className="btn-ctr-cancel-commit" onClick={this.handleCancel}>{_("Cancel")}</Button>
+                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
+                    <Button className="btn-ctr-cancel-commit" onClick={this.props.onHide}>{_("Cancel")}</Button>
                     <Button bsStyle="primary" className="btn-ctr-commit" onClick={this.handleCommit}>{_("Commit")}</Button>
                 </Modal.Footer>
             </Modal>
