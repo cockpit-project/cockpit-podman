@@ -23,9 +23,9 @@ import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
 
-export const ErrorNotification = ({ errorMessage, errorDetail }) => {
+export const ErrorNotification = ({ errorMessage, errorDetail, onDismiss }) => {
     return (
-        <Alert>
+        <Alert onDismiss={onDismiss}>
             <strong>
                 {errorMessage}
             </strong>
