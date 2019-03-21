@@ -62,8 +62,8 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                 </Select.Select>
             </div>
             <div role='group' className='ct-form-layout-split'>
-                <Button bsStyle='default' className='pficon-close'
-                        disabled={ idx === 0 && !item.hostPort && !item.containerPort }
+                <Button bsStyle='default'
+                        className={'pficon-close' + (idx === 0 && !item.hostPort && !item.containerPort ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
                 <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
             </div>
@@ -87,8 +87,8 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
                        onChange={e => onChange(idx, 'envValue', e.target.value)} />
             </div>
             <div role='group' className='ct-form-layout-split'>
-                <Button bsStyle='default' className='pficon-close'
-                        disabled={ idx === 0 && !item.envKey && !item.envValue }
+                <Button bsStyle='default'
+                        className={'pficon-close' + (idx === 0 && !item.envKey && !item.envValue ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
                 <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
             </div>
@@ -120,8 +120,8 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                 </Select.Select>
             </div>
             <div role='group' className='ct-form-layout-split'>
-                <Button bsStyle='default' className='pficon-close'
-                        disabled={ idx === 0 && !item.containerPath && !item.hostPath }
+                <Button bsStyle='default'
+                        className={'pficon-close' + (idx === 0 && !item.containerPath && !item.hostPath ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
                 <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
             </div>
@@ -293,6 +293,7 @@ export class ImageRunModal extends React.Component {
                     onChange={e => this.onValueChanged('containerName', e.target.value)}
                     className='form-control' />
 
+                <hr />
                 <label className='control-label' htmlFor='run-image-dialog-command'>
                     {_("Command")}
                 </label>
@@ -342,6 +343,7 @@ export class ImageRunModal extends React.Component {
                            onChange={e => this.onValueChanged('hasTTY', e.target.checked)} />
                 </label>
 
+                <hr />
                 <label className='control-label' htmlFor='run-image-dialog-publish'>{ _("Ports") }</label>
                 <DynamicListForm id='run-image-dialog-publish'
                                  formclass='publish-port-form'
@@ -349,6 +351,7 @@ export class ImageRunModal extends React.Component {
                                  default={{ containerPort: null, hostPort: null, protocol: 'TCP' }}
                                  itemcomponent={ <PublishPort />} />
 
+                <hr />
                 <label className='control-label' htmlFor='run-image-dialog-env'>{ _("Volumes") }</label>
                 <DynamicListForm id='run-image-dialog-volume'
                                  formclass='volume-form'
@@ -356,6 +359,7 @@ export class ImageRunModal extends React.Component {
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
                                  itemcomponent={ <Volume />} />
 
+                <hr />
                 <label className='control-label' htmlFor='run-image-dialog-env'>{ _("Environment") }</label>
                 <DynamicListForm id='run-image-dialog-env'
                                  formclass='env-form'
