@@ -256,10 +256,7 @@ export class ImageRunModal extends React.Component {
 
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.CreateContainer", { create: createConfig })
                 .then(reply => varlink.call(utils.PODMAN_ADDRESS, "io.podman.StartContainer", { name: reply.container }))
-                .then(() => {
-                    this.props.close();
-                    return this.props.updateContainersAfterEvent();
-                })
+                .then(() => this.props.close())
                 .catch(ex => {
                     this.setState({
                         dialogError: _("Container failed to be created"),

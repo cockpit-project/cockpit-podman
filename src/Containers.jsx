@@ -56,7 +56,6 @@ class Containers extends React.Component {
         if (force)
             args.timeout = 0;
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.StopContainer", args)
-                .then(() => this.props.updateContainersAfterEvent())
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to stop container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -65,7 +64,6 @@ class Containers extends React.Component {
 
     startContainer(container) {
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.StartContainer", { name: container.names })
-                .then(() => this.props.updateContainersAfterEvent())
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to start container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -78,7 +76,6 @@ class Containers extends React.Component {
         if (force)
             args.timeout = 0;
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.RestartContainer", args)
-                .then(() => this.props.updateContainersAfterEvent())
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to restart container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -162,9 +159,6 @@ class Containers extends React.Component {
             selectContainerDeleteModal: false
         });
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", { name: id })
-                .then((reply) => {
-                    this.props.updateContainersAfterEvent();
-                })
                 .catch(ex => console.error("Failed to do RemoveContainer call:", JSON.stringify(ex)));
     }
 
@@ -182,7 +176,6 @@ class Containers extends React.Component {
                     this.setState({
                         setContainerRemoveErrorModal: false
                     });
-                    this.props.updateContainersAfterEvent();
                 })
                 .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
     }
@@ -213,8 +206,6 @@ class Containers extends React.Component {
 
         const containerCommitModal =
             <ContainerCommitModal
-                updateContainersAfterEvent={this.props.updateContainersAfterEvent}
-                updateImagesAfterEvent={this.props.updateImagesAfterEvent}
                 onHide={() => this.setState({ showCommitModal: false })}
                 container={this.state.containerWillCommit}
             />;

@@ -45,7 +45,6 @@ class Application extends React.Component {
         this.onAddNotification = this.onAddNotification.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onChange = this.onChange.bind(this);
-        this.updateContainersAfterEvent = this.updateContainersAfterEvent.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
@@ -106,6 +105,16 @@ class Application extends React.Component {
                     this.setState({ serviceAvailable: true });
                     this.updateImagesAfterEvent();
                     this.updateContainersAfterEvent();
+
+                    return varlink.connect(utils.PODMAN_ADDRESS);
+                })
+                .then(connection => {
+                    return connection.monitor(
+                        "io.podman.GetEvents", {},
+                        () => {
+                            this.updateContainersAfterEvent();
+                            this.updateImagesAfterEvent();
+                        });
                 })
                 .catch(error => {
                     if (error.name === "ConnectionClosed")
@@ -183,8 +192,6 @@ class Application extends React.Component {
             <Images
                 key={_("imageList")}
                 images={this.state.images}
-                updateContainersAfterEvent={this.updateContainersAfterEvent}
-                updateImagesAfterEvent={this.updateImagesAfterEvent}
                 onAddNotification={this.onAddNotification}
             />;
         containerList =
@@ -193,8 +200,6 @@ class Application extends React.Component {
                 containers={this.state.containers}
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}
-                updateContainersAfterEvent={this.updateContainersAfterEvent}
-                updateImagesAfterEvent={this.updateImagesAfterEvent}
             />;
         const notificationList = (
             <ToastNotificationList>
