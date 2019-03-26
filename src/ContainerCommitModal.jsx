@@ -92,11 +92,7 @@ class ContainerCommitModal extends React.Component {
         commitData.changes.push(...onbuildsArr);
 
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.Commit", commitData)
-                .then(() => {
-                    this.props.updateImagesAfterEvent();
-                    this.props.updateContainersAfterEvent();
-                    this.props.onHide();
-                })
+                .then(() => this.props.onHide())
                 .catch(ex => {
                     this.setState({
                         dialogError: cockpit.format(_("Failed to commit container $0"), this.props.container.names),

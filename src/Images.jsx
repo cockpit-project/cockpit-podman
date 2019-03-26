@@ -71,7 +71,6 @@ class Images extends React.Component {
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.PullImage", { name: pullImageId })
                 .then(() => {
                     this.setState({ imageDownloadInProgress: undefined });
-                    return this.props.updateImagesAfterEvent();
                 })
                 .catch(ex => {
                     let error = (
@@ -101,9 +100,6 @@ class Images extends React.Component {
             selectImageDeleteModal: false,
         });
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", { name: image })
-                .then(() => {
-                    this.props.updateImagesAfterEvent();
-                })
                 .catch(ex => {
                     this.imageRemoveErrorMsg = ex.parameters.reason;
                     this.setState({
@@ -119,8 +115,6 @@ class Images extends React.Component {
                     this.setState({
                         setImageRemoveErrorModal: false
                     });
-                    this.props.updateImagesAfterEvent();
-                    this.props.updateContainersAfterEvent();
                 })
                 .catch(ex => console.error("Failed to do RemoveImageForce call:", JSON.stringify(ex)));
     }
@@ -246,8 +240,7 @@ class Images extends React.Component {
                 {this.state.showRunImageModal &&
                 <ImageRunModal
                     close={() => this.setState({ showRunImageModal: undefined })}
-                    image={this.state.showRunImageModal}
-                    updateContainersAfterEvent={this.props.updateContainersAfterEvent} /> }
+                    image={this.state.showRunImageModal} /> }
                 {this.state.showSearchImageModal &&
                 <ImageSearchModal
                     close={() => this.setState({ showSearchImageModal: false })}

@@ -18,7 +18,7 @@ class VarlinkError extends Error {
  *
  * Returns a connection object:
  *
- * - connection.call(method, parameters) calls "method" (prefixed by the
+ * - connection.call(method, parameters, more) calls "method" (prefixed by the
  *   interface) with "parameters". Multiple calls can be made without waiting
  *   for replies, but calls are made sequentially (similar to http). Returns a
  *   promise that resolves with the return value of the method or a tuple
@@ -53,15 +53,20 @@ function connect(address) {
 
         for (let i = 0; i < chunks.length; i += 1) {
             const message = JSON.parse(chunks[i]);
+            const { resolve, reject, replyCallback } = pending.shift();
 
-            let { resolve, reject } = pending.shift();
-            if (message.error)
+            if (message.error) {
                 reject({
                     error: message.error,
                     parameters: message.parameters
                 });
-            else
+            } else if (replyCallback) {
+                replyCallback(message);
+                if (message.continues)
+                    pending.push({ resolve, reject, replyCallback });
+            } else {
                 resolve(message.parameters);
+            }
         }
     });
 
@@ -81,6 +86,17 @@ function connect(address) {
         channel.send([0]);
 
         return new Promise((resolve, reject) => pending.push({ resolve, reject }));
+    };
+
+    connection.monitor = function (method, parameters, replyCallback) {
+        parameters = parameters || {};
+
+        const data = encoder.encode(JSON.stringify({ method, parameters, more: true }));
+
+        channel.send(data);
+        channel.send([0]);
+
+        return new Promise((resolve, reject) => pending.push({ resolve, reject, replyCallback }));
     };
 
     connection.close = function () {
