@@ -48,6 +48,8 @@ class Application extends React.Component {
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
+        this.handleImageEvent = this.handleImageEvent.bind(this);
+        this.handleContainerEvent = this.handleContainerEvent.bind(this);
     }
 
     onAddNotification(notification) {
@@ -99,6 +101,75 @@ class Application extends React.Component {
                 });
     }
 
+    handleImageEvent(event) {
+        switch (event.status) {
+        case 'prune':
+        case 'pull':
+        case 'push':
+        case 'remove':
+        case 'save':
+        case 'tag':
+        case 'untag':
+            this.updateImagesAfterEvent();
+            break;
+        default:
+            console.warn('Unhandled event type ', event.type, event.status);
+        }
+    }
+
+    handleContainerEvent(event) {
+        switch (event.status) {
+        /* The following events do not need to trigger any state updates */
+        case 'attach':
+        case 'exec':
+        case 'export':
+        case 'import':
+        case 'init':
+        case 'wait':
+            break;
+        /* The following events need only to update the Container list
+         * We do get the container affected in the event object but for
+         * now we 'll do a batch update
+         */
+        case 'checkpoint':
+        case 'cleanup':
+        case 'create':
+        case 'died':
+        case 'kill':
+        case 'mount':
+        case 'pause':
+        case 'prune':
+        case 'remove':
+        case 'restore':
+        case 'start':
+        case 'stop':
+        case 'sync':
+        case 'unmount':
+        case 'unpause':
+            this.updateContainersAfterEvent();
+            break;
+        /* The following events need only to update the Image list */
+        case 'commit':
+            this.updateImagesAfterEvent();
+            break;
+        default:
+            console.warn('Unhandled event type ', event.type, event.status);
+        }
+    }
+
+    handleEvent(event) {
+        switch (event.type) {
+        case 'container':
+            this.handleContainerEvent(event);
+            break;
+        case 'image':
+            this.handleImageEvent(event);
+            break;
+        default:
+            console.warn('Unhandled event type ', event.type);
+        }
+    }
+
     init() {
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.GetVersion")
                 .then(reply => {
@@ -111,10 +182,8 @@ class Application extends React.Component {
                 .then(connection => {
                     return connection.monitor(
                         "io.podman.GetEvents", {},
-                        () => {
-                            this.updateContainersAfterEvent();
-                            this.updateImagesAfterEvent();
-                        });
+                        message => { message.parameters && message.parameters.events && this.handleEvent(message.parameters.events) }
+                    );
                 })
                 .catch(error => {
                     if (error.name === "ConnectionClosed")
