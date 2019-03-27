@@ -55,7 +55,7 @@ export class FileAutoComplete extends React.Component {
         this.debouncedChange = debounce(300, (value) => {
             this.pendingCallback = false;
             if (!this.updateIfDirectoryChanged(value)) {
-                var stateUpdate = this.filterFiles(value);
+                let stateUpdate = this.filterFiles(value);
                 this.setState(stateUpdate);
                 this.onChangeCallback(value, { error: stateUpdate.error });
             }
