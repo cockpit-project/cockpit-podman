@@ -352,6 +352,7 @@ class TestApplication(testlib.MachineCase):
         self.assertEqual(m.execute("systemctl is-active io.podman.socket").strip(), "active")
 
         self.allow_journal_messages("/run/podman/io.podman: couldn't connect.*")
+        self.allow_restart_journal_messages()
 
     def testRunImage(self):
         b = self.browser
