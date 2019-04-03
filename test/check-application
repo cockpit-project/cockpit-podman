@@ -30,7 +30,6 @@ class TestApplication(testlib.MachineCase):
         self.login_and_go("/podman")
         b.wait_present("#app")
         b.wait_present(".content-filter div")
-        b.wait_present("#containers-images")
         b.wait_in_text("#containers-images", "busybox:latest")
 
         # show image listing toggle
@@ -40,7 +39,6 @@ class TestApplication(testlib.MachineCase):
 
         # make sure no running containers shown
         self.filter_containers('running')
-        b.wait_present("#containers-containers")
         b.wait_in_text("#containers-containers", "No running containers")
 
         # run a container (will exit immediately)
@@ -89,7 +87,6 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers("all")
         b.wait_present('#containers-containers tr:contains("alpine:latest")')
         b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
-        b.wait_present('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-delete')
         b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-delete')
         self.confirm_modal("btn-ctr-delete")
         b.wait_not_in_text("#containers-containers", "alpine:latest")
@@ -102,7 +99,6 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers tr:contains("alpine:latest")')
         b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
         # open commit modal and close it using cancel
-        b.wait_present('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
         b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
         self.confirm_modal("btn-ctr-cancel-commit")
         # open commit modal and create an image
@@ -124,11 +120,9 @@ class TestApplication(testlib.MachineCase):
 
         # open commit modal and check error modal
         b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
-        b.wait_present(".modal-dialog div")
         # check required field error
         b.click(".modal-dialog div .btn-ctr-commit")
         b.wait_present('.modal-dialog div:contains("Image name is required")')
-        b.wait_present(".modal-dialog div .alert .close")
         b.click(".modal-dialog div .alert .close")
         b.wait_not_present(".modal-dialog div .alert")
         # check varlink error
@@ -136,17 +130,14 @@ class TestApplication(testlib.MachineCase):
         b.click(".modal-dialog div .btn-ctr-commit")
         b.wait_present(".modal-dialog div")
         b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
-        b.wait_present(".modal-dialog div .alert .close")
         b.click(".modal-dialog div .alert .close")
         b.wait_not_present(".modal-dialog div .alert")
 
         # delete image busybox that hasn't been used
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
-        b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
         b.click('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
         b.wait_present(".modal-dialog div")
-        b.wait_present(".modal-dialog div #btn-img-delete")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
         b.wait_not_in_text("#containers-images", "busybox:latest")
@@ -154,14 +145,11 @@ class TestApplication(testlib.MachineCase):
         # delete image alpine that has been used by a container
         b.wait_present('#containers-images tr:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-toggle')
-        b.wait_present('#containers-images tbody tr:contains("alpine:latest") + tr button.btn-delete')
         b.click('#containers-images tbody tr:contains("alpine:latest") + tr button.btn-delete')
         b.wait_present(".modal-dialog div")
-        b.wait_present(".modal-dialog div #btn-img-delete")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
         b.wait_present(".modal-dialog div")
-        b.wait_present(".modal-dialog div #btn-img-deleteerror")
         b.click(".modal-dialog div #btn-img-deleteerror")
         b.wait_not_present("modal-dialog div #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", "alpine:latest")
@@ -187,7 +175,6 @@ class TestApplication(testlib.MachineCase):
 
             def openDialog(self):
                 # Open get new image modal
-                b.wait_present("caption a:contains(Get new image)")
                 b.click("caption a:contains(Get new image)")
                 b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
                 b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
@@ -196,10 +183,8 @@ class TestApplication(testlib.MachineCase):
 
             def fillDialog(self):
                 # Search for image specied with self.imageName and self.imageTag
-                b.wait_present("#search-image-dialog-name")
                 b.set_input_text("#search-image-dialog-name", self.imageName)
                 if self.imageTag:
-                    b.wait_present(".image-tag-entry")
                     b.set_input_text(".image-tag-entry", self.imageTag)
 
                 return self
@@ -247,7 +232,6 @@ class TestApplication(testlib.MachineCase):
 
                 # Confirm deletion in the delete dialog
                 b.wait_present(".modal-dialog div")
-                b.wait_present(".modal-dialog div #btn-img-delete")
                 b.click(".modal-dialog div #btn-img-delete")
 
                 b.wait_not_present('#containers-images tr:contains("{0}")'.format(self.imageName))
@@ -302,7 +286,6 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
 
         # Start the container
-        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Start)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Start)')
 
         with b.wait_timeout(5):
@@ -310,9 +293,7 @@ class TestApplication(testlib.MachineCase):
 
         # Restart the container
         old_pid = m.execute("podman inspect --format '{{.State.Pid}}' swamped-crate".strip())
-        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart)')
-        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Restart)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Restart)')
         # We don't receive signals yet so restarting container will not update the state like running->stopped->running
         # but we 'll probably see no change at all.
@@ -330,9 +311,7 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
 
         # Stop the container
-        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop)')
-        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Stop)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Stop)')
 
         self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'stopped'])
@@ -347,16 +326,13 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#app .blank-slate-pf")
 
         # Troubleshoot action
-        b.wait_present("#app .blank-slate-pf button.btn-default")
         b.click("#app .blank-slate-pf button.btn-default")
         b.enter_page("/system/services")
-        b.wait_present("#service-unit")
         b.wait_in_text("#service-unit", "io.podman.socket")
 
         # Start action, with enabling (by default)
         b.go("/podman")
         b.enter_page("/podman")
-        b.wait_present("#app .blank-slate-pf button.btn-primary")
         b.click("#app .blank-slate-pf button.btn-primary")
 
         b.wait_present("#containers-containers")
@@ -368,9 +344,7 @@ class TestApplication(testlib.MachineCase):
         m.execute("systemctl disable --now io.podman.socket")
         b.reload()
         b.enter_page("/podman")
-        b.wait_present("#app .blank-slate-pf input[type=checkbox]")
         b.click("#app .blank-slate-pf input[type=checkbox]")
-        b.wait_present("#app .blank-slate-pf button.btn-primary")
         b.click("#app .blank-slate-pf button.btn-primary")
 
         b.wait_present("#containers-containers")
@@ -384,12 +358,10 @@ class TestApplication(testlib.MachineCase):
         m = self.machine
 
         self.login_and_go("/podman")
-        b.wait_present("#containers-images")
         b.wait_in_text("#containers-images", "busybox:latest")
 
         # Open run image dialog
         b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.wait_present('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-actions button')
         b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-actions button')
         b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
 
@@ -417,7 +389,6 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('.publish-port-form[data-key="0"] input:first-child', '5000')
         b.set_input_text('.publish-port-form[data-key="0"] input:nth-child(2)', '6000')
         b.click('.publish-port-form[data-key="0"] .fa-plus')
-        b.wait_present('.publish-port-form[data-key="1"]')
         b.set_input_text('.publish-port-form[data-key="1"] input:first-child', '5001')
         b.set_input_text('.publish-port-form[data-key="1"] input:nth-child(2)', '6001')
         b.click('.publish-port-form[data-key="1"] button.dropdown-toggle')
@@ -425,12 +396,10 @@ class TestApplication(testlib.MachineCase):
         b.click('.publish-port-form[data-key="1"] .dropdown-menu a:contains("UDP")')
         b.wait_visible('.publish-port-form[data-key="1"] button.dropdown-toggle:contains("UDP")')
         b.click('.publish-port-form[data-key="1"] .fa-plus')
-        b.wait_present('.publish-port-form[data-key="2"]')
         b.set_input_text('.publish-port-form[data-key="2"] input:first-child', '7001')
         b.set_input_text('.publish-port-form[data-key="2"] input:nth-child(2)', '7001')
         b.click('.publish-port-form[data-key="2"] .pficon-close')
         b.click('.publish-port-form[data-key="1"] .fa-plus')
-        b.wait_present('.publish-port-form[data-key="3"]')
         b.set_input_text('.publish-port-form[data-key="3"] input:first-child', '8001')
         b.set_input_text('.publish-port-form[data-key="3"] input:nth-child(2)', '8001')
 
@@ -438,22 +407,18 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('.env-form[data-key="0"] input:first-child', 'APPLE')
         b.set_input_text('.env-form[data-key="0"] input:last-child', 'ORANGE')
         b.click('.env-form[data-key="0"] .fa-plus')
-        b.wait_present('.env-form[data-key="1"]')
         b.set_input_text('.env-form[data-key="1"] input:first-child', 'PEAR')
         b.set_input_text('.env-form[data-key="1"] input:last-child', 'BANANA')
         b.click('.env-form[data-key="1"] .fa-plus')
-        b.wait_present('.env-form[data-key="2"]')
         b.set_input_text('.env-form[data-key="2"] input:first-child', 'MELON')
         b.set_input_text('.env-form[data-key="2"] input:last-child', 'GRAPE')
         b.click('.env-form[data-key="2"] .pficon-close')
         b.click('.env-form[data-key="1"] .fa-plus')
-        b.wait_present('.env-form[data-key="3"]')
         b.set_input_text('.env-form[data-key="3"] input:first-child', 'RHUBARB')
         b.set_input_text('.env-form[data-key="3"] input:last-child', 'STRAWBERRY')
 
         # Configure volumes
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
-        b.wait_present('.volume-form[data-key="0"]')
         b.click('.volume-form[data-key="0"] button.dropdown-toggle:contains("ReadWrite")')
         b.wait_visible('.volume-form[data-key="0"] .dropdown-menu a:contains("ReadOnly")')
         b.click('.volume-form[data-key="0"] .dropdown-menu a:contains("ReadOnly")')
@@ -462,11 +427,9 @@ class TestApplication(testlib.MachineCase):
         b.wait_val('.volume-form[data-key="0"] input:first-child', rodir)
         b.wait_not_present('.volume-form[data-key="0"] .pending-callback')
         b.click('.volume-form[data-key="0"] .fa-plus')
-        b.wait_present('.volume-form[data-key="1"]')
         b.click('.volume-form[data-key="1"] .pficon-close')
         b.wait_not_present('.volume-form[data-key="1"]')
         b.click('.volume-form[data-key="0"] .fa-plus')
-        b.wait_present('.volume-form[data-key="2"]')
         b.set_input_text('.volume-form[data-key="2"] input:first-child', rwdir)
         b.set_input_text('.volume-form[data-key="2"] input:nth-child(2)', '/tmp/rw')
         b.wait_val('.volume-form[data-key="2"] input:first-child', rwdir)
@@ -485,7 +448,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6001 \u2192 5001/udp')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:8001 \u2192 8001/tcp')
         b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:7001 \u2192 7001/tcp')
-        ports = m.execute("podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty");
+        ports = m.execute("podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
         self.assertIn('6000 5000 tcp', ports)
         self.assertIn('6001 5001 udp', ports)
         self.assertIn('8001 8001 tcp', ports)
@@ -506,7 +469,6 @@ class TestApplication(testlib.MachineCase):
 
         # Create another instance without port publishing
         b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.wait_present('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-actions button')
         b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-actions button')
         b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
 
@@ -529,7 +491,6 @@ class TestApplication(testlib.MachineCase):
     def filter_containers(self, menu_text):
         """Use dropdown menu in the header to filter containers"""
         b = self.browser
-        b.wait_present("#containers-containers-filter button")
         b.click("#containers-containers-filter button")
         b.wait_present("#containers-containers-filter .dropdown-menu")
         b.click("#containers-containers-filter li[data-data= %s] a" % menu_text)
