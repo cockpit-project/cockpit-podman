@@ -53,12 +53,13 @@ export class FileAutoComplete extends React.Component {
         this.showAllOptions = this.showAllOptions.bind(this);
         this.selectItem = this.selectItem.bind(this);
         this.debouncedChange = debounce(300, (value) => {
-            this.pendingCallback = false;
-            if (!this.updateIfDirectoryChanged(value)) {
+            this.updateIfDirectoryChanged(value, () => {
+                this.pendingCallback = false;
                 let stateUpdate = this.filterFiles(value);
-                this.setState(stateUpdate);
-                this.onChangeCallback(value, { error: stateUpdate.error });
-            }
+                this.setState(stateUpdate, () => {
+                    this.onChangeCallback(value, { error: stateUpdate.error });
+                });
+            });
         });
     }
 
@@ -153,16 +154,18 @@ export class FileAutoComplete extends React.Component {
         });
     }
 
-    updateIfDirectoryChanged(value) {
+    updateIfDirectoryChanged(value, cb) {
         const directory = this.getDirectoryForValue(value);
         const changed = directory !== this.state.directory;
         if (changed && this.state.directoryFiles !== null) {
-            this.setState({
-                displayFiles: [],
-                directoryFiles: null,
-                directory: directory,
-                open: false,
-            });
+            this.setState(() => {
+                return {
+                    displayFiles: [],
+                    directoryFiles: null,
+                    directory: directory,
+                    open: false,
+                };
+            }, cb);
             this.updateFiles(directory);
         }
         return changed;
