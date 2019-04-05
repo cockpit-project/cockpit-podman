@@ -35,7 +35,7 @@ export class FileAutoComplete extends React.Component {
         this.updateFiles(value);
         this.state = {
             value: value,
-            directory: '/',
+            directory: '',
             directoryFiles: null,
             displayFiles: [],
             open: false,
