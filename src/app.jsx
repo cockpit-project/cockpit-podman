@@ -88,7 +88,7 @@ class Application extends React.Component {
                     });
                 })
                 .catch(ex => {
-                    console.error("Failed to do Update Container:", JSON.stringify(ex));
+                    console.warn("Failed to do Update Container:", JSON.stringify(ex));
                 });
     }
 
