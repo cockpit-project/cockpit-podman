@@ -55,7 +55,7 @@ export function format_memory_and_limit(usage, limit) {
 
 // TODO: handle different kinds of errors
 function handleVarlinkCallError(ex) {
-    console.error("Failed to do varlinkcall:", JSON.stringify(ex));
+    console.warn("Failed to do varlinkcall:", JSON.stringify(ex));
 }
 
 export function updateContainers() {
