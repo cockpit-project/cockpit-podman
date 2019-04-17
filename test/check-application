@@ -131,7 +131,6 @@ class TestApplication(testlib.MachineCase):
         # delete image busybox that hasn't been used
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
-        b.wait_present(".modal-dialog div")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
         b.wait_not_in_text("#containers-images", "busybox:latest")
@@ -140,10 +139,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-images tr:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-toggle')
         b.click('#containers-images tbody tr:contains("alpine:latest") + tr button.btn-delete')
-        b.wait_present(".modal-dialog div")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
-        b.wait_present(".modal-dialog div")
         b.click(".modal-dialog div #btn-img-deleteerror")
         b.wait_not_present("modal-dialog div #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", "alpine:latest")
@@ -225,7 +222,6 @@ class TestApplication(testlib.MachineCase):
                 b.click('#containers-images tbody tr:contains("{0}{1}") + tr button.btn-delete'.format(self.imageName, imageTagSuffix))
 
                 # Confirm deletion in the delete dialog
-                b.wait_present(".modal-dialog div")
                 b.click(".modal-dialog div #btn-img-delete")
 
                 b.wait_not_present('#containers-images tr:contains("{0}")'.format(self.imageName))
@@ -309,7 +305,6 @@ class TestApplication(testlib.MachineCase):
         m.execute("systemctl disable --now io.podman.socket")
 
         self.login_and_go("/podman")
-        b.wait_present("#app .blank-slate-pf")
 
         # Troubleshoot action
         b.click("#app .blank-slate-pf button.btn-default")
