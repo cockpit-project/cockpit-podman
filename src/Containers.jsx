@@ -32,10 +32,6 @@ class Containers extends React.Component {
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
     }
 
-    navigateToContainer(container) {
-        cockpit.location.go([container.id]);
-    }
-
     deleteContainer(container, event) {
         if (container.status == "running") {
             this.setState((prevState) => ({
@@ -142,7 +138,6 @@ class Containers extends React.Component {
                     rowId={container.id}
                     columns={columns}
                     tabRenderers={tabs}
-                    navigateToItem={() => this.navigateToContainer(container)}
                     listingActions={actions}
         />;
     }
