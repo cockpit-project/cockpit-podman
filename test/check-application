@@ -38,6 +38,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.wait_in_text('#containers-images tbody tr .listing-ct-body:first-child:contains("busybox:latest")', "Commandsh")
 
         # make sure no running containers shown
         self.filter_containers('running')
@@ -138,6 +139,7 @@ class TestApplication(testlib.MachineCase):
         # delete image alpine that has been used by a container
         b.wait_present('#containers-images tr:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-toggle')
+        b.wait_in_text('#containers-images tbody tr .listing-ct-body:first-child:contains("alpine:latest")', "Command/bin/sh")
         b.click('#containers-images tbody tr:contains("alpine:latest") + tr button.btn-delete')
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
@@ -339,6 +341,14 @@ class TestApplication(testlib.MachineCase):
 
         self.login_and_go("/podman")
         b.wait_in_text("#containers-images", "busybox:latest")
+        b.wait_in_text("#containers-images", "alpine:latest")
+
+        # Check command in alpine
+        b.wait_present('#containers-images tr:contains("alpine:latest")')
+        b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-actions button')
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
+        b.wait_present("#run-image-dialog-command[value='/bin/sh']")
+        b.click(".btn-cancel")
 
         # Open run image dialog
         b.wait_present('#containers-images tr:contains("busybox:latest")')
