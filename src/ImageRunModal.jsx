@@ -224,7 +224,7 @@ export class ImageRunModal extends React.Component {
         if (this.state.containerName)
             createConfig.name = this.state.containerName;
         if (this.state.command)
-            createConfig.command = [this.state.command];
+            createConfig.command = utils.unquote_cmdline(this.state.command);
         if (this.state.memoryConfigure && this.state.memory)
             createConfig.resources.memory = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
         if (this.state.hasTTY)
