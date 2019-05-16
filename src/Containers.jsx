@@ -86,7 +86,7 @@ class Containers extends React.Component {
         let columns = [
             { name: container.names, header: true },
             image,
-            container.command.join(" "),
+            utils.quote_cmdline(container.command),
             isRunning ? utils.format_cpu_percent(containerStats.cpu * 100) : "",
             containerStats ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : "",
             container.status /* TODO: i18n */,

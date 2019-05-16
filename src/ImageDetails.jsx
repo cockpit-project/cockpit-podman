@@ -23,7 +23,7 @@ const ImageDetails = (props) => {
                 <dt>{_("Entrypoint")}</dt>
                 <dd>{image.entrypoint ? image.entrypoint.join(" ") : ""}</dd>
                 <dt>{_("Command")}</dt>
-                <dd>{image.command ? image.command.join(" ") : "" }</dd>
+                <dd>{image.command ? util.quote_cmdline(image.command) : "" }</dd>
                 <dt>{_("Created")}</dt>
                 <dd title={created.toLocaleString()}>{moment(created, util.GOLANG_TIME_FORMAT).calendar()}</dd>
                 <dt>{_("Author")}</dt>

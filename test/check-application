@@ -365,6 +365,9 @@ class TestApplication(testlib.MachineCase):
         # Enable tty
         b.set_checked("#run-image-dialog-tty", True)
 
+        # Set up command line
+        b.set_input_text('#run-image-dialog-command', 'sh -c "while echo Hello World; do sleep 1; done"')
+
         # Configure published ports
         b.set_input_text('.publish-port-form[data-key="0"] input:first-child', '5000')
         b.set_input_text('.publish-port-form[data-key="0"] input:nth-child(2)', '6000')
@@ -413,10 +416,11 @@ class TestApplication(testlib.MachineCase):
         b.click('div.modal-footer button:contains("Run")')
         b.wait_not_present("div.modal-dialog")
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
-        self.check_container('busybox-with-tty', ['busybox-with-tty', 'busybox:latest', 'sh', 'running'])
+        self.check_container('busybox-with-tty', ['busybox-with-tty', 'busybox:latest', 'sh -c "while echo Hello World; do sleep 1; done"', 'running'])
 
         hasTTY = m.execute("podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
+        b.wait(lambda: "Hello World" in m.execute("podman logs busybox-with-tty"))
 
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6000 \u2192 5000/tcp')

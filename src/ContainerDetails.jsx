@@ -34,7 +34,7 @@ const ContainerDetails = ({ container }) => (
             <dt>{_("Image")}</dt>
             <dd>{container.image}</dd>
             <dt>{_("Command")}</dt>
-            <dd>{container.command ? container.command.join(" ") : ""}</dd>
+            <dd>{container.command ? util.quote_cmdline(container.command) : ""}</dd>
             <dt>{_("State")}</dt>
             <dd>{render_container_state(container)}</dd>
             <dt>{_("Ports")}</dt>
