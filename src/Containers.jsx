@@ -1,9 +1,11 @@
 import React from 'react';
+import ReactDOM from "react-dom";
 import { Alert } from 'patternfly-react';
 
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
+import ContainerTerminal from './ContainerTerminal.jsx';
 import Dropdown from './Dropdown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
@@ -20,8 +22,10 @@ class Containers extends React.Component {
             selectContainerDeleteModal: false,
             setContainerRemoveErrorModal: false,
             containerWillDelete: {},
+            width: 0,
         };
         this.renderRow = this.renderRow.bind(this);
+        this.onWindowResize = this.onWindowResize.bind(this);
         this.restartContainer = this.restartContainer.bind(this);
         this.startContainer = this.startContainer.bind(this);
         this.stopContainer = this.stopContainer.bind(this);
@@ -30,6 +34,16 @@ class Containers extends React.Component {
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
+
+        window.addEventListener('resize', this.onWindowResize);
+    }
+
+    componentDidMount() {
+        this.onWindowResize();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.onWindowResize);
     }
 
     deleteContainer(container, event) {
@@ -96,6 +110,10 @@ class Containers extends React.Component {
             name: _("Details"),
             renderer: ContainerDetails,
             data: { container: container }
+        }, {
+            name: _("Console"),
+            renderer: ContainerTerminal,
+            data: { containerId: container.id, containerStatus: container.status, width:this.state.width }
         }];
 
         var actions = [
@@ -172,6 +190,12 @@ class Containers extends React.Component {
                     });
                 })
                 .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
+    }
+
+    onWindowResize() {
+        this.setState({
+            width: ReactDOM.findDOMNode(this).clientWidth
+        });
     }
 
     render() {
