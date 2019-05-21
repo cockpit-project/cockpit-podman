@@ -25,7 +25,7 @@ const render_container_published_ports = ({ ports }) => {
 };
 
 const ContainerDetails = ({ container }) => (
-    <div className='listing-ct-body'>
+    <div className='listing-ct-body container-details'>
         <dl>
             <dt>{_("ID")}</dt>
             <dd>{container.id}</dd>
