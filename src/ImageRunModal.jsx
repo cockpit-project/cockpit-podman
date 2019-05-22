@@ -219,12 +219,12 @@ export class ImageRunModal extends React.Component {
     getCreateConfig() {
         let createConfig = {};
 
-        createConfig.image = this.state.image.repoTags ? this.state.image.repoTags[0] : "";
+        createConfig.args = this.state.image.repoTags ? [this.state.image.repoTags[0]] : [""];
         createConfig.resources = {};
         if (this.state.containerName)
             createConfig.name = this.state.containerName;
         if (this.state.command)
-            createConfig.command = utils.unquote_cmdline(this.state.command);
+            createConfig.args = createConfig.args.concat(utils.unquote_cmdline(this.state.command));
         if (this.state.memoryConfigure && this.state.memory)
             createConfig.resources.memory = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
         if (this.state.hasTTY)
@@ -234,12 +234,10 @@ export class ImageRunModal extends React.Component {
                     .filter(port => port.hostPort && port.containerPort)
                     .map(port => port.hostPort + ':' + port.containerPort + '/' + port.protocol);
         if (this.state.env) {
-            createConfig.env = {};
-            for (let item of this.state.env)
-                createConfig.env[item.envKey] = item.envValue;
+            createConfig.env = this.state.env.map(item => item.envKey + "=" + item.envValue);
         }
         if (this.state.volumes) {
-            createConfig.volumes = this.state.volumes
+            createConfig.volume = this.state.volumes
                     .filter(volume => volume.hostPath && volume.containerPath)
                     .map(volume => {
                         if (volume.mode)
