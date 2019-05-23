@@ -240,7 +240,8 @@ class Images extends React.Component {
                 {this.state.showRunImageModal &&
                 <ImageRunModal
                     close={() => this.setState({ showRunImageModal: undefined })}
-                    image={this.state.showRunImageModal} /> }
+                    image={this.state.showRunImageModal}
+                    version={this.props.version} /> }
                 {this.state.showSearchImageModal &&
                 <ImageSearchModal
                     close={() => this.setState({ showSearchImageModal: false })}
