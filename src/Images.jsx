@@ -196,8 +196,9 @@ class Images extends React.Component {
 
     render() {
         const columnTitles = [ _("Name"), _(''), _("Created"), _("Size"), _('') ];
-        // TODO: emptyCaption = _("No Images");
-        let emptyCaption = _("No images that match the current filter");
+        let emptyCaption = _("No images");
+        if (this.props.textFilter.length > 0)
+            emptyCaption = _("No images that match the current filter");
         const getNewImageAction = [
             <a key="get-new-image-action" role="link" tabIndex="0"
                onClick={() => this.setState({ showSearchImageModal: true })}

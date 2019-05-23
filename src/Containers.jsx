@@ -177,8 +177,13 @@ class Containers extends React.Component {
 
     render() {
         const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("State")];
-        // TODO: emptyCaption
-        let emptyCaption = _("No running containers");
+
+        let emptyCaption = _("No containers");
+        if (this.props.textFilter.length > 0)
+            emptyCaption = _("No containers that match the current filter");
+        else if (this.props.onlyShowRunning)
+            emptyCaption = _("No running containers");
+
         const containersStats = this.props.containersStats;
         let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].status == "running");
         if (this.props.textFilter.length > 0) {
