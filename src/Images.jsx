@@ -206,8 +206,16 @@ class Images extends React.Component {
                 {_("Get new image")}
             </a>
         ];
-        // TODO: filter images via filterText
         let filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].id);
+        if (this.props.textFilter.length > 0)
+            filtered = filtered.filter(id => {
+                for (let i = 0; i < this.props.images[id].repoTags.length; i++) {
+                    let tag = this.props.images[id].repoTags[i].toLowerCase();
+                    if (tag.indexOf(this.props.textFilter.toLowerCase()) >= 0)
+                        return true;
+                }
+                return false;
+            });
         let imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
         const imageDeleteModal =
             <ModalExample

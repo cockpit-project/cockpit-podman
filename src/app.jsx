@@ -39,6 +39,7 @@ class Application extends React.Component {
             containers: {}, /* containers[Id] detail info of container with Id from InspectContainer */
             containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
             onlyShowRunning: true,
+            textFilter: "",
             dropDownValue: 'Everything',
             notifications: [],
             version: '1.2.0'
@@ -46,6 +47,7 @@ class Application extends React.Component {
         this.onAddNotification = this.onAddNotification.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onChange = this.onChange.bind(this);
+        this.onFilterChanged = this.onFilterChanged.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
@@ -77,6 +79,12 @@ class Application extends React.Component {
     onChange(value) {
         this.setState({
             onlyShowRunning: value != "all"
+        });
+    }
+
+    onFilterChanged(value) {
+        this.setState({
+            textFilter: value
         });
     }
 
@@ -264,6 +272,7 @@ class Application extends React.Component {
                 images={this.state.images}
                 version={this.state.version}
                 onAddNotification={this.onAddNotification}
+                textFilter={this.state.textFilter}
             />;
         containerList =
             <Containers
@@ -271,6 +280,7 @@ class Application extends React.Component {
                 containers={this.state.containers}
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}
+                textFilter={this.state.textFilter}
             />;
         const notificationList = (
             <ToastNotificationList>
@@ -290,6 +300,7 @@ class Application extends React.Component {
                     <ContainerHeader
                         onlyShowRunning={this.state.onlyShowRunning}
                         onChange={this.onChange}
+                        onFilterChanged={this.onFilterChanged}
                     />
                 </div>
                 <div key={"containerslists"} className="container-fluid">
