@@ -180,8 +180,13 @@ class Containers extends React.Component {
         // TODO: emptyCaption
         let emptyCaption = _("No running containers");
         const containersStats = this.props.containersStats;
-        // TODO: check filter text
         let filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].status == "running");
+        if (this.props.textFilter.length > 0) {
+            let lcf = this.props.textFilter.toLowerCase();
+            filtered = filtered.filter(id => this.props.containers[id].names.toLowerCase().indexOf(lcf) >= 0 ||
+                    this.props.containers[id].image.toLowerCase().indexOf(lcf) >= 0
+            );
+        }
         let rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
         const containerDeleteModal =
             <ContainerDeleteModal

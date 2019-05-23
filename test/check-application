@@ -471,6 +471,33 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
         b.wait_text('#containers-containers tr:contains("busybox-without-publish") + tr dt:contains("Ports") + dd', "")
 
+        b.set_input_text('#containers-filter', 'tty')
+        self.check_containers(["busybox-with-tty"], ["busybox-without-publish"])
+        self.check_images([], ["busybox:latest", "alpine:latest", "registry:2"])
+        b.set_input_text('#containers-filter', 'busy')
+        self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
+        self.check_images(["busybox:latest"], ["alpine:latest", "registry:2"])
+        b.set_input_text('#containers-filter', 'alpine')
+        self.check_containers([], ["busybox-with-tty", "busybox-without-publish"])
+        self.check_images(["alpine:latest"], ["busybox:latest", "registry:2"])
+        b.set_input_text('#containers-filter', '')
+        self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
+        self.check_images(["busybox:latest", "alpine:latest", "registry:2"], [])
+
+
+    def check_content(self, type, present, not_present):
+        b = self.browser
+        for item in present:
+            b.wait_visible('#containers-{0} tbody tr:contains({1})'.format(type, item))
+        for item in not_present:
+            b.wait_not_present('#containers-{0} tbody tr:contains({1})'.format(type, item))
+
+    def check_containers(self, present, not_present):
+        self.check_content("containers", present, not_present)
+
+    def check_images(self, present, not_present):
+        self.check_content("images", present, not_present)
+
     def check_container(self, row_name, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
         b = self.browser

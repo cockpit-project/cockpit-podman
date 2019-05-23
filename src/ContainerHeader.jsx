@@ -16,7 +16,7 @@ class ContainerHeader extends React.Component {
 
     filterChanged() {
         if (this.props.onFilterChanged)
-            this.props.onFilterChanged(this.state.filter, this.state.filterText);
+            this.props.onFilterChanged(this.state.filterText);
     }
 
     handleFilterChange (value) {
