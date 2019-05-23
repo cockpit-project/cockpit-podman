@@ -41,6 +41,7 @@ class Application extends React.Component {
             onlyShowRunning: true,
             dropDownValue: 'Everything',
             notifications: [],
+            version: '1.2.0'
         };
         this.onAddNotification = this.onAddNotification.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
@@ -173,7 +174,7 @@ class Application extends React.Component {
     init() {
         varlink.call(utils.PODMAN_ADDRESS, "io.podman.GetVersion")
                 .then(reply => {
-                    this.setState({ serviceAvailable: true });
+                    this.setState({ serviceAvailable: true, version: reply.version });
                     this.updateImagesAfterEvent();
                     this.updateContainersAfterEvent();
 
@@ -261,6 +262,7 @@ class Application extends React.Component {
             <Images
                 key={_("imageList")}
                 images={this.state.images}
+                version={this.state.version}
                 onAddNotification={this.onAddNotification}
             />;
         containerList =
