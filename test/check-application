@@ -484,6 +484,15 @@ class TestApplication(testlib.MachineCase):
         self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
         self.check_images(["busybox:latest", "alpine:latest", "registry:2"], [])
 
+        b.set_input_text('#containers-filter', 'foobar')
+        b.wait_present('#containers-containers thead tr td:contains("No containers that match the current filter")')
+        b.wait_present('#containers-images thead tr td:contains("No images that match the current filter")')
+        b.set_input_text('#containers-filter', '')
+        m.execute("podman rmi -f $(podman images -q)")
+        b.wait_present('#containers-containers thead tr td:contains("No running containers")')
+        b.wait_present('#containers-images thead tr td:contains("No images")')
+        b.set_val("#containers-containers-filter", "all")
+        b.wait_present('#containers-containers thead tr td:contains("No containers")')
 
     def check_content(self, type, present, not_present):
         b = self.browser
