@@ -242,7 +242,7 @@ export class ImageRunModal extends React.Component {
             createConfig.publish = this.state.publish
                     .filter(port => port.hostPort && port.containerPort)
                     .map(port => port.hostPort + ':' + port.containerPort + '/' + port.protocol);
-        if (this.state.env) {
+        if (this.state.env.length > 0) {
             if (this.props.version < "1.3.0") {
                 createConfig.env = {};
                 for (let item of this.state.env)
@@ -250,7 +250,7 @@ export class ImageRunModal extends React.Component {
             } else
                 createConfig.env = this.state.env.map(item => item.envKey + "=" + item.envValue);
         }
-        if (this.state.volumes) {
+        if (this.state.volumes.length > 0) {
             let volume = this.state.volumes
                     .filter(volume => volume.hostPath && volume.containerPath)
                     .map(volume => {
