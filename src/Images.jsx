@@ -183,7 +183,7 @@ class Images extends React.Component {
                     rowId={image.id}
                     columns={columns}
                     tabRenderers={tabs}
-                    navigateToItem={this.navigateToImage(image)}
+                    navigateToItem={() => this.navigateToImage(image)}
                     listingActions={actions} />
         );
     }
