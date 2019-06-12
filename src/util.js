@@ -81,7 +81,7 @@ export function updateContainers() {
             })
             .catch(ex => {
                 handleVarlinkCallError(ex);
-                throw ex;
+                return Promise.reject(ex);
             });
 }
 
@@ -120,7 +120,7 @@ export function updateImages() {
             })
             .catch(ex => {
                 handleVarlinkCallError(ex);
-                throw ex;
+                return Promise.reject(ex);
             });
 }
 
