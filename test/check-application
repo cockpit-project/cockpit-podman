@@ -290,6 +290,9 @@ class TestApplication(testlib.MachineCase):
         new_pid = m.execute("podman inspect --format '{{.State.Pid}}' swamped-crate".strip())
         self.assertNotEqual(old_pid, new_pid)
 
+        with b.wait_timeout(5):
+            self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'running'])
+
         self.filter_containers('all')
         b.wait_present("#containers-containers")
 
