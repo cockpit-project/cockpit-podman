@@ -12,7 +12,7 @@ RELEASE_SPEC="cockpit-podman.spec"
 RELEASE_SRPM="_release/srpm"
 
 job release-source
-job release-srpm
+job release-srpm -V
 
 # Authenticate for pushing into Fedora dist-git (works in Cockpituous release container)
 cat ~/.fedora-password | kinit cockpit@FEDORAPROJECT.ORG
