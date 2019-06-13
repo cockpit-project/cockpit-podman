@@ -108,6 +108,9 @@ class Application extends React.Component {
                     this.setState({
                         images: reply
                     });
+                })
+                .catch(ex => {
+                    console.warn("Failed to do Update Images:", JSON.stringify(ex));
                 });
     }
 
