@@ -20,7 +20,8 @@
 //
 // `ct-form-layout-split`: The grid can be split on a `form-control`
 // level by adding a this class. If you want two elements next to each
-// other, both should have this class.
+// other, both should have this class. Widths are equal by default.
+// See ct-form-layout-minmax & ct-form-layout-maxmin for alternate sizing.
 //
 // `ct-form-layout-relax`: Form elements normally stretch to take up the
 // full space. You can relax their width by adding this class to the
@@ -31,6 +32,9 @@
 // elsewhere, you can force it to stretch. This is mainly useful when
 // using <div role="group"> to group elements.
 //
+// `ct-form-layout-full`: Force a widget to be the full width of the form,
+// invading the label space.
+//
 // role="group": When there are two related elements, such as a text
 // input and a dropdown, you can group them together using this HTML
 // attribute. It's similar in purpose to a <fieldset>, but works for
@@ -39,10 +43,21 @@
 // adds semantic meaning to the element for screen readers, and we key
 // the CSS off of the role.
 //
+// `ct-form-box`: Visual styling for encapsulating a block of sub-options.
+// Creates a gray box around elements.
+//
 // <hr>: While this is an element, it has a special meaning and is used
 // to add some vertical spacing to a form.
 //
-// Most of the time, you can ignore all the optional classes (and
+//
+// Alternate grid sizing:
+// You can override division of space for controls by adding a class
+// at grid level (.ct-form-layout) to adjust size for "split" widgets:
+// `ct-form-layout-maxmin: First widget is wide; second is small.
+// `ct-form-layout-minmax`: First widget is small; second is wide.
+//
+//
+// Most of the time, you can simply ignore all the optional classes (and
 // attribute and hr element) and simply wrap your labels & controls in
 // a <form class="ct-form-layout"> and layout magic happens.
 
@@ -56,6 +71,7 @@
   // Compute widget height based on (font-size * line height) + extra
   @widget-height: @line-height-computed + (@padding-base-vertical * 2) + (@border-width * 2);
 
+  align-self: start; // Don't vertically fill content by default
   display: grid;
   grid-gap: @padding-small-vertical @padding-small-horizontal;
   // Repeat a label that is a minimum of 4em and its control that
@@ -67,18 +83,18 @@
   // supposed to have a `control-label` class.
   // These precede control elements.
   > .control-label {
-    align-self: flex-start;
+    align-self: start;
     text-align: right;
   }
 
   // Put all control elements to the right of the labels,
   // stretching to the rightmost column
-  > :not(.control-label):not(hr):not(.ct-form-layout-split) {
+  > :not(.control-label):not(hr):not(.ct-form-layout-split):not(.ct-form-layout-full) {
     grid-column: ~"2 / -1";
   }
 
   // Auto-stretch elements to the grid (except when relaxed)
-  > :not(.ct-form-layout-relax) {
+  > :not(.ct-form-layout-relax):not(.spinner) {
     width: auto;
   }
 
@@ -117,6 +133,7 @@
     > textarea,
     > select,
     > .bootstrap-select,
+    > .ct-select,
     > .dropdown,
     > .combobox-container,
     > fieldset,
@@ -124,6 +141,8 @@
     > [data-field],
     > .form-group,
     > .btn-group,
+    > label.checkbox,
+    > label.radio,
     > .checkbox-inline,
     > .radio-inline {
       // Vertically align elements with text
@@ -131,6 +150,8 @@
       margin-bottom: @padding-small-vertical - @padding-base-vertical;
       // Ensure widgets are a at least a minimum widget size
       min-height: @widget-height;
+      // Align to top of grid cell, these items should be widget height (26px)
+      align-self: start;
     }
   }
 
@@ -140,7 +161,7 @@
 
   // Some elements need special width considerations
   // as PatternFly normally fixes the width
-  > :not(.ct-form-layout-relax) {
+  > :not(.ct-form-layout-relax):not(.spinner) {
     width: auto !important;
   }
 
@@ -172,15 +193,6 @@
       }
     }
 
-    // Allow dropdowns to be less wide
-    &:not(.ct-form-layout-relax) > .dropdown {
-      width: auto !important;
-    }
-
-    > .form-control {
-      width: auto;
-    }
-
     > .checkbox,
     > .radio {
         // Spacing is handled by grid, not margin
@@ -188,7 +200,25 @@
     }
   }
 
+  > [role=group],
+  > .ct-validation-wrapper > [role=group],
+  > .ct-validation-wrapper > [data-field] {
+    // Allow dropdowns to expand as needed
+    &:not(.ct-form-layout-relax) {
+      > .dropdown {
+        width: auto !important;
+      }
+
+      // <select>s need to be coaxed to be 100%
+      > .ct-select {
+        width: 100%;
+      }
+    }
+  }
+
   // Vertically align checkboxes and radios properly using flex
+  label.checkbox,
+  label.radio,
   .checkbox > label,
   .radio > label,
   .checkbox-inline,
@@ -232,13 +262,47 @@
   > .ct-form-layout-split {
     grid-column: ~"auto / auto";
   }
+
+  // Stretch to full width
+  > .ct-form-layout-full {
+    grid-column: ~"1 / -1";
+  }
+
+  // Move warnings, errors, info, etc. up a bit to associate with previous field
+  .bump-up() {
+    position: relative;
+    top: -0.5rem;
+  }
+
+  > .has-success,
+  > .has-warning,
+  > .has-error {
+    &:not(.form-group) {
+      .bump-up();
+    }
+
+
+  }
+
+  > .help-block {
+    .bump-up();
+  }
+
+  .ct-form-box {
+    background: #f5f5f5; /* pf-black-150 */
+    border-width: 1px;
+    border-style: solid;
+    border-color: #bbbbbb; /* pf-black-400 */
+    padding: 0.5rem;
+    padding-top: 1rem;
+    width: 100%;
+  }
 }
 
 // Apply left-padding to control-labels when in a modal dialog
 .modal .ct-form-layout > .control-label {
   padding-left: 0.5rem;
 }
-
 
 // Force a form element to stretch. Add as a class to `form-control`.
 .ct-form-layout-stretch {
@@ -265,6 +329,20 @@
   .modal {
     --ct-form-layout-columns: 1;
   }
+}
+
+// Alternate layout, for a split, used at ct-form-layout grid-level:
+// First form widget is as small as possible;
+// Second takes up the rest of the space
+.ct-form-layout-minmax {
+  grid-template-columns: max-content min-content max-content 1fr;
+}
+
+// Alternate layout, for a split, used at ct-form-layout grid-level:
+// First form widget takes up as much space as it can;
+// Second form widget is as small as possible
+.ct-form-layout-maxmin {
+  grid-template-columns: max-content 1fr max-content min-content;
 }
 
 @media (max-width: @screen-xs) {
