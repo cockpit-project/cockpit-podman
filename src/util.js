@@ -74,6 +74,17 @@ export function updateContainer(id) {
             });
 }
 
+export function updateImage(id) {
+    let image = {};
+
+    return varlink.call(PODMAN_ADDRESS, "io.podman.GetImage", { id: id })
+            .then(reply => {
+                image = reply.image;
+                return varlink.call(PODMAN_ADDRESS, "io.podman.InspectImage", { name: id });
+            })
+            .then(reply => Object.assign(image, parseImageInfo(JSON.parse(reply.image))));
+}
+
 export function updateContainers() {
     return varlink.call(PODMAN_ADDRESS, "io.podman.ListContainers")
             .then(reply => {
@@ -101,6 +112,19 @@ export function updateContainers() {
             });
 }
 
+function parseImageInfo(info) {
+    let image = {};
+
+    if (info.Config) {
+        image.entrypoint = info.Config.EntryPoint;
+        image.command = info.Config.Cmd;
+        image.ports = Object.keys(info.Config.ExposedPorts || {});
+    }
+    image.author = info.Author;
+
+    return image;
+}
+
 export function updateImages() {
     return varlink.call(PODMAN_ADDRESS, "io.podman.ListImages")
             .then(reply => {
@@ -120,17 +144,9 @@ export function updateImages() {
                         .then(replies => {
                             for (let reply of replies) {
                                 let info = JSON.parse(reply.image);
-                                let image = images[info.Id];
-
-                                if (info.Config) {
-                                    image.entrypoint = info.Config.EntryPoint;
-                                    image.command = info.Config.Cmd;
-                                    image.ports = Object.keys(info.Config.ExposedPorts || {});
-                                }
-
-                                image.author = info.Author;
+                                // Update image with information from InspectImage API
+                                images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
                             }
-
                             return images;
                         });
             })

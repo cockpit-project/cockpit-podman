@@ -132,15 +132,33 @@ class Application extends React.Component {
                 });
     }
 
+    updateImageAfterEvent(id) {
+        utils.updateImage(id)
+                .then(reply => {
+                    this.setState(prevState => {
+                        let imagesCopy = Object.assign({}, prevState.images);
+
+                        imagesCopy[reply.image.id] = reply.image;
+
+                        return { images: imagesCopy };
+                    });
+                })
+                .catch(ex => {
+                    console.warn("Failed to do Update Image:", JSON.stringify(ex));
+                });
+    }
+
     handleImageEvent(event) {
         switch (event.status) {
-        case 'prune':
-        case 'pull':
         case 'push':
-        case 'remove':
         case 'save':
         case 'tag':
+            this.updateImageAfterEvent(event.id);
+            break;
+        case 'pull': // Pull event has not event.id
         case 'untag':
+        case 'remove':
+        case 'prune':
             this.updateImagesAfterEvent();
             break;
         default:
