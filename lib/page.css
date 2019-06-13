@@ -19,6 +19,16 @@ a {
   z-index: auto;
 }
 
+.btn-group, .btn-group-vertical {
+    /* Fix button groups from wrapping in narrow widths */
+    display: inline-flex;
+}
+
+.btn-group-vertical {
+    /* Vertical btn-groups should be vertical */
+    flex-direction: column;
+}
+
 a.disabled {
     cursor: not-allowed !important;
     text-decoration: none;
@@ -224,6 +234,7 @@ input[type=number] {
     box-shadow: inset 0 2px 8px rgba(3, 3, 3, 0.2);
 }
 
-.ct-select > option {
+.ct-select optgroup,
+.ct-select option {
     background-color: #fff;
 }
