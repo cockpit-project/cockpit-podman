@@ -49,6 +49,7 @@ class Application extends React.Component {
         this.onChange = this.onChange.bind(this);
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
+        this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
         this.handleImageEvent = this.handleImageEvent.bind(this);
@@ -110,6 +111,27 @@ class Application extends React.Component {
                 });
     }
 
+    updateContainerAfterEvent(id) {
+        utils.updateContainer(id)
+                .then(reply => {
+                    this.setState(prevState => {
+                        let containersCopy = Object.assign({}, prevState.containers);
+                        let containersCopyStats = Object.assign({}, prevState.containersStats);
+
+                        containersCopy[reply.container.id] = reply.container;
+                        containersCopyStats[reply.container.id] = reply.containerStats;
+
+                        return {
+                            containers: containersCopy,
+                            containersStats: containersCopyStats,
+                        };
+                    });
+                })
+                .catch(ex => {
+                    console.warn("Failed to do Update Container:", JSON.stringify(ex));
+                });
+    }
+
     handleImageEvent(event) {
         switch (event.status) {
         case 'prune':
@@ -142,20 +164,22 @@ class Application extends React.Component {
          * now we 'll do a batch update
          */
         case 'checkpoint':
-        case 'cleanup':
         case 'create':
         case 'died':
         case 'kill':
         case 'mount':
         case 'pause':
         case 'prune':
-        case 'remove':
         case 'restore':
         case 'start':
         case 'stop':
         case 'sync':
         case 'unmount':
         case 'unpause':
+            this.updateContainerAfterEvent(event.id);
+            break;
+        case 'remove':
+        case 'cleanup':
             this.updateContainersAfterEvent();
             break;
         /* The following events need only to update the Image list */
