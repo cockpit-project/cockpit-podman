@@ -74,7 +74,7 @@ export function updateContainers() {
                         .then(replies => {
                             let stats = {};
                             for (let reply of replies)
-                                stats[reply.container.id] = reply.container;
+                                stats[reply.container.id] = reply.container || {};
 
                             return { newContainers: containers, newContainersStats: stats };
                         });
