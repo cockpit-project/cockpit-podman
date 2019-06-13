@@ -58,6 +58,22 @@ function handleVarlinkCallError(ex) {
     console.warn("Failed to do varlinkcall:", JSON.stringify(ex));
 }
 
+export function updateContainer(id) {
+    let container = {};
+    let containerStats = {};
+    return varlink.call(PODMAN_ADDRESS, "io.podman.GetContainer", { id: id })
+            .then(reply => {
+                container = reply.container;
+                if (container.status == "running")
+                    return varlink.call(PODMAN_ADDRESS, "io.podman.GetContainerStats", { name: id });
+            })
+            .then(reply => {
+                if (reply)
+                    containerStats = reply.container;
+                return { container, containerStats };
+            });
+}
+
 export function updateContainers() {
     return varlink.call(PODMAN_ADDRESS, "io.podman.ListContainers")
             .then(reply => {
