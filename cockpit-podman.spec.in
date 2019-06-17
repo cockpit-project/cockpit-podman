@@ -1,8 +1,3 @@
-# we generally want CentOS packages to be like RHEL; special cases need to check %{centos} explicitly
-%if 0%{?centos}
-%define rhel %{centos}
-%endif
-
 Name:           cockpit-podman
 Version:        @VERSION@
 Release:        1%{?dist}
@@ -16,11 +11,7 @@ BuildRequires:  libappstream-glib
 
 Requires:       cockpit-bridge >= 138
 Requires:       cockpit-shell >= 138
-%if 0%{?rhel}
 Requires:       podman >= 1.2.0
-%else
-Requires:       podman >= 1:1.2.0
-%endif
 
 %description
 The Cockpit user interface for Podman containers.
