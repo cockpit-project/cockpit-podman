@@ -106,7 +106,6 @@ class Containers extends React.Component {
             <button
                 key={container.id + "commit"}
                 className="btn btn-default btn-commit"
-                disabled={isRunning}
                 data-container-id={container.id}
                 data-toggle="modal" data-target="#container-commit-dialog"
                 onClick={() => this.setState({ showCommitModal: true, containerWillCommit: container })}
