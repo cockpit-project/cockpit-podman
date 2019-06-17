@@ -89,31 +89,46 @@ class TestApplication(testlib.MachineCase):
         self.confirm_modal("btn-ctr-delete")
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
+        def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000"):
+            self.filter_containers("all")
+            b.wait_present('#containers-containers tr:contains({0})'.format(container_name))
+            b.click('#containers-containers tbody tr:contains({0}) td.listing-ct-toggle'.format(container_name))
+            # open commit modal and close it using cancel
+            b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
+            self.confirm_modal("btn-ctr-cancel-commit")
+            # open commit modal and create an image
+            b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
+            b.wait_present(".modal-dialog div")
+            # set commit parameters
+            b.set_input_text("#commit-dialog-image-name", image_name)
+            b.set_input_text("#commit-dialog-image-tag", image_tag)
+            b.set_input_text("#commit-dialog-author", image_author)
+            b.set_input_text("#commit-dialog-command", image_command)
+            b.click(".modal-dialog div .btn-ctr-commit")
+            b.wait_not_present(".modal-dialog div")
+            b.wait_present('#containers-images tr:contains("{0}:{1}")'.format(image_name, image_tag))
+            b.click('#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag))
+            # open the listing toggle of testimg and check the commit paramerters
+            b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
+            b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_command))
+            b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_author))
+
+            # Cleanup
+            m.execute("podman rm -f {0}; podman rmi {1}:{2}".format(container_name, image_name, image_tag))
+
         # run a container (will exit immediately) and test the display of commit modal
         m.execute("podman run -d --name test-sh alpine sh")
         self.filter_containers("all")
+        container_commit("test-sh")
+
+        # test commit of a running container
+        m.execute("podman run -d --name test-sh busybox sleep 1000")
+        self.check_container('test-sh', ['test-sh', 'busybox:latest', 'sleep 1000', 'running'])
+        container_commit("test-sh")
+
+        m.execute("podman run -d --name test-sh alpine sh")
         b.wait_present('#containers-containers tr:contains("alpine:latest")')
         b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
-        # open commit modal and close it using cancel
-        b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
-        self.confirm_modal("btn-ctr-cancel-commit")
-        # open commit modal and create an image
-        b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
-        b.wait_present(".modal-dialog div")
-        # set commit parameters
-        b.set_input_text("#commit-dialog-image-name", "testimg")
-        b.set_input_text("#commit-dialog-image-tag", "testtag")
-        b.set_input_text("#commit-dialog-author", "tester")
-        b.set_input_text("#commit-dialog-command", "sleep 6000")
-        b.click(".modal-dialog div .btn-ctr-commit")
-        b.wait_not_present(".modal-dialog div")
-        b.wait_present('#containers-images tr:contains("testimg:testtag")')
-        b.click('#containers-images tbody tr:contains("testimg:testtag") td.listing-ct-toggle')
-        # open the listing toggle of testimg and check the commit paramerters
-        b.wait_present('#containers-images tbody tr:contains("testimg:testtag"):has(dd:contains("localhost/testimg:testtag"))')
-        b.wait_present('#containers-images tbody tr:contains("testimg:testtag"):has(dd:contains("sleep 6000"))')
-        b.wait_present('#containers-images tbody tr:contains("testimg:testtag"):has(dd:contains("tester"))')
-
         # open commit modal and check error modal
         b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
         # check required field error
