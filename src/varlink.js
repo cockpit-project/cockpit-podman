@@ -77,10 +77,12 @@ function connect(address) {
             connection.onclosed(options.problem);
     });
 
-    connection.call = function (method, parameters) {
+    // TODO: Handle multiple replies from API calls with more parameter set
+    // The continues message needs to be handled in this case.
+    connection.call = function (method, parameters, more = false) {
         parameters = parameters || {};
 
-        const data = encoder.encode(JSON.stringify({ method, parameters }));
+        const data = encoder.encode(JSON.stringify({ method, parameters, more }));
 
         channel.send(data);
         channel.send([0]);
@@ -127,9 +129,9 @@ function connect(address) {
  * Connects to a varlink service, performs a single call, and closes the
  * connection.
  */
-async function call (address, method, parameters) {
+async function call (address, method, parameters, more) {
     let connection = await connect(address);
-    let result = await connection.call(method, parameters);
+    let result = await connection.call(method, parameters, more);
     connection.close();
     return result;
 }

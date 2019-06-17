@@ -91,7 +91,8 @@ class ContainerCommitModal extends React.Component {
         }
         commitData.changes.push(...onbuildsArr);
 
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.Commit", commitData)
+        const more = true;
+        varlink.call(utils.PODMAN_ADDRESS, "io.podman.Commit", commitData, more)
                 .then(() => this.props.onHide())
                 .catch(ex => {
                     this.setState({
