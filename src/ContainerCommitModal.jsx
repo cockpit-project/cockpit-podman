@@ -25,6 +25,7 @@ class ContainerCommitModal extends React.Component {
             format: "oci",
             selectedFormat: "oci",
             onbuildDisabled: true,
+            commitInProgress: false,
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -91,8 +92,17 @@ class ContainerCommitModal extends React.Component {
         }
         commitData.changes.push(...onbuildsArr);
 
-        const more = true;
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.Commit", commitData, more)
+        varlink.connect(utils.PODMAN_ADDRESS)
+                .then(connection => {
+                    this.setState({ commitInProgress: true });
+
+                    return connection.monitor("io.podman.Commit", commitData, message => {
+                        const reply = message.parameters.reply;
+
+                        if (reply && 'logs' in reply && Array.isArray(reply.logs) && reply.logs.length > 0)
+                            console.log("Container commit:", message.parameters.reply.logs.join("\n"));
+                    });
+                })
                 .then(() => this.props.onHide())
                 .catch(ex => {
                     this.setState({
@@ -205,8 +215,9 @@ class ContainerCommitModal extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
+                    {this.state.commitInProgress && <div className="spinner spinner-sm pull-left" />}
                     <Button className="btn-ctr-cancel-commit" onClick={this.props.onHide}>{_("Cancel")}</Button>
-                    <Button bsStyle="primary" className="btn-ctr-commit" onClick={this.handleCommit}>{_("Commit")}</Button>
+                    <Button bsStyle="primary" className="btn-ctr-commit" disabled={this.state.commitInProgress} onClick={this.handleCommit}>{_("Commit")}</Button>
                 </Modal.Footer>
             </Modal>
         );
