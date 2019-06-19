@@ -64,6 +64,8 @@ function connect(address) {
                 replyCallback(message);
                 if (message.continues)
                     pending.push({ resolve, reject, replyCallback });
+                else
+                    resolve(message.parameters);
             } else {
                 resolve(message.parameters);
             }
@@ -77,12 +79,10 @@ function connect(address) {
             connection.onclosed(options.problem);
     });
 
-    // TODO: Handle multiple replies from API calls with more parameter set
-    // The continues message needs to be handled in this case.
-    connection.call = function (method, parameters, more = false) {
+    connection.call = function (method, parameters) {
         parameters = parameters || {};
 
-        const data = encoder.encode(JSON.stringify({ method, parameters, more }));
+        const data = encoder.encode(JSON.stringify({ method, parameters }));
 
         channel.send(data);
         channel.send([0]);
