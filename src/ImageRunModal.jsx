@@ -218,21 +218,13 @@ export class ImageRunModal extends React.Component {
 
     getCreateConfig() {
         let createConfig = {};
-        // HACK: checking version is because API got broken from 1.2 -> 1.3
-        // Once we support only 1.3 podman, commit which introduces these changes can be reverted
 
-        if (this.props.version < "1.3.0")
-            createConfig.image = this.state.image.repoTags ? this.state.image.repoTags[0] : "";
-        else
-            createConfig.args = this.state.image.repoTags ? [this.state.image.repoTags[0]] : [""];
+        createConfig.args = this.state.image.repoTags ? [this.state.image.repoTags[0]] : [""];
         createConfig.resources = {};
         if (this.state.containerName)
             createConfig.name = this.state.containerName;
         if (this.state.command) {
-            if (this.props.version < "1.3.0")
-                createConfig.command = utils.unquote_cmdline(this.state.command);
-            else
-                createConfig.args = createConfig.args.concat(utils.unquote_cmdline(this.state.command));
+            createConfig.args = createConfig.args.concat(utils.unquote_cmdline(this.state.command));
         }
         if (this.state.memoryConfigure && this.state.memory)
             createConfig.resources.memory = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
@@ -243,25 +235,16 @@ export class ImageRunModal extends React.Component {
                     .filter(port => port.hostPort && port.containerPort)
                     .map(port => port.hostPort + ':' + port.containerPort + '/' + port.protocol);
         if (this.state.env.length > 0) {
-            if (this.props.version < "1.3.0") {
-                createConfig.env = {};
-                for (let item of this.state.env)
-                    createConfig.env[item.envKey] = item.envValue;
-            } else
-                createConfig.env = this.state.env.map(item => item.envKey + "=" + item.envValue);
+            createConfig.env = this.state.env.map(item => item.envKey + "=" + item.envValue);
         }
         if (this.state.volumes.length > 0) {
-            let volume = this.state.volumes
+            createConfig.volume = this.state.volumes
                     .filter(volume => volume.hostPath && volume.containerPath)
                     .map(volume => {
                         if (volume.mode)
                             return volume.hostPath + ':' + volume.containerPath + ':' + volume.mode;
                         return volume.hostPath + ':' + volume.containerPath;
                     });
-            if (this.props.version < "1.3.0")
-                createConfig.volumes = volume;
-            else
-                createConfig.volume = volume;
         }
 
         return createConfig;
