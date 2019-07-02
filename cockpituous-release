@@ -18,9 +18,7 @@ job release-srpm -V
 cat ~/.fedora-password | kinit cockpit@FEDORAPROJECT.ORG
 # Do fedora builds for the tag, using tarball
 job release-koji master
-job release-koji f29
 job release-koji f30
-job release-bodhi F29
 job release-bodhi F30
 
 # These are likely the first of your release targets; but run them after Fedora uploads,
