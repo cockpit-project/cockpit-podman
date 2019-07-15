@@ -74,7 +74,7 @@ class ContainerTerminal extends React.Component {
 
     resize(width) {
         var padding = 11 + 5 + 50;
-        var realWidth = this.state.term._core.renderer.dimensions.actualCellWidth;
+        var realWidth = this.state.term._core._renderCoordinator.dimensions.actualCellWidth;
         var cols = Math.floor((width - padding) / realWidth);
         this.state.term.resize(cols, 24);
         cockpit.spawn(["sh", "-c", "echo '1 24 " + cols.toString() + "'>" + this.state.control_channel], { superuser: true });
