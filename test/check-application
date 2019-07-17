@@ -198,8 +198,8 @@ class TestApplication(testlib.MachineCase):
 
             def selectImageAndDownload(self):
                 # Select and download the self.imageName image
-                b.wait_present("div.list-group div.image-list-item label:contains({0})".format(self.imageName))
-                b.click("div.list-group div.image-list-item label:contains({0})".format(self.imageName))
+                b.wait_present("div.list-group .image-list-item label:contains({0})".format(self.imageName))
+                b.click("div.list-group .image-list-item label:contains({0})".format(self.imageName))
                 b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):not([disabled])")
                 b.click("div.modal-dialog div.modal-footer button:contains(Download)")
 
