@@ -148,7 +148,7 @@ export class ImageSearchModal extends React.Component {
         );
 
         return (
-            <Modal show onHide={this.props.close}>
+            <Modal show onHide={this.props.close} className="podman-search">
                 <Modal.Header>
                     <Modal.CloseButton onClick={this.props.close} />
                     <Modal.Title> {_("Search Image")} </Modal.Title>
