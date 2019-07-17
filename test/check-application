@@ -30,7 +30,7 @@ class TestApplication(testlib.MachineCase):
 
         self.login_and_go("/podman")
         b.wait_present("#app")
-        b.wait_present(".content-filter div")
+        b.wait_present(".content-filter input")
         b.wait_in_text("#containers-images", "busybox:latest")
 
         # show image listing toggle
@@ -284,7 +284,7 @@ class TestApplication(testlib.MachineCase):
 
         self.login_and_go("/podman")
         b.wait_present("#app")
-        b.wait_present(".content-filter div")
+        b.wait_present(".content-filter input")
         self.filter_containers('all')
 
         b.wait_present("#containers-containers")
