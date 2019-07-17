@@ -40,3 +40,16 @@
     max-width: 15rem;
     float:left;
 }
+
+.list-group .list-group-item:focus,
+.list-group .list-group-item:active,
+.list-group .list-group-item:hover {
+    background-color: var(--pf-global--BackgroundColor--light-300);
+    border-color: var(--pf-global--BackgroundColor--light-300);
+}
+
+.list-group .list-group-item.active {
+    background-color: var(--pf-global--active-color--200);
+    border-color: var(--pf-global--active-color--200);
+    color: var(--pf-global--Color--100);
+}
