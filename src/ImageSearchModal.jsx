@@ -133,12 +133,12 @@ export class ImageSearchModal extends React.Component {
                         {this.state.imageList.map((image, iter) => {
                             return (
                                 <ListGroupItem active={this.state.selected == iter} onClick={() => this.onItemSelected(iter)} key={iter}>
-                                    <div className='image-list-item'>
+                                    <span className='image-list-item'>
                                         <label className='control-label'>
                                             { image.name }
                                         </label>
-                                        <div className='pull-right'> { image.description } </div>
-                                    </div>
+                                        <span className='pull-right'> { image.description } </span>
+                                    </span>
                                 </ListGroupItem>
                             );
                         })}
