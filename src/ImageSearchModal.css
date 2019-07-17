@@ -1,6 +1,29 @@
-.list-group{
-    max-height: 35rem;
-    overflow-y: scroll;
+.podman-search .modal-content {
+    display: grid;
+    height: calc(100vh - 1.5rem);
+    grid-template-rows: auto 1fr auto;
+}
+
+@media (min-width: 768px) {
+    .podman-search .modal-content {
+        height: calc(100vh - 5rem);
+    }
+}
+
+.podman-search .modal-body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.podman-search .list-group {
+    overflow: hidden scroll;
+    flex: auto;
+    margin: 0;
+}
+
+.input-group > .input-group-addon {
+    align-items: center;
 }
 
 #search-image-dialog-waiting.spinner {
