@@ -1,31 +1,4 @@
 
-.listing-ct-body-header {
-    margin-bottom: 1.5em;
-}
-
-.listing-ct-body {
-    padding: 0px;
-}
-
-.listing-ct-body .listing-ct-body {
-    padding: 20px 25px;
-}
-
-.listing-ct-body .dialog-list-ct {
-    margin: 20px;
-}
-
-.list-group-item .pficon {
-    margin: 5px;
-}
-
-.listing-ct-item .pficon {
-    position: relative;
-    top: 3px;
-    right: 3px;
-    font-size: 16px;
-}
-
 .vulnerability-row-ct-docker {
     line-height: 2.5em;
 }
@@ -326,19 +299,13 @@
 }
 
 .content-filter {
-    background: #f5f5f5;
-    border-bottom: 1px solid #ddd;
-    padding: 10px 16px 10px 20px;
-    position: fixed;
-    width: 100%;
-    top: 0px;
-    right: 0px;
-    z-index: 1;
-    height: 50px;
-}
-
-.content-filter + div {
-    margin-top: 70px;
+    background: var(--pf-global--BackgroundColor--150);
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.75rem 1.25rem;
+    position: sticky;
+    display: flex;
+    align-items: baseline;
+    min-height: 4rem;
 }
 
 .content-filter input[type="text"] {
@@ -348,8 +315,8 @@
     margin-top: 2px;
 }
 
-.content-filter .bootstrap-select {
-    margin-top: 2px;
+.content-filter .ct-select {
+    flex: auto;
 }
 
 .content-filter h3 {
