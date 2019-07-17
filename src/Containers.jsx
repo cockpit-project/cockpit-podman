@@ -240,7 +240,7 @@ class Containers extends React.Component {
         const { actionError, actionErrorDetail } = this.state;
 
         return (
-            <div id="containers-containers" className="container-fluid ">
+            <div id="containers-containers" className="containers-containers">
                 {actionError && <Alert onDismiss={() => this.setState({ actionError: undefined })}>
                     <strong>
                         {actionError}
