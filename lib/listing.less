@@ -3,16 +3,28 @@
 @import "./variables.less";
 
 table.listing-ct {
-    margin-top: @listing-ct-spacing;
     min-width: 65%;
+    font-size: var(--font-size-s);
+
+    + .listing-ct {
+        margin-top: @listing-ct-spacing * 2;
+    }
 }
 
 table.listing-ct > caption,
 table.listing-ct > thead h3 {
-    font-size: @font-size-h2;
-    padding: @listing-ct-padding 0px @listing-ct-padding;
-    font-weight: 300;
+    font-size: var(--pf-global--FontSize--2xl);
+    padding: 1rem 0;
+    font-weight: 400;
     margin-top: 0;
+    position: relative;
+
+    > .pull-right {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 0;
+    }
 }
 
 table.listing-ct > caption {
@@ -34,9 +46,8 @@ table.listing-ct > thead td > a {
 }
 
 table.listing-ct > thead th {
-    border-top: 1px solid @gray-lighter;
     font-weight: normal;
-    padding: @listing-ct-padding;
+    padding: @listing-ct-padding @listing-ct-padding * 2;
     color: @listing-ct-metadata;
 }
 
@@ -50,16 +61,17 @@ table.listing-ct > thead th:last-child {
 
 /* A listing item is a row in the table */
 tbody > tr.listing-ct-item {
-    border-top: 1px solid @gray-lighter;
-    border-bottom: 1px solid @gray-lighter;
+    border: 1px solid transparent;
+    border-top: 1px solid var(--color-ct-list-border);
+    border-bottom: 1px solid var(--color-ct-list-border);
     cursor: pointer;
 }
 
 table.listing-ct > tbody:last-child {
-    border-bottom: 1px solid @gray-lighter;
+    border-bottom: 1px solid var(--color-ct-list-border);
 }
 table.listing-ct > tbody + thead {
-    border-top: 1px solid @gray-lighter;
+    border-top: 1px solid var(--color-ct-list-border);
 }
 table.listing-ct > tbody.open:last-child {
     border-bottom: none;
@@ -72,12 +84,14 @@ tbody > tr.listing-ct-item.listing-ct-warning {
     background-color: @listing-ct-warning-color;
 }
 
-tbody.open > tr.listing-ct-item {
-    background-color: @color-pf-black-200;
+tbody.open > tr.listing-ct-item,
+tbody.open > tr.listing-ct-panel {
+    background-color: @listing-ct-active;
     border-bottom: none;
     border-top: none;
     border-left: 1px solid @listing-ct-border;
     border-right: 1px solid @listing-ct-border;
+    transition: all 200ms;
 }
 
 tbody.open > tr.listing-ct-item td,
@@ -89,12 +103,9 @@ tbody.open td div.listing-ct-head {
     background-color: @color-pf-white;
 }
 
-tbody.open .listing-ct-panel {
-    border: 1px solid @listing-ct-border;
-}
-
-tbody.open .listing-ct-panel .listing-ct-body {
+tbody.open > .listing-ct-panel > td > .listing-ct-body {
     border: none;
+    overflow: auto;
 }
 
 tbody.open > tr.listing-ct-panel + tr.listing-ct-body {
@@ -113,71 +124,83 @@ tbody:not(.open) > tr.listing-ct-item:not(.listing-ct-nonavigate):hover {
 
 /* if we can't navigate to a row but expand is available, highlight the caret */
 tbody:not(.open) > tr.listing-ct-item.listing-ct-nonavigate:hover td.listing-ct-toggle {
-    color: @listing-ct-active;
+    color: @listing-ct-hover-icon;
 }
 
-/* use gray for a row that's expanded or if navigation isn't available */
+/* use hover color expanded rows even if navigation isn't available */
 tbody.open > tr.listing-ct-item:hover,
 tr.listing-ct-item.listing-ct-nonavigate:hover {
-    background-color: @color-pf-black-200;
+    background-color: @listing-ct-hover;
 }
 
-/* always highlight caret when hovering over an expanded row */
-tbody.open > tr.listing-ct-item:hover td.listing-ct-toggle {
+tr.listing-ct-item .listing-ct-toggle:not(:empty) {
+    width: 35px;
+    color: @color-pf-black-800;
+}
+
+/* Highlight toggle color when hovered or if the row is open */
+.listing-ct-toggle:hover,
+tbody.open .listing-ct-toggle {
     color: @listing-ct-active;
 }
 
-tr.listing-ct-item .listing-ct-toggle {
-    padding: 0 !important;
-    width: 35px;
-    color: @color-pf-black;
+.listing-ct .listing-ct-toggle:empty {
+    width: 0;
+    padding: 0;
 }
 
-table.listing-ct thead .listing-ct-toggle + th,
-tr.listing-ct-item .listing-ct-toggle + td,
-tr.listing-ct-item .listing-ct-toggle + th {
-    padding-left: 0;
+.listing-ct > thead > tr > .listing-ct-toggle + th,
+.listing-ct-item > .listing-ct-toggle + td,
+.listing-ct-item > .listing-ct-toggle + th {
+    padding-left: @listing-ct-padding / 2;
+    position: relative;
 }
 
-tr:not(.listing-ct-selected) {
-    td.listing-ct-toggle:hover {
-        color: @listing-ct-active;
-        background-color: @color-pf-black-200;
-
-        ~ td, ~ th {
-            background-color: @color-pf-black-200;
-        }
-    }
- }
 td.listing-ct-toggle i {
-    font-size: 24px;
-    visibility: hidden;
-}
-
-tr.listing-ct-item:hover td.listing-ct-toggle i,
-tr.listing-ct-item td.listing-ct-toggle:hover i {
-    visibility: visible;
+    font-size: 17px;
 }
 
 td.listing-ct-toggle i:before {
+    position: relative;
     content: "\f105";
-}
-
-tbody.open td.listing-ct-toggle i {
-    visibility: visible;
+    display: block;
 }
 
 tbody.open td.listing-ct-toggle i:before {
     content: "\f107";
+    animation: listingCtToggleOpen 100ms ease-in-out;
+    top: 1px;
+}
+
+@keyframes listingCtToggleOpen {
+    0% {
+       transform-origin: 50% 50%;
+       transform: translate(0, -1px) rotate(-90deg);
+    }
+    100% {
+       transform: translate(0, 0) rotate(0);
+    }
 }
 
 /* Listing items have decent padding ... */
-tr.listing-ct-item td {
-    padding: @listing-ct-padding;
+.listing-ct > thead > tr > th,
+tr.listing-ct-item > th,
+tr.listing-ct-item > td {
+    padding: @listing-ct-padding * 1.5;
+    vertical-align: text-top; /* baseline doesn't support wrapped lines */
 }
 
-tr.listing-ct-item th {
-    padding: @listing-ct-padding @listing-ct-padding @listing-ct-padding @listing-ct-spacing;
+tr.listing-ct-item > td {
+    > .btn {
+        /* .btn has padding of 6px and 1px border */
+        margin-top: -7px;
+        margin-bottom: -7px;
+    }
+    > .btn-control-ct {
+        /* Adapt for Cockpit's modified button, which is larger by 8px */
+        margin-top: -3px;
+        margin-bottom: -3px;
+    }
 }
 
 /* Listing caption is text next to the actions, text should be similar to nav (.nav-tabs-pf > li > a)*/
@@ -218,10 +241,7 @@ tr.listing-ct-item.listing-ct-selected .badge {
 
 .listing-ct-head .listing-ct-actions {
     margin-top: -7px;
-}
-
-tr.listing-ct-item td:first-child {
-    padding-left: @listing-ct-padding * 2;
+    order: -1;
 }
 
 /* The last column of a listing is always right aligned */
@@ -246,6 +266,9 @@ div.listing-ct-head {
     border-style: solid;
     border-width: 1px 1px 0 1px;
     overflow: hidden;
+    display: flex;
+    flex-flow: row-reverse wrap;
+    align-items: center;
 }
 
 div.listing-ct-head:last-child {
@@ -259,7 +282,7 @@ div.listing-ct-maybe div.listing-ct-body {
 }
 
 tbody.active .listing-ct-head {
-    border-top: @listing-ct-open-width solid #0099d3;
+    border-top: @listing-ct-open-width solid var(--color-link);
 }
 
 .listing-ct-head h3 {
@@ -276,8 +299,10 @@ tbody.active .listing-ct-head {
 }
 
 .listing-ct-head .nav li a {
-    padding-top: 0px;
     font-size: 13px;
+    /* Counteract listing-ct-head padding */
+    margin-top: -@listing-ct-padding;
+    margin: 0;
 }
 
 .listing-ct-head .nav-tabs {
@@ -285,7 +310,9 @@ tbody.active .listing-ct-head {
 }
 
 .listing-ct-head .nav-tabs-pf {
-    margin-left: -@listing-ct-padding;
+    /* Counteract listing-ct-head padding */
+    margin: -@listing-ct-padding 0 0 -@listing-ct-padding;
+    flex: auto;
 }
 
 /* To display info instead of tabs */
@@ -317,7 +344,7 @@ tbody.active .listing-ct-head {
     background-color: @color-pf-white;
 }
 
-.listing-ct-inline > .listing-ct-body {
+.listing-ct-inline > td > .listing-ct-body {
     border: none;
     padding-top: 0px;
     padding-left: @listing-ct-padding * 2;
@@ -371,7 +398,6 @@ tbody.active .listing-ct-head {
     width: 100px;
     min-height: 26px;
     white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
     color: @listing-ct-metadata;
     font-weight: normal;
@@ -389,7 +415,6 @@ tbody.active .listing-ct-head {
     margin-left: 110px;
     min-height: 26px;
     max-width: 1000px;
-    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -405,28 +430,117 @@ tbody.active .listing-ct-head {
     margin-left: 0px;
 }
 
-table.listing-ct tbody.open {
-    box-shadow: 1px 1px 1px 1px @color-pf-black-150;
+table.listing-ct > tbody {
+    > tr > td:first-child {
+        position: relative;
+        transition: all 100ms ease-out;
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 300ms;
+        }
+
+        &::after {
+            right: auto;
+            width: 0;
+            background-color: var(--pf-global--active-color--100);
+        }
+    }
+
+    /* Nudge blue line above row border */
+    > tr:not(:first-child) > td:first-child {
+        &::after {
+            top: -1px;
+        }
+    }
+
+    &.open > tr > td:first-child {
+        transition: all 100ms ease-in;
+
+        &::before,
+        &::after {
+            opacity: 1;
+        }
+
+        &::after {
+            width: 3px;
+        }
+    }
+
+    &.open {
+        transition: all 100ms ease-in;
+        box-shadow: 0 0.3125rem 0.625rem -0.25rem rgba(3,3,3, 0.25);
+    }
 }
 
-/* By default these thincgs are hidden */
-tbody tr.listing-ct-panel,
-tbody tr.listing-ct-body {
+/* By default these are hidden */
+/* (HACK: Special-case the user auth dialog) */
+tbody:not(.ssh-key-body) > tr.listing-ct-head,
+tbody > tr.listing-ct-panel,
+tbody > tr.listing-ct-body {
     display: none;
+
+    > td {
+        /* Compensate for the left-side blue highlight */
+        padding-left: 3px;
+    }
 }
 
 /* ... unless they are in the right state */
-tbody.open tr.listing-ct-head,
-tbody.open tr.listing-ct-panel,
-tbody.open tr.listing-ct-body {
+tbody.open > tr.listing-ct-head,
+tbody.open > tr.listing-ct-panel,
+tbody.open > tr.listing-ct-body {
     display: table-row;
+}
+
+/* Animate the listing head & the last visible body */
+/* (Switching tabs will adds new listing-ct-bodys & toggle visibility) */
+tbody.open div.listing-ct-head,
+tbody.open div.listing-ct-head + div.listing-ct-body:not([hidden]):last-child {
+    animation: listingCtShow 100ms ease-in-out;
+}
+
+@keyframes listingCtShow {
+    0% {
+        margin-bottom: 0;
+        margin-top: 0;
+        max-height: 0;
+        opacity: 0;
+        padding-bottom: 0;
+        padding-top: 0;
+        line-height: 0;
+    } 50% {
+        opacity: 0;
+        line-height: 1;
+    }
+    100% {
+        max-height: 100vh;
+        opacity: 1;
+    }
+}
+
+/* Turn off animation if requested by the browser/OS (where supported) */
+@media (prefers-reduced-motion: reduce) {
+    tbody.open td.listing-ct-toggle i:before,
+    tbody.open div.listing-ct-head,
+    tbody.open div.listing-ct-body {
+        animation: none;
+    }
 }
 
 tbody.open tr.listing-ct-head {
     border-color: @listing-ct-border;
     border-style: solid;
     border-width: 1px 1px 0 1px;
-    border-top: @listing-ct-open-width solid #0099d3;
+    border-top: @listing-ct-open-width solid var(--color-link);
     background-color: @listing-ct-open;
 }
 
@@ -444,7 +558,7 @@ tr.listing-ct-body td {
 }
 
 .listing-ct-empty {
-    color: #888;
+    color: var(--color-subtle-copy);
     text-align: center;
     border-top: 1px solid @listing-ct-border-light;
     border-bottom: 1px solid @listing-ct-border-light;
@@ -463,6 +577,24 @@ tbody + thead.listing-ct-empty {
 /* Listing pattern defaults to using full width of parent */
 .listing-ct-wide {
     width: 100%;
+}
+
+/* Listing pattern mod to redce the padding */
+.listing-ct-compact {
+    > thead > tr > th,
+    > tbody > tr > th,
+    > tbody > tr > td {
+        padding: @listing-ct-padding / 2;
+    }
+
+    > tbody > tr > .listing-ct-toggle:not(:empty) + th,
+    > tbody > tr > .listing-ct-toggle:not(:empty) + td {
+        padding-left: @listing-ct-padding / 2;
+
+        &::before {
+            top: @listing-ct-padding / 2;
+        }
+    }
 }
 
 div.listing-ct-head {
@@ -499,4 +631,20 @@ tbody tr.listing-ct-noexpand {
 .nav-tabs-pf > li.active a:before {
     height: @listing-ct-open-width;
     left: 0px;
+}
+
+/* Force word-wraps when words are too long */
+.listing-ct-item td,
+.listing-ct-item th,
+.listing-ct-body {
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+.listing-ct-item td,
+.listing-ct-item th {
+    max-width: calc(100vw - 18rem);
+}
+.listing-ct-body {
+    /* 42 = (20px padding + 1px border) * 2 */
+    max-width: calc(100vw - 42px);
 }
