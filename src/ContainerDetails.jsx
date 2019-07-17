@@ -25,22 +25,20 @@ const render_container_published_ports = ({ ports }) => {
 };
 
 const ContainerDetails = ({ container }) => (
-    <div className='listing-ct-body container-details'>
-        <dl>
-            <dt>{_("ID")}</dt>
-            <dd>{container.id}</dd>
-            <dt>{_("Created")}</dt>
-            <dd>{moment(container.createdat, util.GOLANG_TIME_FORMAT).calendar()}</dd>
-            <dt>{_("Image")}</dt>
-            <dd>{container.image}</dd>
-            <dt>{_("Command")}</dt>
-            <dd>{container.command ? util.quote_cmdline(container.command) : ""}</dd>
-            <dt>{_("State")}</dt>
-            <dd>{render_container_state(container)}</dd>
-            <dt>{_("Ports")}</dt>
-            <dd>{render_container_published_ports(container)}</dd>
-        </dl>
-    </div>
+    <dl className='container-details'>
+        <dt>{_("ID")}</dt>
+        <dd>{container.id}</dd>
+        <dt>{_("Created")}</dt>
+        <dd>{moment(container.createdat, util.GOLANG_TIME_FORMAT).calendar()}</dd>
+        <dt>{_("Image")}</dt>
+        <dd>{container.image}</dd>
+        <dt>{_("Command")}</dt>
+        <dd>{container.command ? util.quote_cmdline(container.command) : ""}</dd>
+        <dt>{_("State")}</dt>
+        <dd>{render_container_state(container)}</dd>
+        <dt>{_("Ports")}</dt>
+        <dd>{render_container_published_ports(container)}</dd>
+    </dl>
 );
 
 export default ContainerDetails;
