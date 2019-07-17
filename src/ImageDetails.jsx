@@ -14,24 +14,22 @@ const ImageDetails = (props) => {
     let created = image.created;
 
     return (
-        <div className='listing-ct-body'>
-            <dl>
-                <dt>{_("ID")}</dt>
-                <dd title={image.id}>{truncate_id(image.id)}</dd>
-                <dt>{_("Tags")}</dt>
-                <dd>{image.repoTags ? image.repoTags.join(" ") : ""}</dd>
-                <dt>{_("Entrypoint")}</dt>
-                <dd>{image.entrypoint ? image.entrypoint.join(" ") : ""}</dd>
-                <dt>{_("Command")}</dt>
-                <dd>{image.command ? util.quote_cmdline(image.command) : "" }</dd>
-                <dt>{_("Created")}</dt>
-                <dd title={created.toLocaleString()}>{moment(created, util.GOLANG_TIME_FORMAT).calendar()}</dd>
-                <dt>{_("Author")}</dt>
-                <dd>{image.author}</dd>
-                <dt>{_("Ports")}</dt>
-                <dd>{image.ports ? image.ports.join(', ') : ""}</dd>
-            </dl>
-        </div>
+        <dl className='image-details'>
+            <dt>{_("ID")}</dt>
+            <dd title={image.id}>{truncate_id(image.id)}</dd>
+            <dt>{_("Tags")}</dt>
+            <dd>{image.repoTags ? image.repoTags.join(" ") : ""}</dd>
+            <dt>{_("Entrypoint")}</dt>
+            <dd>{image.entrypoint ? image.entrypoint.join(" ") : ""}</dd>
+            <dt>{_("Command")}</dt>
+            <dd>{image.command ? util.quote_cmdline(image.command) : "" }</dd>
+            <dt>{_("Created")}</dt>
+            <dd title={created.toLocaleString()}>{moment(created, util.GOLANG_TIME_FORMAT).calendar()}</dd>
+            <dt>{_("Author")}</dt>
+            <dd>{image.author}</dd>
+            <dt>{_("Ports")}</dt>
+            <dd>{image.ports ? image.ports.join(', ') : ""}</dd>
+        </dl>
     );
 };
 
