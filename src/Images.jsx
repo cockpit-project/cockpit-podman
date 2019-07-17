@@ -235,7 +235,7 @@ class Images extends React.Component {
             />;
 
         return (
-            <div id="containers-images" key={"images"} className="container-fluid" >
+            <div id="containers-images" key={"images"} className="containers-images" >
                 <Listing.Listing
                             key={"ImagesListing"}
                             title={_("Images")}

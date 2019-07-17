@@ -1,3 +1,9 @@
+/* Collapse top padding with additional container fluids */
+/* FIXME: This should go into PF overrides in Cockpit. */
+/* Remove it here when it lands there. */
+.container-fluid + .container-fluid {
+    padding-top: 0;
+}
 
 .vulnerability-row-ct-docker {
     line-height: 2.5em;
