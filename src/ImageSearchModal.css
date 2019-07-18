@@ -10,6 +10,18 @@
     }
 }
 
+.podman-search h5 {
+    font-size: var(--pf-global--FontSize--xl);
+    margin: 2rem 0 1rem;
+}
+
+@media (max-width: 767px) {
+    /* Conserve vertical space on phones */
+    .podman-search h5 {
+        display: none;
+    }
+}
+
 .podman-search .modal-body {
     display: flex;
     flex-direction: column;
@@ -20,6 +32,7 @@
     overflow: hidden scroll;
     flex: auto;
     margin: 0;
+    border: 1px solid var(--pf-global--BorderColor--100);
 }
 
 .input-group > .input-group-addon {
@@ -32,13 +45,30 @@
 
 .image-list-item {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    grid-gap: 1rem;
+    grid-gap: 0 1rem;
 }
 
-.image-tag-entry {
-    max-width: 15rem;
-    float:left;
+.image-list-item + .image-list-item {
+    border-top: 1px solid var(--pf-global--BorderColor--200);
+}
+
+@media (min-width: 768px) {
+    .image-list-item {
+        grid-template-columns: 1fr 2fr;
+    }
+}
+
+.image-list-item > .control-label {
+    margin: 0;
+}
+
+@media (max-width: 767px) {
+    .image-list-item {
+        font-size: var(--pf-global--FontSize--sm);
+    }
+    .image-list-item > .control-label {
+        font-size: var(--pf-global--FontSize--md);
+    }
 }
 
 .list-group .list-group-item:focus,
@@ -52,4 +82,31 @@
     background-color: var(--pf-global--active-color--200);
     border-color: var(--pf-global--active-color--200);
     color: var(--pf-global--Color--100);
+}
+
+.podman-search .modal-footer::before,
+.podman-search .modal-footer::after {
+    display: none;
+}
+
+.podman-search .modal-footer {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-gap: 0.25rem;
+}
+
+.podman-search .modal-footer > .btn {
+    margin: 0;
+}
+
+.image-tag-entry {
+    max-width: 15rem;
+}
+
+@media (max-width: 340px) {
+    /* Shrink buttons to accomodate iPhone 5/SE */
+    .podman-search .modal-footer > .btn {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
 }
