@@ -315,7 +315,8 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Stop)')
 
-        self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'stopped'])
+        self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh'])
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
 
     def testNotRunning(self):
         b = self.browser
