@@ -61,7 +61,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                     </Select.SelectEntry>
                 </Select.Select>
             </div>
-            <div role='group' className='ct-form-layout-split'>
+            <div role='group' className='ct-form-layout-split run-image-dialog-actions'>
                 <Button bsStyle='default'
                         className={'pficon-close' + (idx === 0 && !item.hostPort && !item.containerPort ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
@@ -86,7 +86,7 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
                        value={item.envValue || ''}
                        onChange={e => onChange(idx, 'envValue', e.target.value)} />
             </div>
-            <div role='group' className='ct-form-layout-split'>
+            <div role='group' className='ct-form-layout-split run-image-dialog-actions'>
                 <Button bsStyle='default'
                         className={'pficon-close' + (idx === 0 && !item.envKey && !item.envValue ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
@@ -119,7 +119,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                     </Select.SelectEntry>
                 </Select.Select>
             </div>
-            <div role='group' className='ct-form-layout-split'>
+            <div role='group' className='ct-form-layout-split run-image-dialog-actions'>
                 <Button bsStyle='default'
                         className={'pficon-close' + (idx === 0 && !item.containerPath && !item.hostPath ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />

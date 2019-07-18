@@ -610,3 +610,12 @@ table.drive-list td:nth-child(2) img {
 .form-list-control input {
     width: 125px !important;
 }
+
+/* We need to be a little specific here to override without !important */
+.ct-form-layout .ct-form-layout .run-image-dialog-actions {
+    grid-template-columns: repeat(2, min-content);
+}
+
+.run-image-dialog-actions .btn {
+    padding: 0.25rem 0.75rem;
+}
