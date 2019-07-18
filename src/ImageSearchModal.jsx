@@ -127,7 +127,7 @@ export class ImageSearchModal extends React.Component {
                 {this.state.searchInProgress && <div id='search-image-dialog-waiting' className='spinner' />}
 
                 {this.state.searchFinished && !this.state.imageIdentifier == '' && <React.Fragment>
-                    <h2> {_("Images")} </h2>
+                    <h5> {_("Images")} </h5>
                     {this.state.imageList.length == 0 && <div> {cockpit.format(_("No results for $0. Please retry another term."), this.state.imageIdentifier)} </div>}
                     {this.state.imageList.length > 0 && <ListGroup>
                         {this.state.imageList.map((image, iter) => {
