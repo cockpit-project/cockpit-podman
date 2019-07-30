@@ -329,7 +329,7 @@ class TestApplication(testlib.MachineCase):
         # Troubleshoot action
         b.click("#app .blank-slate-pf button.btn-default")
         b.enter_page("/system/services")
-        b.wait_in_text("#service-unit", "io.podman.socket")
+        b.wait_in_text("#service", "io.podman.socket")
 
         # Start action, with enabling (by default)
         b.go("/podman")
