@@ -32,7 +32,7 @@ const units = {
 const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <React.Fragment>
-            <div role='group' className='ct-form-layout-split'>
+            <div role='group' className='ct-form-split'>
                 <input className='form-control'
                        id={id}
                        type='number'
@@ -61,7 +61,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                     </Select.SelectEntry>
                 </Select.Select>
             </div>
-            <div role='group' className='ct-form-layout-split run-image-dialog-actions'>
+            <div role='group' className='ct-form-split run-image-dialog-actions'>
                 <Button bsStyle='default'
                         className={'pficon-close' + (idx === 0 && !item.hostPort && !item.containerPort ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
@@ -73,7 +73,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
 const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <React.Fragment>
-            <div role='group' className='ct-form-layout-split'>
+            <div role='group' className='ct-form-split'>
                 <input className='form-control'
                        id={id}
                        type='text'
@@ -86,7 +86,7 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
                        value={item.envValue || ''}
                        onChange={e => onChange(idx, 'envValue', e.target.value)} />
             </div>
-            <div role='group' className='ct-form-layout-split run-image-dialog-actions'>
+            <div role='group' className='ct-form-split run-image-dialog-actions'>
                 <Button bsStyle='default'
                         className={'pficon-close' + (idx === 0 && !item.envKey && !item.envValue ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
@@ -98,12 +98,12 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
 const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <React.Fragment>
-            <div role='group' className='ct-form-layout-split'>
+            <div role='group' className='ct-form-split'>
                 <FileAutoComplete id={id || ''}
                                   placeholder={_("Host path")}
                                   value={item.hostPath || ''}
                                   onChange={ value => onChange(idx, 'hostPath', value) } />
-                <input className='form-control ct-form-layout-relax'
+                <input className='form-control ct-form-relax'
                        type='text'
                        placeholder={_("Container path")}
                        value={item.containerPath || ''}
@@ -119,7 +119,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                     </Select.SelectEntry>
                 </Select.Select>
             </div>
-            <div role='group' className='ct-form-layout-split run-image-dialog-actions'>
+            <div role='group' className='ct-form-split run-image-dialog-actions'>
                 <Button bsStyle='default'
                         className={'pficon-close' + (idx === 0 && !item.containerPath && !item.hostPath ? ' invisible' : '')}
                         onClick={() => removeitem(idx)} />
@@ -173,7 +173,7 @@ class DynamicListForm extends React.Component {
                     dialogValues.list.map((item, idx) =>
                         (
 
-                            <div className={ (formclass || '') + ' ct-form-layout form-list-control' } key={ item.key } data-key={ item.key }>
+                            <div className={ (formclass || '') + ' ct-form form-list-control' } key={ item.key } data-key={ item.key }>
                                 {
                                     React.cloneElement(this.props.itemcomponent, {
                                         idx: idx, item: item, id: (idx === 0 && id) || undefined,
@@ -273,7 +273,7 @@ export class ImageRunModal extends React.Component {
         const dialogValues = this.state;
 
         let defaultBody = (
-            <div className='ct-form-layout'>
+            <div className='ct-form'>
                 <label className='control-label' htmlFor='run-image-dialog-image'>
                     {_("Image")}
                 </label>

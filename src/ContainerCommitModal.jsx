@@ -133,7 +133,7 @@ class ContainerCommitModal extends React.Component {
                 </div>
             ));
         let commitContent =
-            <div className="ct-form-layout">
+            <div className="ct-form">
                 <label className="control-label" htmlFor="commit-dialog-container-name">
                     {_("Container Name")}
                 </label>
