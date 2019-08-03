@@ -11,7 +11,6 @@ import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
-import varlink from './varlink.js';
 import ScrollableAnchor from 'react-scrollable-anchor';
 
 const _ = cockpit.gettext;
@@ -66,7 +65,7 @@ class Containers extends React.Component {
 
         if (force)
             args.timeout = 0;
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.StopContainer", args)
+        utils.podmanCall("StopContainer", args)
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to stop container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -74,7 +73,7 @@ class Containers extends React.Component {
     }
 
     startContainer(container) {
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.StartContainer", { name: container.names })
+        utils.podmanCall("StartContainer", { name: container.names })
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to start container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -86,7 +85,7 @@ class Containers extends React.Component {
 
         if (force)
             args.timeout = 0;
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RestartContainer", args)
+        utils.podmanCall("RestartContainer", args)
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to restart container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -173,7 +172,7 @@ class Containers extends React.Component {
         this.setState({
             selectContainerDeleteModal: false
         });
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", { name: id })
+        utils.podmanCall("RemoveContainer", { name: id })
                 .catch(ex => console.error("Failed to do RemoveContainer call:", JSON.stringify(ex)));
     }
 
@@ -186,7 +185,7 @@ class Containers extends React.Component {
     // TODO: force
     handleForceRemoveContainer() {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveContainer", { name: id, force: true })
+        utils.podmanCall("RemoveContainer", { name: id, force: true })
                 .then(reply => {
                     this.setState({
                         setContainerRemoveErrorModal: false

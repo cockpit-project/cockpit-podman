@@ -226,7 +226,7 @@ class Application extends React.Component {
     }
 
     init() {
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.GetVersion")
+        utils.podmanCall("GetVersion")
                 .then(reply => {
                     this.setState({ serviceAvailable: true });
                     this.updateImagesAfterEvent();

@@ -58,14 +58,18 @@ function handleVarlinkCallError(ex) {
     console.warn("Failed to do varlinkcall:", JSON.stringify(ex));
 }
 
+export function podmanCall(name, args) {
+    return varlink.call(PODMAN_ADDRESS, "io.podman." + name, args);
+}
+
 export function updateContainer(id) {
     let container = {};
     let containerStats = {};
-    return varlink.call(PODMAN_ADDRESS, "io.podman.GetContainer", { id: id })
+    return podmanCall("GetContainer", { id: id })
             .then(reply => {
                 container = reply.container;
                 if (container.status == "running")
-                    return varlink.call(PODMAN_ADDRESS, "io.podman.GetContainerStats", { name: id });
+                    return podmanCall("GetContainerStats", { name: id });
             })
             .then(reply => {
                 if (reply)
@@ -77,16 +81,16 @@ export function updateContainer(id) {
 export function updateImage(id) {
     let image = {};
 
-    return varlink.call(PODMAN_ADDRESS, "io.podman.GetImage", { id: id })
+    return podmanCall("GetImage", { id: id })
             .then(reply => {
                 image = reply.image;
-                return varlink.call(PODMAN_ADDRESS, "io.podman.InspectImage", { name: id });
+                return podmanCall("InspectImage", { name: id });
             })
             .then(reply => Object.assign(image, parseImageInfo(JSON.parse(reply.image))));
 }
 
 export function updateContainers() {
-    return varlink.call(PODMAN_ADDRESS, "io.podman.ListContainers")
+    return podmanCall("ListContainers")
             .then(reply => {
                 let containers = {};
                 let promises = [];
@@ -94,7 +98,7 @@ export function updateContainers() {
                 for (let container of reply.containers || []) {
                     containers[container.id] = container;
                     if (container.status === "running")
-                        promises.push(varlink.call(PODMAN_ADDRESS, "io.podman.GetContainerStats", { name: container.id }));
+                        promises.push(podmanCall("GetContainerStats", { name: container.id }));
                 }
 
                 return Promise.all(promises)
@@ -126,7 +130,7 @@ function parseImageInfo(info) {
 }
 
 export function updateImages() {
-    return varlink.call(PODMAN_ADDRESS, "io.podman.ListImages")
+    return podmanCall("ListImages")
             .then(reply => {
                 // Some information about images is only available in the OCI
                 // data. Grab what we need and add it to the image itself until
@@ -137,7 +141,7 @@ export function updateImages() {
 
                 for (let image of reply.images || []) {
                     images[image.id] = image;
-                    promises.push(varlink.call(PODMAN_ADDRESS, "io.podman.InspectImage", { name: image.id }));
+                    promises.push(podmanCall("InspectImage", { name: image.id }));
                 }
 
                 return Promise.all(promises)
