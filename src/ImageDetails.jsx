@@ -1,6 +1,6 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import * as util from './util.js';
+import * as utils from './util.js';
 
 const moment = require('moment');
 const _ = cockpit.gettext;
@@ -22,9 +22,9 @@ const ImageDetails = (props) => {
             <dt>{_("Entrypoint")}</dt>
             <dd>{image.entrypoint ? image.entrypoint.join(" ") : ""}</dd>
             <dt>{_("Command")}</dt>
-            <dd>{image.command ? util.quote_cmdline(image.command) : "" }</dd>
+            <dd>{image.command ? utils.quote_cmdline(image.command) : "" }</dd>
             <dt>{_("Created")}</dt>
-            <dd title={created.toLocaleString()}>{moment(created, util.GOLANG_TIME_FORMAT).calendar()}</dd>
+            <dd title={created.toLocaleString()}>{moment(created, utils.GOLANG_TIME_FORMAT).calendar()}</dd>
             <dt>{_("Author")}</dt>
             <dd>{image.author}</dd>
             <dt>{_("Ports")}</dt>
