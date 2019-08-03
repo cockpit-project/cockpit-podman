@@ -23,7 +23,6 @@ import cockpit from 'cockpit';
 import { Terminal } from "xterm";
 
 import * as utils from './util.js';
-import varlink from './varlink.js';
 
 import "./ContainerTerminal.css";
 
@@ -92,7 +91,7 @@ class ContainerTerminal extends React.Component {
             return;
         }
 
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.GetAttachSockets", { name: this.state.container })
+        utils.podmanCall("GetAttachSockets", { name: this.state.container })
                 .then(out => {
                     let opts = {
                         payload: "packet",

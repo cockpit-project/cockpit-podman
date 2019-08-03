@@ -12,7 +12,6 @@ import ModalExample from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import atomic from './atomic.jsx';
-import varlink from './varlink.js';
 
 import './Images.css';
 
@@ -65,7 +64,7 @@ class Images extends React.Component {
             pullImageId += ":" + imageTag;
 
         this.setState({ imageDownloadInProgress: imageName });
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.PullImage", { name: pullImageId })
+        utils.podmanCall("PullImage", { name: pullImageId })
                 .then(() => {
                     this.setState({ imageDownloadInProgress: undefined });
                 })
@@ -96,7 +95,7 @@ class Images extends React.Component {
         this.setState({
             selectImageDeleteModal: false,
         });
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", { name: image })
+        utils.podmanCall("RemoveImage", { name: image })
                 .catch(ex => {
                     this.imageRemoveErrorMsg = ex.parameters.reason;
                     this.setState({
@@ -107,7 +106,7 @@ class Images extends React.Component {
 
     handleForceRemoveImage() {
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.id : "";
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.RemoveImage", { name: id, force: true })
+        utils.podmanCall("RemoveImage", { name: id, force: true })
                 .then(reply => {
                     this.setState({
                         setImageRemoveErrorModal: false

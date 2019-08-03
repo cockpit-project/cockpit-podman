@@ -7,7 +7,6 @@ import * as Select from '../lib/cockpit-components-select.jsx';
 import { ErrorNotification } from './Notification.jsx';
 import { FileAutoComplete } from '../lib/cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
-import varlink from './varlink.js';
 import cockpit from 'cockpit';
 
 import '../lib/form-layout.less';
@@ -254,8 +253,8 @@ export class ImageRunModal extends React.Component {
     onRunClicked() {
         const createConfig = this.getCreateConfig();
 
-        varlink.call(utils.PODMAN_ADDRESS, "io.podman.CreateContainer", { create: createConfig })
-                .then(reply => varlink.call(utils.PODMAN_ADDRESS, "io.podman.StartContainer", { name: reply.container }))
+        utils.podmanCall("CreateContainer", { create: createConfig })
+                .then(reply => utils.podmanCall("StartContainer", { name: reply.container }))
                 .then(() => this.props.close())
                 .catch(ex => {
                     this.setState({
