@@ -36,7 +36,7 @@ class Application extends React.Component {
             serviceAvailable: null,
             enableService: true,
             images: {}, /* images[Id]: detail info of image with Id from InspectImage */
-            containers: {}, /* containers[Id] detail info of container with Id from InspectContainer */
+            containers: null, /* containers[Id] detail info of container with Id from InspectContainer */
             containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
             onlyShowRunning: true,
             textFilter: "",
