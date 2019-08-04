@@ -62,6 +62,17 @@ export function podmanCall(name, args) {
     return varlink.call(PODMAN_ADDRESS, "io.podman." + name, args);
 }
 
+export function monitor(name, args, callback, on_close) {
+    return varlink.connect(PODMAN_ADDRESS)
+            .then(connection => connection.monitor("io.podman." + name, args, callback))
+            .catch(e => {
+                if (e.name === "ConnectionClosed")
+                    on_close();
+                else
+                    console.log(e);
+            });
+}
+
 export function updateContainer(id) {
     let container = {};
     let containerStats = {};
