@@ -3,7 +3,6 @@ import { Modal, Button, FormGroup, FormControl } from 'patternfly-react';
 import cockpit from 'cockpit';
 
 import * as utils from './util.js';
-import varlink from './varlink.js';
 import { ErrorNotification } from './Notification.jsx';
 
 import '../lib/form-layout.less';
@@ -92,17 +91,13 @@ class ContainerCommitModal extends React.Component {
         }
         commitData.changes.push(...onbuildsArr);
 
-        varlink.connect(utils.PODMAN_ADDRESS)
-                .then(connection => {
-                    this.setState({ commitInProgress: true });
+        this.setState({ commitInProgress: true });
+        utils.monitor("Commit", commitData, message => {
+            const reply = message.parameters.reply;
 
-                    return connection.monitor("io.podman.Commit", commitData, message => {
-                        const reply = message.parameters.reply;
-
-                        if (reply && 'logs' in reply && Array.isArray(reply.logs) && reply.logs.length > 0)
-                            console.log("Container commit:", message.parameters.reply.logs.join("\n"));
-                    });
-                })
+            if (reply && 'logs' in reply && Array.isArray(reply.logs) && reply.logs.length > 0)
+                console.log("Container commit:", message.parameters.reply.logs.join("\n"));
+        }, this.props.onHide)
                 .then(() => this.props.onHide())
                 .catch(ex => {
                     this.setState({

@@ -25,7 +25,6 @@ import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as utils from './util.js';
-import varlink from './varlink';
 
 const _ = cockpit.gettext;
 
@@ -231,13 +230,13 @@ class Application extends React.Component {
                     this.setState({ serviceAvailable: true });
                     this.updateImagesAfterEvent();
                     this.updateContainersAfterEvent();
-
-                    return varlink.connect(utils.PODMAN_ADDRESS);
-                })
-                .then(connection => {
-                    return connection.monitor(
-                        "io.podman.GetEvents", {},
-                        message => { message.parameters && message.parameters.events && this.handleEvent(message.parameters.events) }
+                    utils.monitor("GetEvents", {},
+                                  message => {
+                                      message.parameters && message.parameters.events && this.handleEvent(message.parameters.events);
+                                  },
+                                  () => {
+                                      this.setState({ serviceAvailable: false });
+                                  },
                     );
                 })
                 .catch(error => {
