@@ -197,7 +197,9 @@ class Images extends React.Component {
     render() {
         const columnTitles = [ _("Name"), _(''), _("Created"), _("Size"), _('') ];
         let emptyCaption = _("No images");
-        if (this.props.textFilter.length > 0)
+        if (this.props.images === null)
+            emptyCaption = "Loading...";
+        else if (this.props.textFilter.length > 0)
             emptyCaption = _("No images that match the current filter");
         const getNewImageAction = [
             <a key="get-new-image-action" role="link" tabIndex="0"
@@ -207,7 +209,9 @@ class Images extends React.Component {
                 {_("Get new image")}
             </a>
         ];
-        let filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].id);
+        let filtered = [];
+        if (this.props.images !== null)
+            filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].id);
         if (this.props.textFilter.length > 0)
             filtered = filtered.filter(id => {
                 for (let i = 0; i < this.props.images[id].repoTags.length; i++) {
