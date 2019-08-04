@@ -35,7 +35,7 @@ class Application extends React.Component {
         this.state = {
             serviceAvailable: null,
             enableService: true,
-            images: {}, /* images[Id]: detail info of image with Id from InspectImage */
+            images: null, /* images[Id]: detail info of image with Id from InspectImage */
             containers: null, /* containers[Id] detail info of container with Id from InspectContainer */
             containersStats:{}, /* containersStats[Id] memory usage of running container with Id */
             onlyShowRunning: true,
