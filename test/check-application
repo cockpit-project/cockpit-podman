@@ -24,6 +24,16 @@ registries = ['localhost:5000']
 
 class TestApplication(testlib.MachineCase):
 
+    def setUp(self):
+        # backup/restore pristine podman state, so that tests can run on existing testbeds
+        # HACK: sometimes podman leaks mounts
+        super().setUp()
+        self.machine.execute("cp -a /var/lib/containers /var/lib/containers.orig")
+        self.addCleanup(self.machine.execute, "podman rm --force --all && "
+            "findmnt --list -otarget | grep /var/lib/containers | xargs -r umount && "
+            "rm -r /var/lib/containers && "
+            "mv /var/lib/containers.orig /var/lib/containers")
+
     def testBasic(self):
         b = self.browser
         m = self.machine
