@@ -77,7 +77,7 @@ class TestApplication(testlib.MachineCase):
 
         # delete running container busybox using force delete
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
-        self.confirm_modal("btn-ctr-focedelete")
+        self.confirm_modal("btn-ctr-forcedelete")
         b.wait_not_in_text("#containers-containers", "busybox:latest")
 
         # delete the exited alpine
