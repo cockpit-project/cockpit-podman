@@ -220,14 +220,15 @@ export class ImageRunModal extends React.Component {
         let createConfig = {};
 
         createConfig.args = this.state.image.repoTags ? [this.state.image.repoTags[0]] : [""];
-        createConfig.resources = {};
         if (this.state.containerName)
             createConfig.name = this.state.containerName;
         if (this.state.command) {
             createConfig.args = createConfig.args.concat(utils.unquote_cmdline(this.state.command));
         }
-        if (this.state.memoryConfigure && this.state.memory)
-            createConfig.resources.memory = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
+        if (this.state.memoryConfigure && this.state.memory) {
+            let memorySize = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
+            createConfig.memory = memorySize.toString();
+        }
         if (this.state.hasTTY)
             createConfig.tty = true;
         if (this.state.publish.length > 0)
@@ -303,7 +304,7 @@ export class ImageRunModal extends React.Component {
                 <label className='control-label' htmlFor='run-image-dialog-memory'>
                     {_("Memory Limit")}
                 </label>
-                <div role='group' className='form-inline'>
+                <div role='group' className='form-inline' id="run-image-dialog-memory-limit">
                     <div className="checkbox">
                         <input id="run-image-dialog-memory-limit-checkbox" type="checkbox"
                                checked={this.state.memoryConfigure}
