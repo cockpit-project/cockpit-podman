@@ -145,13 +145,16 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('.modal-dialog div:contains("Image name is required")')
         b.click(".modal-dialog div .alert .close")
         b.wait_not_present(".modal-dialog div .alert")
+
+        # HACK: Disable checking for varlink error since it makes podman to coredump
+        # See https://github.com/containers/libpod/issues/3897
         # check varlink error
-        b.set_input_text("#commit-dialog-image-name", "TEST")
-        b.click(".modal-dialog div .btn-ctr-commit")
-        b.wait_present(".modal-dialog div")
-        b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
-        b.click(".modal-dialog div .alert .close")
-        b.wait_not_present(".modal-dialog div .alert")
+        # b.set_input_text("#commit-dialog-image-name", "TEST")
+        # b.click(".modal-dialog div .btn-ctr-commit")
+        # b.wait_present(".modal-dialog div")
+        # b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
+        # b.click(".modal-dialog div .alert .close")
+        # b.wait_not_present(".modal-dialog div .alert")
 
         # delete image busybox that hasn't been used
         b.wait_present('#containers-images tr:contains("busybox:latest")')
