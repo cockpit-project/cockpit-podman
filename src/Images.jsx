@@ -4,6 +4,7 @@ import { Button } from 'patternfly-react';
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ImageDetails from './ImageDetails.jsx';
+import ImageUsedBy from './ImageUsedBy.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import ImageSecurity from './ImageSecurity.jsx';
@@ -49,10 +50,6 @@ class Images extends React.Component {
 
     componentWillUnmount() {
         atomic.removeEventListener('vulnerableInfoChanged', this.vulnerableInfoChanged);
-    }
-
-    navigateToImage(image) {
-        cockpit.location.go([ 'image', image.id ]);
     }
 
     deleteImage(image) {
@@ -169,6 +166,14 @@ class Images extends React.Component {
                 }
             });
         }
+        tabs.push({
+            name: _("Used By"),
+            renderer: ImageUsedBy,
+            data: {
+                containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.id] : null,
+                showAll: this.props.showAll,
+            }
+        });
 
         let actions = [
             <button
@@ -183,7 +188,6 @@ class Images extends React.Component {
                     rowId={image.id}
                     columns={columns}
                     tabRenderers={tabs}
-                    navigateToItem={() => this.navigateToImage(image)}
                     listingActions={actions} />
         );
     }

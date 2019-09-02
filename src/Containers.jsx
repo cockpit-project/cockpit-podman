@@ -12,6 +12,7 @@ import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
 import varlink from './varlink.js';
+import ScrollableAnchor from 'react-scrollable-anchor';
 
 const _ = cockpit.gettext;
 
@@ -104,7 +105,6 @@ class Containers extends React.Component {
             isRunning ? utils.format_cpu_percent(containerStats.cpu * 100) : "",
             containerStats ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : "",
             container.status /* TODO: i18n */,
-
         ];
         let tabs = [{
             name: _("Details"),
@@ -150,13 +150,16 @@ class Containers extends React.Component {
             actions.push(<Dropdown key={_(container.ID) + "stop"} actions={stopActions} />);
         }
 
-        return <Listing.ListingRow
-                    key={container.id}
-                    rowId={container.id}
-                    columns={columns}
-                    tabRenderers={tabs}
-                    listingActions={actions}
-        />;
+        return (
+            <ScrollableAnchor id={container.id} key={container.id}>
+                <Listing.ListingRow
+                        rowId={container.id}
+                        columns={columns}
+                        tabRenderers={tabs}
+                        listingActions={actions}
+                />
+            </ScrollableAnchor>
+        );
     }
 
     handleCancelContainerDeleteModal() {

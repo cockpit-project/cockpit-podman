@@ -50,6 +50,7 @@ class Application extends React.Component {
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
         this.startService = this.startService.bind(this);
+        this.showAll = this.showAll.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
         this.handleImageEvent = this.handleImageEvent.bind(this);
         this.handleContainerEvent = this.handleContainerEvent.bind(this);
@@ -266,6 +267,10 @@ class Application extends React.Component {
                 .catch(err => console.error("Failed to start io.podman.socket:", JSON.stringify(err)));
     }
 
+    showAll() {
+        this.setState({ onlyShowRunning: false });
+    }
+
     goToServicePage(e) {
         if (!e || e.button !== 0)
             return;
@@ -309,14 +314,36 @@ class Application extends React.Component {
                 </div>);
         }
 
+        let imageContainerList = {};
+        if (this.state.containers !== null) {
+            Object.keys(this.state.containers).forEach(c => {
+                const container = this.state.containers[c];
+                const image = container.imageid;
+                if (imageContainerList[image]) {
+                    imageContainerList[image].push({
+                        container: container,
+                        stats: this.state.containersStats[container.id],
+                    });
+                } else {
+                    imageContainerList[image] = [ {
+                        container: container,
+                        stats: this.state.containersStats[container.id]
+                    } ];
+                }
+            });
+        } else
+            imageContainerList = null;
+
         let imageList;
         let containerList;
         imageList =
             <Images
                 key={_("imageList")}
                 images={this.state.images}
+                imageContainerList={imageContainerList}
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
+                showAll={this.showAll}
             />;
         containerList =
             <Containers
