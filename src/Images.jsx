@@ -137,7 +137,10 @@ class Images extends React.Component {
         let runImage = (
             <Button key={image.id + "create"}
                 className="btn btn-default btn-control-ct fa fa-play"
-                onClick={ () => this.setState({ showRunImageModal: image }) }
+                onClick={ e => {
+                    e.stopPropagation();
+                    this.setState({ showRunImageModal: image });
+                } }
                 data-image={image.id} />
         );
         let columns = [
