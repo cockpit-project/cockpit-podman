@@ -192,7 +192,7 @@ class TestApplication(testlib.MachineCase):
 
             def openDialog(self):
                 # Open get new image modal
-                b.click("caption a:contains(Get new image)")
+                b.click("header a:contains(Get new image)")
                 b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
                 b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
 

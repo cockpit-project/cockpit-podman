@@ -41,9 +41,16 @@ import './listing.less';
  * listingDetail optional: text rendered next to action buttons, similar style to the tab headers
  * listingActions optional: buttons that are presented as actions for the expanded item
  * selectChanged optional: callback will be used when the "selected" state changes
- * selected optional: true if the item is selected, can't be true if row has navigation or expansion
+ * selected optional: true if the item is selected, false if it unselected but selectable,
+ *                    not set if it is not selectable. If row has navigation or expansion the selected can be used
+ *                    only with addCheckbox.
  * initiallyExpanded optional: the entry will be initially rendered as expanded, but then behaves normally
  * expandChanged optional: callback will be used if the row is either expanded or collapsed passing single `isExpanded` boolean argument
+ * addCheckbox optional: if set a checkbox will appear in the start of the row and the selectChanged
+ *                       callback can be used to track row's checked status. Note that rows with checkboxes can't
+ *                       be selected outside of the checkbox.
+ * simpleBody optional: if set the expansion will just contain this simple body without tabs,
+ *                      this does not work well with tabRenderers.
  */
 export class ListingRow extends React.Component {
     constructor(props) {
@@ -73,10 +80,10 @@ export class ListingRow extends React.Component {
         if (!e || e.button !== 0)
             return;
 
-        let willBeExpanded = !this.state.expanded && this.props.tabRenderers.length > 0;
+        const willBeExpanded = !this.state.expanded && (this.props.tabRenderers.length > 0 || this.props.simpleBody);
         this.setState({ expanded: willBeExpanded });
 
-        let loadedTabs = {};
+        const loadedTabs = {};
         // unload all tabs if not expanded
         if (willBeExpanded) {
             // see if we should preload some tabs
@@ -105,29 +112,32 @@ export class ListingRow extends React.Component {
 
     handleSelectClick(e) {
         // only consider primary mouse button
-        if (!e || e.button !== 0)
+        // Rows which enable checkboxes don't have selectable rows outside from the checkbox
+        if (!e || (e.button !== 0 && e.target.type != 'checkbox'))
             return;
 
-        let selected = !this.state.selected;
+        if (this.props.addCheckbox && e.target.type != 'checkbox')
+            return;
+
+        const selected = !this.state.selected;
         this.setState({ selected: selected });
 
         if (this.props.selectChanged)
             this.props.selectChanged(selected);
 
         e.stopPropagation();
-        e.preventDefault();
     }
 
     handleTabClick(tabIdx, e) {
         // only consider primary mouse button
         if (!e || e.button !== 0)
             return;
-        let prevTab = this.state.activeTab;
+        const prevTab = this.state.activeTab;
         let prevTabPresence = 'default';
-        let loadedTabs = this.state.loadedTabs;
+        const loadedTabs = this.state.loadedTabs;
         if (prevTab !== tabIdx) {
             // see if we need to unload the previous tab
-            if ('presence' in this.props.tabRenderers[prevTab])
+            if (this.props.tabRenderers[prevTab] && 'presence' in this.props.tabRenderers[prevTab])
                 prevTabPresence = this.props.tabRenderers[prevTab].presence;
 
             if (prevTabPresence == 'onlyActive')
@@ -142,11 +152,11 @@ export class ListingRow extends React.Component {
     }
 
     render() {
-        let self = this;
+        const self = this;
         // only enable navigation if a function is provided and the row isn't expanded (prevent accidental navigation)
-        let allowNavigate = !!this.props.navigateToItem && !this.state.expanded;
+        const allowNavigate = !!this.props.navigateToItem && !this.state.expanded;
 
-        let headerEntries = this.props.columns.map((itm, index) => {
+        const headerEntries = this.props.columns.map((itm, index) => {
             if (typeof itm === 'string' || typeof itm === 'number' || itm === null || itm === undefined || itm instanceof String || React.isValidElement(itm))
                 return (<td key={index}>{itm}</td>);
             else if ('header' in itm && itm.header)
@@ -157,7 +167,7 @@ export class ListingRow extends React.Component {
                 return (<td key={index}>{itm.name}</td>);
         });
 
-        let allowExpand = (this.props.tabRenderers.length > 0);
+        const allowExpand = (this.props.tabRenderers.length > 0 || this.props.simpleBody);
         let expandToggle;
         if (allowExpand) {
             expandToggle = <td key="expandToggle" className="listing-ct-toggle" onClick={ allowNavigate ? this.handleExpandClick : undefined }>
@@ -168,12 +178,16 @@ export class ListingRow extends React.Component {
         }
 
         let listingItemClasses = ["listing-ct-item"];
+
+        if (this.props.extraClasses)
+            listingItemClasses = listingItemClasses.concat(this.props.extraClasses);
+
         if (!allowNavigate)
             listingItemClasses.push("listing-ct-nonavigate");
         if (!allowExpand)
             listingItemClasses.push("listing-ct-noexpand");
 
-        let allowSelect = !(allowNavigate || allowExpand) && (this.state.selected !== undefined);
+        const allowSelect = !(allowNavigate || allowExpand) && (this.state.selected !== undefined);
         let clickHandler;
         if (allowSelect) {
             clickHandler = this.handleSelectClick;
@@ -186,28 +200,40 @@ export class ListingRow extends React.Component {
                 clickHandler = this.handleExpandClick;
         }
 
-        let listingItem = (
+        let checkboxItem;
+        if (this.props.addCheckbox) {
+            checkboxItem = <td key="checkboxItem" className="listing-ct-toggle">
+                <input type='checkbox' checked={this.state.selected || false} onChange={this.handleSelectClick} />
+            </td>;
+        }
+
+        const listingItem = (
             <tr data-row-id={ this.props.rowId }
                 className={ listingItemClasses.join(' ') }
                 onClick={clickHandler}>
                 {expandToggle}
+                {checkboxItem}
                 {headerEntries}
             </tr>
         );
 
         if (this.state.expanded) {
-            let links = this.props.tabRenderers.map((itm, idx) => {
+            const links = this.props.tabRenderers.map((itm, idx) => {
                 return (
-                    <li key={idx} className={ (idx === self.state.activeTab) ? "active" : ""} >
+                    <li key={idx} className={ (idx === self.state.activeTab) ? "active" : ""}>
                         <a href="#" tabIndex="0" onClick={ self.handleTabClick.bind(self, idx) }>{itm.name}</a>
                     </li>
                 );
             });
-            let tabs = [];
+            const tabs = [];
             let tabIdx;
             let Renderer;
             let rendererData;
             let row;
+
+            if (this.state.activeTab >= this.props.tabRenderers.length)
+                this.state.activeTab = this.props.tabRenderers.length - 1;
+
             for (tabIdx = 0; tabIdx < this.props.tabRenderers.length; tabIdx++) {
                 Renderer = this.props.tabRenderers[tabIdx].renderer;
                 rendererData = this.props.tabRenderers[tabIdx].data;
@@ -229,21 +255,30 @@ export class ListingRow extends React.Component {
                 );
             }
 
+            let simpleBody, heading;
+            if ('simpleBody' in this.props) {
+                simpleBody = (
+                    <div className="listing-ct-body" key="simplebody">{this.props.simpleBody}</div>
+                );
+            } else {
+                heading = (<div className="listing-ct-head">
+                    <div className="listing-ct-actions">
+                        {listingDetail}
+                        {this.props.listingActions}
+                    </div>
+                    <ul className="nav nav-tabs nav-tabs-pf">
+                        {links}
+                    </ul>
+                </div>);
+            }
+
             return (
                 <tbody className="open">
                     {listingItem}
                     <tr className="listing-ct-panel">
-                        <td colSpan={ headerEntries.length + (expandToggle ? 1 : 0) }>
-                            <div className="listing-ct-head">
-                                <div className="listing-ct-actions">
-                                    {listingDetail}
-                                    {this.props.listingActions}
-                                </div>
-                                <ul className="nav nav-tabs nav-tabs-pf">
-                                    {links}
-                                </ul>
-                            </div>
-                            {tabs}
+                        <td colSpan={ headerEntries.length + (expandToggle ? 1 : 0) + (this.props.addCheckbox ? 1 : 0) }>
+                            {heading}
+                            {simpleBody || tabs}
                         </td>
                     </tr>
                 </tbody>
@@ -261,7 +296,9 @@ export class ListingRow extends React.Component {
 
 ListingRow.defaultProps = {
     tabRenderers: [],
+    selected: undefined,
     navigateToItem: null,
+    addCheckbox: false,
 };
 
 ListingRow.propTypes = {
@@ -270,53 +307,45 @@ ListingRow.propTypes = {
     tabRenderers: PropTypes.array,
     navigateToItem: PropTypes.func,
     listingDetail: PropTypes.node,
-    listingActions: PropTypes.arrayOf(PropTypes.node),
+    listingActions: PropTypes.node,
     selectChanged: PropTypes.func,
     selected: PropTypes.bool,
+    addCheckbox: PropTypes.bool,
     initiallyExpanded: PropTypes.bool,
     expandChanged: PropTypes.func,
-    initiallyActiveTab: PropTypes.bool
+    initiallyActiveTab: PropTypes.number,
+    extraClasses: PropTypes.array,
+    simpleBody: PropTypes.node,
 };
 /* Implements a PatternFly 'List View' pattern
  * https://www.patternfly.org/list-view/
- * Properties:
+ * Properties (all optional):
  * - title
- * - fullWidth optional: set width to 100% of parent, defaults to true
- * - emptyCaption header caption to show if list is empty, defaults to "No entries"
+ * - fullWidth: set width to 100% of parent, defaults to true
+ * - compact: reduce spacing for each cell, defaults to false
+ * - emptyCaption: header caption to show if list is empty
  * - columnTitles: array of column titles, as strings
- * - columnTitleClick: optional callback for clicking on column title (for sorting)
+ * - columnTitleClick: callback for clicking on column title (for sorting)
  *                     receives the column index as argument
+ * - hasCheckbox: true if listing rows have checkboxes
  * - actions: additional listing-wide actions (displayed next to the list's title)
  */
 export const Listing = (props) => {
-    let bodyClasses = ["listing", "listing-ct"];
+    const bodyClasses = ["listing", "listing-ct"];
     if (props.fullWidth)
         bodyClasses.push("listing-ct-wide");
+    if (props.compact)
+        bodyClasses.push("listing-ct-compact");
     let headerClasses;
     let headerRow;
-    let selectableRows;
     if (!props.children || props.children.length === 0) {
         headerClasses = "listing-ct-empty";
         headerRow = <tr><td>{props.emptyCaption}</td></tr>;
     } else if (props.columnTitles.length) {
-        // check if any of the children are selectable
-        selectableRows = false;
-        props.children.forEach(function(r) {
-            if (r.props.selected !== undefined)
-                selectableRows = true;
-        });
-
-        if (selectableRows) {
-            // now make sure that if one is set, it's available on all items
-            props.children.forEach(function(r) {
-                if (r.props.selected === undefined)
-                    r.props.selected = false;
-            });
-        }
-
         headerRow = (
             <tr>
                 <th key="empty" className="listing-ct-toggle" />
+                { props.hasCheckbox && <th key="empty-checkbox" className="listing-ct-toggle" /> }
                 { props.columnTitles.map((title, index) => {
                     let clickHandler = null;
                     if (props.columnTitleClick)
@@ -328,24 +357,35 @@ export const Listing = (props) => {
     } else {
         headerRow = <tr />;
     }
-    let caption;
+    let heading;
     if (props.title || (props.actions && props.actions.length > 0))
-        caption = <caption className="cockpit-caption">{props.title}{props.actions}</caption>;
+        heading = (
+            <header>
+                {props.title && <h3 className="listing-ct-heading" id="listing-ct-heading">{props.title}</h3>}
+                {props.actions && <div className="listing-ct-actions">
+                    {props.actions}
+                </div>}
+            </header>
+        );
 
     return (
-        <table className={ bodyClasses.join(" ") }>
-            {caption}
-            <thead className={headerClasses}>
-                {headerRow}
-            </thead>
-            {props.children}
-        </table>
+        <section className="ct-listing">
+            {heading}
+            <table aria-labelledby="listing-ct-heading" className={ bodyClasses.join(" ") }>
+                <thead className={headerClasses}>
+                    {headerRow}
+                </thead>
+                {props.children}
+            </table>
+        </section>
     );
 };
 
 Listing.defaultProps = {
     title: '',
     fullWidth: true,
+    compact: false,
+    emptyCaption: '',
     columnTitles: [],
     actions: []
 };
@@ -353,12 +393,13 @@ Listing.defaultProps = {
 Listing.propTypes = {
     title: PropTypes.string,
     fullWidth: PropTypes.bool,
-    emptyCaption: PropTypes.string.isRequired,
+    compact: PropTypes.bool,
+    emptyCaption: PropTypes.node,
     columnTitles: PropTypes.arrayOf(
         PropTypes.oneOfType([
             PropTypes.string,
             PropTypes.element,
         ])),
     columnTitleClick: PropTypes.func,
-    actions: PropTypes.arrayOf(PropTypes.node)
+    actions: PropTypes.node
 };
