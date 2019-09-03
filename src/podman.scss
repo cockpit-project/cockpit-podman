@@ -602,13 +602,13 @@ table.drive-list td:nth-child(2) img {
 }
 
 /* Align the buttons on DynamicListForms to the right */
-.form-list-control > div:last-child {
-    grid-column-start: 4 !important;
-    justify-self: end !important;
-}
+.form-list-control {
+    --ct-form-columns: 1;
+    justify-items: end;
 
-.form-list-control input {
-    width: 125px !important;
+    input {
+        max-width: 8em;
+    }
 }
 
 /* We need to be a little specific here to override without !important */
