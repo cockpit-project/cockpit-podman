@@ -52,7 +52,9 @@ export class Select extends React.Component {
         super();
         this.onChange = this.onChange.bind(this);
 
-        this.state = { value: props.initial,
+        this.state = {
+            value: props.initial,
+            initial: props.initial,
         };
     }
 
@@ -62,8 +64,13 @@ export class Select extends React.Component {
             this.props.onChange(value);
     }
 
-    componentWillReceiveProps(nextProps) {
-        this.setState({ value: nextProps.initial });
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (nextProps.initial !== prevState.initial)
+            return {
+                value: nextProps.initial,
+                initial: nextProps.initial
+            };
+        return null;
     }
 
     render() {
@@ -92,6 +99,7 @@ Select.propTypes = {
  * Expected properties:
  *  - data (required), will be passed to the select's onChange callback
  *  - disabled (optional): whether or not the entry is disabled.
+ *  - title (optional): acts as a tooltip to the option entry
  * Example: <SelectEntry data="foo">Some entry</SelectEntry>
  */
 export class SelectEntry extends React.Component {
@@ -99,6 +107,7 @@ export class SelectEntry extends React.Component {
         const value = (this.props.children !== undefined) ? this.props.children : textForUndefined;
         return (
             <option key={value} disabled={this.props.disabled}
+                title={this.props.title}
                 data-value={value} value={this.props.data}>
                 {value}
             </option>
@@ -108,6 +117,8 @@ export class SelectEntry extends React.Component {
 
 SelectEntry.propTypes = {
     data: PropTypes.any.isRequired,
+    disabled: PropTypes.bool,
+    title: PropTypes.string,
 };
 
 /* Divider
