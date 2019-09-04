@@ -19,7 +19,9 @@ cat ~/.fedora-password | kinit cockpit@FEDORAPROJECT.ORG
 # Do fedora builds for the tag, using tarball
 job release-koji master
 job release-koji f30
+job release-koji f31
 job release-bodhi F30
+job release-bodhi F31
 
 # These are likely the first of your release targets; but run them after Fedora uploads,
 # so that failures there will fail the release early, before publishing on GitHub
