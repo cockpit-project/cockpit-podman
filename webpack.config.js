@@ -1,6 +1,8 @@
 const path = require("path");
 const copy = require("copy-webpack-plugin");
 const extract = require("extract-text-webpack-plugin");
+const TerserJSPlugin = require('terser-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const fs = require("fs");
 const webpack = require("webpack");
 const CompressionPlugin = require("compression-webpack-plugin");
@@ -15,7 +17,6 @@ const builddir = (process.env.SRCDIR || __dirname);
 const distdir = builddir + path.sep + "dist";
 const section = process.env.ONLYDIR || null;
 const nodedir = path.resolve((process.env.SRCDIR || __dirname), "node_modules");
-const libdir = path.resolve(srcdir, path.sep + "lib");
 /* A standard nodejs and webpack pattern */
 var production = process.env.NODE_ENV === 'production';
 
@@ -101,6 +102,12 @@ module.exports = {
     externals: externals,
     output: output,
     devtool: "source-map",
+
+    optimization: {
+        minimize: production,
+        minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+    },
+
     module: {
         rules: [
             {
