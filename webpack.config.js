@@ -116,13 +116,12 @@ module.exports = {
             },
             {
                 exclude: /node_modules/,
-                loader: extract.extract('css-loader!sass-loader') ||
-                        extract.extract("css-loader?minimize=&root=" + libdir),
+                loader: extract.extract('css-loader!sass-loader'),
                 test: /\.s?css$/
             },
             {
                 test: /\.less$/,
-                loader: extract.extract("css-loader?sourceMap&minimize=!less-loader?sourceMap&compress=false")
+                loader: extract.extract("css-loader?sourceMap!less-loader?sourceMap&compress=false")
             },
         ]
     },
