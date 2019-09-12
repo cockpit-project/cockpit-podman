@@ -123,7 +123,7 @@ rpm: dist-gzip $(RPM_NAME).spec
 # build a VM with locally built rpm installed
 $(VM_IMAGE): rpm bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
-	bots/image-customize -v -i cockpit-ws -i `pwd`/$(RPM_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize -v -I "dnf install -y" -i cockpit-ws -i `pwd`/$(RPM_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
