@@ -7,8 +7,8 @@ TEST_OS = fedora-30
 endif
 export TEST_OS
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
-# one example directory from `npm install` to check if that already ran
-NODE_MODULES_TEST=node_modules/po2json
+# stamp file to check if/when npm install ran
+NODE_MODULES_TEST=package-lock.json
 # one example file in dist/ from webpack to check if that already ran
 WEBPACK_TEST=dist/index.html
 
@@ -86,17 +86,17 @@ devel-install: $(WEBPACK_TEST)
 	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
 # when building a distribution tarball, call webpack with a 'production' environment
-# ship a stub node_modules/ so that `make` works without re-running `npm install`
+# # we don't ship node_modules for license and compactness reasons; we ship a
+# pre-built dist/ (so it's not necessary) and ship packge-lock.json (so that
+# node_modules/ can be reconstructed if necessary)
 dist-gzip: NODE_ENV=production
 dist-gzip: all $(RPM_NAME).spec
 	mv node_modules node_modules.release
-	mkdir -p $(NODE_MODULES_TEST)
 	touch -r package.json $(NODE_MODULES_TEST)
 	touch dist/*
 	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
 		--exclude $(RPM_NAME).spec.in \
-		$$(git ls-files) $(RPM_NAME).spec dist/ node_modules
-	rm -rf node_modules
+		$$(git ls-files) package-lock.json $(RPM_NAME).spec dist/
 	mv node_modules.release node_modules
 
 srpm: dist-gzip $(RPM_NAME).spec
@@ -148,6 +148,9 @@ test/common:
 	git reset test/common
 
 $(NODE_MODULES_TEST): package.json
+	# if it exists already, npm install won't update it; force that so that we always get up-to-date packages
+	rm -f package-lock.json
 	npm install
+	npm prune
 
 .PHONY: all clean install devel-install dist-gzip srpm rpm check vm update-po
