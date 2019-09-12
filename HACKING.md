@@ -11,7 +11,7 @@ Cockpit Podman git repository checkout.
 ## Running eslint
 
 Cockpit Podman uses [ESLint](https://eslint.org/) to automatically check
-JavaScript code style in `.jsx`, `.js` and `.es6` files.
+JavaScript code style in `.jsx` and `.js` files.
 
 The linter is executed within every build as a webpack preloader.
 

@@ -22,7 +22,7 @@ LINGUAS=$(basename $(notdir $(wildcard po/*.po)))
 
 po/POTFILES.js.in:
 	mkdir -p $(dir $@)
-	find src/ -name '*.js' -o -name '*.jsx' -o -name '*.es6' > $@
+	find src/ -name '*.js' -o -name '*.jsx' > $@
 
 po/$(PACKAGE_NAME).js.pot: po/POTFILES.js.in
 	xgettext --default-domain=cockpit --output=$@ --language=C --keyword= \
