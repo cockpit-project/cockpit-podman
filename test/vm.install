@@ -16,3 +16,9 @@ fi
 podman pull busybox
 podman pull docker.io/alpine
 podman pull docker.io/registry:2
+
+sudo -i -u admin bash << EOF
+podman pull busybox
+podman pull docker.io/alpine
+podman pull docker.io/registry:2
+EOF

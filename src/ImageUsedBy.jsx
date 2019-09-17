@@ -7,12 +7,18 @@ const _ = cockpit.gettext;
 
 const renderRow = (containerStats, container, showAll) => {
     const isRunning = container.status == "running";
+    let proc = "";
+    let mem = "";
+    if (containerStats) {
+        proc = containerStats.cpu ? utils.format_cpu_percent(containerStats.cpu * 100) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+        mem = containerStats.mem_usage ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+    }
 
     const columns = [
         { name: container.names, header: true },
         utils.quote_cmdline(container.command),
-        isRunning ? utils.format_cpu_percent(containerStats.cpu * 100) : "",
-        containerStats ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : "",
+        proc,
+        mem,
         container.status /* TODO: i18n */,
 
     ];
