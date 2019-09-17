@@ -12,7 +12,9 @@ import unittest
 TEST_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.join(TEST_DIR, "common"))
 sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
+
 import testlib
+from machine_core import ssh_connection
 
 REGISTRIES_CONF="""
 [registries.search]
@@ -22,6 +24,16 @@ registries = ['localhost:5000']
 registries = ['localhost:5000']
 """
 
+def checkImage(browser, name, owner):
+    browser.wait_present("#containers-images > section > table")
+    browser.wait_js_func("""(function (first, last) {
+        let items = ph_select("#containers-images > section > table tbody");
+        for (i = 0; i < items.length; i++)
+            if (items[i].innerText.trim().startsWith(first) && items[i].innerText.trim().endsWith(last))
+                return true;
+        return false;
+        })""", name, owner)
+
 class TestApplication(testlib.MachineCase):
 
     def setUp(self):
@@ -29,39 +41,116 @@ class TestApplication(testlib.MachineCase):
         # HACK: sometimes podman leaks mounts
         super().setUp()
         self.machine.execute("cp -a /var/lib/containers /var/lib/containers.orig")
+
+        # Create admin session
+        self.machine.execute("""
+            mkdir /home/admin/.ssh
+            cp /root/.ssh/* /home/admin/.ssh
+            chown -R admin:admin /home/admin/.ssh
+            chmod -R go-wx /home/admin/.ssh
+            """)
+        self.admin_s = ssh_connection.SSHConnection(user="admin",
+                                                    address=self.machine.ssh_address,
+                                                    ssh_port=self.machine.ssh_port,
+                                                    identity_file=self.machine.identity_file)
+
+        # Enable user service as well
+        if self.machine.image != "rhel-8-1":
+            self.admin_s.execute("systemctl --now --user enable io.podman.socket")
+        else:
+            self.allow_journal_messages("Unit io.podman.socket could not be found.")
+
+        self.allow_journal_messages("/run.*/podman/io.podman: couldn't connect.*")
         self.addCleanup(self.machine.execute, "podman rm --force --all && "
             "findmnt --list -otarget | grep /var/lib/containers | xargs -r umount && "
             "rm -r /var/lib/containers && "
             "mv /var/lib/containers.orig /var/lib/containers")
 
-    def testBasic(self):
+    def execute(self, system, cmd):
+        if system:
+            return self.machine.execute(cmd)
+        else:
+            return self.admin_s.execute(cmd)
+
+    def testBasicSystem(self):
+        self._testBasic(True)
+
+    @testlib.skipImage("No user service", "rhel-8-1")
+    def testBasicUser(self):
+        self._testBasic(False)
+
+    def _testBasic(self, auth):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/podman")
+        if not auth:
+            self.allow_authorize_journal_messages()
+            self.allow_browser_errors("Failed to start system io.podman.socket.*")
+
+        self.login_and_go("/podman", authorized=auth)
         b.wait_present("#app")
+
         b.wait_present(".content-filter input")
-        b.wait_in_text("#containers-images", "busybox:latest")
+
+        # Check all containers
+        if auth:
+            checkImage(b, "docker.io/library/busybox:latest", "system")
+            checkImage(b, "docker.io/library/alpine:latest", "system")
+            checkImage(b, "docker.io/library/registry:2", "system")
+
+        if m.image != "rhel-8-1":
+            checkImage(b, "docker.io/library/busybox:latest", "admin")
+            checkImage(b, "docker.io/library/alpine:latest", "admin")
+            checkImage(b, "docker.io/library/registry:2", "admin")
+
+        # prepare image ids - much easier to pick a specific container
+        images = {}
+        for image in self.execute(auth, "podman images --noheading --no-trunc").strip().split("\n"):
+            # <name> <tag> sha256:<sha> <other things>
+            items = image.split()
+            images["{0}:{1}".format(items[0], items[1])] = items[2].split(":")[1]
 
         # show image listing toggle
-        b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
-        b.wait_present('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
-        b.wait_in_text('#containers-images tbody tr .image-details:first-child:contains("busybox:latest")', "Commandsh")
+        busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/busybox:latest"], auth).lower()
+        b.wait_present(busybox_sel)
+        b.click(busybox_sel + " td.listing-ct-toggle")
+        b.wait_present(busybox_sel + " + tr button.btn-delete")
+        b.wait_in_text("#containers-images tbody tr .image-details:first-child:contains('busybox:latest')", "Commandsh")
+        b.click(busybox_sel + " td.listing-ct-toggle")
 
         # make sure no running containers shown
         self.filter_containers('running')
         b.wait_in_text("#containers-containers", "No running containers")
 
-        # run a container (will exit immediately)
-        m.execute("podman run -d --name test-sh alpine sh")
-        # run a container
-        m.execute("podman run -d --name swamped-crate busybox sleep 1000")
+        if auth:
+            # Run two containers as system (first exits immediately)
+            self.execute(auth, "podman run -d --name test-sh-system alpine sh")
+            self.execute(auth, "podman run -d --name swamped-crate-system busybox sleep 1000")
+
+        if m.image != "rhel-8-1":
+            # Run two containers as admin (first exits immediately)
+            self.execute(False, "podman run -d --name test-sh-user alpine sh")
+            self.execute(False, "podman run -d --name swamped-crate-user busybox sleep 1000")
+
+        user_containers = {}
+        system_containers = {}
+        for container in self.execute(True, "podman ps --all --no-trunc").strip().split("\n")[1:]:
+            # <sha> <other things> <name>
+            items = container.split()
+            system_containers[items[-1]] = items[0]
+        if m.image != "rhel-8-1":
+            for container in self.execute(False, "podman ps --all --no-trunc").strip().split("\n")[1:]:
+                # <sha> <other things> <name>
+                items = container.split()
+                user_containers[items[-1]] = items[0]
 
         # running busybox shown
-        b.wait_present("#containers-containers")
-        b.wait_present('#containers-containers tr:contains("swamped-crate")')
-        self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sleep 1000', 'running'])
+        if auth:
+            b.wait_present("#containers-containers tr th:contains('swamped-crate-system')")
+            self.check_container(system_containers["swamped-crate-system"], True, ['swamped-crate-system', 'busybox:latest', 'sleep 1000', 'running'])
+        if m.image != "rhel-8-1":
+            b.wait_present("#containers-containers tr:contains('swamped-crate-user')")
+            self.check_container(user_containers["swamped-crate-user"], False, ['swamped-crate-user', 'busybox:latest', 'sleep 1000', 'running'])
 
         # exited alpine not shown
         b.wait_not_in_text("#containers-containers", "alpine:latest")
@@ -71,34 +160,53 @@ class TestApplication(testlib.MachineCase):
 
         # exited alpine under everything list
         b.wait_present("#containers-containers")
-        b.wait_present('#containers-containers tr:contains("test-sh")')
-        self.check_container('test-sh', ['test-sh', 'alpine:latest', 'sh', 'exited'])
+        if auth:
+            self.check_container(system_containers["test-sh-system"], True, ['test-sh-system', 'alpine:latest', 'sh', 'exited'])
+        if m.image != "rhel-8-1":
+            self.check_container(user_containers["test-sh-user"], False, ['test-sh-user', 'alpine:latest', 'sh', 'exited'])
 
-        # show container listing toggle
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
-        b.wait_present('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
+            b.click('#containers-containers tbody tr:contains("swamped-crate-user") td.listing-ct-toggle')
+            b.wait_present('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
+
+        if auth:
+            b.click('#containers-containers tbody tr:contains("swamped-crate-system") td.listing-ct-toggle')
+            b.wait_present('#containers-containers tbody tr:contains("swamped-crate-system") + tr button.btn-delete')
 
         # show running container
         self.filter_containers('running')
-        b.wait_present('#containers-containers tr:contains("busybox:latest")')
-        self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sleep 1000', 'running'])
+        if auth:
+            self.check_container(system_containers["swamped-crate-system"], True, ['swamped-crate-system', 'busybox:latest', 'sleep 1000', 'running'])
+        if m.image != "rhel-8-1":
+            self.check_container(user_containers["swamped-crate-user"], False, ['swamped-crate-user', 'busybox:latest', 'sleep 1000', 'running'])
         # check exited alpine not in running list
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
         # delete running container busybox using force delete
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button.btn-delete')
-        self.confirm_modal("btn-ctr-forcedelete")
-        b.wait_not_in_text("#containers-containers", "busybox:latest")
+        if auth:
+            b.click('#containers-containers tbody tr:contains("swamped-crate-system") + tr button.btn-delete')
+            self.confirm_modal("btn-ctr-forcedelete")
+            b.wait_not_in_text("#containers-containers", "swamped-crate-system")
 
-        # delete the exited alpine
         self.filter_containers("all")
-        b.wait_present('#containers-containers tr:contains("alpine:latest")')
-        b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
-        b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-delete')
-        self.confirm_modal("btn-ctr-delete")
-        b.wait_not_in_text("#containers-containers", "alpine:latest")
+        if m.image != "rhel-8-1":
+            b.click('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
+            self.confirm_modal("btn-ctr-forcedelete")
+            b.wait_not_in_text("#containers-containers", "swamped-crate-user")
 
-        def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000"):
+            b.wait_present('#containers-containers tr:contains("test-sh-user")')
+            b.click('#containers-containers tbody tr:contains("test-sh-user") td.listing-ct-toggle')
+            b.click('#containers-containers tbody tr:contains("test-sh-user") + tr button.btn-delete')
+            self.confirm_modal("btn-ctr-delete")
+            b.wait_not_in_text("#containers-containers", "test-sh-user")
+
+        if auth:
+            b.wait_present('#containers-containers tr:contains("test-sh-system")')
+            b.click('#containers-containers tbody tr:contains("test-sh-system") td.listing-ct-toggle')
+            b.click('#containers-containers tbody tr:contains("test-sh-system") + tr button.btn-delete')
+            self.confirm_modal("btn-ctr-delete")
+            b.wait_not_in_text("#containers-containers", "test-sh-system")
+
+        def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
             self.filter_containers("all")
             b.wait_present('#containers-containers tr:contains({0})'.format(container_name))
             b.click('#containers-containers tbody tr:contains({0}) td.listing-ct-toggle'.format(container_name))
@@ -116,26 +224,39 @@ class TestApplication(testlib.MachineCase):
             b.click(".modal-dialog div .btn-ctr-commit")
             b.wait_not_present(".modal-dialog div")
             b.wait_present('#containers-images tr:contains("{0}:{1}")'.format(image_name, image_tag))
-            b.click('#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag))
+            checkImage(b, "localhost/{0}:{1}".format(image_name, image_tag), owner)
             # open the listing toggle of testimg and check the commit paramerters
+            b.click('#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag))
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_command))
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_author))
 
-            # Cleanup
-            m.execute("podman rm -f {0}; podman rmi {1}:{2}".format(container_name, image_name, image_tag))
-
         # run a container (will exit immediately) and test the display of commit modal
-        m.execute("podman run -d --name test-sh alpine sh")
-        self.filter_containers("all")
-        container_commit("test-sh")
+        if auth:
+            self.execute(True, "podman run -d --name test-sh alpine sh")
+            container_commit("test-sh")
+            self.execute(True, "podman rm -f test-sh; podman rmi testimg:testtag")
+
+        if m.image != "rhel-8-1":
+            self.execute(False, "podman run -d --name test-sh alpine sh")
+            container_commit("test-sh", owner="admin")
+            self.execute(False, "podman rm -f test-sh; podman rmi testimg:testtag")
 
         # test commit of a running container
-        m.execute("podman run -d --name test-sh busybox sleep 1000")
-        self.check_container('test-sh', ['test-sh', 'busybox:latest', 'sleep 1000', 'running'])
-        container_commit("test-sh")
+        if auth:
+            self.execute(True, "podman run -d --name test-sh busybox sleep 1000")
+            container_commit("test-sh")
+            self.execute(True, "podman rm -f test-sh; podman rmi testimg:testtag")
 
-        m.execute("podman run -d --name test-sh alpine sh")
+        # HACK - this does not work, see https://github.com/containers/libpod/issues/3970
+        # self.execute(False, "podman run -d --name test-sh alpine sleep 1000")
+        # container_commit("test-sh", owner="admin")
+        # self.execute(False, "podman rm -f test-sh; podman rmi testimg:testtag")
+
+        if auth:
+            self.execute(True, "podman run -d --name test-sh alpine sh")
+        else:
+            self.execute(False, "podman run -d --name test-sh alpine sh")
         b.wait_present('#containers-containers tr:contains("alpine:latest")')
         b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
         # open commit modal and check error modal
@@ -147,6 +268,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present(".modal-dialog div .alert")
 
         # HACK: Disable checking for varlink error since it makes podman to coredump
+        # When hack removed, don't forget to also do the check for user containers
         # See https://github.com/containers/libpod/issues/3897
         # check varlink error
         # b.set_input_text("#commit-dialog-image-name", "TEST")
@@ -156,42 +278,49 @@ class TestApplication(testlib.MachineCase):
         # b.click(".modal-dialog div .alert .close")
         # b.wait_not_present(".modal-dialog div .alert")
 
+        b.click(".btn-ctr-cancel-commit")
+
         # delete image busybox that hasn't been used
-        b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.click('#containers-images tbody tr:contains("busybox:latest") + tr button.btn-delete')
+        b.wait_present(busybox_sel)
+        b.click(busybox_sel + " td.listing-ct-toggle")
+        b.click(busybox_sel + " + tr button.btn-delete")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
-        b.wait_not_in_text("#containers-images", "busybox:latest")
+        b.wait_not_in_text("#containers-images", busybox_sel)
 
         # delete image alpine that has been used by a container
-        b.wait_present('#containers-images tr:contains("alpine:latest")')
-        b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-toggle')
-        b.wait_in_text('#containers-images tbody tr .image-details:first-child:contains("alpine:latest")', "Command/bin/sh")
-        b.click('#containers-images tbody tr:contains("alpine:latest") + tr button.btn-delete')
+        alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/alpine:latest"], auth).lower()
+        b.wait_present(alpine_sel)
+        b.click(alpine_sel + " td.listing-ct-toggle")
+        b.click(alpine_sel + " + tr button.btn-delete")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
         b.click(".modal-dialog div #btn-img-deleteerror")
         b.wait_not_present("modal-dialog div #btn-img-deleteerror")
-        b.wait_not_in_text("#containers-images", "alpine:latest")
+        b.wait_not_in_text("#containers-images", alpine_sel)
 
     def testDownloadImage(self):
         b = self.browser
         m = self.machine
+        execute = self.execute
 
         def prepare():
             # Create and start registry container
-            m.execute("podman run -d -p 5000:5000 --name registry registry:2")
+            self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
             # Add local insecure registry into resgitries conf
-            m.execute("echo \"{0}\" > /etc/containers/registries.conf && systemctl stop io.podman.service".format(REGISTRIES_CONF))
+            self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop io.podman.service".format(REGISTRIES_CONF))
             # Push busybox image to the local registry
-            m.execute("podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+            self.execute(True, "podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
-            m.execute("podman rmi -f busybox")
+            self.execute(True, "podman rmi -f busybox")
+            self.execute(False, "podman rmi -f busybox")
 
         class DownloadImageDialog:
-            def __init__(self, imageName, imageTag=None):
+            def __init__(self, imageName, imageTag=None, user="system"):
                 self.imageName = imageName
                 self.imageTag = imageTag
+                self.user = user
+                self.imageSha = ""
 
             def openDialog(self):
                 # Open get new image modal
@@ -203,6 +332,9 @@ class TestApplication(testlib.MachineCase):
 
             def fillDialog(self):
                 # Search for image specied with self.imageName and self.imageTag
+                if m.image != "rhel-8-1":
+                    # Only show select when both services are available
+                    b.click("#{0}".format(self.user))
                 b.set_input_text("#search-image-dialog-name", self.imageName)
                 if self.imageTag:
                     b.set_input_text(".image-tag-entry", self.imageTag)
@@ -234,6 +366,10 @@ class TestApplication(testlib.MachineCase):
                 b.wait_not_present('div.modal-dialog')
                 # Confirm that the image got downloaded
                 b.wait_present('#containers-images tr:contains("{0}")'.format(self.imageName))
+                checkImage(b, "localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest"), "system" if self.user == "system" else "admin")
+
+                # Find out this image ID
+                self.imageSha = execute(self.user == "system", "podman inspect --format '{{{{.Id}}}}' {0}:{1}".format(self.imageName, self.imageTag or "latest")).strip()
 
                 return self
 
@@ -244,16 +380,20 @@ class TestApplication(testlib.MachineCase):
                     imageTagSuffix = ""
 
                 # Select the image row
-                b.click('#containers-images tbody tr:contains("{0}{1}") td.listing-ct-toggle'.format(self.imageName, imageTagSuffix))
+
+                # show image listing toggle
+                sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(self.imageSha, "true" if self.user == "system" else "false")
+                b.wait_present(sel)
+                b.click(sel + " td.listing-ct-toggle")
 
                 # Click the delete icon on the image row
-                b.wait_present('#containers-images tbody tr:contains("{0}{1}") + tr button.btn-delete'.format(self.imageName, imageTagSuffix))
-                b.click('#containers-images tbody tr:contains("{0}{1}") + tr button.btn-delete'.format(self.imageName, imageTagSuffix))
+                b.wait_present(sel + ' + tr button.btn-delete')
+                b.click(sel +' + tr button.btn-delete')
 
                 # Confirm deletion in the delete dialog
                 b.click(".modal-dialog div #btn-img-delete")
 
-                b.wait_not_present('#containers-images tr:contains("{0}")'.format(self.imageName))
+                b.wait_not_present(sel)
 
                 return self
 
@@ -262,14 +402,23 @@ class TestApplication(testlib.MachineCase):
         self.login_and_go("/podman")
         b.wait_present("#app")
 
-        dialog = DownloadImageDialog('my-busybox')
-        dialog.openDialog() \
+        dialog0 = DownloadImageDialog('my-busybox', user="system")
+        dialog0.openDialog() \
               .fillDialog() \
               .selectImageAndDownload() \
-              .expectDownloadSuccess() \
-              .deleteImage()
+              .expectDownloadSuccess()
 
-        dialog = DownloadImageDialog('my-busybox', 'latest')
+        if m.image != "rhel-8-1":
+            dialog1 = DownloadImageDialog('my-busybox', user="user")
+            dialog1.openDialog() \
+                  .fillDialog() \
+                  .selectImageAndDownload() \
+                  .expectDownloadSuccess()
+            dialog1.deleteImage()
+
+        dialog0.deleteImage()
+
+        dialog = DownloadImageDialog('my-busybox', 'latest', user="system")
         dialog.openDialog() \
               .fillDialog() \
               .selectImageAndDownload() \
@@ -287,17 +436,27 @@ class TestApplication(testlib.MachineCase):
               .selectImageAndDownload() \
               .expectDownloadErrorForNonExistingTag()
 
-    def testLifecycleOperations(self):
+    @testlib.skipImage("No user service", "rhel-8-1")
+    def testLifecycleOperationsUser(self):
+        self._testLifecycleOperations(False)
+
+    def testLifecycleOperationsSystem(self):
+        self._testLifecycleOperations(True)
+
+    def _testLifecycleOperations(self, auth):
         b = self.browser
         m = self.machine
 
-        # run a container
-        m.execute("podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
-        b.wait(lambda: m.execute("podman ps --all | grep -e swamped-crate -e Exited"))
+        if not auth:
+            self.allow_authorize_journal_messages()
+            self.allow_browser_errors("Failed to start system io.podman.socket.*")
 
-        self.login_and_go("/podman")
+        # run a container
+        self.execute(auth, "podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
+        b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
+
+        self.login_and_go("/podman", authorized=auth)
         b.wait_present("#app")
-        b.wait_present(".content-filter input")
         self.filter_containers('all')
 
         b.wait_present("#containers-containers")
@@ -307,18 +466,39 @@ class TestApplication(testlib.MachineCase):
         # Start the container
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Start)')
 
+        container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
+
         with b.wait_timeout(5):
-            self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'running'])
+            self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh', 'running', "system" if auth else "admin"])
+        # Check we show usage
+        b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)") != "")
+        cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)")
+        memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(6)")
+        if auth or m.image not in ["fedora-29", "fedora-30", "rhel-8-1"]:
+            self.assertIn('%', cpu)
+            num = cpu[:-1]
+            self.assertTrue(num.replace('.', '', 1).isdigit())
+
+            self.assertIn('/', memory)
+            numbers = memory.split('/')
+            self.assertTrue(numbers[0].strip().replace('.', '', 1).isdigit())
+            full = numbers[1].strip().split()
+            self.assertTrue(full[0].replace('.', '', 1).isdigit())
+            self.assertIn(full[1], ["GiB", "MiB"])
+        else:
+            # No support for CGroupsV2
+            self.assertEqual(cpu, "n/a")
+            self.assertEqual(memory, "n/a")
 
         # Restart the container
-        old_pid = m.execute("podman inspect --format '{{.State.Pid}}' swamped-crate".strip())
+        old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate")
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Restart)')
-        new_pid = m.execute("podman inspect --format '{{.State.Pid}}' swamped-crate".strip())
+        new_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip())
         self.assertNotEqual(old_pid, new_pid)
 
         with b.wait_timeout(5):
-            self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh', 'running'])
+            self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh', 'running'])
 
         self.filter_containers('all')
         b.wait_present("#containers-containers")
@@ -328,15 +508,47 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Stop)')
 
-        self.check_container('swamped-crate', ['swamped-crate', 'busybox:latest', 'sh'])
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
+        self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh'])
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(7)') in ['stopped', 'exited'])
+        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)", "")
+        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(6)", "")
 
     def testNotRunning(self):
         b = self.browser
         m = self.machine
 
-        m.execute("systemctl disable --now io.podman.socket")
+        def disable_system():
+            self.execute(True, "systemctl disable --now io.podman.socket")
+            self.execute(True, "killall podman || true")
 
+        def enable_system():
+            self.execute(True, "systemctl enable --now io.podman.socket")
+
+        def enable_user():
+            if m.image != "rhel-8-1":
+                self.execute(False, "systemctl --user enable --now io.podman.socket")
+
+        def disable_user():
+            if m.image != "rhel-8-1":
+                self.execute(False, "systemctl --user disable --now io.podman.socket")
+                self.execute(False, "killall podman || true")
+
+        def is_active_system(string):
+            b.wait(lambda: self.execute(True, "systemctl is-active io.podman.socket || true").strip() == string)
+
+        def is_enabled_system(string):
+            b.wait(lambda: self.execute(True, "systemctl is-enabled io.podman.socket || true").strip() == string)
+
+        def is_active_user(string):
+            if m.image != "rhel-8-1":
+                b.wait(lambda: self.execute(False, "systemctl --user is-active io.podman.socket || true").strip() == string)
+
+        def is_enabled_user(string):
+            if m.image != "rhel-8-1":
+                b.wait(lambda: self.execute(False, "systemctl --user is-enabled io.podman.socket || true").strip() == string)
+
+        disable_system()
+        disable_user()
         self.login_and_go("/podman")
 
         # Troubleshoot action
@@ -350,28 +562,84 @@ class TestApplication(testlib.MachineCase):
         b.click("#app .blank-slate-pf button.btn-primary")
 
         b.wait_present("#containers-containers")
+        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
 
-        self.assertEqual(m.execute("systemctl is-enabled io.podman.socket").strip(), "enabled")
-        self.assertEqual(m.execute("systemctl is-active io.podman.socket").strip(), "active")
+        is_active_system("active")
+        is_active_user("active")
+        is_enabled_system("enabled")
+        is_enabled_user("enabled")
 
         # Start action, without enabling
-        m.execute("systemctl disable --now io.podman.socket")
-        m.execute("killall podman || true")
+        disable_system()
+        disable_user()
         b.click("#app .blank-slate-pf input[type=checkbox]")
         b.click("#app .blank-slate-pf button.btn-primary")
 
         b.wait_present("#containers-containers")
-        self.assertEqual(m.execute("! systemctl is-enabled io.podman.socket").strip(), "disabled")
-        self.assertEqual(m.execute("systemctl is-active io.podman.socket").strip(), "active")
+        is_enabled_system("disabled")
+        is_enabled_user("disabled")
+        is_active_system("active")
+        is_active_user("active")
 
-        self.allow_journal_messages("/run/podman/io.podman: couldn't connect.*")
+        if m.image == "rhel-8-1":
+            return
+        b.logout()
+        disable_system()
+        enable_user()
+        self.login_and_go("/podman")
+        b.wait_text("#overview > div.alert.alert-info.dialog-info span:nth-child(2)", "System Podman service is also available")
+        b.click("#overview > div.alert.alert-info.dialog-info > button")
+        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
+        is_active_system("active")
+        is_active_user("active")
+        is_enabled_user("enabled")
+        is_enabled_system("enabled")
+
+        b.logout()
+        disable_user()
+        enable_system()
+        self.login_and_go("/podman")
+        b.wait_text("#overview > div.alert.alert-info.dialog-info span:nth-child(2)", "User Podman service is also available")
+        b.click("#overview > div.alert.alert-info.dialog-info > button")
+        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
+        is_active_system("active")
+        is_active_user("active")
+        is_enabled_user("enabled")
+        is_enabled_system("enabled")
+
+        b.logout()
+        disable_user()
+        disable_system()
+        self.login_and_go("/podman", authorized=False)
+        b.click("#app .blank-slate-pf button.btn-primary")
+
+        b.wait_present("#containers-containers")
+        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
+        is_active_system("inactive")
+        is_active_user("active")
+        is_enabled_user("enabled")
+        is_enabled_system("disabled")
+
         self.allow_restart_journal_messages()
+        self.allow_authorize_journal_messages()
 
-    def testRunImage(self):
+    def testRunImageSystem(self):
+        self._testRunImage(True)
+
+    @testlib.skipImage("No user service", "rhel-8-1")
+    def testRunImageUser(self):
+        self.allow_authorize_journal_messages()
+        self._testRunImage(False)
+
+    def _testRunImage(self, auth):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/podman")
+        if auth and m.image != "rhel-8-1":
+            # Just drop user containers so we can user simpler selectors
+            self.execute(False, "podman rmi alpine busybox registry:2")
+
+        self.login_and_go("/podman", authorized=auth)
         b.wait_in_text("#containers-images", "busybox:latest")
         b.wait_in_text("#containers-images", "alpine:latest")
 
@@ -397,11 +665,13 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#run-image-dialog-command[value='sh']")
 
         # Check memory configuration
-        b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
-        b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
-        b.wait_present('div.modal-body label:contains("Memory Limit") + div.form-inline > input[value="512"]')
-        b.set_input_text("#run-image-dialog-memory-limit input.form-control", "0.5")
-        b.set_val('#memory-unit-select', "GiB")
+        # Only works with CGroupsV2
+        if auth or m.image not in ["fedora-29", "fedora-30", "rhel-8-1"]:
+            b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
+            b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
+            b.wait_present('div.modal-body label:contains("Memory Limit") + div.form-inline > input[value="512"]')
+            b.set_input_text("#run-image-dialog-memory-limit input.form-control", "0.5")
+            b.set_val('#memory-unit-select', "GiB")
 
         # Enable tty
         b.set_checked("#run-image-dialog-tty", True)
@@ -457,36 +727,38 @@ class TestApplication(testlib.MachineCase):
         b.click('div.modal-footer button:contains("Run")')
         b.wait_not_present("div.modal-dialog")
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
-        self.check_container('busybox-with-tty', ['busybox-with-tty', 'busybox:latest', 'sh -c "while echo Hello World; do sleep 1; done"', 'running'])
-
-        hasTTY = m.execute("podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
+        sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
+        self.check_container(sha, auth, ['busybox-with-tty', 'busybox:latest', 'sh -c "while echo Hello World; do sleep 1; done"', 'running', "system" if auth else "admin"])
+        hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
-        memory = m.execute("podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
-        self.assertEqual(memory, '536870912')
+        # Only works with CGroupsV2
+        if auth or m.image not in ["fedora-29", "fedora-30", "rhel-8-1"]:
+            memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
+            self.assertEqual(memory, '536870912')
 
-        b.wait(lambda: "Hello World" in m.execute("podman logs busybox-with-tty"))
+        b.wait(lambda: "Hello World" in self.execute(auth, "podman logs busybox-with-tty"))
 
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6000 \u2192 5000/tcp')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6001 \u2192 5001/udp')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:8001 \u2192 8001/tcp')
         b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:7001 \u2192 7001/tcp')
-        ports = m.execute("podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
+        ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
         self.assertIn('6000 5000 tcp', ports)
         self.assertIn('6001 5001 udp', ports)
         self.assertIn('8001 8001 tcp', ports)
         self.assertNotIn('7001 7001 tcp', ports)
 
-        env = m.execute("podman exec busybox-with-tty env")
+        env = self.execute(auth, "podman exec busybox-with-tty env")
         self.assertIn('APPLE=ORANGE', env)
         self.assertIn('PEAR=BANANA', env)
         self.assertIn('RHUBARB=STRAWBERRY', env)
         self.assertNotIn('MELON=GRAPE', env)
 
-        romnt = m.execute("podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro")
+        romnt = self.execute(auth, "podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro")
         self.assertIn('ro', romnt)
         self.assertIn(rodir[4:], romnt)
-        rwmnt = m.execute("podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/rw")
+        rwmnt = self.execute(auth, "podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/rw")
         self.assertIn('rw', rwmnt)
         self.assertIn(rwdir[4:], rwmnt)
 
@@ -532,13 +804,14 @@ class TestApplication(testlib.MachineCase):
             b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
             b.click("div.dropdown.open ul li:nth-child(1) a")
             b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
-            self.check_container('busybox-without-publish', ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+            sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
+            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
             b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
-            self.check_container('busybox-without-publish', ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'running'])
+            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'running'])
             b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
             b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
             b.click("div.dropdown.open ul li:nth-child(1) a")
-            self.check_container('busybox-without-publish', ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
             b.click('#containers-containers tr:contains("busybox-without-publish")')
 
         b.set_input_text('#containers-filter', 'tty')
@@ -556,7 +829,7 @@ class TestApplication(testlib.MachineCase):
 
         if m.image != "fedora-29":
             b.set_val("#containers-containers-filter", "all")
-            self.check_container('busybox-without-publish', ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
             b.click('#containers-containers tr:contains("busybox-without-publish")')
             b.click("a:contains('Console')")
             b.wait_text("span.empty-message", "Container is not running")
@@ -574,7 +847,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers thead tr td:contains("No containers that match the current filter")')
         b.wait_present('#containers-images thead tr td:contains("No images that match the current filter")')
         b.set_input_text('#containers-filter', '')
-        m.execute("podman rmi -f $(podman images -q)")
+        self.execute(auth, "podman rmi -f $(podman images -q)")
         b.wait_present('#containers-containers thead tr td:contains("No containers")')
         b.set_val("#containers-containers-filter", "running")
         b.wait_present('#containers-containers thead tr td:contains("No running containers")')
@@ -593,11 +866,12 @@ class TestApplication(testlib.MachineCase):
     def check_images(self, present, not_present):
         self.check_content("images", present, not_present)
 
-    def check_container(self, row_name, expected_strings):
+    def check_container(self, row_id, auth, expected_strings):
         """Check the container with row_name has the expected_string shown in the row"""
+        sel = "#containers-containers tbody tr[data-row-id={0}{1}]".format(row_id, auth).lower()
         b = self.browser
         for str in expected_strings:
-            b.wait_in_text('#containers-containers tr:contains(%s)' % row_name, str)
+            b.wait_in_text(sel, str)
 
     def filter_containers(self, value):
         """Use dropdown menu in the header to filter containers"""

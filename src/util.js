@@ -53,78 +53,48 @@ export function format_memory_and_limit(usage, limit) {
     }
 }
 
+export function getAddress(system) {
+    if (system)
+        return PODMAN_SYSTEM_ADDRESS;
+    const xrd = sessionStorage.getItem('XDG_RUNTIME_DIR');
+    if (xrd)
+        return ("unix:" + xrd + "/podman/io.podman");
+    console.warn("$XDG_RUNTIME_DIR is not present. Cannot use user service.");
+    return "";
+}
+
 // TODO: handle different kinds of errors
 function handleVarlinkCallError(ex) {
-    console.warn("Failed to do varlinkcall:", JSON.stringify(ex));
+    if (ex.error === "io.podman.ErrRequiresCgroupsV2ForRootless")
+        console.log("This OS does not support CgroupsV2. Some information may be missing.");
+    else
+        console.warn("Failed to do varlinkcall:", JSON.stringify(ex));
 }
 
-export function podmanCall(name, args) {
-    return varlink.call(PODMAN_SYSTEM_ADDRESS, "io.podman." + name, args);
+export function podmanCall(name, args, system) {
+    return varlink.call(getAddress(system), "io.podman." + name, args, system);
 }
 
-export function monitor(name, args, callback, on_close) {
-    return varlink.connect(PODMAN_SYSTEM_ADDRESS)
+export function monitor(name, args, callback, on_close, system) {
+    return varlink.connect(getAddress(system), system)
             .then(connection => connection.monitor("io.podman." + name, args, callback))
             .catch(e => {
                 if (e.name === "ConnectionClosed")
-                    on_close();
+                    on_close(system);
                 else
                     console.log(e);
             });
 }
 
-export function updateContainer(id) {
-    let container = {};
-    let containerStats = {};
-    return podmanCall("GetContainer", { id: id })
-            .then(reply => {
-                container = reply.container;
-                if (container.status == "running")
-                    return podmanCall("GetContainerStats", { name: id });
-            })
-            .then(reply => {
-                if (reply)
-                    containerStats = reply.container;
-                return { container, containerStats };
-            });
-}
-
-export function updateImage(id) {
+export function updateImage(id, system) {
     let image = {};
 
-    return podmanCall("GetImage", { id: id })
+    return podmanCall("GetImage", { id: id }, system)
             .then(reply => {
                 image = reply.image;
-                return podmanCall("InspectImage", { name: id });
+                return podmanCall("InspectImage", { name: id }, system);
             })
             .then(reply => Object.assign(image, parseImageInfo(JSON.parse(reply.image))));
-}
-
-export function updateContainers() {
-    return podmanCall("ListContainers")
-            .then(reply => {
-                let containers = {};
-                let promises = [];
-
-                for (let container of reply.containers || []) {
-                    containers[container.id] = container;
-                    if (container.status === "running")
-                        promises.push(podmanCall("GetContainerStats", { name: container.id }));
-                }
-
-                return Promise.all(promises)
-                        .then(replies => {
-                            let stats = {};
-                            for (let reply of replies)
-                                stats[reply.container.id] = reply.container || {};
-
-                            return { newContainers: containers, newContainersStats: stats };
-                        });
-            })
-            .catch(ex => {
-                handleVarlinkCallError(ex);
-                return Promise.reject(ex);
-            });
 }
 
 function parseImageInfo(info) {
@@ -140,8 +110,8 @@ function parseImageInfo(info) {
     return image;
 }
 
-export function updateImages() {
-    return podmanCall("ListImages")
+export function updateImages(system) {
+    return podmanCall("ListImages", {}, system)
             .then(reply => {
                 // Some information about images is only available in the OCI
                 // data. Grab what we need and add it to the image itself until
@@ -152,7 +122,7 @@ export function updateImages() {
 
                 for (let image of reply.images || []) {
                     images[image.id] = image;
-                    promises.push(podmanCall("InspectImage", { name: image.id }));
+                    promises.push(podmanCall("InspectImage", { name: image.id }, system));
                 }
 
                 return Promise.all(promises)
@@ -161,6 +131,7 @@ export function updateImages() {
                                 let info = JSON.parse(reply.image);
                                 // Update image with information from InspectImage API
                                 images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
+                                images[info.Id].isSystem = system;
                             }
                             return images;
                         });

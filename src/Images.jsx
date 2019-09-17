@@ -58,13 +58,13 @@ class Images extends React.Component {
         }));
     }
 
-    downloadImage(imageName, imageTag) {
+    downloadImage(imageName, imageTag, system) {
         let pullImageId = imageName;
         if (imageTag)
             pullImageId += ":" + imageTag;
 
         this.setState({ imageDownloadInProgress: imageName });
-        utils.podmanCall("PullImage", { name: pullImageId })
+        utils.podmanCall("PullImage", { name: pullImageId }, system)
                 .then(() => {
                     this.setState({ imageDownloadInProgress: undefined });
                 })
@@ -95,7 +95,7 @@ class Images extends React.Component {
         this.setState({
             selectImageDeleteModal: false,
         });
-        utils.podmanCall("RemoveImage", { name: image })
+        utils.podmanCall("RemoveImage", { name: image }, this.state.imageWillDelete.isSystem)
                 .catch(ex => {
                     this.imageRemoveErrorMsg = ex.parameters.reason;
                     this.setState({
@@ -106,7 +106,7 @@ class Images extends React.Component {
 
     handleForceRemoveImage() {
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.id : "";
-        utils.podmanCall("RemoveImage", { name: id, force: true })
+        utils.podmanCall("RemoveImage", { name: id, force: true }, this.state.imageWillDelete.isSystem)
                 .then(reply => {
                     this.setState({
                         setImageRemoveErrorModal: false
@@ -147,6 +147,7 @@ class Images extends React.Component {
             vulnerabilityColumn,
             moment(image.created, utils.GOLANG_TIME_FORMAT).calendar(),
             cockpit.format_bytes(image.size),
+            image.isSystem ? _("system") : this.props.user,
             {
                 element: runImage,
                 tight: true
@@ -172,7 +173,7 @@ class Images extends React.Component {
             name: _("Used By"),
             renderer: ImageUsedBy,
             data: {
-                containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.id] : null,
+                containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.id + image.isSystem.toString()] : null,
                 showAll: this.props.showAll,
             }
         });
@@ -186,8 +187,8 @@ class Images extends React.Component {
         ];
         return (
             <Listing.ListingRow
-                    key={image.id}
-                    rowId={image.id}
+                    key={image.id + image.isSystem.toString()}
+                    rowId={image.id + image.isSystem.toString()}
                     columns={columns}
                     tabRenderers={tabs}
                     listingActions={actions} />
@@ -201,7 +202,7 @@ class Images extends React.Component {
     }
 
     render() {
-        const columnTitles = [ _("Name"), _(''), _("Created"), _("Size"), _('') ];
+        const columnTitles = [ _("Name"), '', _("Created"), _("Size"), _("Owner"), '' ];
         let emptyCaption = _("No images");
         if (this.props.images === null)
             emptyCaption = "Loading...";
@@ -216,17 +217,18 @@ class Images extends React.Component {
             </a>
         ];
         let filtered = [];
-        if (this.props.images !== null)
-            filtered = Object.keys(this.props.images).filter(id => id === this.props.images[id].id);
-        if (this.props.textFilter.length > 0)
-            filtered = filtered.filter(id => {
-                for (let i = 0; i < this.props.images[id].repoTags.length; i++) {
-                    let tag = this.props.images[id].repoTags[i].toLowerCase();
-                    if (tag.indexOf(this.props.textFilter.toLowerCase()) >= 0)
-                        return true;
-                }
-                return false;
-            });
+        if (this.props.images !== null) {
+            filtered = Object.keys(this.props.images);
+            if (this.props.textFilter.length > 0)
+                filtered = filtered.filter(id => {
+                    for (let i = 0; i < this.props.images[id].repoTags.length; i++) {
+                        let tag = this.props.images[id].repoTags[i].toLowerCase();
+                        if (tag.indexOf(this.props.textFilter.toLowerCase()) >= 0)
+                            return true;
+                    }
+                    return false;
+                });
+        }
         let imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
         const imageDeleteModal =
             <ModalExample
@@ -263,7 +265,10 @@ class Images extends React.Component {
                 {this.state.showSearchImageModal &&
                 <ImageSearchModal
                     close={() => this.setState({ showSearchImageModal: false })}
-                    downloadImage={this.downloadImage} /> }
+                    downloadImage={this.downloadImage}
+                    user={this.props.user}
+                    userServiceAvailable={this.props.userServiceAvailable}
+                    systemServiceAvailable={this.props.systemServiceAvailable} /> }
                 {this.state.imageDownloadInProgress && <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>}
             </div>
         );

@@ -30,7 +30,7 @@ class VarlinkError extends Error {
  *
  * https://varlink.org
  */
-function connect(address) {
+function connect(address, system) {
     if (!address.startsWith("unix:"))
         throw new Error("Only unix varlink connections supported");
 
@@ -42,7 +42,7 @@ function connect(address) {
         unix: address.slice(5),
         binary: true,
         payload: "stream",
-        superuser: "require"
+        superuser: system ? "require" : null
     });
 
     channel.addEventListener("message", (event, data) => {
@@ -129,8 +129,8 @@ function connect(address) {
  * Connects to a varlink service, performs a single call, and closes the
  * connection.
  */
-async function call (address, method, parameters, more) {
-    let connection = await connect(address);
+async function call (address, method, parameters, system, more) {
+    let connection = await connect(address, system);
     let result = await connection.call(method, parameters, more);
     connection.close();
     return result;

@@ -65,7 +65,7 @@ class Containers extends React.Component {
 
         if (force)
             args.timeout = 0;
-        utils.podmanCall("StopContainer", args)
+        utils.podmanCall("StopContainer", args, container.isSystem)
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to stop container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -73,7 +73,7 @@ class Containers extends React.Component {
     }
 
     startContainer(container) {
-        utils.podmanCall("StartContainer", { name: container.names })
+        utils.podmanCall("StartContainer", { name: container.names }, container.isSystem)
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to start container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -85,7 +85,7 @@ class Containers extends React.Component {
 
         if (force)
             args.timeout = 0;
-        utils.podmanCall("RestartContainer", args)
+        utils.podmanCall("RestartContainer", args, container.isSystem)
                 .catch(ex => this.setState({
                     actionError: cockpit.format(_("Failed to restart container $0"), container.names),
                     actionErrorDetail: ex.parameters && ex.parameters.reason
@@ -93,16 +93,23 @@ class Containers extends React.Component {
     }
 
     renderRow(containersStats, container) {
-        const containerStats = containersStats[container.id];
+        const containerStats = containersStats[container.id + container.isSystem.toString()];
         const isRunning = container.status == "running";
         const image = container.image;
 
+        let proc = "";
+        let mem = "";
+        if (containerStats) {
+            proc = containerStats.cpu ? utils.format_cpu_percent(containerStats.cpu * 100) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+            mem = containerStats.mem_usage ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+        }
         let columns = [
             { name: container.names, header: true },
             image,
             utils.quote_cmdline(container.command),
-            isRunning ? utils.format_cpu_percent(containerStats.cpu * 100) : "",
-            containerStats ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : "",
+            proc,
+            mem,
+            container.isSystem ? _("system") : this.props.user,
             container.status /* TODO: i18n */,
         ];
         let tabs = [{
@@ -112,7 +119,7 @@ class Containers extends React.Component {
         }, {
             name: _("Console"),
             renderer: ContainerTerminal,
-            data: { containerId: container.id, containerStatus: container.status, width:this.state.width }
+            data: { containerId: container.id, containerStatus: container.status, width:this.state.width, system:container.isSystem }
         }];
 
         var actions = [
@@ -152,7 +159,8 @@ class Containers extends React.Component {
         return (
             <ScrollableAnchor id={container.id} key={container.id}>
                 <Listing.ListingRow
-                        rowId={container.id}
+                        key={container.id + container.isSystem.toString()}
+                        rowId={container.id + container.isSystem.toString()}
                         columns={columns}
                         tabRenderers={tabs}
                         listingActions={actions}
@@ -172,7 +180,7 @@ class Containers extends React.Component {
         this.setState({
             selectContainerDeleteModal: false
         });
-        utils.podmanCall("RemoveContainer", { name: id })
+        utils.podmanCall("RemoveContainer", { name: id }, this.state.containerWillDelete.isSystem)
                 .catch(ex => console.error("Failed to do RemoveContainer call:", JSON.stringify(ex)));
     }
 
@@ -185,7 +193,7 @@ class Containers extends React.Component {
     // TODO: force
     handleForceRemoveContainer() {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
-        utils.podmanCall("RemoveContainer", { name: id, force: true })
+        utils.podmanCall("RemoveContainer", { name: id, force: true }, this.state.containerWillDelete.isSystem)
                 .then(reply => {
                     this.setState({
                         setContainerRemoveErrorModal: false
@@ -201,7 +209,7 @@ class Containers extends React.Component {
     }
 
     render() {
-        const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("State")];
+        const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("Owner"), _("State")];
 
         let emptyCaption = _("No containers");
         if (this.props.containers === null)
