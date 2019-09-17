@@ -63,7 +63,7 @@ export class ImageSearchModal extends React.Component {
 
         this.setState({ searchInProgress: true });
 
-        varlink.connect(utils.PODMAN_ADDRESS)
+        varlink.connect(utils.PODMAN_SYSTEM_ADDRESS)
                 .then(connection => {
                     this.activeConnection = connection;
 
