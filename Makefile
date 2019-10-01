@@ -136,11 +136,7 @@ check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common
 # checkout Cockpit's bots for standard test VM images and API to launch them
 # must be from master, as only that has current and existing images; but testvm.py API is stable
 bots:
-	if [ ! -d bots ]; then \
-		git clone --depth=1 https://github.com/cockpit-project/bots.git; \
-	else \
-		cd bots && git fetch && git reset --hard origin/master; \
-        fi
+	[ -d bots ] || git clone --depth=1 https://github.com/cockpit-project/bots.git
 
 # checkout Cockpit's test API; this has no API stability guarantee, so check out a stable tag
 # when you start a new project, use the latest relese, and update it from time to time
