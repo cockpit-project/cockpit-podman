@@ -3,6 +3,11 @@
 # The application RPM will be installed separately
 set -eu
 
+# HACK - see https://github.com/containers/libpod/commit/59353b4dce692df0fb22a15427abbaafad58050e
+if [ -f /usr/lib/systemd/user/io.podman.socket ]; then
+    sed -i '/^Also/d' /usr/lib/systemd/user/io.podman.socket
+fi
+
 systemctl enable cockpit.socket io.podman.socket
 
 # don't force https:// (self-signed cert)
