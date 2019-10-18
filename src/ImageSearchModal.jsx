@@ -45,7 +45,7 @@ export class ImageSearchModal extends React.Component {
     }
 
     onDownloadClicked() {
-        let selectedImageName = this.state.imageList[this.state.selected].name;
+        const selectedImageName = this.state.imageList[this.state.selected].name;
 
         this.props.close();
         this.props.downloadImage(selectedImageName, this.state.imageTag, this.state.isSystem);
@@ -103,7 +103,7 @@ export class ImageSearchModal extends React.Component {
 
     onKeyPress(e) {
         if (e.key != ' ') { // Space should not trigger search
-            let forceSearch = e.key == 'Enter';
+            const forceSearch = e.key == 'Enter';
 
             // Clears the previously set timer.
             clearTimeout(this.typingTimeout);
@@ -114,7 +114,7 @@ export class ImageSearchModal extends React.Component {
     }
 
     render() {
-        let defaultBody = (
+        const defaultBody = (
             <React.Fragment>
                 { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
                     <form className="ct-form">

@@ -77,8 +77,8 @@ class Application extends React.Component {
     }
 
     onDismissNotification(notificationIndex) {
-        let notificationsArray = this.state.notifications.concat();
-        let index = notificationsArray.findIndex(current => current.index == notificationIndex);
+        const notificationsArray = this.state.notifications.concat();
+        const index = notificationsArray.findIndex(current => current.index == notificationIndex);
 
         if (index !== -1) {
             notificationsArray.splice(index, 1);
@@ -100,7 +100,7 @@ class Application extends React.Component {
 
     updateState(state, id, newValue) {
         this.setState(prevState => {
-            let copyState = Object.assign({}, prevState[state]);
+            const copyState = Object.assign({}, prevState[state]);
 
             copyState[id] = newValue;
 
@@ -130,12 +130,12 @@ class Application extends React.Component {
                     this.setState(prevState => {
                         // Copy only containers that could not be deleted with this event
                         // So when event from system come, only copy user containers and vice versa
-                        let copyContainers = {};
+                        const copyContainers = {};
                         Object.entries(prevState.containers || {}).forEach(([id, container]) => {
                             if (container.isSystem !== system)
                                 copyContainers[id] = container;
                         });
-                        for (let container of reply.containers || []) {
+                        for (const container of reply.containers || []) {
                             container.isSystem = system;
                             copyContainers[container.id + system.toString()] = container;
                             if (container.status === "running")
@@ -157,7 +157,7 @@ class Application extends React.Component {
                     this.setState(prevState => {
                         // Copy only images that could not be deleted with this event
                         // So when event from system come, only copy user images and vice versa
-                        let copyImages = {};
+                        const copyImages = {};
                         Object.entries(prevState.images || {}).forEach(([id, image]) => {
                             if (image.isSystem !== system)
                                 copyImages[id] = image;
@@ -187,7 +187,7 @@ class Application extends React.Component {
                         this.updateContainerStats(reply.container.id, system);
                     else {
                         this.setState(prevState => {
-                            let copyStats = Object.assign({}, prevState.containersStats);
+                            const copyStats = Object.assign({}, prevState.containersStats);
                             delete copyStats[reply.container.id + system.toString()];
                             return { containersStats: copyStats };
                         });
@@ -320,7 +320,7 @@ class Application extends React.Component {
     }
 
     checkUserService() {
-        let argv = ["systemctl", "--user", "is-enabled", "io.podman.socket"];
+        const argv = ["systemctl", "--user", "is-enabled", "io.podman.socket"];
 
         cockpit.spawn(argv, { environ: ["LC_ALL=C"], err: "out" })
                 .then(() => this.setState({ userServiceExists: true }))

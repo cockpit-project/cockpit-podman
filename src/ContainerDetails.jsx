@@ -13,7 +13,7 @@ const render_container_state = (container) => {
 };
 
 const render_container_published_ports = ({ ports }) => {
-    let result = [];
+    const result = [];
     if (!ports)
         return result;
     for (let i = 0; i < ports.length; ++i)

@@ -34,11 +34,11 @@ function connect(address, system) {
     if (!address.startsWith("unix:"))
         throw new Error("Only unix varlink connections supported");
 
-    let connection = {};
+    const connection = {};
     let pending = [];
     let buffer = "";
 
-    let channel = cockpit.channel({
+    const channel = cockpit.channel({
         unix: address.slice(5),
         binary: true,
         payload: "stream",
@@ -130,8 +130,8 @@ function connect(address, system) {
  * connection.
  */
 async function call (address, method, parameters, system, more) {
-    let connection = await connect(address, system);
-    let result = await connection.call(method, parameters, more);
+    const connection = await connect(address, system);
+    const result = await connection.call(method, parameters, more);
     connection.close();
     return result;
 }

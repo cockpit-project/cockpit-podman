@@ -98,7 +98,7 @@ export function updateImage(id, system) {
 }
 
 function parseImageInfo(info) {
-    let image = {};
+    const image = {};
 
     if (info.Config) {
         image.entrypoint = info.Config.EntryPoint;
@@ -117,18 +117,18 @@ export function updateImages(system) {
                 // data. Grab what we need and add it to the image itself until
                 // podman's API does it for us
 
-                let images = {};
-                let promises = [];
+                const images = {};
+                const promises = [];
 
-                for (let image of reply.images || []) {
+                for (const image of reply.images || []) {
                     images[image.id] = image;
                     promises.push(podmanCall("InspectImage", { name: image.id }, system));
                 }
 
                 return Promise.all(promises)
                         .then(replies => {
-                            for (let reply of replies) {
-                                let info = JSON.parse(reply.image);
+                            for (const reply of replies) {
+                                const info = JSON.parse(reply.image);
                                 // Update image with information from InspectImage API
                                 images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
                                 images[info.Id].isSystem = system;
@@ -143,10 +143,10 @@ export function updateImages(system) {
 }
 
 export function getCommitArr(arr, cmd) {
-    let ret = [];
+    const ret = [];
     if (cmd === "ONBUILD") {
         for (let i = 0; i < arr.length; i++) {
-            let temp = "ONBUILD=" + arr[i];
+            const temp = "ONBUILD=" + arr[i];
             ret.push(temp);
         }
     }
