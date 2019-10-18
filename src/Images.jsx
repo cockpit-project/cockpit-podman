@@ -202,7 +202,7 @@ class Images extends React.Component {
     }
 
     render() {
-        const columnTitles = [ _("Name"), '', _("Created"), _("Size"), _("Owner"), '' ];
+        const columnTitles = [_("Name"), '', _("Created"), _("Size"), _("Owner"), ''];
         let emptyCaption = _("No images");
         if (this.props.images === null)
             emptyCaption = "Loading...";

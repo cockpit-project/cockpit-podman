@@ -23,7 +23,7 @@ const DropDown = (props) => {
 };
 
 DropDown.defaultProps = {
-    actions: [ { label: '' } ]
+    actions: [{ label: '' }]
 };
 
 export default DropDown;

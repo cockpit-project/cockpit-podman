@@ -198,7 +198,7 @@ export function quote_cmdline(words) {
 }
 
 export function unquote_cmdline(text) {
-    var words = [ ];
+    var words = [];
     var next;
 
     function is_whitespace(c) {
