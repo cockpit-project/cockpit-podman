@@ -11,7 +11,7 @@ const truncate_id = (id) => {
 
 const ImageDetails = (props) => {
     const image = props.image;
-    let created = image.created;
+    const created = image.created;
 
     return (
         <dl className='image-details'>

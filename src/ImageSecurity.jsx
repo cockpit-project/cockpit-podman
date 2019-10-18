@@ -4,18 +4,17 @@ import cockpit from 'cockpit';
 const _ = cockpit.gettext;
 
 const ImageSecurity = (props) => {
-    let info = props.info;
-    let text, rows;
-    let args = {
+    const info = props.info;
+    const args = {
         time: info.finishedTime.format('MMM Do'),
         type: info.scanType,
         count: info.vulnerabilities.length
     };
 
     // TODO: info.successful/vulnerabilities.length
-    text = _("The scan from $time ($type) found no vulnerabilities.");
+    const text = _("The scan from $time ($type) found no vulnerabilities.");
 
-    rows = info.vulnerabilities.map(
+    const rows = info.vulnerabilities.map(
         function (vulnerability) {
             return (
                 <div className="vulnerability-row-ct-docker" title={vulnerability.description}>

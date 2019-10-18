@@ -24,7 +24,7 @@ const renderRow = (containerStats, container, showAll) => {
     ];
     return <Listing.ListingRow
                 navigateToItem={() => {
-                    let loc = document.location.toString().split('#')[0];
+                    const loc = document.location.toString().split('#')[0];
                     document.location = loc + '#' + container.id;
                     if (!isRunning)
                         showAll();
@@ -39,7 +39,7 @@ const renderRow = (containerStats, container, showAll) => {
 const ImageUsedBy = (props) => {
     const columnTitles = [_("Name"), _("Command"), _("CPU"), _("Memory"), _("State")];
     let emptyCaption = _("No containers are using this image");
-    let containers = [];
+    const containers = [];
     let cs = props.containers;
 
     if (cs === undefined)

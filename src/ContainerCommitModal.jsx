@@ -73,7 +73,7 @@ class ContainerCommitModal extends React.Component {
             cmdStr = this.state.command.trim();
         }
 
-        let commitData = {};
+        const commitData = {};
         commitData.name = this.props.container.id;
         commitData.image_name = this.state.tag ? this.state.imageName + ":" + this.state.tag : this.state.imageName;
         commitData.author = this.state.author;
@@ -82,7 +82,7 @@ class ContainerCommitModal extends React.Component {
         commitData.format = this.state.format;
 
         commitData.changes = [];
-        let cmdData = "CMD=" + cmdStr;
+        const cmdData = "CMD=" + cmdStr;
         commitData.changes.push(cmdData);
 
         let onbuildsArr = [];
@@ -117,7 +117,7 @@ class ContainerCommitModal extends React.Component {
     }
 
     render() {
-        let onbuilds =
+        const onbuilds =
             this.state.onbuild.map((bud, idx) => (
                 <div key={"onbuildvar" + idx} id="select-claimed-onbuildvars" className="form-inline containers-run-onbuildvarclaim containers-run-inline" >
                     <FormGroup className="form-inline">
@@ -127,7 +127,7 @@ class ContainerCommitModal extends React.Component {
                     </FormGroup>
                 </div>
             ));
-        let commitContent =
+        const commitContent =
             <div className="ct-form">
                 <label className="control-label" htmlFor="commit-dialog-container-name">
                     {_("Container Name")}

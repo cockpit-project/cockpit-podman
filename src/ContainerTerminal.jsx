@@ -38,7 +38,7 @@ class ContainerTerminal extends React.Component {
         this.connectChannel = this.connectChannel.bind(this);
         this.resize = this.resize.bind(this);
 
-        let term = new Terminal({
+        const term = new Terminal({
             cols: 80,
             rows: 24,
             screenKeys: true,
@@ -81,26 +81,26 @@ class ContainerTerminal extends React.Component {
     }
 
     connectChannel() {
-        let self = this;
+        const self = this;
         if (self.state.channel)
             return;
 
         if (self.props.containerStatus !== "running") {
-            let message = _("Container is not running");
+            const message = _("Container is not running");
             this.setState({ errorMessage: message });
             return;
         }
 
         utils.podmanCall("GetAttachSockets", { name: this.state.container }, this.props.system)
                 .then(out => {
-                    let opts = {
+                    const opts = {
                         payload: "packet",
                         unix: out.sockets.io_socket,
                         superuser: this.props.system ? "require" : null,
                         binary: false
                     };
 
-                    let channel = cockpit.channel(opts);
+                    const channel = cockpit.channel(opts);
                     channel.wait()
                             .then(() => {
                                 // Show the terminal. Once it was shown, do not show it again but reuse the previous one

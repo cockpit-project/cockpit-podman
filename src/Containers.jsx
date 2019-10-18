@@ -61,7 +61,7 @@ class Containers extends React.Component {
     }
 
     stopContainer(container, force) {
-        let args = { name: container.names };
+        const args = { name: container.names };
 
         if (force)
             args.timeout = 0;
@@ -81,7 +81,7 @@ class Containers extends React.Component {
     }
 
     restartContainer (container, force) {
-        let args = { name: container.names };
+        const args = { name: container.names };
 
         if (force)
             args.timeout = 0;
@@ -103,7 +103,7 @@ class Containers extends React.Component {
             proc = containerStats.cpu ? utils.format_cpu_percent(containerStats.cpu * 100) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
             mem = containerStats.mem_usage ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
         }
-        let columns = [
+        const columns = [
             { name: container.names, header: true },
             image,
             utils.quote_cmdline(container.command),
@@ -112,7 +112,7 @@ class Containers extends React.Component {
             container.isSystem ? _("system") : this.props.user,
             container.status /* TODO: i18n */,
         ];
-        let tabs = [{
+        const tabs = [{
             name: _("Details"),
             renderer: ContainerDetails,
             data: { container: container }
@@ -144,8 +144,8 @@ class Containers extends React.Component {
                 </button>
             );
         } else {
-            let restartActions = [];
-            let stopActions = [];
+            const restartActions = [];
+            const stopActions = [];
 
             restartActions.push({ label: _("Restart"), onActivate: () => this.restartContainer(container) });
             restartActions.push({ label: _("Force Restart"), onActivate: () => this.restartContainer(container, true) });
@@ -224,12 +224,12 @@ class Containers extends React.Component {
         if (this.props.containers !== null)
             filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].status == "running");
         if (this.props.textFilter.length > 0) {
-            let lcf = this.props.textFilter.toLowerCase();
+            const lcf = this.props.textFilter.toLowerCase();
             filtered = filtered.filter(id => this.props.containers[id].names.toLowerCase().indexOf(lcf) >= 0 ||
                     this.props.containers[id].image.toLowerCase().indexOf(lcf) >= 0
             );
         }
-        let rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
+        const rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
         const containerDeleteModal =
             <ContainerDeleteModal
                 selectContainerDeleteModal={this.state.selectContainerDeleteModal}

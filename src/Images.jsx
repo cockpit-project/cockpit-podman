@@ -69,7 +69,7 @@ class Images extends React.Component {
                     this.setState({ imageDownloadInProgress: undefined });
                 })
                 .catch(ex => {
-                    let error = (
+                    const error = (
                         <React.Fragment>
                             <strong>
                                 {cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest")}
@@ -117,9 +117,9 @@ class Images extends React.Component {
 
     renderRow(image) {
         let vulnerabilityColumn = '';
-        let vulnerableInfo = this.state.vulnerableInfos[image.id.replace(/^sha256:/, '')];
+        const vulnerableInfo = this.state.vulnerableInfos[image.id.replace(/^sha256:/, '')];
         let count;
-        let tabs = [];
+        const tabs = [];
 
         if (vulnerableInfo) {
             count = vulnerableInfo.vulnerabilities.length;
@@ -133,7 +133,7 @@ class Images extends React.Component {
                 );
         }
         // TODO: image waiting if - else
-        let runImage = (
+        const runImage = (
             <Button key={image.id + "create"}
                 className="btn btn-default btn-control-ct fa fa-play"
                 onClick={ e => {
@@ -142,7 +142,7 @@ class Images extends React.Component {
                 } }
                 data-image={image.id} />
         );
-        let columns = [
+        const columns = [
             { name: image.repoTags ? image.repoTags[0] : "", header: true },
             vulnerabilityColumn,
             moment(image.created, utils.GOLANG_TIME_FORMAT).calendar(),
@@ -178,7 +178,7 @@ class Images extends React.Component {
             }
         });
 
-        let actions = [
+        const actions = [
             <button
                 key={image.id + "delete"}
                 className="btn btn-danger btn-delete pficon pficon-delete"
@@ -222,14 +222,14 @@ class Images extends React.Component {
             if (this.props.textFilter.length > 0)
                 filtered = filtered.filter(id => {
                     for (let i = 0; i < this.props.images[id].repoTags.length; i++) {
-                        let tag = this.props.images[id].repoTags[i].toLowerCase();
+                        const tag = this.props.images[id].repoTags[i].toLowerCase();
                         if (tag.indexOf(this.props.textFilter.toLowerCase()) >= 0)
                             return true;
                     }
                     return false;
                 });
         }
-        let imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
+        const imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
         const imageDeleteModal =
             <ModalExample
                     selectImageDeleteModal={this.state.selectImageDeleteModal}

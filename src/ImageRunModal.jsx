@@ -141,7 +141,7 @@ class DynamicListForm extends React.Component {
 
     removeItem(idx, field, value) {
         this.setState(state => {
-            let items = state.list.concat();
+            const items = state.list.concat();
             items.splice(idx, 1);
             if (items.length === 0)
                 items.push(Object.assign({ key: this.keyCounter++ }, this.props.default));
@@ -157,7 +157,7 @@ class DynamicListForm extends React.Component {
 
     onItemChange(idx, field, value) {
         this.setState(state => {
-            let items = state.list.concat();
+            const items = state.list.concat();
             items[idx][field] = value || null;
             return { list: items };
         }, () => this.props.onChange(this.state.list.concat()));
@@ -216,7 +216,7 @@ export class ImageRunModal extends React.Component {
     }
 
     getCreateConfig() {
-        let createConfig = {};
+        const createConfig = {};
 
         createConfig.args = this.state.image.repoTags ? [this.state.image.repoTags[0]] : [""];
         if (this.state.containerName)
@@ -225,7 +225,7 @@ export class ImageRunModal extends React.Component {
             createConfig.args = createConfig.args.concat(utils.unquote_cmdline(this.state.command));
         }
         if (this.state.memoryConfigure && this.state.memory) {
-            let memorySize = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
+            const memorySize = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
             createConfig.memory = memorySize.toString();
         }
         if (this.state.hasTTY)
@@ -272,7 +272,7 @@ export class ImageRunModal extends React.Component {
         const { image } = this.props;
         const dialogValues = this.state;
 
-        let defaultBody = (
+        const defaultBody = (
             <div className='ct-form'>
                 <label className='control-label' htmlFor='run-image-dialog-image'>
                     {_("Image")}
