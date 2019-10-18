@@ -51,7 +51,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                        onChange={e => onChange(idx, 'hostPort', e.target.value)} />
                 <Select.Select className='form-control'
                                initial={item.protocol}
-                               onChange={value => onChange(idx, 'protocol', value)} >
+                               onChange={value => onChange(idx, 'protocol', value)}>
                     <Select.SelectEntry data='TCP' key='TCP'>
                         {_("TCP")}
                     </Select.SelectEntry>
@@ -109,7 +109,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                        onChange={e => onChange(idx, 'containerPath', e.target.value)} />
                 <Select.Select className='form-control'
                                initial={item.mode}
-                               onChange={value => onChange(idx, 'mode', value)} >
+                               onChange={value => onChange(idx, 'mode', value)}>
                     <Select.SelectEntry data='ro' key='ro'>
                         {_("ReadOnly")}
                     </Select.SelectEntry>

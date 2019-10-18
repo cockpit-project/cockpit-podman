@@ -8,7 +8,7 @@ const ImageRemoveErrorModal = (props) => {
     const repoTag = props.imageWillDelete.RepoTags ? _(props.imageWillDelete.RepoTags[0]) : _("");
     return (
         <div>
-            <Modal show={props.setImageRemoveErrorModal} >
+            <Modal show={props.setImageRemoveErrorModal}>
                 <Modal.Header>
                     <Modal.Title>{cockpit.format(_("Please confirm forced deletion of $0"), _(repoTag))}</Modal.Title>
                 </Modal.Header>
