@@ -261,7 +261,7 @@ class Containers extends React.Component {
                     </strong>
                     { actionErrorDetail && <p> {_("Error message")}: <samp>{actionErrorDetail}</samp> </p> }
                 </Alert> }
-                <Listing.Listing key={"ContainerListing"} title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
+                <Listing.Listing key="ContainerListing" title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
                     {rows}
                 </Listing.Listing>
                 {containerDeleteModal}

@@ -492,8 +492,8 @@ class Application extends React.Component {
         );
 
         return (
-            <div id="overview" key={"overview"}>
-                <div key={"containerheader"} className="content-filter">
+            <div id="overview" key="overview">
+                <div key="containerheader" className="content-filter">
                     <ContainerHeader
                         onlyShowRunning={this.state.onlyShowRunning}
                         onChange={this.onChange}
@@ -501,10 +501,10 @@ class Application extends React.Component {
                     />
                 </div>
                 { startService }
-                <div key={"containerslists"} className="container-fluid">
+                <div key="containerslists" className="container-fluid">
                     {containerList}
                 </div>
-                <div key={"imageslists"} className="container-fluid">
+                <div key="imageslists" className="container-fluid">
                     {imageList}
                 </div>
                 <div style={null}>
