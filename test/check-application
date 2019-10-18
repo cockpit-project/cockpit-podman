@@ -711,17 +711,17 @@ class TestApplication(testlib.MachineCase):
         # Configure volumes
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
         b.set_val('.volume-form[data-key="0"] select', "ro")
-        b.set_input_text('.volume-form[data-key="0"] input:first-child', rodir)
-        b.set_input_text('.volume-form[data-key="0"] input:nth-child(2)', '/tmp/ro')
-        b.wait_val('.volume-form[data-key="0"] input:first-child', rodir)
+        b.set_input_text('.volume-form[data-key="0"] .form-group > div > div > input', rodir)
+        b.set_input_text('.volume-form[data-key="0"] > div > input', '/tmp/ro')
+        b.wait_val('.volume-form[data-key="0"] .form-group > div > div > input', rodir)
         b.wait_not_present('.volume-form[data-key="0"] .pending-callback')
         b.click('.volume-form[data-key="0"] .fa-plus')
         b.click('.volume-form[data-key="1"] .pficon-close')
         b.wait_not_present('.volume-form[data-key="1"]')
         b.click('.volume-form[data-key="0"] .fa-plus')
-        b.set_input_text('.volume-form[data-key="2"] input:first-child', rwdir)
-        b.set_input_text('.volume-form[data-key="2"] input:nth-child(2)', '/tmp/rw')
-        b.wait_val('.volume-form[data-key="2"] input:first-child', rwdir)
+        b.set_input_text('.volume-form[data-key="2"] .form-group > div > div > input', rwdir)
+        b.set_input_text('.volume-form[data-key="2"] > div > input', '/tmp/rw')
+        b.wait_val('.volume-form[data-key="2"] .form-group > div > div > input', rwdir)
         b.wait_not_present('.volume-form[data-key="2"] .pending-callback')
 
         b.click('div.modal-footer button:contains("Run")')
