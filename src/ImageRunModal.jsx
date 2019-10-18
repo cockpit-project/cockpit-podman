@@ -30,7 +30,7 @@ const units = {
 
 const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
-        <React.Fragment>
+        <>
             <div role='group' className='ct-form-split'>
                 <input className='form-control'
                        id={id}
@@ -66,12 +66,12 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                         onClick={() => removeitem(idx)} />
                 <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
             </div>
-        </React.Fragment>
+        </>
     );
 
 const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
-        <React.Fragment>
+        <>
             <div role='group' className='ct-form-split'>
                 <input className='form-control'
                        id={id}
@@ -91,12 +91,12 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
                         onClick={() => removeitem(idx)} />
                 <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
             </div>
-        </React.Fragment>
+        </>
     );
 
 const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
-        <React.Fragment>
+        <>
             <div role='group' className='ct-form-split'>
                 <FileAutoComplete id={id || ''}
                                   placeholder={_("Host path")}
@@ -124,7 +124,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                         onClick={() => removeitem(idx)} />
                 <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
             </div>
-        </React.Fragment>
+        </>
     );
 
 class DynamicListForm extends React.Component {
@@ -167,7 +167,7 @@ class DynamicListForm extends React.Component {
         const { id, formclass } = this.props;
         const dialogValues = this.state;
         return (
-            <React.Fragment>
+            <>
                 {
                     dialogValues.list.map((item, idx) =>
                         (
@@ -183,7 +183,7 @@ class DynamicListForm extends React.Component {
                         )
                     )
                 }
-            </React.Fragment>
+            </>
         );
     }
 }
