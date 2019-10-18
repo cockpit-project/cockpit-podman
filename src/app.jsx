@@ -291,17 +291,17 @@ class Application extends React.Component {
                                   message => {
                                       message.parameters && message.parameters.events && this.handleEvent(message.parameters.events, system);
                                   }, isSystem => {
-                                      this.setState({ [isSystem ? "systemServiceAvailable" : "userServiceAvailable"]: false
-                                      });
+                                      this.setState({ [isSystem ? "systemServiceAvailable" : "userServiceAvailable"]: false });
                                   },
                                   system
                     );
                 })
                 .catch(error => {
                     if (error.name === "ConnectionClosed") {
-                        this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
-                                        [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
-                                        [system ? "systemImagesLoaded" : "userImagesLoaded"]: true
+                        this.setState({
+                            [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
+                            [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
+                            [system ? "systemImagesLoaded" : "userImagesLoaded"]: true
                         });
                     } else
                         console.error("Failed to call GetVersion():", error);
@@ -345,9 +345,11 @@ class Application extends React.Component {
         cockpit.spawn(argv, { superuser: "require", err: "message" })
                 .then(() => this.init(true))
                 .catch(err => {
-                    this.setState({ systemServiceAvailable: false,
-                                    systemContainersLoaded: true,
-                                    systemImagesLoaded: true });
+                    this.setState({
+                        systemServiceAvailable: false,
+                        systemContainersLoaded: true,
+                        systemImagesLoaded: true
+                    });
                     console.warn("Failed to start system io.podman.socket:", JSON.stringify(err));
                 });
 
@@ -359,9 +361,11 @@ class Application extends React.Component {
         cockpit.spawn(argv, { err: "message" })
                 .then(() => this.init(false))
                 .catch(err => {
-                    this.setState({ userServiceAvailable: false,
-                                    userContainersLoaded: true,
-                                    userImagesLoaded: true });
+                    this.setState({
+                        userServiceAvailable: false,
+                        userContainersLoaded: true,
+                        userImagesLoaded: true
+                    });
                     console.warn("Failed to start user io.podman.socket:", JSON.stringify(err));
                 });
     }
