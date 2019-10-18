@@ -428,10 +428,10 @@ class Application extends React.Component {
                         stats: this.state.containersStats[container.id + container.isSystem.toString()],
                     });
                 } else {
-                    imageContainerList[image] = [ {
+                    imageContainerList[image] = [{
                         container: container,
                         stats: this.state.containersStats[container.id + container.isSystem.toString()]
-                    } ];
+                    }];
                 }
             });
         } else
