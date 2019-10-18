@@ -8,7 +8,7 @@ const ImageDeleteModal = (props) => {
     const repoTag = props.imageWillDelete.repoTags ? _(props.imageWillDelete.repoTags[0]) : _("");
     return (
         <div>
-            <Modal show={props.selectImageDeleteModal} >
+            <Modal show={props.selectImageDeleteModal}>
                 <Modal.Header>
                     <Modal.Title>{cockpit.format(_("Delete $0"), repoTag)}</Modal.Title>
                 </Modal.Header>

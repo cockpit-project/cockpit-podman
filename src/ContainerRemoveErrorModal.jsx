@@ -8,7 +8,7 @@ const ContainerRemoveErrorModal = (props) => {
     const name = props.containerWillDelete ? _(props.containerWillDelete.Name) : _("");
     return (
         <div>
-            <Modal show={props.setContainerRemoveErrorModal} >
+            <Modal show={props.setContainerRemoveErrorModal}>
                 <Modal.Header>
                     <Modal.Title>{cockpit.format(_("Please confirm forced deletion of $0"), name)}</Modal.Title>
                 </Modal.Header>
