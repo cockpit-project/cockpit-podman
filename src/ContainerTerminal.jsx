@@ -168,9 +168,9 @@ class ContainerTerminal extends React.Component {
             );
 
         return (
-            <React.Fragment>
+            <>
                 { element }
-            </React.Fragment>
+            </>
         );
     }
 }

@@ -70,14 +70,14 @@ class Images extends React.Component {
                 })
                 .catch(ex => {
                     const error = (
-                        <React.Fragment>
+                        <>
                             <strong>
                                 {cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest")}
                             </strong>
                             <p> {_("Error message")}:
                                 <samp>{cockpit.format("$0 $1", ex.error, ex.parameters && ex.parameters.reason)}</samp>
                             </p>
-                        </React.Fragment>
+                        </>
                     );
                     this.setState({ imageDownloadInProgress: undefined });
                     this.props.onAddNotification({ type: 'error', children: error });

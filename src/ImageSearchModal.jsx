@@ -115,7 +115,7 @@ export class ImageSearchModal extends React.Component {
 
     render() {
         const defaultBody = (
-            <React.Fragment>
+            <>
                 { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
                     <form className="ct-form">
                         <label className="control-label" htmlFor="as-user">{_("Download as:")}</label>
@@ -143,7 +143,7 @@ export class ImageSearchModal extends React.Component {
 
                 {this.state.searchInProgress && <div id='search-image-dialog-waiting' className='spinner' />}
 
-                {this.state.searchFinished && !this.state.imageIdentifier == '' && <React.Fragment>
+                {this.state.searchFinished && !this.state.imageIdentifier == '' && <>
                     <h5> {_("Images")} </h5>
                     {this.state.imageList.length == 0 && <div> {cockpit.format(_("No results for $0. Please retry another term."), this.state.imageIdentifier)} </div>}
                     {this.state.imageList.length > 0 && <ListGroup>
@@ -160,8 +160,8 @@ export class ImageSearchModal extends React.Component {
                             );
                         })}
                     </ListGroup>}
-                </React.Fragment>}
-            </React.Fragment>
+                </>}
+            </>
         );
 
         return (
