@@ -17,7 +17,7 @@ const ImageSecurity = (props) => {
     const rows = info.vulnerabilities.map(
         function (vulnerability) {
             return (
-                <div className="vulnerability-row-ct-docker" title={vulnerability.description}>
+                <div className="vulnerability-row-ct-docker" title={vulnerability.description} key={vulnerability.title}>
                     <span>{vulnerability.title}</span>
                     <span className="pull-right">{vulnerability.severity}</span>
                 </div>
