@@ -5,7 +5,7 @@ import cockpit from 'cockpit';
 const _ = cockpit.gettext;
 
 const ImageRemoveErrorModal = (props) => {
-    const repoTag = props.imageWillDelete.RepoTags ? _(props.imageWillDelete.RepoTags[0]) : _("");
+    const repoTag = props.imageWillDelete.RepoTags ? _(props.imageWillDelete.RepoTags[0]) : "";
     return (
         <div>
             <Modal show={props.setImageRemoveErrorModal}>

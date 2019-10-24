@@ -17,21 +17,21 @@ export const GOLANG_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.S Z';
 
 export function truncate_id(id) {
     if (!id) {
-        return _("");
+        return "";
     }
     return _(id.substr(0, 12));
 }
 
 export function format_cpu_percent(cpuPercent) {
     if (cpuPercent === undefined || isNaN(cpuPercent)) {
-        return _("");
+        return "";
     }
     return _(cpuPercent.toFixed() + "%");
 }
 
 export function format_memory_and_limit(usage, limit) {
     if (usage === undefined || isNaN(usage))
-        return _("");
+        return "";
 
     var mtext = "";
     var units = 1024;
@@ -49,7 +49,7 @@ export function format_memory_and_limit(usage, limit) {
         else
             return _(parts.join(" "));
     } else {
-        return _("");
+        return "";
     }
 }
 
