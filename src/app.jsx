@@ -459,7 +459,7 @@ class Application extends React.Component {
 
         const imageList =
             <Images
-                key={_("imageList")}
+                key="imageList"
                 images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
                 imageContainerList={imageContainerList}
                 onAddNotification={this.onAddNotification}
@@ -471,7 +471,7 @@ class Application extends React.Component {
             />;
         const containerList =
             <Containers
-                key={_("containerList")}
+                key="containerList"
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}
