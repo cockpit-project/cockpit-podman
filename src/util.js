@@ -26,7 +26,7 @@ export function format_cpu_percent(cpuPercent) {
     if (cpuPercent === undefined || isNaN(cpuPercent)) {
         return "";
     }
-    return _(cpuPercent.toFixed() + "%");
+    return cpuPercent.toFixed() + "%";
 }
 
 export function format_memory_and_limit(usage, limit) {
