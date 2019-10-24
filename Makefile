@@ -37,10 +37,10 @@ po/POTFILES.html.in:
 	mkdir -p $(dir $@)
 	find src -name '*.html' > $@
 
-po/$(PACKAGE_NAME).html.pot: po/POTFILES.html.in
+po/$(PACKAGE_NAME).html.pot: po/POTFILES.html.in $(NODE_MODULES_TEST)
 	po/html2po -f $^ -o $@
 
-po/$(PACKAGE_NAME).manifest.pot:
+po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST)
 	po/manifest2po src/manifest.json -o $@
 
 po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot
@@ -56,6 +56,19 @@ dist/po.%.js: po/%.po $(NODE_MODULES_TEST)
 	mkdir -p $(dir $@)
 	po/po2json -m po/po.empty.js -o $@.js.tmp $<
 	mv $@.js.tmp $@
+
+ZANATA_CLI = LANG=C.UTF-8 LC_ALL=C.UTF-8 zanata-cli -B
+
+upload-pot: po/$(PACKAGE_NAME).pot
+	$(ZANATA_CLI) push --includes=$(PACKAGE_NAME).pot --project-config ./po/zanata.xml \
+		-s ./po
+
+clean-po:
+	rm ./po/*.po
+
+download-po:
+	$(ZANATA_CLI) pull --includes=$(PACKAGE_NAME).pot --project-config po/zanata.xml \
+		--min-doc-percent 50 -s ./po -t ./po
 
 #
 # Build/Install/dist
