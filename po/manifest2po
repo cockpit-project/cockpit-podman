@@ -92,7 +92,8 @@ function process_menu(menu) {
         if (menu[m].label) {
             push({
                 msgid: menu[m].label,
-                locations: [ filename ]
+                locations: [ filename + ":0" ] // Fake line number because when no line number
+                // present `zanata pull` fails with `ValueError: not enough values to unpack`
             });
         }
     }
