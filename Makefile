@@ -57,18 +57,16 @@ dist/po.%.js: po/%.po $(NODE_MODULES_TEST)
 	po/po2json -m po/po.empty.js -o $@.js.tmp $<
 	mv $@.js.tmp $@
 
-ZANATA_CLI = LANG=C.UTF-8 LC_ALL=C.UTF-8 zanata-cli -B
+ZANATA_CLI = LANG=C.UTF-8 LC_ALL=C.UTF-8 zanata
 
 upload-pot: po/$(PACKAGE_NAME).pot
-	$(ZANATA_CLI) push --includes=$(PACKAGE_NAME).pot --project-config ./po/zanata.xml \
-		-s ./po
+	$(ZANATA_CLI) push -f --srcdir=./po --push-type=source --project-config=./po/zanata.xml $(PACKAGE_NAME).pot
 
 clean-po:
 	rm ./po/*.po
 
 download-po:
-	$(ZANATA_CLI) pull --includes=$(PACKAGE_NAME).pot --project-config po/zanata.xml \
-		--min-doc-percent 50 -s ./po -t ./po
+	$(ZANATA_CLI) pull --min-doc-percent 50 --transdir=./po --project-config=./po/zanata.xml
 
 #
 # Build/Install/dist
