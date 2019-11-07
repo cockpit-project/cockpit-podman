@@ -768,10 +768,6 @@ class TestApplication(testlib.MachineCase):
         else:
             b.wait_text("span.empty-message", "This version of the Web Console does not support a terminal.")
 
-        # HACK: Stop this container because of https://github.com/containers/libpod/issues/3454
-        b.click('#containers-containers tbody tr:contains("busybox-with-tty") + tr button:contains(Stop)')
-        b.click("div.dropdown.open ul li:nth-child(1) a")
-
         # Create another instance without port publishing
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
