@@ -474,7 +474,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)") != "")
         cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)")
         memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(6)")
-        if auth or m.image not in ["fedora-29", "fedora-30", "rhel-8-1"]:
+        if auth or m.image not in ["fedora-30", "rhel-8-1"]:
             self.assertIn('%', cpu)
             num = cpu[:-1]
             self.assertTrue(num.replace('.', '', 1).isdigit())
@@ -666,7 +666,7 @@ class TestApplication(testlib.MachineCase):
 
         # Check memory configuration
         # Only works with CGroupsV2
-        if auth or m.image not in ["fedora-29", "fedora-30", "rhel-8-1"]:
+        if auth or m.image not in ["fedora-30", "rhel-8-1"]:
             b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
             b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
             b.wait_present('div.modal-body label:contains("Memory Limit") + div.form-inline > input[value="512"]')
@@ -732,7 +732,7 @@ class TestApplication(testlib.MachineCase):
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
-        if auth or m.image not in ["fedora-29", "fedora-30", "rhel-8-1"]:
+        if auth or m.image not in ["fedora-30", "rhel-8-1"]:
             memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
             self.assertEqual(memory, '536870912')
 
@@ -763,10 +763,7 @@ class TestApplication(testlib.MachineCase):
         self.assertIn(rwdir[4:], rwmnt)
 
         b.click("a:contains('Console')")
-        if m.image != "fedora-29":
-            b.wait_in_text(".xterm-accessibility-tree > div:nth-child(2)", "Hello World")
-        else:
-            b.wait_text("span.empty-message", "This version of the Web Console does not support a terminal.")
+        b.wait_in_text(".xterm-accessibility-tree > div:nth-child(2)", "Hello World")
 
         # HACK: Stop this container because of https://github.com/containers/libpod/issues/3454
         b.click('#containers-containers tbody tr:contains("busybox-with-tty") + tr button:contains(Stop)')
@@ -793,26 +790,25 @@ class TestApplication(testlib.MachineCase):
 
         b.set_val("#containers-containers-filter", "all")
 
-        if m.image != "fedora-29":
-            b.click("a:contains('Console')")
-            b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-            b.focus('.terminal')
-            b.key_press('echo hello\r')
-            b.wait_text(".xterm-accessibility-tree > div:nth-child(2)", "hello")
-            b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ # ")
-            b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
-            b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
-            b.click("div.dropdown.open ul li:nth-child(1) a")
-            b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
-            sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
-            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
-            b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
-            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'running'])
-            b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-            b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
-            b.click("div.dropdown.open ul li:nth-child(1) a")
-            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
-            b.click('#containers-containers tr:contains("busybox-without-publish")')
+        b.click("a:contains('Console')")
+        b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+        b.focus('.terminal')
+        b.key_press('echo hello\r')
+        b.wait_text(".xterm-accessibility-tree > div:nth-child(2)", "hello")
+        b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ # ")
+        b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
+        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
+        b.click("div.dropdown.open ul li:nth-child(1) a")
+        b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
+        sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
+        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
+        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'running'])
+        b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
+        b.click("div.dropdown.open ul li:nth-child(1) a")
+        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+        b.click('#containers-containers tr:contains("busybox-without-publish")')
 
         b.set_input_text('#containers-filter', 'tty')
         self.check_containers(["busybox-with-tty"], ["busybox-without-publish"])
@@ -827,12 +823,11 @@ class TestApplication(testlib.MachineCase):
         self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
         self.check_images(["busybox:latest", "alpine:latest", "registry:2"], [])
 
-        if m.image != "fedora-29":
-            b.set_val("#containers-containers-filter", "all")
-            self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
-            b.click('#containers-containers tr:contains("busybox-without-publish")')
-            b.click("a:contains('Console')")
-            b.wait_text("span.empty-message", "Container is not running")
+        b.set_val("#containers-containers-filter", "all")
+        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+        b.click('#containers-containers tr:contains("busybox-without-publish")')
+        b.click("a:contains('Console')")
+        b.wait_text("span.empty-message", "Container is not running")
 
         b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.click("#containers-images tbody tr:contains('busybox:latest') + tr.listing-ct-panel a:contains('Used By')")
