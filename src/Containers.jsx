@@ -105,10 +105,14 @@ class Containers extends React.Component {
             proc = containerStats.cpu_stats ? containerStats.cpu_stats.cpu.toFixed(2) + "%" : <abbr title={_("not available")}>{_("n/a")}</abbr>;
             mem = containerStats.memory_stats ? utils.format_memory_and_limit(containerStats.memory_stats.usage, containerStats.memory_stats.limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
         }
+        const info_block =
+            <div className="container-block">
+                <span className="container-name">{container.Names}</span>
+                <small>{image}</small>
+                <small>{utils.quote_cmdline(container.Command)}</small>
+            </div>;
         const columns = [
-            { name: container.Names, header: true },
-            image,
-            utils.quote_cmdline(container.Command),
+            info_block,
             proc,
             mem,
             container.isSystem ? _("system") : this.props.user,
@@ -224,7 +228,7 @@ class Containers extends React.Component {
     }
 
     render() {
-        const columnTitles = [_("Name"), _("Image"), _("Command"), _("CPU"), _("Memory"), _("Owner"), _("State")];
+        const columnTitles = [_("Container"), _("CPU"), _("Memory"), _("Owner"), _("State")];
 
         let emptyCaption = _("No containers");
         if (this.props.containers === null)
