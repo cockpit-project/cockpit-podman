@@ -17,7 +17,7 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 import React from 'react';
-import { Alert } from 'patternfly-react';
+import { Alert, AlertActionCloseButton } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 
@@ -25,10 +25,8 @@ const _ = cockpit.gettext;
 
 export const ErrorNotification = ({ errorMessage, errorDetail, onDismiss }) => {
     return (
-        <Alert onDismiss={onDismiss}>
-            <strong>
-                {errorMessage}
-            </strong>
+        <Alert isInline variant='danger' title={errorMessage}
+            action={onDismiss ? <AlertActionCloseButton onClose={onDismiss} /> : null}>
             { errorDetail && <p> {_("Error message")}: <samp>{errorDetail}</samp> </p> }
         </Alert>
     );

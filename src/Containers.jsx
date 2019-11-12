@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from "react-dom";
-import { Alert } from 'patternfly-react';
+import { Alert, AlertActionCloseButton } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
@@ -255,10 +255,9 @@ class Containers extends React.Component {
 
         return (
             <div id="containers-containers" className="containers-containers">
-                {actionError && <Alert onDismiss={() => this.setState({ actionError: undefined })}>
-                    <strong>
-                        {actionError}
-                    </strong>
+                {actionError && <Alert variant='danger'
+                    title={actionError}
+                    action={<AlertActionCloseButton onClose={() => this.setState({ actionError: undefined })} />}>
                     { actionErrorDetail && <p> {_("Error message")}: <samp>{actionErrorDetail}</samp> </p> }
                 </Alert> }
                 <Listing.Listing key="ContainerListing" title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>

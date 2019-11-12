@@ -122,9 +122,18 @@ module.exports = {
                 test: /\.(jsx|js)$/
             },
             {
-                exclude: /node_modules/,
-                loader: extract.extract('css-loader!sass-loader'),
-                test: /\.s?css$/
+                test: /\.(scss|css)$/,
+                use: extract.extract({
+                    use: [
+                        {
+                            loader: 'css-loader',
+                            options: { url: false }
+                        },
+                        {
+                            loader: 'sass-loader',
+                        }
+                    ]
+                })
             },
             {
                 test: /\.less$/,
