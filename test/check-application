@@ -264,7 +264,7 @@ class TestApplication(testlib.MachineCase):
         # check required field error
         b.click(".modal-dialog div .btn-ctr-commit")
         b.wait_present('.modal-dialog div:contains("Image name is required")')
-        b.click(".modal-dialog div .alert .close")
+        b.click(".modal-dialog div .pf-c-alert .pf-c-button")
         b.wait_not_present(".modal-dialog div .alert")
 
         # HACK: Disable checking for varlink error since it makes podman to coredump
@@ -275,7 +275,7 @@ class TestApplication(testlib.MachineCase):
         # b.click(".modal-dialog div .btn-ctr-commit")
         # b.wait_present(".modal-dialog div")
         # b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
-        # b.click(".modal-dialog div .alert .close")
+        # b.click(".modal-dialog div .pf-c-alert .pf-c-button")
         # b.wait_not_present(".modal-dialog div .alert")
 
         b.click(".btn-ctr-cancel-commit")
@@ -352,7 +352,7 @@ class TestApplication(testlib.MachineCase):
 
             def expectDownloadErrorForNonExistingTag(self):
                 b.wait_not_present('div.modal-dialog')
-                b.wait_present('div.alert:contains("Failed to download image localhost:5000/{0}:{1}")'.format(self.imageName, self.imageTag))
+                b.wait_present('h4.pf-c-alert__title:contains("Danger alert:Failed to download image localhost:5000/{0}:{1}")'.format(self.imageName, self.imageTag))
 
                 return self
 
@@ -562,7 +562,7 @@ class TestApplication(testlib.MachineCase):
         b.click("#app .blank-slate-pf button.btn-primary")
 
         b.wait_present("#containers-containers")
-        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
+        b.wait_not_present("#overview > div.pf-c-alert.pf-m-info")
 
         is_active_system("active")
         is_active_user("active")
@@ -587,9 +587,9 @@ class TestApplication(testlib.MachineCase):
         disable_system()
         enable_user()
         self.login_and_go("/podman")
-        b.wait_text("#overview > div.alert.alert-info.dialog-info span:nth-child(2)", "System Podman service is also available")
-        b.click("#overview > div.alert.alert-info.dialog-info > button")
-        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
+        b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "System Podman service is also available")
+        b.click("#overview div.pf-c-alert .pf-c-alert__action > button:contains(Start)")
+        b.wait_not_present("#overview div.pf-c-alert")
         is_active_system("active")
         is_active_user("active")
         is_enabled_user("enabled")
@@ -599,9 +599,9 @@ class TestApplication(testlib.MachineCase):
         disable_user()
         enable_system()
         self.login_and_go("/podman")
-        b.wait_text("#overview > div.alert.alert-info.dialog-info span:nth-child(2)", "User Podman service is also available")
-        b.click("#overview > div.alert.alert-info.dialog-info > button")
-        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
+        b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "User Podman service is also available")
+        b.click("#overview div.pf-c-alert .pf-c-alert__action > button:contains(Start)")
+        b.wait_not_present("#overview > div.pf-c-alert")
         is_active_system("active")
         is_active_user("active")
         is_enabled_user("enabled")
@@ -614,7 +614,7 @@ class TestApplication(testlib.MachineCase):
         b.click("#app .blank-slate-pf button.btn-primary")
 
         b.wait_present("#containers-containers")
-        b.wait_not_present("#overview > div.alert.alert-info.dialog-info")
+        b.wait_not_present("#overview div.pf-c-alert")
         is_active_system("inactive")
         is_active_user("active")
         is_enabled_user("enabled")

@@ -69,18 +69,14 @@ class Images extends React.Component {
                     this.setState({ imageDownloadInProgress: undefined });
                 })
                 .catch(ex => {
-                    const error = (
-                        <>
-                            <strong>
-                                {cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest")}
-                            </strong>
-                            <p> {_("Error message")}:
-                                <samp>{cockpit.format("$0 $1", ex.error, ex.parameters && ex.parameters.reason)}</samp>
-                            </p>
-                        </>
-                    );
+                    const error = cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest");
+                    const errorDetail = (<>
+                        <p> {_("Error message")}:
+                            <samp>{cockpit.format("$0 $1", ex.error, ex.parameters && ex.parameters.reason)}</samp>
+                        </p>
+                    </>);
                     this.setState({ imageDownloadInProgress: undefined });
-                    this.props.onAddNotification({ type: 'error', children: error });
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
                 });
     }
 

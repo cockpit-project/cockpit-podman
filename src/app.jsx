@@ -18,7 +18,8 @@
  */
 
 import React from 'react';
-import { ToastNotificationList, ToastNotification } from 'patternfly-react';
+import { ToastNotificationList } from 'patternfly-react';
+import { Alert, AlertActionLink, AlertActionCloseButton } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 import ContainerHeader from './ContainerHeader.jsx';
@@ -48,6 +49,7 @@ class Application extends React.Component {
             textFilter: "",
             dropDownValue: 'Everything',
             notifications: [],
+            showStartService: true,
         };
         this.onAddNotification = this.onAddNotification.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -438,23 +440,19 @@ class Application extends React.Component {
             imageContainerList = null;
 
         let startService = "";
+        const action = (<>
+            <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
+            <AlertActionCloseButton onClose={() => this.setState({ showStartService: false })} />
+        </>);
         if (!this.state.systemServiceAvailable && permission.allowed) {
-            startService = <div className="alert alert-info dialog-info">
-                <div className="info-message">
-                    <span className="fa fa-exclamation-triangle" />
-                    <span>{_("System Podman service is also available")}</span>
-                </div>
-                <button onClick={this.startService}>{_("Start")}</button>
-            </div>;
+            startService = <Alert variant='default'
+                title={_("System Podman service is also available")}
+                action={action} />;
         }
         if (!this.state.userServiceAvailable && this.state.userServiceExists) {
-            startService = <div className="alert alert-info dialog-info">
-                <div className="info-message">
-                    <span className="fa fa-exclamation-triangle" />
-                    <span>{_("User Podman service is also available")}</span>
-                </div>
-                <button onClick={this.startService}>{_("Start")}</button>
-            </div>;
+            startService = <Alert variant='default'
+                title={_("User Podman service is also available")}
+                action={action} />;
         }
 
         const imageList =
@@ -482,10 +480,10 @@ class Application extends React.Component {
             <ToastNotificationList>
                 {this.state.notifications.map((notification, index) => {
                     return (
-                        <ToastNotification key={index} type={notification.type}
-                                           onDismiss={() => this.onDismissNotification(notification.index)}>
-                            {notification.children}
-                        </ToastNotification>
+                        <Alert key={index} title={notification.error} variant={notification.type}
+                               action={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
+                            {notification.errorDetail}
+                        </Alert>
                     );
                 })}
             </ToastNotificationList>
@@ -500,7 +498,9 @@ class Application extends React.Component {
                         onFilterChanged={this.onFilterChanged}
                     />
                 </div>
-                { startService }
+                <div className="container-fluid">
+                    { this.state.showStartService ? startService : null }
+                </div>
                 <div key="containerslists" className="container-fluid">
                     {containerList}
                 </div>
