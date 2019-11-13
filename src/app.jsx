@@ -475,6 +475,7 @@ class Application extends React.Component {
                 onlyShowRunning={this.state.onlyShowRunning}
                 textFilter={this.state.textFilter}
                 user={permission.user || _("user")}
+                onAddNotification={this.onAddNotification}
             />;
         const notificationList = (
             <ToastNotificationList>
