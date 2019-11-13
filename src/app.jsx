@@ -478,20 +478,23 @@ class Application extends React.Component {
                 onAddNotification={this.onAddNotification}
             />;
         const notificationList = (
-            <ToastNotificationList>
-                {this.state.notifications.map((notification, index) => {
-                    return (
-                        <Alert key={index} title={notification.error} variant={notification.type}
-                               action={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
-                            {notification.errorDetail}
-                        </Alert>
-                    );
-                })}
-            </ToastNotificationList>
+            <section className='toast-notification-wrapper'>
+                <ToastNotificationList>
+                    {this.state.notifications.map((notification, index) => {
+                        return (
+                            <Alert key={index} title={notification.error} variant={notification.type}
+                                   action={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
+                                {notification.errorDetail}
+                            </Alert>
+                        );
+                    })}
+                </ToastNotificationList>
+            </section>
         );
 
         return (
             <div id="overview" key="overview">
+                {notificationList}
                 <div key="containerheader" className="content-filter">
                     <ContainerHeader
                         onlyShowRunning={this.state.onlyShowRunning}
@@ -507,9 +510,6 @@ class Application extends React.Component {
                 </div>
                 <div key="imageslists" className="container-fluid">
                     {imageList}
-                </div>
-                <div style={null}>
-                    {notificationList}
                 </div>
             </div>
         );
