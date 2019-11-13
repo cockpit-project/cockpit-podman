@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from "react-dom";
-import { Alert, AlertActionCloseButton } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
@@ -66,18 +65,20 @@ class Containers extends React.Component {
         if (force)
             args.timeout = 0;
         utils.podmanCall("StopContainer", args, container.isSystem)
-                .catch(ex => this.setState({
-                    actionError: cockpit.format(_("Failed to stop container $0"), container.names),
-                    actionErrorDetail: ex.parameters && ex.parameters.reason
-                }));
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to stop container $0"), container.names);
+                    const errorDetail = ex.parameters && ex.parameters.reason;
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                });
     }
 
     startContainer(container) {
         utils.podmanCall("StartContainer", { name: container.names }, container.isSystem)
-                .catch(ex => this.setState({
-                    actionError: cockpit.format(_("Failed to start container $0"), container.names),
-                    actionErrorDetail: ex.parameters && ex.parameters.reason
-                }));
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to start container $0"), container.names);
+                    const errorDetail = ex.parameters && ex.parameters.reason;
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                });
     }
 
     restartContainer (container, force) {
@@ -86,10 +87,11 @@ class Containers extends React.Component {
         if (force)
             args.timeout = 0;
         utils.podmanCall("RestartContainer", args, container.isSystem)
-                .catch(ex => this.setState({
-                    actionError: cockpit.format(_("Failed to restart container $0"), container.names),
-                    actionErrorDetail: ex.parameters && ex.parameters.reason
-                }));
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to restart container $0"), container.names);
+                    const errorDetail = ex.parameters && ex.parameters.reason;
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                });
     }
 
     renderRow(containersStats, container) {
@@ -181,7 +183,11 @@ class Containers extends React.Component {
             selectContainerDeleteModal: false
         });
         utils.podmanCall("RemoveContainer", { name: id }, this.state.containerWillDelete.isSystem)
-                .catch(ex => console.error("Failed to do RemoveContainer call:", JSON.stringify(ex)));
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to remove container $0"), this.state.containerWillDelete.names);
+                    const errorDetail = ex.parameters && ex.parameters.reason;
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                });
     }
 
     handleCancelRemoveError() {
@@ -198,8 +204,11 @@ class Containers extends React.Component {
                     this.setState({
                         setContainerRemoveErrorModal: false
                     });
-                })
-                .catch(ex => console.error("Failed to do RemoveContainerForce call:", JSON.stringify(ex)));
+                }, ex => {
+                    const error = cockpit.format(_("Failed to force remove container $0"), this.state.containerWillDelete.names);
+                    const errorDetail = ex.parameters && ex.parameters.reason;
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                });
     }
 
     onWindowResize() {
@@ -251,15 +260,9 @@ class Containers extends React.Component {
                 onHide={() => this.setState({ showCommitModal: false })}
                 container={this.state.containerWillCommit}
             />;
-        const { actionError, actionErrorDetail } = this.state;
 
         return (
             <div id="containers-containers" className="containers-containers">
-                {actionError && <Alert variant='danger'
-                    title={actionError}
-                    action={<AlertActionCloseButton onClose={() => this.setState({ actionError: undefined })} />}>
-                    { actionErrorDetail && <p> {_("Error message")}: <samp>{actionErrorDetail}</samp> </p> }
-                </Alert> }
                 <Listing.Listing key="ContainerListing" title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
                     {rows}
                 </Listing.Listing>
