@@ -673,6 +673,15 @@ class TestApplication(testlib.MachineCase):
             b.set_input_text("#run-image-dialog-memory-limit input.form-control", "0.5")
             b.set_val('#memory-unit-select', "GiB")
 
+        # CPU shares work only with system containers
+        if auth:
+            b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
+            b.wait_present("#run-image-dialog-cpu-priority-checkbox:checked")
+            b.wait_present('div.modal-body label:contains("CPU Shares") + div.form-inline > input[value="0"]')
+            b.set_input_text("#run-image-dialog-cpu-priority input.form-control", "512")
+        else:
+            b.wait_not_present("#run-image-dialog-cpu-priority-checkbox")
+
         # Enable tty
         b.set_checked("#run-image-dialog-tty", True)
 
@@ -736,6 +745,10 @@ class TestApplication(testlib.MachineCase):
             memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
             self.assertEqual(memory, '536870912')
 
+        if auth:
+            cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-with-tty || podman inspect --format '{{.HostConfig.CPUShares}}' busybox-with-tty").strip()
+            self.assertEqual(cpuShares, '512')
+
         b.wait(lambda: "Hello World" in self.execute(auth, "podman logs busybox-with-tty"))
 
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
@@ -787,6 +800,11 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") td.listing-ct-toggle')
         b.wait_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
         b.wait_text('#containers-containers tr:contains("busybox-without-publish") + tr dt:contains("Ports") + dd', "")
+
+        # Only works with CGroupsV2
+        if m.image != "rhel-8-1" and (auth or m.image not in ["fedora-30"]):
+            cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish").strip()
+            self.assertEqual(cpuShares, '0')
 
         b.set_val("#containers-containers-filter", "all")
 

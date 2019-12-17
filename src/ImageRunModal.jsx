@@ -205,7 +205,9 @@ export class ImageRunModal extends React.Component {
             publish: [],
             image: props.image,
             memory: 512,
+            cpuShares: 0,
             memoryConfigure: false,
+            cpuSharesConfigure: false,
             memoryUnit: 'MiB',
             validationFailed: {},
             volumes: [],
@@ -227,6 +229,9 @@ export class ImageRunModal extends React.Component {
         if (this.state.memoryConfigure && this.state.memory) {
             const memorySize = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
             createConfig.memory = memorySize.toString();
+        }
+        if (this.state.cpuSharesConfigure) {
+            createConfig.cpuShares = this.state.cpuShares;
         }
         if (this.state.hasTTY)
             createConfig.tty = true;
@@ -331,6 +336,28 @@ export class ImageRunModal extends React.Component {
                         </Select.SelectEntry>
                     </Select.Select>
                 </div>
+
+                { this.state.image.isSystem &&
+                    <>
+                        <label className='control-label' htmlFor='run-image-cpu-priority'>
+                            {_("CPU Shares")}
+                        </label>
+                        <div role='group' className='form-inline' id="run-image-dialog-cpu-priority">
+                            <div className="checkbox">
+                                <input id="run-image-dialog-cpu-priority-checkbox" type="checkbox"
+                                       checked={this.state.cpuSharesConfigure}
+                                       onChange={e => this.onValueChanged('cpuSharesConfigure', e.target.checked)} />
+                            </div>
+                            <input className='form-control'
+                                   type='number'
+                                   value={dialogValues.cpuShares}
+                                   step={1}
+                                   min={0}
+                                   disabled={!this.state.cpuSharesConfigure}
+                                   onChange={e => this.onValueChanged('cpuShares', parseInt(e.target.value))} />
+                        </div>
+                    </>
+                }
 
                 <label className='control-label'> {_("With terminal")} </label>
                 <label className="checkbox-inline">
