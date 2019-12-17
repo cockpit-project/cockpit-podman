@@ -27,3 +27,8 @@ podman pull busybox
 podman pull docker.io/alpine
 podman pull docker.io/registry:2
 EOF
+
+# HACK: https://bugzilla.redhat.com/show_bug.cgi?id=1782435
+# segfaults at boot and breaks every test due to unexpected messages
+# Happens only on RHEL-8-2, but we can safely just remove it everywhere
+rm /usr/libexec/virt-what-cpuid-helper
