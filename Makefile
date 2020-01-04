@@ -12,6 +12,10 @@ NODE_MODULES_TEST=package-lock.json
 # one example file in dist/ from webpack to check if that already ran
 WEBPACK_TEST=dist/index.html
 
+WEBLATE_REPO=cockpit-podman-weblate
+WEBLATE_REPO_URL=git@github.com:cockpit-project/cockpit-podman-weblate.git
+WEBLATE_REPO_BRANCH=master
+
 all: $(WEBPACK_TEST)
 
 #
@@ -57,16 +61,20 @@ dist/po.%.js: po/%.po $(NODE_MODULES_TEST)
 	po/po2json -m po/po.empty.js -o $@.js.tmp $<
 	mv $@.js.tmp $@
 
-ZANATA_CLI = LANG=C.UTF-8 LC_ALL=C.UTF-8 zanata
+$(WEBLATE_REPO):
+	git clone --depth=1 $(WEBLATE_REPO_URL) $(WEBLATE_REPO)
+	git -C $(WEBLATE_REPO) checkout $(WEBLATE_BRANCH)
 
-upload-pot: po/$(PACKAGE_NAME).pot
-	$(ZANATA_CLI) push -f --srcdir=./po --push-type=source --project-config=./po/zanata.xml $(PACKAGE_NAME).pot
+upload-pot: po/$(PACKAGE_NAME).pot $(WEBLATE_REPO)
+	cp ./po/$(PACKAGE_NAME).pot $(WEBLATE_REPO)
+	git -C $(WEBLATE_REPO) commit -m "Update source file" -- $(PACKAGE_NAME).pot
+	git -C $(WEBLATE_REPO) push
 
 clean-po:
 	rm ./po/*.po
 
-download-po:
-	$(ZANATA_CLI) pull --min-doc-percent 50 --transdir=./po --project-config=./po/zanata.xml
+download-po: $(WEBLATE_REPO)
+	cp $(WEBLATE_REPO)/*.po ./po/
 
 #
 # Build/Install/dist
