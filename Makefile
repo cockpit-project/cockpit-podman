@@ -13,7 +13,7 @@ NODE_MODULES_TEST=package-lock.json
 WEBPACK_TEST=dist/index.html
 
 WEBLATE_REPO=cockpit-podman-weblate
-WEBLATE_REPO_URL=git@github.com:cockpit-project/cockpit-podman-weblate.git
+WEBLATE_REPO_URL=git@github.com:marusak/cockpit-podman-weblate.git
 WEBLATE_REPO_BRANCH=master
 
 all: $(WEBPACK_TEST)
