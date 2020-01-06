@@ -494,8 +494,7 @@ class TestApplication(testlib.MachineCase):
         old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate")
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart)')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Restart)')
-        new_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip())
-        self.assertNotEqual(old_pid, new_pid)
+        b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
 
         with b.wait_timeout(5):
             self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh', 'running'])
