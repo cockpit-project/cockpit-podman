@@ -383,7 +383,7 @@ class Application extends React.Component {
     }
 
     render() {
-        if (this.state.systemServiceAvailable === null && this.state.userServiceAvailable === null) // not detected yet
+        if (this.state.systemServiceAvailable === null || this.state.userServiceAvailable === null) // not detected yet
             return null;
 
         if (!this.state.systemServiceAvailable && !this.state.userServiceAvailable) {
