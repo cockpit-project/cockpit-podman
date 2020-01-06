@@ -238,6 +238,14 @@ class Containers extends React.Component {
                     this.props.containers[id].image.toLowerCase().indexOf(lcf) >= 0
             );
         }
+
+        filtered.sort((a, b) => {
+            // User containers are in front of system ones
+            if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
+                return this.props.containers[a].isSystem ? 1 : -1;
+            return this.props.containers[a].names > this.props.containers[b].names ? 1 : -1;
+        });
+
         const rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
         const containerDeleteModal =
             <ContainerDeleteModal
