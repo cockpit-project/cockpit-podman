@@ -82,7 +82,7 @@ export function monitor(name, args, callback, on_close, system) {
                 if (e.name === "ConnectionClosed")
                     on_close(system);
                 else
-                    console.log(e);
+                    throw e;
             });
 }
 
