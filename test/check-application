@@ -296,6 +296,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
         b.click(".modal-dialog div .pf-c-alert .pf-c-button")
         b.wait_not_present(".modal-dialog div .alert")
+        b.wait_present(".modal-dialog div .btn-ctr-commit:not([disabled])")
 
         b.click(".btn-ctr-cancel-commit")
 

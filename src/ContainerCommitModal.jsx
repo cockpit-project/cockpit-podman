@@ -102,7 +102,8 @@ class ContainerCommitModal extends React.Component {
                 .catch(ex => {
                     this.setState({
                         dialogError: cockpit.format(_("Failed to commit container $0"), this.props.container.names),
-                        dialogErrorDetail: cockpit.format("$0: $1", ex.error, ex.parameters && ex.parameters.reason)
+                        dialogErrorDetail: cockpit.format("$0: $1", ex.error, ex.parameters && ex.parameters.reason),
+                        commitInProgress: false
                     });
                 });
     }
