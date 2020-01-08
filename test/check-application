@@ -103,6 +103,13 @@ class TestApplication(testlib.MachineCase):
             checkImage(b, "docker.io/library/alpine:latest", "admin")
             checkImage(b, "docker.io/library/registry:2", "admin")
 
+        # Check order of images
+        common = "docker.io/library/alpine:latestdocker.io/library/busybox:latestdocker.io/library/registry:2"
+        ordered = common
+        if auth and m.image != "rhel-8-1":
+            ordered += ordered
+        b.wait_collected_text("#containers-images table > tbody th:nth-child(2)", ordered)
+
         # prepare image ids - much easier to pick a specific container
         images = {}
         for image in self.execute(auth, "podman images --noheading --no-trunc").strip().split("\n"):
@@ -172,6 +179,14 @@ class TestApplication(testlib.MachineCase):
             b.click('#containers-containers tbody tr:contains("swamped-crate-system") td.listing-ct-toggle')
             b.wait_present('#containers-containers tbody tr:contains("swamped-crate-system") + tr button.btn-delete')
 
+        # Checked order of containers
+        if m.image == 'rhel-8-1':
+            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "swamped-crate-systemtest-sh-system")
+        elif auth:
+            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "swamped-crate-usertest-sh-userswamped-crate-systemtest-sh-system")
+        else:
+            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "swamped-crate-usertest-sh-user")
+
         # show running container
         self.filter_containers('running')
         if auth:
@@ -235,11 +250,19 @@ class TestApplication(testlib.MachineCase):
         if auth:
             self.execute(True, "podman run -d --name test-sh alpine sh")
             container_commit("test-sh")
+            ordered = common + "localhost/testimg:testtag"
+            if m.image != "rhel-8-1":
+                ordered = common + ordered
+            b.wait_collected_text("#containers-images table > tbody th:nth-child(2)", ordered)
             self.execute(True, "podman rm -f test-sh; podman rmi testimg:testtag")
 
         if m.image != "rhel-8-1":
             self.execute(False, "podman run -d --name test-sh alpine sh")
             container_commit("test-sh", owner="admin")
+            ordered = common + "localhost/testimg:testtag"
+            if auth:
+                ordered += common
+            b.wait_collected_text("#containers-images table > tbody th:nth-child(2)", ordered)
             self.execute(False, "podman rm -f test-sh; podman rmi testimg:testtag")
 
         # test commit of a running container
@@ -298,6 +321,20 @@ class TestApplication(testlib.MachineCase):
         b.click(".modal-dialog div #btn-img-deleteerror")
         b.wait_not_present("modal-dialog div #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", alpine_sel)
+
+        b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "")
+        self.execute(auth, "podman run -d --name c registry:2 sh")
+        b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "c")
+        self.execute(auth, "podman run -d --name a registry:2 sh")
+        b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "ac")
+        if m.image != "rhel-8-1":
+            self.execute(False, "podman run -d --name b registry:2 sh")
+            if auth:
+                b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "bac")
+                self.execute(False, "podman run -d --name d registry:2 sh")
+                b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "bdac")
+            else:
+                b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "abc")
 
     def testDownloadImage(self):
         b = self.browser

@@ -225,6 +225,20 @@ class Images extends React.Component {
                     return false;
                 });
         }
+
+        filtered.sort((a, b) => {
+            // User images are in front of system ones
+            if (this.props.images[a].isSystem !== this.props.images[b].isSystem)
+                return this.props.images[a].isSystem ? 1 : -1;
+            const name_a = this.props.images[a].repoTags ? this.props.images[a].repoTags[0] : "";
+            const name_b = this.props.images[b].repoTags ? this.props.images[b].repoTags[0] : "";
+            if (name_a === "")
+                return 1;
+            if (name_b === "")
+                return -1;
+            return name_a > name_b ? 1 : -1;
+        });
+
         const imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
         const imageDeleteModal =
             <ModalExample
