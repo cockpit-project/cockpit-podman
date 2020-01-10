@@ -710,7 +710,7 @@ class TestApplication(testlib.MachineCase):
         if auth:
             b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
             b.wait_present("#run-image-dialog-cpu-priority-checkbox:checked")
-            b.wait_present('div.modal-body label:contains("CPU Shares") + div.form-inline > input[value="0"]')
+            b.wait_present('div.modal-body label:contains("CPU Shares") + div.form-inline > input[value=""]')
             b.set_input_text("#run-image-dialog-cpu-priority input.form-control", "512")
         else:
             b.wait_not_present("#run-image-dialog-cpu-priority-checkbox")
