@@ -205,7 +205,7 @@ export class ImageRunModal extends React.Component {
             publish: [],
             image: props.image,
             memory: 512,
-            cpuShares: 0,
+            cpuShares: "",
             memoryConfigure: false,
             cpuSharesConfigure: false,
             memoryUnit: 'MiB',
@@ -230,7 +230,7 @@ export class ImageRunModal extends React.Component {
             const memorySize = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
             createConfig.memory = memorySize.toString();
         }
-        if (this.state.cpuSharesConfigure) {
+        if (this.state.cpuSharesConfigure && this.state.cpuShares !== "") {
             createConfig.cpuShares = this.state.cpuShares;
         }
         if (this.state.hasTTY)
@@ -352,9 +352,9 @@ export class ImageRunModal extends React.Component {
                                    type='number'
                                    value={dialogValues.cpuShares}
                                    step={1}
-                                   min={0}
+                                   min={2}
                                    disabled={!this.state.cpuSharesConfigure}
-                                   onChange={e => this.onValueChanged('cpuShares', parseInt(e.target.value))} />
+                                   onChange={e => this.onValueChanged('cpuShares', e.target.value === "" ? "" : parseInt(e.target.value))} />
                         </div>
                     </>
                 }
