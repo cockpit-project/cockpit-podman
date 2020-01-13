@@ -222,6 +222,10 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_in_text("#containers-containers", "test-sh-system")
 
         def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
+            # HACK: With release 1.7 commands with arguments got broken. This affects only Fedora.
+            # See: https://github.com/containers/libpod/issues/4847
+            if "fedora" in m.image:
+                image_command = "sleep"
             self.filter_containers("all")
             b.wait_present('#containers-containers tr:contains({0})'.format(container_name))
             b.click('#containers-containers tbody tr:contains({0}) td.listing-ct-toggle'.format(container_name))
