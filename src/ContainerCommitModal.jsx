@@ -66,9 +66,11 @@ class ContainerCommitModal extends React.Component {
             this.setState({ dialogError: "Image name is required" });
             return;
         }
-        let cmdStr = "";
-        if (this.state.command.trim() !== "")
-            cmdStr = this.state.command.trim();
+
+        function quote(word) {
+            word = word.replace(/"/g, '\\"');
+            return '"' + word + '"';
+        }
 
         const commitData = {};
         commitData.name = this.props.container.id;
@@ -79,8 +81,17 @@ class ContainerCommitModal extends React.Component {
         commitData.format = this.state.format;
 
         commitData.changes = [];
-        const cmdData = "CMD=" + cmdStr;
-        commitData.changes.push(cmdData);
+        if (this.state.command.trim() !== "") {
+            let cmdData = "";
+            if (utils.compare_versions(this.props.version, "1.7.0") > -1) {
+                const words = utils.unquote_cmdline(this.state.command.trim());
+                const cmdStr = words.map(quote).join(", ");
+                cmdData = "CMD [" + cmdStr + "]";
+            } else {
+                cmdData = "CMD=" + this.state.command.trim();
+            }
+            commitData.changes.push(cmdData);
+        }
 
         let onbuildsArr = [];
         if (this.state.setonbuild) {

@@ -222,10 +222,6 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_in_text("#containers-containers", "test-sh-system")
 
         def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
-            # HACK: With release 1.7 commands with arguments got broken. This affects only Fedora.
-            # See: https://github.com/containers/libpod/issues/4847
-            if "fedora" in m.image:
-                image_command = "sleep"
             self.filter_containers("all")
             b.wait_present('#containers-containers tr:contains({0})'.format(container_name))
             b.click('#containers-containers tbody tr:contains({0}) td.listing-ct-toggle'.format(container_name))
@@ -247,7 +243,10 @@ class TestApplication(testlib.MachineCase):
             # open the listing toggle of testimg and check the commit paramerters
             b.click('#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag))
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
-            b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_command))
+            if "rhel" in m.image: # podman < 1.7 quotes command
+                image_command = image_command.replace(r'\"', r'\\\"')
+                image_command = image_command.replace(r' "', r' \"')
+            b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") dd:nth-child(8)'.format(image_name, image_tag), image_command)
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_author))
 
         # run a container (will exit immediately) and test the display of commit modal
@@ -272,7 +271,7 @@ class TestApplication(testlib.MachineCase):
         # test commit of a running container
         if auth:
             self.execute(True, "podman run -d --name test-sh busybox sleep 1000")
-            container_commit("test-sh")
+            container_commit("test-sh", image_command=r'sh -c "while echo \"Hello World\"; do sleep 1; done "')
             self.execute(True, "podman rm -f test-sh; podman rmi testimg:testtag")
 
         # HACK - this does not work, see https://github.com/containers/libpod/issues/3970
