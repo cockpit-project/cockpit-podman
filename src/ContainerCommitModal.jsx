@@ -67,11 +67,8 @@ class ContainerCommitModal extends React.Component {
             return;
         }
         let cmdStr = "";
-        if (this.state.command.trim() === "") {
-            cmdStr = this.props.container.Config ? this.props.container.Config.Cmd.join(" ") : "";
-        } else {
+        if (this.state.command.trim() !== "")
             cmdStr = this.state.command.trim();
-        }
 
         const commitData = {};
         commitData.name = this.props.container.id;
