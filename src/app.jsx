@@ -50,6 +50,7 @@ class Application extends React.Component {
             dropDownValue: 'Everything',
             notifications: [],
             showStartService: true,
+            version: '1.3.0',
         };
         this.onAddNotification = this.onAddNotification.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -286,7 +287,7 @@ class Application extends React.Component {
     init(system) {
         utils.podmanCall("GetVersion", {}, system)
                 .then(reply => {
-                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true });
+                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.version });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system);
                     utils.monitor("GetEvents", {},
@@ -470,6 +471,7 @@ class Application extends React.Component {
         const containerList =
             <Containers
                 key="containerList"
+                version={this.state.version}
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
                 containersStats={this.state.containersStats}
                 onlyShowRunning={this.state.onlyShowRunning}

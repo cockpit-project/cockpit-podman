@@ -267,6 +267,7 @@ class Containers extends React.Component {
             <ContainerCommitModal
                 onHide={() => this.setState({ showCommitModal: false })}
                 container={this.state.containerWillCommit}
+                version={this.props.version}
             />;
 
         return (
