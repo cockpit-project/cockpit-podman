@@ -198,7 +198,7 @@ export class ImageRunModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            command: this.props.image.command ? utils.unquote_cmdline(this.props.image.command) : "sh",
+            command: this.props.image.command ? utils.quote_cmdline(this.props.image.command) : "sh",
             containerName: dockerNames.getRandomName(),
             env: [],
             hasTTY: true,
