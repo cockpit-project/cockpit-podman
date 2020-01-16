@@ -5,6 +5,7 @@ import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
+import ContainerLogs from './ContainerLogs.jsx';
 import Dropdown from './Dropdown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
@@ -118,6 +119,10 @@ class Containers extends React.Component {
             name: _("Details"),
             renderer: ContainerDetails,
             data: { container: container }
+        }, {
+            name: _("Logs"),
+            renderer: ContainerLogs,
+            data: { containerId: container.id, width:this.state.width, system:container.isSystem }
         }, {
             name: _("Console"),
             renderer: ContainerTerminal,
