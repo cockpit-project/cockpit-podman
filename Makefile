@@ -163,9 +163,9 @@ bots:
 	@echo "checked out bots/ ref $$(git -C bots rev-parse HEAD)"
 
 # checkout Cockpit's test API; this has no API stability guarantee, so check out a stable tag
-# when you start a new project, use the latest relese, and update it from time to time
+# when you start a new project, use the latest release, and update it from time to time
 test/common:
-	git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 205
+	git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 210
 	git checkout --force FETCH_HEAD -- test/common
 	git reset test/common
 
