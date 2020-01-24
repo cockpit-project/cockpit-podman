@@ -158,7 +158,7 @@ class ContainerTerminal extends React.Component {
     }
 
     render() {
-        let element = <div ref="terminal" />;
+        let element = <div className="container-terminal" ref="terminal" />;
         if (this.state.errorMessage)
             element = (<div ref="terminal" className="empty-state">
                 <span className="empty-message">
