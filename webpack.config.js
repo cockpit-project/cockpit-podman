@@ -102,6 +102,7 @@ module.exports = {
     externals: externals,
     output: output,
     devtool: "source-map",
+    stats: "errors-warnings",
 
     optimization: {
         minimize: production,
