@@ -1,3 +1,5 @@
+@import "../node_modules/@patternfly/react-styles/css/patternfly-variables.css";
+
 a {
     cursor: pointer;
 }
@@ -525,6 +527,8 @@ input[type=number] {
     --color-table-text                : #393f44;
 }
 
+[hidden] { display: none !important; }
+
 /*** PF4 overrides (when a mix of PF3 + PF4 is used at the same time) ***/
 
 /* WORKAROUND: Override word-break bug */
@@ -532,4 +536,17 @@ input[type=number] {
 .pf-c-table td {
     word-break: normal;
     overflow-wrap: break-word;
+}
+
+/* Fix alignment for icons inside of dropdown toggle (& split) buttons */
+/* Part 1 of 2 */
+.pf-c-dropdown__toggle {
+  align-items: stretch;
+  /* PF4 uses align-items: center here; stretch (the default) is what we need. */
+}
+
+/* Align the icons inside of the toggle. Part 2 of 2 */
+.pf-c-dropdown__toggle-button {
+  display: flex;
+  align-items: center;
 }

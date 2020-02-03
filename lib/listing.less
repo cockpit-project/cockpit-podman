@@ -22,6 +22,10 @@
     + .ct-listing {
         margin-top: 1rem;
     }
+
+    select, .btn, .dropdown, input {
+        font-size: var(--pf-global--FontSize--md);
+    }
 }
 
 .listing-ct-heading,
@@ -29,7 +33,8 @@
     margin: 0.5rem 0;
 }
 
-.listing-ct-heading {
+.listing-ct-heading,
+.listing-ct-simplebody-actions {
     flex: auto;
     padding: 0.25rem 1em 0.25rem 0;
 }
@@ -118,6 +123,7 @@ tbody.open > tr.listing-ct-item th {
 
 tbody.open td div.listing-ct-head {
     background-color: @color-pf-white;
+    align-items: end;
 }
 
 tbody.open > .listing-ct-panel > td > .listing-ct-body {
@@ -132,6 +138,7 @@ tbody.open > tr.listing-ct-panel + tr.listing-ct-body {
 tbody.open > tr.listing-ct-panel td div.listing-ct-head {
     border: none;
     border-bottom: 1px solid @listing-ct-border;
+    padding-top: 0;
 }
 
 /* only highlight the row if navigation is available */
@@ -171,6 +178,19 @@ tbody.open .listing-ct-toggle {
 .listing-ct-item > .listing-ct-toggle + th {
     padding-left: @listing-ct-padding / 2;
     position: relative;
+}
+
+td.listing-ct-toggle button {
+    border: 1px solid transparent;
+}
+
+td.listing-ct-toggle button:focus {
+    color: var(--pf-global--Color--100) !important;
+    border-color: var(--pf-global--BackgroundColor--light-300) !important;
+    @-moz-document url-prefix() {
+      /* Approximate Firefox's focus ring, for Firefox only */
+      border: 1px dotted rgba(0, 0, 0, 0.75);
+    }
 }
 
 td.listing-ct-toggle i {
@@ -249,7 +269,7 @@ tr.listing-ct-item.listing-ct-selected .badge {
 }
 
 .listing-ct-head .listing-ct-actions {
-    margin-top: -7px;
+    margin: 0.25rem 0;
     order: -1;
 }
 
@@ -320,7 +340,7 @@ tbody.active .listing-ct-head {
 
 .listing-ct-head .nav-tabs-pf {
     /* Counteract listing-ct-head padding */
-    margin: -@listing-ct-padding 0 0 -@listing-ct-padding;
+    margin: 0 0 0 -@listing-ct-padding;
     flex: auto;
 }
 
@@ -619,10 +639,10 @@ tbody tr.listing-ct-noexpand {
     left: 0px;
 }
 
-/* Force word-wraps when words are too long */
 .listing-ct-item td,
 .listing-ct-item th,
 .listing-ct-body {
+    /* Force wraps when words are too long */
     overflow-wrap: break-word;
     hyphens: auto;
 }
