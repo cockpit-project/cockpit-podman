@@ -171,7 +171,7 @@ export class ListingRow extends React.Component {
         let expandToggle;
         if (allowExpand) {
             expandToggle = <td key="expandToggle" className="listing-ct-toggle" onClick={ allowNavigate ? this.handleExpandClick : undefined }>
-                <i className="fa fa-fw" />
+                <button className="pf-c-button pf-m-plain" type="button" aria-label="expand row"><i className="fa fa-fw" /></button>
             </td>;
         } else {
             expandToggle = <td key="expandToggle-empty" className="listing-ct-toggle" />;
@@ -257,9 +257,14 @@ export class ListingRow extends React.Component {
 
             let simpleBody, heading;
             if ('simpleBody' in this.props) {
-                simpleBody = (
-                    <div className="listing-ct-body" key="simplebody">{this.props.simpleBody}</div>
-                );
+                heading =
+                    <div className="listing-ct-actions listing-ct-simplebody-actions">
+                        {this.props.listingActions}
+                    </div>;
+                simpleBody =
+                    <div className="listing-ct-body" key="simplebody">
+                        {this.props.simpleBody}
+                    </div>;
             } else {
                 heading = (<div className="listing-ct-head">
                     <div className="listing-ct-actions">
@@ -318,7 +323,7 @@ ListingRow.propTypes = {
     simpleBody: PropTypes.node,
 };
 /* Implements a PatternFly 'List View' pattern
- * https://www.patternfly.org/list-view/
+ * https://www.patternfly.org/v3/pattern-library/content-views/list-view/index.html
  * Properties (all optional):
  * - title
  * - fullWidth: set width to 100% of parent, defaults to true
@@ -368,7 +373,7 @@ export const Listing = (props) => {
     return (
         <section className="ct-listing">
             {heading}
-            <table aria-labelledby="listing-ct-heading" className={ bodyClasses.join(" ") }>
+            <table aria-labelledby={heading && "listing-ct-heading"} className={ bodyClasses.join(" ") }>
                 <thead className={headerClasses}>
                     {headerRow}
                 </thead>
