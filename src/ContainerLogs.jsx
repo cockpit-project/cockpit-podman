@@ -132,6 +132,7 @@ class ContainerLogs extends React.Component {
                     .join(" "));
             if (this.state.loading) {
                 this.state.view.reset();
+                this.state.view._core.cursorHidden = true;
                 this.setState({ loading: false });
             }
             this.state.view.write(just_logs.join(""));
