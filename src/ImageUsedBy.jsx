@@ -6,32 +6,32 @@ import * as Listing from '../lib/cockpit-components-listing.jsx';
 const _ = cockpit.gettext;
 
 const renderRow = (containerStats, container, showAll) => {
-    const isRunning = container.status == "running";
+    const isRunning = container.State == "running";
+
     let proc = "";
     let mem = "";
     if (containerStats) {
-        proc = containerStats.cpu ? utils.format_cpu_percent(containerStats.cpu * 100) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
-        mem = containerStats.mem_usage ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+        proc = containerStats.cpu_stats ? containerStats.cpu_stats.cpu.toFixed(2) + "%" : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+        mem = containerStats.memory_stats ? utils.format_memory_and_limit(containerStats.memory_stats.usage, containerStats.memory_stats.limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
     }
-
     const columns = [
-        { name: container.names, header: true },
-        utils.quote_cmdline(container.command),
+        { name: container.Names, header: true },
+        utils.quote_cmdline(container.Command),
         proc,
         mem,
-        container.status /* TODO: i18n */,
+        container.State /* FIXME: i18n */,
 
     ];
     return <Listing.ListingRow
                 navigateToItem={() => {
                     const loc = document.location.toString().split('#')[0];
-                    document.location = loc + '#' + container.id;
+                    document.location = loc + '#' + container.Id;
                     if (!isRunning)
                         showAll();
                     return false;
                 }}
-                key={"usedby-" + container.id}
-                rowId={"usedby-" + container.id}
+                key={"usedby-" + container.Id}
+                rowId={"usedby-" + container.Id}
                 columns={columns}
     />;
 };

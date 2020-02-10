@@ -6,20 +6,20 @@ const moment = require('moment');
 const _ = cockpit.gettext;
 
 const render_container_state = (container) => {
-    if (container.status === "running") {
-        return cockpit.format(_("Up since $0"), moment(container.createdat, utils.GOLANG_TIME_FORMAT).calendar());
+    if (container.State === "running") {
+        return cockpit.format(_("Up since $0"), moment(container.StartedAt * 1000).calendar());
     }
     return cockpit.format(_("Exited"));
 };
 
-const render_container_published_ports = ({ ports }) => {
+const render_container_published_ports = (ports) => {
     const result = [];
     if (!ports)
         return result;
     for (let i = 0; i < ports.length; ++i)
         result.push(
-            <React.Fragment key={ ports[i].protocol + ports[i].host_port + ports[i].container_port }>
-                { ports[i].host_ip || '0.0.0.0' }:{ ports[i].host_port } &rarr; { ports[i].container_port }/{ ports[i].protocol }{ i < ports.length - 1 && ', ' }
+            <React.Fragment key={ ports[i].protocol + ports[i].hostPort + ports[i].containerPort }>
+                { ports[i].hostIP || '0.0.0.0' }:{ ports[i].hostPort } &rarr; { ports[i].containerPort }/{ ports[i].protocol }{ i < ports.length - 1 && ', ' }
             </React.Fragment>);
     return result;
 };
@@ -27,17 +27,17 @@ const render_container_published_ports = ({ ports }) => {
 const ContainerDetails = ({ container }) => (
     <dl className='container-details'>
         <dt>{_("ID")}</dt>
-        <dd>{container.id}</dd>
+        <dd>{container.Id}</dd>
         <dt>{_("Created")}</dt>
-        <dd>{moment(container.createdat, utils.GOLANG_TIME_FORMAT).calendar()}</dd>
+        <dd>{moment(container.Created * 1000).calendar()}</dd>
         <dt>{_("Image")}</dt>
-        <dd>{container.image}</dd>
+        <dd>{container.Image}</dd>
         <dt>{_("Command")}</dt>
-        <dd>{container.command ? utils.quote_cmdline(container.command) : ""}</dd>
+        <dd>{container.Command ? utils.quote_cmdline(container.Command) : ""}</dd>
         <dt>{_("State")}</dt>
         <dd>{render_container_state(container)}</dd>
         <dt>{_("Ports")}</dt>
-        <dd>{render_container_published_ports(container)}</dd>
+        <dd>{render_container_published_ports(container.Ports)}</dd>
     </dl>
 );
 

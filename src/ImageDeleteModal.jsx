@@ -6,7 +6,7 @@ import cockpit from 'cockpit';
 const _ = cockpit.gettext;
 
 const ImageDeleteModal = (props) => {
-    const repoTag = props.imageWillDelete.repoTags ? _(props.imageWillDelete.repoTags[0]) : "";
+    const repoTag = props.imageWillDelete.RepoTags ? _(props.imageWillDelete.RepoTags[0]) : "";
     return (
         <Modal show={props.selectImageDeleteModal}>
             <Modal.Header>

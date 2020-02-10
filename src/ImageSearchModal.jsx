@@ -4,9 +4,9 @@ import { Button, InputGroup, InputGroupText } from '@patternfly/react-core';
 import { SearchIcon } from '@patternfly/react-icons';
 
 import { ErrorNotification } from './Notification.jsx';
-import * as utils from './util.js';
-import varlink from './varlink.js';
 import cockpit from 'cockpit';
+import rest from './rest.js';
+import * as client from './client.js';
 
 import '../lib/form-layout.scss';
 import './ImageSearchModal.css';
@@ -47,7 +47,7 @@ export class ImageSearchModal extends React.Component {
     }
 
     onDownloadClicked() {
-        const selectedImageName = this.state.imageList[this.state.selected].name;
+        const selectedImageName = this.state.imageList[this.state.selected].Name;
 
         this.props.close();
         this.props.downloadImage(selectedImageName, this.state.imageTag, this.state.isSystem);
@@ -71,28 +71,28 @@ export class ImageSearchModal extends React.Component {
 
         this.setState({ searchInProgress: true });
 
-        varlink.connect(utils.getAddress(this.state.isSystem), this.state.isSystem)
-                .then(connection => {
-                    this.activeConnection = connection;
-
-                    connection.call("io.podman.SearchImages", { query: this.state.imageIdentifier })
-                            .then(reply => {
-                                if (this._isMounted)
-                                    this.setState({ imageList: reply.results || [], searchInProgress: false, searchFinished: true });
-                            })
-                            .catch(ex => {
-                                // We expect new searches to close the connection for ongoing searches
-                                if (ex.error == 'ConnectionClosed')
-                                    return;
-
-                                if (this._isMounted) {
-                                    this.setState({
-                                        searchInProgress: false,
-                                        dialogError: _("Failed to search for new images"),
-                                        dialogErrorDetail: cockpit.format("$0: $1", ex.error, ex.parameters && ex.parameters.reason)
-                                    });
-                                }
-                            });
+        this.activeConnection = rest.connect(client.getAddress(this.state.isSystem), this.state.isSystem);
+        const options = {
+            method: "GET",
+            path: "/v1.12/libpod/images/search",
+            body: "",
+            params: {
+                term: this.state.imageIdentifier,
+            },
+        };
+        this.activeConnection.call(options)
+                .then(reply => {
+                    if (this._isMounted)
+                        this.setState({ imageList: JSON.parse(reply) || [], searchInProgress: false, searchFinished: true, dialogError: "" });
+                })
+                .catch(ex => {
+                    if (this._isMounted) {
+                        this.setState({
+                            searchInProgress: false,
+                            dialogError: _("Failed to search for new images"),
+                            dialogErrorDetail: cockpit.format(_("Failed to search for images: $0"), ex.message ? ex.message : "")
+                        });
+                    }
                 });
     }
 
@@ -154,9 +154,9 @@ export class ImageSearchModal extends React.Component {
                                 <ListGroupItem active={this.state.selected == iter} onClick={() => this.onItemSelected(iter)} key={iter}>
                                     <span className='image-list-item'>
                                         <label className='control-label'>
-                                            { image.name }
+                                            { image.Name }
                                         </label>
-                                        <span className='pull-right'> { image.description } </span>
+                                        <span className='pull-right'> { image.Description } </span>
                                     </span>
                                 </ListGroupItem>
                             );
