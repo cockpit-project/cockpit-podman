@@ -21,9 +21,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Terminal } from "xterm";
 
-import * as utils from './util.js';
-import varlink from './varlink.js';
 import cockpit from 'cockpit';
+import rest from './rest.js';
+import * as client from './client.js';
 
 import "./ContainerTerminal.css";
 
@@ -95,47 +95,42 @@ class ContainerLogs extends React.Component {
         }
         this.resize(this.props.width);
 
-        const logsData = {};
-        logsData.name = this.props.containerId;
+        const connection = rest.connect(client.getAddress(this.props.system), this.props.system);
+        const options = {
+            method: "GET",
+            path: "/v1.12/libpod/containers/" + this.props.containerId + "/logs",
+            body: "",
+            params: {
+                follow: true,
+                stdout: true,
+                stderr: true,
+            },
+        };
 
-        varlink.connect(utils.getAddress(this.props.system), this.props.system)
-                .then(connection => {
-                    connection.monitor("io.podman.GetContainerLogs", logsData, this.onStreamMessage)
-                            .then(this.onStreamClose)
-                            .catch(e => {
-                                if (e.error === "ConnectionClosed")
-                                    this.onStreamClose();
-                                else
-                                    this.setState({
-                                        errorMessage: e.message,
-                                        streamer: null,
-                                    });
-                            });
-                    this.setState({
-                        streamer: connection,
-                        errorMessage: "",
-                    });
-                })
+        connection.monitor(options, this.onStreamMessage, this.props.system, true)
+                .then(this.onStreamClose)
                 .catch(e => {
                     this.setState({
                         errorMessage: e.message,
                         streamer: null,
                     });
                 });
+        this.setState({
+            streamer: connection,
+            errorMessage: "",
+        });
     }
 
     onStreamMessage(data) {
-        // data = {parameters: {container: [<data_string>]}}
-        // Example <data_string>="2020-01-23T09:34:34.563845178+01:00 stdout F 19\r\n"
-        if (data && data.parameters) {
-            const just_logs = data.parameters.container.map(e => e.split(" ").slice(3)
-                    .join(" "));
+        if (data) {
             if (this.state.loading) {
                 this.state.view.reset();
                 this.state.view._core.cursorHidden = true;
                 this.setState({ loading: false });
             }
-            this.state.view.write(just_logs.join(""));
+            // First 8 bytes encode information about stream and frame
+            // See 'Stream format' on https://docs.docker.com/engine/api/v1.40/#operation/ContainerAttach
+            this.state.view.writeln(data.substring(8));
         }
     }
 

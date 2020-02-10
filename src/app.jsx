@@ -30,7 +30,7 @@ import moment from "moment";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
-import * as utils from './util.js';
+import * as client from './client.js';
 
 const _ = cockpit.gettext;
 const permission = cockpit.permission({ admin: true });
@@ -121,12 +121,12 @@ class Application extends React.Component {
     }
 
     updateContainerStats(id, system) {
-        utils.podmanCall("GetContainerStats", { name: id }, system)
+        client.getContainerStats(system, id)
                 .then(reply => {
-                    this.updateState("containersStats", reply.container.id + system.toString(), reply.container);
+                    this.updateState("containersStats", reply.Id + system.toString(), reply);
                 })
                 .catch(ex => {
-                    if (ex.error === "io.podman.ErrRequiresCgroupsV2ForRootless") {
+                    if (ex.error === "io.podman.ErrRequiresCgroupsV2ForRootless") { // TODO - Check if this message still applies
                         console.log("This OS does not support CgroupsV2. Some information may be missing.");
                         this.updateState("containersStats", id + system.toString(), -1);
                     } else
@@ -135,7 +135,7 @@ class Application extends React.Component {
     }
 
     updateContainersAfterEvent(system) {
-        utils.podmanCall("ListContainers", {}, system)
+        client.getContainers(system)
                 .then(reply => {
                     this.setState(prevState => {
                         // Copy only containers that could not be deleted with this event
@@ -145,11 +145,11 @@ class Application extends React.Component {
                             if (container.isSystem !== system)
                                 copyContainers[id] = container;
                         });
-                        for (const container of reply.containers || []) {
+                        for (const container of reply || []) {
                             container.isSystem = system;
-                            copyContainers[container.id + system.toString()] = container;
-                            if (container.status === "running")
-                                this.updateContainerStats(container.id, system);
+                            copyContainers[container.Id + system.toString()] = container;
+                            if (container.State === "running")
+                                this.updateContainerStats(container.Id, system);
                         }
 
                         return {
@@ -162,19 +162,19 @@ class Application extends React.Component {
     }
 
     updateImagesAfterEvent(system) {
-        utils.updateImages(system)
+        client.getImages(system)
                 .then(reply => {
                     this.setState(prevState => {
                         // Copy only images that could not be deleted with this event
                         // So when event from system come, only copy user images and vice versa
                         const copyImages = {};
-                        Object.entries(prevState.images || {}).forEach(([id, image]) => {
+                        Object.entries(prevState.images || {}).forEach(([Id, image]) => {
                             if (image.isSystem !== system)
-                                copyImages[id] = image;
+                                copyImages[Id] = image;
                         });
-                        Object.entries(reply).forEach(([id, image]) => {
+                        Object.entries(reply).forEach(([Id, image]) => {
                             image.isSystem = system;
-                            copyImages[id + system.toString()] = image;
+                            copyImages[Id + system.toString()] = image;
                         });
 
                         return {
@@ -189,28 +189,33 @@ class Application extends React.Component {
     }
 
     updateContainerAfterEvent(id, system) {
-        utils.podmanCall("GetContainer", { id: id }, system)
+        client.getContainers(system, id)
                 .then(reply => {
-                    reply.container.isSystem = system;
-                    this.updateState("containers", reply.container.id + system.toString(), reply.container);
-                    if (reply.container.status == "running")
-                        this.updateContainerStats(reply.container.id, system);
-                    else {
-                        this.setState(prevState => {
-                            const copyStats = Object.assign({}, prevState.containersStats);
-                            delete copyStats[reply.container.id + system.toString()];
-                            return { containersStats: copyStats };
-                        });
+                    if (reply && reply.length > 0) {
+                        reply = reply[0];
+
+                        reply.isSystem = system;
+                        this.updateState("containers", reply.Id + system.toString(), reply);
+                        if (reply.State == "running")
+                            this.updateContainerStats(reply.Id, system);
+                        else {
+                            this.setState(prevState => {
+                                const copyStats = Object.assign({}, prevState.containersStats);
+                                delete copyStats[reply.Id + system.toString()];
+                                return { containersStats: copyStats };
+                            });
+                        }
                     }
                 })
                 .catch(e => console.log(e));
     }
 
     updateImageAfterEvent(id, system) {
-        utils.updateImage(id, system)
+        client.getImages(system, id)
                 .then(reply => {
-                    reply.image.isSystem = system;
-                    this.updateState("images", reply.image.id + system.toString(), reply.image);
+                    const immage = reply[id];
+                    immage.isSystem = system;
+                    this.updateState("images", id + system.toString(), immage);
                 })
                 .catch(ex => {
                     console.warn("Failed to do Update Image:", JSON.stringify(ex));
@@ -218,11 +223,11 @@ class Application extends React.Component {
     }
 
     handleImageEvent(event, system) {
-        switch (event.status) {
+        switch (event.Action) {
         case 'push':
         case 'save':
         case 'tag':
-            this.updateImageAfterEvent(event.id, system);
+            this.updateImageAfterEvent(event.Actor.ID, system);
             break;
         case 'pull': // Pull event has not event.id
         case 'untag':
@@ -231,12 +236,12 @@ class Application extends React.Component {
             this.updateImagesAfterEvent(system);
             break;
         default:
-            console.warn('Unhandled event type ', event.type, event.status);
+            console.warn('Unhandled event type ', event.Type, event.Action);
         }
     }
 
     handleContainerEvent(event, system) {
-        switch (event.status) {
+        switch (event.Action) {
         /* The following events do not need to trigger any state updates */
         case 'attach':
         case 'exec':
@@ -263,7 +268,7 @@ class Application extends React.Component {
         case 'sync':
         case 'unmount':
         case 'unpause':
-            this.updateContainerAfterEvent(event.id, system);
+            this.updateContainerAfterEvent(event.Actor.ID, system);
             break;
         case 'remove':
         case 'cleanup':
@@ -274,12 +279,12 @@ class Application extends React.Component {
             this.updateImagesAfterEvent(system);
             break;
         default:
-            console.warn('Unhandled event type ', event.type, event.status);
+            console.warn('Unhandled event type ', event.Type, event.Action);
         }
     }
 
     handleEvent(event, system) {
-        switch (event.type) {
+        switch (event.Type) {
         case 'container':
             this.handleContainerEvent(event, system);
             break;
@@ -287,34 +292,40 @@ class Application extends React.Component {
             this.handleImageEvent(event, system);
             break;
         default:
-            console.warn('Unhandled event type ', event.type);
+            console.warn('Unhandled event type ', event.Type);
         }
     }
 
     init(system) {
-        utils.podmanCall("GetVersion", {}, system)
+        client.getInfo(system)
                 .then(reply => {
-                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.version });
+                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.ServerVersion });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system);
-                    utils.monitor("GetEvents", {},
-                                  message => {
-                                      message.parameters && message.parameters.events && this.handleEvent(message.parameters.events, system);
-                                  }, isSystem => {
-                                      this.setState({ [isSystem ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-                                  },
-                                  system
-                    );
+                    client.streamEvents(system,
+                                        message => this.handleEvent(message, system))
+                            .then(() => {
+                                this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                            })
+                            .catch(e => {
+                                console.log(e);
+                                this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                            });
+
+                    // Listen if podman is still running
+                    const ch = cockpit.channel({ superuser: system ? "require" : null, payload: "stream", unix: client.getAddress(system) });
+                    ch.addEventListener("close", () => {
+                        this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                    });
+
+                    ch.send("GET /v1.24/libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
                 })
-                .catch(error => {
-                    if (error.name === "ConnectionClosed") {
-                        this.setState({
-                            [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
-                            [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
-                            [system ? "systemImagesLoaded" : "userImagesLoaded"]: true
-                        });
-                    } else
-                        console.error("Failed to call GetVersion():", error);
+                .catch(() => {
+                    this.setState({
+                        [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
+                        [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
+                        [system ? "systemImagesLoaded" : "userImagesLoaded"]: true
+                    });
                 });
     }
 
@@ -330,7 +341,7 @@ class Application extends React.Component {
     }
 
     checkUserService() {
-        const argv = ["systemctl", "--user", "is-enabled", "io.podman.socket"];
+        const argv = ["systemctl", "--user", "is-enabled", "podman.socket"];
 
         cockpit.spawn(argv, { environ: ["LC_ALL=C"], err: "out" })
                 .then(() => this.setState({ userServiceExists: true }))
@@ -348,9 +359,9 @@ class Application extends React.Component {
 
         let argv;
         if (this.state.enableService)
-            argv = ["systemctl", "enable", "--now", "io.podman.socket"];
+            argv = ["systemctl", "enable", "--now", "podman.socket"];
         else
-            argv = ["systemctl", "start", "io.podman.socket"];
+            argv = ["systemctl", "start", "podman.socket"];
 
         cockpit.spawn(argv, { superuser: "require", err: "message" })
                 .then(() => this.init(true))
@@ -360,13 +371,13 @@ class Application extends React.Component {
                         systemContainersLoaded: true,
                         systemImagesLoaded: true
                     });
-                    console.warn("Failed to start system io.podman.socket:", JSON.stringify(err));
+                    console.warn("Failed to start system podman.socket:", JSON.stringify(err));
                 });
 
         if (this.state.enableService)
-            argv = ["systemctl", "--user", "enable", "--now", "io.podman.socket"];
+            argv = ["systemctl", "--user", "enable", "--now", "podman.socket"];
         else
-            argv = ["systemctl", "--user", "start", "io.podman.socket"];
+            argv = ["systemctl", "--user", "start", "podman.socket"];
 
         cockpit.spawn(argv, { err: "message" })
                 .then(() => this.init(false))
@@ -376,7 +387,7 @@ class Application extends React.Component {
                         userContainersLoaded: true,
                         userImagesLoaded: true
                     });
-                    console.warn("Failed to start user io.podman.socket:", JSON.stringify(err));
+                    console.warn("Failed to start user podman.socket:", JSON.stringify(err));
                 });
     }
 
@@ -387,11 +398,11 @@ class Application extends React.Component {
     goToServicePage(e) {
         if (!e || e.button !== 0)
             return;
-        cockpit.jump("/system/services#/io.podman.socket");
+        cockpit.jump("/system/services#/podman.socket");
     }
 
     render() {
-        if (this.state.systemServiceAvailable === null || this.state.userServiceAvailable === null) // not detected yet
+        if (this.state.systemServiceAvailable === null && this.state.userServiceAvailable === null) // not detected yet
             return null;
 
         if (!this.state.systemServiceAvailable && !this.state.userServiceAvailable) {
@@ -425,16 +436,16 @@ class Application extends React.Component {
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
                 const container = this.state.containers[c];
-                const image = container.imageid + container.isSystem.toString();
+                const image = container.ImageID + container.isSystem.toString();
                 if (imageContainerList[image]) {
                     imageContainerList[image].push({
                         container: container,
-                        stats: this.state.containersStats[container.id + container.isSystem.toString()],
+                        stats: this.state.containersStats[container.Id + container.isSystem.toString()],
                     });
                 } else {
                     imageContainerList[image] = [{
                         container: container,
-                        stats: this.state.containersStats[container.id + container.isSystem.toString()]
+                        stats: this.state.containersStats[container.Id + container.isSystem.toString()]
                     }];
                 }
             });

@@ -45,7 +45,7 @@ class TestApplication(testlib.MachineCase):
         self.addCleanup(self.machine.execute, "podman rm --force --all && "
             "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
 
-        self.machine.execute("systemctl stop io.podman.service; systemctl --now enable io.podman.socket")
+        self.machine.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
 
         # Create admin session
         self.machine.execute("""
@@ -60,11 +60,11 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=self.machine.identity_file)
 
         # Enable user service as well
-        self.admin_s.execute("systemctl --user stop io.podman.service; systemctl --now --user enable io.podman.socket")
         self.restore_dir("/home/admin/.local/share/containers")
+        self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
         self.addCleanup(self.admin_s.execute, "podman rm --force --all")
 
-        self.allow_journal_messages("/run.*/podman/io.podman: couldn't connect.*")
+        self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
 
     def execute(self, system, cmd):
         if system:
@@ -84,7 +84,7 @@ class TestApplication(testlib.MachineCase):
 
         if not auth:
             self.allow_authorize_journal_messages()
-            self.allow_browser_errors("Failed to start system io.podman.socket.*")
+            self.allow_browser_errors("Failed to start system podman.socket.*")
 
         self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_present("#app")
@@ -117,7 +117,7 @@ class TestApplication(testlib.MachineCase):
         for image in self.execute(auth, "podman images --noheading --no-trunc").strip().split("\n"):
             # <name> <tag> sha256:<sha> <other things>
             items = image.split()
-            images["{0}:{1}".format(items[0], items[1])] = items[2].split(":")[1]
+            images["{0}:{1}".format(items[0], items[1])] = items[2].split(":")[-1]
 
         # show image listing toggle
         busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/busybox:latest"], auth).lower()
@@ -286,10 +286,10 @@ class TestApplication(testlib.MachineCase):
         b.click(".modal-dialog div .pf-c-alert .pf-c-button")
         b.wait_not_present(".modal-dialog div .alert")
 
-        # check varlink error
+        # check error
         b.set_input_text("#commit-dialog-image-name", "TEST")
         b.click(".modal-dialog div .btn-ctr-commit")
-        b.wait_present('.modal-dialog div:contains("io.podman.ErrorOccurred")')
+        b.wait_present('.modal-dialog div:contains("Failed to commit container")')
         b.click(".modal-dialog div .pf-c-alert .pf-c-button")
         b.wait_not_present(".modal-dialog div .alert")
         b.wait_present(".modal-dialog div .btn-ctr-commit:not([disabled])")
@@ -337,13 +337,12 @@ class TestApplication(testlib.MachineCase):
         def prepare():
             # Create and start registry container
             self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
-            # Add local insecure registry into resgitries conf
-            self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop io.podman.service".format(REGISTRIES_CONF))
+            # Add local insecure registry into registries conf
+            self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop podman.service".format(REGISTRIES_CONF))
             # Push busybox image to the local registry
             self.execute(True, "podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
             self.execute(True, "podman rmi -f busybox")
-            self.execute(False, "podman rmi -f busybox")
 
         class DownloadImageDialog:
             def __init__(self, imageName, imageTag=None, user="system"):
@@ -361,9 +360,10 @@ class TestApplication(testlib.MachineCase):
                 return self
 
             def fillDialog(self):
-                # Search for image specied with self.imageName and self.imageTag
+                # Search for image specified with self.imageName and self.imageTag
                 b.click("#{0}".format(self.user))
-                b.set_input_text("#search-image-dialog-name", self.imageName)
+                # HACK: Sometimes the value is not shown fully. FIXME
+                b.set_input_text("#search-image-dialog-name", self.imageName, value_check=False)
                 if self.imageTag:
                     b.set_input_text(".image-tag-entry", self.imageTag)
 
@@ -401,7 +401,7 @@ class TestApplication(testlib.MachineCase):
 
                 return self
 
-            def deleteImage(self):
+            def deleteImage(self, force=False):
                 if self.imageTag:
                     imageTagSuffix =  ":" + self.imageTag
                 else:
@@ -419,7 +419,11 @@ class TestApplication(testlib.MachineCase):
                 b.click(sel +' + tr button.btn-delete')
 
                 # Confirm deletion in the delete dialog
-                b.click(".modal-dialog div #btn-img-delete")
+                b.click(".modal-dialog #btn-img-delete")
+
+                if force:
+                    # Confirm force delete
+                    b.click(".modal-dialog #btn-img-deleteerror")
 
                 b.wait_not_present(sel)
 
@@ -427,7 +431,7 @@ class TestApplication(testlib.MachineCase):
 
         prepare()
 
-        self.login_and_go("/podman")
+        self.login_and_go("/podman", authorized=True, superuser=True)
         b.wait_present("#app")
 
         dialog0 = DownloadImageDialog('my-busybox', user="system")
@@ -441,7 +445,7 @@ class TestApplication(testlib.MachineCase):
               .fillDialog() \
               .selectImageAndDownload() \
               .expectDownloadSuccess()
-        dialog1.deleteImage()
+        dialog1.deleteImage(True)
 
         dialog0.deleteImage()
 
@@ -475,15 +479,15 @@ class TestApplication(testlib.MachineCase):
 
         if not auth:
             self.allow_authorize_journal_messages()
-            self.allow_browser_errors("Failed to start system io.podman.socket.*")
-
-        # run a container
-        self.execute(auth, "podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
-        b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
+            self.allow_browser_errors("Failed to start system podman.socket.*")
 
         self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_present("#app")
         self.filter_containers('all')
+
+        # run a container
+        self.execute(auth, "podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
+        b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         b.wait_present("#containers-containers")
         b.wait_present('#containers-containers tr:contains("swamped-crate")')
@@ -543,30 +547,30 @@ class TestApplication(testlib.MachineCase):
         m = self.machine
 
         def disable_system():
-            self.execute(True, "systemctl disable --now io.podman.socket")
+            self.execute(True, "systemctl disable --now podman.socket")
             self.execute(True, "killall podman || true")
 
         def enable_system():
-            self.execute(True, "systemctl enable --now io.podman.socket")
+            self.execute(True, "systemctl enable --now podman.socket")
 
         def enable_user():
-            self.execute(False, "systemctl --user enable --now io.podman.socket")
+            self.execute(False, "systemctl --user enable --now podman.socket")
 
         def disable_user():
-            self.execute(False, "systemctl --user disable --now io.podman.socket")
+            self.execute(False, "systemctl --user disable --now podman.socket")
             self.execute(False, "killall podman || true")
 
         def is_active_system(string):
-            b.wait(lambda: self.execute(True, "systemctl is-active io.podman.socket || true").strip() == string)
+            b.wait(lambda: self.execute(True, "systemctl is-active podman.socket || true").strip() == string)
 
         def is_enabled_system(string):
-            b.wait(lambda: self.execute(True, "systemctl is-enabled io.podman.socket || true").strip() == string)
+            b.wait(lambda: self.execute(True, "systemctl is-enabled podman.socket || true").strip() == string)
 
         def is_active_user(string):
-            b.wait(lambda: self.execute(False, "systemctl --user is-active io.podman.socket || true").strip() == string)
+            b.wait(lambda: self.execute(False, "systemctl --user is-active podman.socket || true").strip() == string)
 
         def is_enabled_user(string):
-            b.wait(lambda: self.execute(False, "systemctl --user is-enabled io.podman.socket || true").strip() == string)
+            b.wait(lambda: self.execute(False, "systemctl --user is-enabled podman.socket || true").strip() == string)
 
         disable_system()
         disable_user()
@@ -575,7 +579,7 @@ class TestApplication(testlib.MachineCase):
         # Troubleshoot action
         b.click("#app .pf-c-empty-state button.pf-m-link")
         b.enter_page("/system/services")
-        b.wait_in_text("#service-details", "io.podman.socket")
+        b.wait_in_text("#service-details", "podman.socket")
 
         # Start action, with enabling (by default)
         b.go("/podman")
@@ -632,8 +636,17 @@ class TestApplication(testlib.MachineCase):
         self.login_and_go("/podman", authorized=False, superuser=False)
         b.click("#app .pf-c-empty-state button.pf-m-primary")
 
-        b.wait_present("#containers-containers")
-        b.wait_not_present("#overview div.pf-c-alert")
+        # HACK: https://github.com/containers/libpod/issues/6660
+        # Try to click on the button bunch of times due to the aforementioned bug
+        with b.wait_timeout(8):
+            for _ in range(5):
+                try:
+                    b.wait_present("#containers-containers")
+                    b.wait_not_present("#overview div.pf-c-alert")
+                    break
+                except testlib.Error:
+                    b.click("#app .pf-c-empty-state button.pf-m-primary")
+
         is_active_system("inactive")
         is_active_user("active")
         is_enabled_user("enabled")
@@ -641,6 +654,7 @@ class TestApplication(testlib.MachineCase):
 
         self.allow_restart_journal_messages()
         self.allow_authorize_journal_messages()
+        self.allow_journal_messages(".*podman/podman.sock/.*: couldn't connect:.*")
 
     def testRunImageSystem(self):
         self._testRunImage(True)
@@ -653,11 +667,12 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
+        self.login_and_go("/podman", authorized=auth, superuser=auth)
+
         if auth:
             # Just drop user containers so we can user simpler selectors
             self.execute(False, "podman rmi alpine busybox registry:2")
 
-        self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_in_text("#containers-images", "busybox:latest")
         b.wait_in_text("#containers-images", "alpine:latest")
 
@@ -712,7 +727,7 @@ class TestApplication(testlib.MachineCase):
         b.click('.publish-port-form[data-key="0"] .btn-add')
         b.set_input_text('.publish-port-form[data-key="1"] input:first-child', '5001')
         b.set_input_text('.publish-port-form[data-key="1"] input:nth-child(2)', '6001')
-        b.set_val('.publish-port-form[data-key="1"] select', "UDP")
+        b.set_val('.publish-port-form[data-key="1"] select', "udp")
         b.click('.publish-port-form[data-key="1"] .btn-add')
         b.set_input_text('.publish-port-form[data-key="2"] input:first-child', '7001')
         b.set_input_text('.publish-port-form[data-key="2"] input:nth-child(2)', '7001')
@@ -890,7 +905,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers thead tr td:contains("No containers that match the current filter")')
         b.wait_present('#containers-images thead tr td:contains("No images that match the current filter")')
         b.set_input_text('#containers-filter', '')
-        self.execute(auth, "podman rmi -f $(podman images -q)")
+        self.execute(auth, "podman rmi -af")
         b.wait_present('#containers-containers thead tr td:contains("No containers")')
         b.set_val("#containers-containers-filter", "running")
         b.wait_present('#containers-containers thead tr td:contains("No running containers")')

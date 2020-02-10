@@ -8,6 +8,7 @@ import * as Select from '../lib/cockpit-components-select.jsx';
 import { ErrorNotification } from './Notification.jsx';
 import { FileAutoComplete } from '../lib/cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
+import * as client from './client.js';
 import cockpit from 'cockpit';
 
 import '../lib/form-layout.less';
@@ -53,10 +54,10 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                 <Select.Select className='form-control'
                                initial={item.protocol}
                                onChange={value => onChange(idx, 'protocol', value)}>
-                    <Select.SelectEntry data='TCP' key='TCP'>
+                    <Select.SelectEntry data='tcp' key='tcp'>
                         {_("TCP")}
                     </Select.SelectEntry>
-                    <Select.SelectEntry data='UDP' key='UDP'>
+                    <Select.SelectEntry data='udp' key='udp'>
                         {_("UDP")}
                     </Select.SelectEntry>
                 </Select.Select>
@@ -214,7 +215,7 @@ export class ImageRunModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            command: this.props.image.command ? utils.quote_cmdline(this.props.image.command) : "sh",
+            command: this.props.image.Command ? utils.quote_cmdline(this.props.image.Command) : "sh",
             containerName: dockerNames.getRandomName(),
             env: [],
             hasTTY: true,
@@ -236,35 +237,40 @@ export class ImageRunModal extends React.Component {
     getCreateConfig() {
         const createConfig = {};
 
-        createConfig.args = this.state.image.repoTags ? [this.state.image.repoTags[0]] : [""];
+        createConfig.image = this.state.image.RepoTags ? this.state.image.RepoTags[0] : "";
         if (this.state.containerName)
             createConfig.name = this.state.containerName;
         if (this.state.command) {
-            createConfig.args = createConfig.args.concat(utils.unquote_cmdline(this.state.command));
+            createConfig.command = utils.unquote_cmdline(this.state.command);
         }
+        const resourceLimit = {};
         if (this.state.memoryConfigure && this.state.memory) {
             const memorySize = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
-            createConfig.memory = memorySize.toString();
+            resourceLimit.memory = { limit: memorySize };
+            createConfig.resource_limits = resourceLimit;
         }
         if (this.state.cpuSharesConfigure && this.state.cpuShares !== "") {
-            createConfig.cpuShares = this.state.cpuShares;
+            resourceLimit.cpu = { shares: this.state.cpuShares };
+            createConfig.resource_limits = resourceLimit;
         }
-        if (this.state.hasTTY)
-            createConfig.tty = true;
+        createConfig.terminal = this.state.hasTTY;
         if (this.state.publish.length > 0)
-            createConfig.publish = this.state.publish
+            createConfig.portmappings = this.state.publish
                     .filter(port => port.hostPort && port.containerPort)
-                    .map(port => port.hostPort + ':' + port.containerPort + '/' + port.protocol);
+                    .map(port => { return { host_port: parseInt(port.hostPort), container_port: parseInt(port.containerPort), protocol: port.protocol } });
         if (this.state.env.length > 0) {
-            createConfig.env = this.state.env.map(item => item.envKey + "=" + item.envValue);
+            const ports = {};
+            this.state.env.forEach(item => { ports[item.envKey] = item.envValue });
+            createConfig.env = ports;
         }
         if (this.state.volumes.length > 0) {
-            createConfig.volume = this.state.volumes
+            createConfig.mounts = this.state.volumes
                     .filter(volume => volume.hostPath && volume.containerPath)
                     .map(volume => {
+                        const record = { source: volume.hostPath, destination: volume.containerPath, type: "bind" };
                         if (volume.mode)
-                            return volume.hostPath + ':' + volume.containerPath + ':' + volume.mode;
-                        return volume.hostPath + ':' + volume.containerPath;
+                            record.options = [volume.mode];
+                        return record;
                     });
         }
 
@@ -274,13 +280,21 @@ export class ImageRunModal extends React.Component {
     onRunClicked() {
         const createConfig = this.getCreateConfig();
 
-        utils.podmanCall("CreateContainer", { create: createConfig }, this.state.image.isSystem)
-                .then(reply => utils.podmanCall("StartContainer", { name: reply.container }, this.state.image.isSystem))
-                .then(() => this.props.close())
+        client.createContainer(this.state.image.isSystem, createConfig)
+                .then(reply => {
+                    client.postContainer(this.state.image.isSystem, "start", reply.Id, {})
+                            .then(() => this.props.close())
+                            .catch(ex => {
+                                this.setState({
+                                    dialogError: _("Container failed to be started"),
+                                    dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
+                                });
+                            });
+                })
                 .catch(ex => {
                     this.setState({
                         dialogError: _("Container failed to be created"),
-                        dialogErrorDetail: cockpit.format("$0: $1", ex.error, ex.parameters && ex.parameters.reason)
+                        dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
                     });
                 });
     }
@@ -298,7 +312,7 @@ export class ImageRunModal extends React.Component {
                 <label className='control-label' htmlFor='run-image-dialog-image'>
                     {_("Image")}
                 </label>
-                <div id='run-image-dialog-image'> { image.repoTags ? image.repoTags[0] : "" } </div>
+                <div id='run-image-dialog-image'> { image.RepoTags ? image.RepoTags[0] : "" } </div>
 
                 <label className='control-label' htmlFor='run-image-dialog-name'>
                     {_("Name")}
@@ -387,7 +401,7 @@ export class ImageRunModal extends React.Component {
                 <DynamicListForm id='run-image-dialog-publish'
                                  formclass='publish-port-form'
                                  onChange={value => this.onValueChanged('publish', value)}
-                                 default={{ containerPort: null, hostPort: null, protocol: 'TCP' }}
+                                 default={{ containerPort: null, hostPort: null, protocol: 'tcp' }}
                                  itemcomponent={ <PublishPort />} />
 
                 <hr />
