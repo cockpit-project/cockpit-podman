@@ -20,8 +20,10 @@ cat ~/.fedora-password | kinit cockpit@FEDORAPROJECT.ORG
 job release-koji master
 job release-koji f30
 job release-koji f31
+job release-koji f32
 job release-bodhi F30
 job release-bodhi F31
+job release-bodhi F32
 
 # These are likely the first of your release targets; but run them after Fedora uploads,
 # so that failures there will fail the release early, before publishing on GitHub
