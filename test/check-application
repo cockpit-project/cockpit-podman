@@ -827,7 +827,8 @@ class TestApplication(testlib.MachineCase):
         # Rootless only works with CGroupsV2
         if auth or m.image not in ["rhel-8-2"]:
             cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish").strip()
-            self.assertEqual(cpuShares, '0')
+            # podman ≥ 1.8 translates 0 default into actual value
+            self.assertIn(cpuShares, ['0', '1024'])
 
         b.set_val("#containers-containers-filter", "all")
 
