@@ -494,7 +494,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)") != "")
         cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)")
         memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(6)")
-        if auth or m.image not in ["fedora-30", "rhel-8-2"]:
+        if auth or m.image not in ["rhel-8-2"]:
             self.assertIn('%', cpu)
             num = cpu[:-1]
             self.assertTrue(num.replace('.', '', 1).isdigit())
@@ -678,7 +678,7 @@ class TestApplication(testlib.MachineCase):
 
         # Check memory configuration
         # Only works with CGroupsV2
-        if auth or m.image not in ["fedora-30", "rhel-8-2"]:
+        if auth or m.image not in ["rhel-8-2"]:
             b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
             b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
             b.wait_present('div.modal-body label:contains("Memory Limit") + div.form-inline > input[value="512"]')
@@ -753,7 +753,7 @@ class TestApplication(testlib.MachineCase):
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
-        if auth or m.image not in ["fedora-30", "rhel-8-2"]:
+        if auth or m.image not in ["rhel-8-2"]:
             memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
             self.assertEqual(memory, '536870912')
 
@@ -824,8 +824,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
         b.wait_text('#containers-containers tr:contains("busybox-without-publish") + tr dt:contains("Ports") + dd', "")
 
-        # Only works with CGroupsV2
-        if auth or m.image not in ["fedora-30"]:
+        # Rootless only works with CGroupsV2
+        if auth or m.image not in ["rhel-8-2"]:
             cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish").strip()
             self.assertEqual(cpuShares, '0')
 
