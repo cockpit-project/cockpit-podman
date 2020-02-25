@@ -99,11 +99,15 @@ class TestApplication(testlib.MachineCase):
         checkImage(b, "docker.io/library/registry:2", "admin")
 
         # Check order of images
-        common = "docker.io/library/alpine:latestdocker.io/library/busybox:latestdocker.io/library/registry:2"
-        ordered = common
+        text = b.text("#containers-images table")
         if auth:
-            ordered += ordered
-        b.wait_collected_text("#containers-images table > tbody th:nth-child(2)", ordered)
+            # all user images before all system images
+            self.assertRegex(text, ".*admin.*system.*")
+            self.assertNotRegex(text, ".*system.*admin.*")
+        else:
+            self.assertNotIn("system", text)
+        # images are sorted alphabetically
+        self.assertRegex(text, ".*alpine.*busybox.*registry:2.*")
 
         # prepare image ids - much easier to pick a specific container
         images = {}
@@ -231,28 +235,27 @@ class TestApplication(testlib.MachineCase):
             b.wait_present('#containers-images tr:contains("{0}:{1}")'.format(image_name, image_tag))
             checkImage(b, "localhost/{0}:{1}".format(image_name, image_tag), owner)
             # open the listing toggle of testimg and check the commit paramerters
-            b.click('#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag))
+            toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag)
+            b.click(toggle_sel)
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
             if m.image == "rhel-8-2": # podman < 1.7 quotes command
                 image_command = image_command.replace(r'\"', r'\\\"')
                 image_command = image_command.replace(r' "', r' \"')
             b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") dd:nth-child(8)'.format(image_name, image_tag), image_command)
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_author))
+            # close listing toggle again
+            b.click(toggle_sel)
 
         # run a container (will exit immediately) and test the display of commit modal
         if auth:
             self.execute(True, "podman run -d --name test-sh alpine sh")
             container_commit("test-sh")
-            ordered = common + common + "localhost/testimg:testtag"
-            b.wait_collected_text("#containers-images table > tbody th:nth-child(2)", ordered)
+            checkImage(b, "localhost/testimg:testtag", "system")
             self.execute(True, "podman rm -f test-sh; podman rmi testimg:testtag")
 
         self.execute(False, "podman run -d --name test-sh alpine sh")
         container_commit("test-sh", owner="admin")
-        ordered = common + "localhost/testimg:testtag"
-        if auth:
-            ordered += common
-        b.wait_collected_text("#containers-images table > tbody th:nth-child(2)", ordered)
+        checkImage(b, "localhost/testimg:testtag", "admin")
         self.execute(False, "podman rm -f test-sh; podman rmi testimg:testtag")
 
         # test commit of a running container

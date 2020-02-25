@@ -17,10 +17,6 @@ if type firewall-cmd >/dev/null 2>&1; then
     firewall-cmd --add-service=cockpit --permanent
 fi
 
-# clean up cockpit/base and fedora images from cockpit's fedora-* VMs
-podman images -aq cockpit/base | xargs --no-run-if-empty podman rmi
-podman images -aq fedora:* | xargs --no-run-if-empty podman rmi
-
 # grab a few images to play with; tests run offline, so they cannot download images
 podman pull busybox
 podman pull docker.io/alpine
