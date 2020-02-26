@@ -215,15 +215,12 @@ class Images extends React.Component {
         let filtered = [];
         if (this.props.images !== null) {
             filtered = Object.keys(this.props.images);
-            if (this.props.textFilter.length > 0)
-                filtered = filtered.filter(id => {
-                    for (let i = 0; i < this.props.images[id].repoTags.length; i++) {
-                        const tag = this.props.images[id].repoTags[i].toLowerCase();
-                        if (tag.indexOf(this.props.textFilter.toLowerCase()) >= 0)
-                            return true;
-                    }
-                    return false;
-                });
+            if (this.props.textFilter.length > 0) {
+                filtered = filtered.filter(id =>
+                    (this.props.images[id].repoTags || []).some(tag =>
+                        tag.toLowerCase().indexOf(this.props.textFilter.toLowerCase()) >= 0)
+                );
+            }
         }
 
         filtered.sort((a, b) => {
