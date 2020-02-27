@@ -3,10 +3,9 @@
 This is the [Cockpit](https://cockpit-project.org/) user interface for [podman
 containers](https://podman.io/).
 
-It does not have a lot of features yet, and is still far from feature parity
+It is being actively developed and has not yet reached feature parity
 with [cockpit-docker](https://cockpit-project.org/guide/latest/feature-docker.html).
-For now you can do basic image and container tasks for system containers (no
-support for user containers yet).
+For now you can do basic image and container tasks for both system and user containers.
 
 ## Technologies
 
