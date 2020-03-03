@@ -141,10 +141,7 @@ rpm: dist-gzip $(RPM_NAME).spec
 # build a VM with locally built rpm installed
 $(VM_IMAGE): rpm bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
-	# HACK: https://bugzilla.redhat.com/show_bug.cgi?id=1762663
-	if [ $(TEST_OS) = "fedora-31" ]; then bots/image-customize -v -r 'grub2-editenv - set "$$(grub2-editenv list | grep ^kernelopts) debug"' $(TEST_OS); fi
 	bots/image-customize -v -i cockpit-ws -i `pwd`/$(RPM_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
-	if [ $(TEST_OS) = "fedora-31" ]; then bots/image-customize -v -r 'grub2-editenv - set "$$(grub2-editenv list | grep ^kernelopts | sed "s/debug//")"' $(TEST_OS); fi
 
 # convenience target for the above
 vm: $(VM_IMAGE)
