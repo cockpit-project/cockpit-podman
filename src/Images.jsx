@@ -7,11 +7,9 @@ import ImageDetails from './ImageDetails.jsx';
 import ImageUsedBy from './ImageUsedBy.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
-import ImageSecurity from './ImageSecurity.jsx';
 import ModalExample from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
 import * as utils from './util.js';
-import atomic from './atomic.jsx';
 
 import './Images.css';
 
@@ -23,13 +21,11 @@ class Images extends React.Component {
         super(props);
         this.state = {
             imageDetail: undefined,
-            vulnerableInfos: {},
             selectImageDeleteModal: false,
             setImageRemoveErrorModal: false,
             imageWillDelete: {},
         };
 
-        this.vulnerableInfoChanged = this.vulnerableInfoChanged.bind(this);
         this.deleteImage = this.deleteImage.bind(this);
         this.downloadImage = this.downloadImage.bind(this);
         this.handleCancelImageDeleteModal = this.handleCancelImageDeleteModal.bind(this);
@@ -37,18 +33,6 @@ class Images extends React.Component {
         this.handleCancelImageRemoveError = this.handleCancelImageRemoveError.bind(this);
         this.handleForceRemoveImage = this.handleForceRemoveImage.bind(this);
         this.renderRow = this.renderRow.bind(this);
-    }
-
-    vulnerableInfoChanged(event, infos) {
-        this.setState({ vulnerableInfos: infos });
-    }
-
-    componentDidMount() {
-        atomic.addEventListener('vulnerableInfoChanged', this.vulnerableInfoChanged);
-    }
-
-    componentWillUnmount() {
-        atomic.removeEventListener('vulnerableInfoChanged', this.vulnerableInfoChanged);
     }
 
     deleteImage(image) {
@@ -112,22 +96,8 @@ class Images extends React.Component {
     }
 
     renderRow(image) {
-        let vulnerabilityColumn = '';
-        const vulnerableInfo = this.state.vulnerableInfos[image.id.replace(/^sha256:/, '')];
-        let count;
         const tabs = [];
 
-        if (vulnerableInfo) {
-            count = vulnerableInfo.vulnerabilities.length;
-            if (count > 0)
-                vulnerabilityColumn = (
-                    <div>
-                        <span className="pficon pficon-warning-triangle-o" />
-                        &nbsp;
-                        { cockpit.format(cockpit.ngettext('1 Vulnerability', '$0 Vulnerabilities', count), count) }
-                    </div>
-                );
-        }
         // TODO: image waiting if - else
         const runImage = (
             <Button key={image.id + "create"}
@@ -140,7 +110,6 @@ class Images extends React.Component {
         );
         const columns = [
             { name: image.repoTags ? image.repoTags[0] : "", header: true },
-            vulnerabilityColumn,
             moment(image.created, utils.GOLANG_TIME_FORMAT).calendar(),
             cockpit.format_bytes(image.size),
             image.isSystem ? _("system") : this.props.user,
@@ -155,16 +124,6 @@ class Images extends React.Component {
             renderer: ImageDetails,
             data: { image: image }
         });
-        if (vulnerableInfo !== undefined) {
-            tabs.push({
-                name: _("Security"),
-                renderer: ImageSecurity,
-                data: {
-                    image: image,
-                    info: vulnerableInfo,
-                }
-            });
-        }
         tabs.push({
             name: _("Used By"),
             renderer: ImageUsedBy,
@@ -198,7 +157,7 @@ class Images extends React.Component {
     }
 
     render() {
-        const columnTitles = [_("Name"), '', _("Created"), _("Size"), _("Owner"), ''];
+        const columnTitles = [_("Name"), _("Created"), _("Size"), _("Owner"), ''];
         let emptyCaption = _("No images");
         if (this.props.images === null)
             emptyCaption = "Loading...";
