@@ -18,12 +18,12 @@ if type firewall-cmd >/dev/null 2>&1; then
 fi
 
 # grab a few images to play with; tests run offline, so they cannot download images
-podman pull busybox
+podman pull docker.io/busybox
 podman pull docker.io/alpine
 podman pull docker.io/registry:2
 
 sudo -i -u admin bash << EOF
-podman pull busybox
+podman pull docker.io/busybox
 podman pull docker.io/alpine
 podman pull docker.io/registry:2
 EOF
