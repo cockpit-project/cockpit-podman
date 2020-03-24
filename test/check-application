@@ -837,7 +837,7 @@ class TestApplication(testlib.MachineCase):
 
         b.click("a:contains('Console')")
         b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.focus('.terminal')
+        b.focus(".xterm-helper-textarea")
         b.key_press('echo hello\r')
         b.wait_text(".xterm-accessibility-tree > div:nth-child(2)", "hello")
         b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ # ")
