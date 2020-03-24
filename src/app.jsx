@@ -22,6 +22,7 @@ import { ToastNotificationList } from 'patternfly-react';
 import { Alert, AlertActionLink, AlertActionCloseButton } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
+import moment from "moment";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
@@ -29,6 +30,8 @@ import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 const permission = cockpit.permission({ admin: true });
+
+moment.locale(cockpit.language);
 
 class Application extends React.Component {
     constructor(props) {
