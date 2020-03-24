@@ -72,7 +72,7 @@ class ContainerLogs extends React.Component {
 
     resize(width) {
         var padding = 11 + 5 + 50;
-        var realWidth = this.state.view._core._renderCoordinator.dimensions.actualCellWidth;
+        var realWidth = this.state.view._core._renderService.dimensions.actualCellWidth;
         var cols = Math.floor((width - padding) / realWidth);
         this.state.view.resize(cols, 24);
     }
@@ -81,7 +81,7 @@ class ContainerLogs extends React.Component {
         this._ismounted = false;
         if (this.state.streamer)
             this.state.streamer.close();
-        this.state.view.destroy();
+        this.state.view.dispose();
     }
 
     connectStream() {

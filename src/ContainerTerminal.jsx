@@ -73,7 +73,7 @@ class ContainerTerminal extends React.Component {
 
     resize(width) {
         var padding = 11 + 5 + 50;
-        var realWidth = this.state.term._core._renderCoordinator.dimensions.actualCellWidth;
+        var realWidth = this.state.term._core._renderService.dimensions.actualCellWidth;
         var cols = Math.floor((width - padding) / realWidth);
         this.state.term.resize(cols, 24);
         cockpit.spawn(["sh", "-c", "echo '1 24 " + cols.toString() + "'>" + this.state.control_channel], { superuser: this.props.system ? "require" : null });
@@ -108,7 +108,7 @@ class ContainerTerminal extends React.Component {
                                     this.state.term.open(this.refs.terminal);
                                     this.setState({ opened: true });
 
-                                    self.state.term.on('data', function(data) {
+                                    self.state.term.onData(function(data) {
                                         if (self.state.channel)
                                             self.state.channel.send(data);
                                     });
@@ -135,7 +135,7 @@ class ContainerTerminal extends React.Component {
         this.disconnectChannel();
         if (this.state.channel)
             this.state.channel.close();
-        this.state.term.destroy();
+        this.state.term.dispose();
     }
 
     onChannelMessage(event, data) {
