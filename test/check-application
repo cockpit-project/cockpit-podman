@@ -34,13 +34,18 @@ def checkImage(browser, name, owner):
         return false;
         })""", name, owner)
 
+@testlib.nondestructive
 class TestApplication(testlib.MachineCase):
 
     def setUp(self):
-        # backup/restore pristine podman state, so that tests can run on existing testbeds
-        # HACK: sometimes podman leaks mounts
         super().setUp()
-        self.machine.execute("cp -a /var/lib/containers /var/lib/containers.orig")
+        # backup/restore pristine podman state, so that tests can run on existing testbeds
+        self.restore_dir("/var/lib/containers")
+        # HACK: sometimes podman leaks mounts
+        self.addCleanup(self.machine.execute, "podman rm --force --all && "
+            "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
+
+        self.machine.execute("systemctl stop io.podman.service; systemctl --now enable io.podman.socket")
 
         # Create admin session
         self.machine.execute("""
@@ -55,13 +60,11 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=self.machine.identity_file)
 
         # Enable user service as well
-        self.admin_s.execute("systemctl --now --user enable io.podman.socket")
+        self.admin_s.execute("systemctl --user stop io.podman.service; systemctl --now --user enable io.podman.socket")
+        self.restore_dir("/home/admin/.local/share/containers")
+        self.addCleanup(self.admin_s.execute, "podman rm --force --all")
 
         self.allow_journal_messages("/run.*/podman/io.podman: couldn't connect.*")
-        self.addCleanup(self.machine.execute, "podman rm --force --all && "
-            "findmnt --list -otarget | grep /var/lib/containers | xargs -r umount && "
-            "rm -r /var/lib/containers && "
-            "mv /var/lib/containers.orig /var/lib/containers")
 
     def execute(self, system, cmd):
         if system:
