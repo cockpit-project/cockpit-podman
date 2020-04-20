@@ -7,7 +7,7 @@ import * as Listing from '../lib/cockpit-components-listing.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
-import Dropdown from './Dropdown.jsx';
+import { DropDown } from './Dropdown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
@@ -162,11 +162,11 @@ class Containers extends React.Component {
 
             restartActions.push({ label: _("Restart"), onActivate: () => this.restartContainer(container) });
             restartActions.push({ label: _("Force Restart"), onActivate: () => this.restartContainer(container, true) });
-            actions.push(<Dropdown key={_(container.ID) + "restart"} actions={restartActions} />);
+            actions.push(<DropDown key={_(container.ID) + "restart"} actions={restartActions} />);
 
             stopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container) });
             stopActions.push({ label: _("Force Stop"), onActivate: () => this.stopContainer(container, true) });
-            actions.push(<Dropdown key={_(container.ID) + "stop"} actions={stopActions} />);
+            actions.push(<DropDown key={_(container.ID) + "stop"} actions={stopActions} />);
         }
 
         return (

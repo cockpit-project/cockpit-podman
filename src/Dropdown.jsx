@@ -1,29 +1,42 @@
-import React from 'react';
-import { DropdownButton, MenuItem } from 'patternfly-react';
+import React, { useState } from 'react';
+import {
+    Dropdown,
+    DropdownToggle,
+    DropdownToggleAction,
+    DropdownItem,
+} from '@patternfly/react-core';
 
-const DropDown = (props) => {
-    const actions = props.actions;
-    const buttonsHtml = actions
-            .map((button, index) => {
+export const DropDown = ({ actions }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownItems = actions
+            .map(button => {
                 return (
-                    <MenuItem key={index} eventKey={index} onClick={button.onActivate}>
+                    <DropdownItem key={button.label} onClick={button.onActivate}>
                         {button.label}
-                    </MenuItem>
+                    </DropdownItem>
                 );
             });
 
     return (
-        <DropdownButton
-            variant="default"
-            title={actions[0].label}
-            id={actions[0].label + "-dropdown"}>
-            {buttonsHtml}
-        </DropdownButton>
+        <Dropdown
+            onSelect={() => setIsOpen(!isOpen)}
+            id={actions[0].label + "-dropdown"}
+            toggle={
+                <DropdownToggle
+                    splitButtonItems={[
+                        <DropdownToggleAction key="default-action" onClick={actions[0].onActivate}>
+                            {actions[0].label}
+                        </DropdownToggleAction>
+                    ]}
+                    splitButtonVariant="action"
+                    onToggle={open => setIsOpen(open)}
+                />
+            }
+            isOpen={isOpen}
+            dropdownItems={dropdownItems}
+        />
     );
 };
-
 DropDown.defaultProps = {
     actions: [{ label: '' }]
 };
-
-export default DropDown;

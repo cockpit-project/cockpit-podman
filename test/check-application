@@ -518,8 +518,8 @@ class TestApplication(testlib.MachineCase):
 
         # Restart the container
         old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate")
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart)')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Restart)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart) + button')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force Restart)')
         b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
 
         with b.wait_timeout(5):
@@ -530,8 +530,8 @@ class TestApplication(testlib.MachineCase):
 
         # Stop the container
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop)')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.dropdown-menu li a:contains(Force Stop)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop) + button')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force Stop)')
 
         self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh'])
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(7)') in ['stopped', 'exited'])
@@ -808,8 +808,8 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: get_int(b.text(".container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
 
         # HACK: Stop this container because of https://github.com/containers/libpod/issues/3454
-        b.click('#containers-containers tbody tr:contains("busybox-with-tty") + tr button:contains(Stop)')
-        b.click("div.dropdown.open ul li:nth-child(1) a")
+        b.click('#containers-containers tbody tr:contains("busybox-with-tty") + tr button:contains(Stop) + button')
+        b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
 
         # Create another instance without port publishing
         b.wait_present('#containers-images tr:contains("busybox:latest")')
@@ -845,16 +845,16 @@ class TestApplication(testlib.MachineCase):
         b.wait_text(".xterm-accessibility-tree > div:nth-child(2)", "hello")
         b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ # ")
         b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
-        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
-        b.click("div.dropdown.open ul li:nth-child(1) a")
+        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
+        b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
         b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'running'])
         b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop)')
-        b.click("div.dropdown.open ul li:nth-child(1) a")
+        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
+        b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
         b.click('#containers-containers tr:contains("busybox-without-publish")')
 
