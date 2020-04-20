@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, ListGroup, ListGroupItem, Modal } from 'patternfly-react';
+import { ListGroup, ListGroupItem, Modal } from 'patternfly-react';
+import { Button } from '@patternfly/react-core';
 
 import { ErrorNotification } from './Notification.jsx';
 import * as utils from './util.js';
@@ -181,10 +182,10 @@ export class ImageSearchModal extends React.Component {
                                placeholder={_("Tag")}
                                value={this.state.imageTag || ''}
                                onChange={e => this.onValueChanged('imageTag', e.target.value)} />
-                        <Button bsStyle='default' className='btn-cancel' onClick={ this.props.close }>
+                        <Button variant='secondary' className='btn-cancel' onClick={ this.props.close }>
                             {_("Cancel")}
                         </Button>
-                        <Button bsStyle='primary' disabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
+                        <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
                             {_("Download")}
                         </Button>
                     </div>

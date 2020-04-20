@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Modal } from 'patternfly-react';
+import { Modal } from 'patternfly-react';
+import { Button } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -17,7 +18,7 @@ const ContainerRemoveErrorModal = (props) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={props.handleCancelRemoveError}>{_("Cancel")}</Button>
-                    <Button bsStyle="danger" className="btn-ctr-forcedelete" onClick={props.handleForceRemoveContainer}>{_("Force Delete")}</Button>
+                    <Button variant="danger" className="btn-ctr-forcedelete" onClick={props.handleForceRemoveContainer}>{_("Force Delete")}</Button>
                 </Modal.Footer>
             </Modal>
         </div>
