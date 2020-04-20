@@ -17,8 +17,8 @@ const ContainerDeleteModal = (props) => {
                     {_("Deleting a container will erase all data in it.")}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={props.handleCancelContainerDeleteModal}>{_("Cancel")}</Button>
                     <Button variant="danger" className="btn-ctr-delete" onClick={props.handleRemoveContainer}>{_("Delete")}</Button>{' '}
+                    <Button variant="link" onClick={props.handleCancelContainerDeleteModal}>{_("Cancel")}</Button>
                 </Modal.Footer>
             </Modal>
         </div>
