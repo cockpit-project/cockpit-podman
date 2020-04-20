@@ -182,11 +182,11 @@ export class ImageSearchModal extends React.Component {
                                placeholder={_("Tag")}
                                value={this.state.imageTag || ''}
                                onChange={e => this.onValueChanged('imageTag', e.target.value)} />
-                        <Button variant='secondary' className='btn-cancel' onClick={ this.props.close }>
-                            {_("Cancel")}
-                        </Button>
                         <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
                             {_("Download")}
+                        </Button>
+                        <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                            {_("Cancel")}
                         </Button>
                     </div>
                 </Modal.Footer>

@@ -418,11 +418,11 @@ export class ImageRunModal extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <Button variant='secondary' className='btn-cancel' onClick={ this.props.close }>
-                        {_("Cancel")}
-                    </Button>
                     <Button variant='primary' onClick={this.onRunClicked}>
                         {_("Run")}
+                    </Button>
+                    <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                        {_("Cancel")}
                     </Button>
                 </Modal.Footer>
             </Modal>
