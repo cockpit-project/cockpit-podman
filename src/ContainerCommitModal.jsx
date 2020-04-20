@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, Button, FormGroup, FormControl } from 'patternfly-react';
+import { Modal, FormGroup, FormControl } from 'patternfly-react';
+import { Button } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 import * as utils from './util.js';
@@ -219,9 +220,9 @@ class ContainerCommitModal extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
-                    {this.state.commitInProgress && <div className="spinner spinner-sm pull-left" />}
                     <Button className="btn-ctr-cancel-commit" onClick={this.props.onHide}>{_("Cancel")}</Button>
-                    <Button bsStyle="primary" className="btn-ctr-commit" disabled={this.state.commitInProgress} onClick={this.handleCommit}>{_("Commit")}</Button>
+                    <Button variant="primary" className="btn-ctr-commit" isDisabled={this.state.commitInProgress} onClick={this.handleCommit}>{_("Commit")}</Button>
+                    {this.state.commitInProgress && <div className="spinner spinner-sm pull-right" />}
                 </Modal.Footer>
             </Modal>
         );

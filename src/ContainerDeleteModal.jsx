@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Modal } from 'patternfly-react';
+import { Modal } from 'patternfly-react';
+import { Button } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
@@ -17,7 +18,7 @@ const ContainerDeleteModal = (props) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={props.handleCancelContainerDeleteModal}>Cancel</Button>
-                    <Button bsStyle="danger" className="btn-ctr-delete" onClick={props.handleRemoveContainer}>{_("Delete")}</Button>{' '}
+                    <Button variant="danger" className="btn-ctr-delete" onClick={props.handleRemoveContainer}>{_("Delete")}</Button>{' '}
                 </Modal.Footer>
             </Modal>
         </div>

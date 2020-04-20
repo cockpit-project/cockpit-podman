@@ -14,7 +14,7 @@ const DropDown = (props) => {
 
     return (
         <DropdownButton
-            bsStyle="default"
+            variant="default"
             title={actions[0].label}
             id={actions[0].label + "-dropdown"}>
             {buttonsHtml}

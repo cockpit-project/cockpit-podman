@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal } from 'patternfly-react';
+import { Modal } from 'patternfly-react';
+import { Button } from '@patternfly/react-core';
 import * as dockerNames from 'docker-names';
 
 import * as Select from '../lib/cockpit-components-select.jsx';
@@ -61,10 +62,15 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                 </Select.Select>
             </div>
             <div role='group' className='ct-form-split run-image-dialog-actions'>
-                <Button bsStyle='default'
-                        className={'pficon-close' + (idx === 0 && !item.hostPort && !item.containerPort ? ' invisible' : '')}
-                        onClick={() => removeitem(idx)} />
-                <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
+                <Button variant='secondary'
+                        className={"btn-close" + (idx === 0 && !item.hostPort && !item.containerPort ? ' invisible' : '')}
+                        aria-label={_("Remove item")}
+                        onClick={() => removeitem(idx)}>
+                    <span className="pficon pficon-close" />
+                </Button>
+                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")}>
+                    <span className='fa fa-plus' />
+                </Button>
             </div>
         </>
     );
@@ -86,10 +92,15 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
                        onChange={e => onChange(idx, 'envValue', e.target.value)} />
             </div>
             <div role='group' className='ct-form-split run-image-dialog-actions'>
-                <Button bsStyle='default'
-                        className={'pficon-close' + (idx === 0 && !item.envKey && !item.envValue ? ' invisible' : '')}
-                        onClick={() => removeitem(idx)} />
-                <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
+                <Button variant='secondary'
+                        className={"btn-close" + (idx === 0 && !item.envKey && !item.envValue ? ' invisible' : '')}
+                        aria-label={_("Remove item")}
+                        onClick={() => removeitem(idx)}>
+                    <span className="pficon pficon-close" />
+                </Button>
+                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")}>
+                    <span className='fa fa-plus' />
+                </Button>
             </div>
         </>
     );
@@ -119,10 +130,15 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                 </Select.Select>
             </div>
             <div role='group' className='ct-form-split run-image-dialog-actions'>
-                <Button bsStyle='default'
-                        className={'pficon-close' + (idx === 0 && !item.containerPath && !item.hostPath ? ' invisible' : '')}
-                        onClick={() => removeitem(idx)} />
-                <Button bsStyle='default' className='fa fa-plus' onClick={additem} />
+                <Button variant='secondary'
+                        className={"btn-close" + (idx === 0 && !item.containerPath && !item.hostPath ? ' invisible' : '')}
+                        aria-label={_("Remove item")}
+                        onClick={() => removeitem(idx)}>
+                    <span className="pficon pficon-close" />
+                </Button>
+                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")}>
+                    <span className='fa fa-plus' />
+                </Button>
             </div>
         </>
     );
@@ -402,10 +418,10 @@ export class ImageRunModal extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <Button bsStyle='default' className='btn-cancel' onClick={ this.props.close }>
+                    <Button variant='secondary' className='btn-cancel' onClick={ this.props.close }>
                         {_("Cancel")}
                     </Button>
-                    <Button bsStyle='primary' onClick={this.onRunClicked}>
+                    <Button variant='primary' onClick={this.onRunClicked}>
                         {_("Run")}
                     </Button>
                 </Modal.Footer>

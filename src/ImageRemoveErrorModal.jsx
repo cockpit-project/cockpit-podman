@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Modal } from 'patternfly-react';
+import { Modal } from 'patternfly-react';
+import { Button } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -17,7 +18,7 @@ const ImageRemoveErrorModal = (props) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={props.handleCancelImageRemoveError}>{_("Cancel")}</Button>
-                    <Button id="btn-img-deleteerror" bsStyle="danger" onClick={props.handleForceRemoveImage}>{_("Force Delete")}</Button>
+                    <Button id="btn-img-deleteerror" variant="danger" onClick={props.handleForceRemoveImage}>{_("Force Delete")}</Button>
                 </Modal.Footer>
             </Modal>
         </div>

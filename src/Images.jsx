@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from 'patternfly-react';
+import { Button } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
@@ -101,12 +101,15 @@ class Images extends React.Component {
         // TODO: image waiting if - else
         const runImage = (
             <Button key={image.id + "create"}
-                className="btn btn-default btn-control-ct fa fa-play"
+                variant='secondary'
                 onClick={ e => {
                     e.stopPropagation();
                     this.setState({ showRunImageModal: image });
                 } }
-                data-image={image.id} />
+                aria-label={_("Run image")}
+                data-image={image.id}>
+                <span className="fa fa-play" />
+            </Button>
         );
         const columns = [
             { name: image.repoTags ? image.repoTags[0] : "", header: true },
