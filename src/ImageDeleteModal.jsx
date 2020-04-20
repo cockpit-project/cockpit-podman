@@ -17,7 +17,7 @@ const ImageDeleteModal = (props) => {
                     {_("Are you sure you want to delete this image?")}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={props.handleCancelImageDeleteModal}>Cancel</Button>
+                    <Button onClick={props.handleCancelImageDeleteModal}>{_("Cancel")}</Button>
                     <Button id="btn-img-delete" variant="danger" onClick={props.handleRemoveImage}>{_("Delete")}</Button>{' '}
                 </Modal.Footer>
             </Modal>
