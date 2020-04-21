@@ -210,7 +210,7 @@ class Containers extends React.Component {
     // TODO: force
     handleForceRemoveContainer() {
         const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
-        utils.podmanCall("RemoveContainer", { name: id, force: true }, this.state.containerWillDelete.isSystem)
+        return utils.podmanCall("RemoveContainer", { name: id, force: true }, this.state.containerWillDelete.isSystem)
                 .then(reply => {
                     this.setState({
                         setContainerRemoveErrorModal: false
