@@ -132,8 +132,15 @@ class ContainerCommitModal extends React.Component {
                 <div key={"onbuildvar" + idx} id="select-claimed-onbuildvars" className="form-inline containers-run-onbuildvarclaim containers-run-inline">
                     <FormGroup className="form-inline">
                         <input type="text" name="onbuildvar_key" onChange={(evt) => this.handleOnBuildsInputChange(idx, evt)} />
-                        <button type="button" className="btn btn-default pficon-close" disabled={idx === 0} onClick={() => this.handleRemoveOnBuild(idx)} />
-                        <button type="button" className="btn btn-default fa fa-plus" onClick={this.handleAddOnBuild} />
+                        <Button variant="secondary" isDisabled={idx === 0}
+                                aria-label={_("Remove on build variable")}
+                                onClick={() => this.handleRemoveOnBuild(idx)}>
+                            <span className="pficon pficon-close" />
+                        </Button>
+                        <Button variant="secondary" onClick={this.handleAddOnBuild}
+                                aria-label={_("Add on build variable")}>
+                            <span className="fa fa-plus" />
+                        </Button>
                     </FormGroup>
                 </div>
             ));

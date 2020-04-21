@@ -137,11 +137,14 @@ class Images extends React.Component {
         });
 
         const actions = [
-            <button
+            <Button
+                variant="danger"
                 key={image.id + "delete"}
-                className="btn btn-danger btn-delete pficon pficon-delete"
-                onClick={() => this.deleteImage(image)}
-            />
+                className="btn-delete"
+                aria-label={_("Delete image")}
+                onClick={() => this.deleteImage(image)}>
+                <span className="pficon pficon-delete" />
+            </Button>
         ];
         return (
             <Listing.ListingRow
