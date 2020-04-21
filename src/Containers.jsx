@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from "react-dom";
+import { Button } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
@@ -130,25 +131,30 @@ class Containers extends React.Component {
         }];
 
         var actions = [
-            <button
+            <Button
                 key={container.id + "delete"}
-                className="btn btn-danger btn-delete pficon pficon-delete"
-                onClick={(event) => this.deleteContainer(container, event)} />,
-            <button
+                variant="danger"
+                className="btn-delete"
+                aria-label={_("Delete image")}
+                onClick={(event) => this.deleteContainer(container, event)}>
+                <span className="pficon pficon-delete" />
+            </Button>,
+            <Button
                 key={container.id + "commit"}
-                className="btn btn-default btn-commit"
+                variant="secondary"
+                className="btn-commit"
                 data-container-id={container.id}
                 data-toggle="modal" data-target="#container-commit-dialog"
                 onClick={() => this.setState({ showCommitModal: true, containerWillCommit: container })}
             >
                 {_("Commit")}
-            </button>,
+            </Button>,
         ];
         if (!isRunning) {
             actions.push(
-                <button key={container.ID + "start"} className="btn btn-default" type="button" onClick={() => this.startContainer(container)}>
+                <Button key={container.ID + "start"} variant="secondary" onClick={() => this.startContainer(container)}>
                     {_("Start")}
-                </button>
+                </Button>
             );
         } else {
             const restartActions = [];
