@@ -19,7 +19,11 @@
 
 import React from 'react';
 import { ToastNotificationList } from 'patternfly-react';
-import { Alert, AlertActionLink, AlertActionCloseButton } from '@patternfly/react-core';
+import {
+    Alert, AlertActionLink, AlertActionCloseButton, Button, Title,
+    EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions
+} from '@patternfly/react-core';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import moment from "moment";
@@ -392,13 +396,11 @@ class Application extends React.Component {
 
         if (!this.state.systemServiceAvailable && !this.state.userServiceAvailable) {
             return (
-                <div className="curtains-ct blank-slate-pf">
-                    <div className="blank-slate-pf-icon">
-                        <span className="fa fa-exclamation-circle" />
-                    </div>
-                    <h1 className="header" id="slate-header">
+                <EmptyState variant={EmptyStateVariant.full}>
+                    <EmptyStateIcon icon={ExclamationCircleIcon} />
+                    <Title size="lg">
                         { _("Podman Service is Not Active") }
-                    </h1>
+                    </Title>
                     <div className="checkbox">
                         <label>
                             <input type="checkbox"
@@ -408,19 +410,15 @@ class Application extends React.Component {
                         </label>
                     </div>
 
-                    <div className="blank-slate-pf-main-action">
-                        <button className="btn btn-primary btn-lg"
-                                onClick={this.startService}>
-                            {_("Start podman")}
-                        </button>
-                    </div>
-                    <div className="blank-slate-pf-secondary-action">
-                        <button className="btn btn-default"
-                                onClick={this.goToServicePage}>
+                    <Button onClick={this.startService}>
+                        {_("Start podman")}
+                    </Button>
+                    <EmptyStateSecondaryActions>
+                        <Button variant="link" onClick={this.goToServicePage}>
                             {_("Troubleshoot")}
-                        </button>
-                    </div>
-                </div>);
+                        </Button>
+                    </EmptyStateSecondaryActions>
+                </EmptyState>);
         }
 
         let imageContainerList = {};
