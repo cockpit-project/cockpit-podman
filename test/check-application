@@ -573,14 +573,14 @@ class TestApplication(testlib.MachineCase):
         self.login_and_go("/podman")
 
         # Troubleshoot action
-        b.click("#app .blank-slate-pf button.btn-default")
+        b.click("#app .pf-c-empty-state button.pf-m-link")
         b.enter_page("/system/services")
         b.wait_in_text("#service", "io.podman.socket")
 
         # Start action, with enabling (by default)
         b.go("/podman")
         b.enter_page("/podman")
-        b.click("#app .blank-slate-pf button.btn-primary")
+        b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         b.wait_present("#containers-containers")
         b.wait_not_present("#overview > div.pf-c-alert.pf-m-info")
@@ -593,8 +593,8 @@ class TestApplication(testlib.MachineCase):
         # Start action, without enabling
         disable_system()
         disable_user()
-        b.click("#app .blank-slate-pf input[type=checkbox]")
-        b.click("#app .blank-slate-pf button.btn-primary")
+        b.click("#app .pf-c-empty-state input[type=checkbox]")
+        b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         b.wait_present("#containers-containers")
         is_enabled_system("disabled")
@@ -630,7 +630,7 @@ class TestApplication(testlib.MachineCase):
         disable_user()
         disable_system()
         self.login_and_go("/podman", authorized=False)
-        b.click("#app .blank-slate-pf button.btn-primary")
+        b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         b.wait_present("#containers-containers")
         b.wait_not_present("#overview div.pf-c-alert")
