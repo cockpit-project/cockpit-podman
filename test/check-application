@@ -241,7 +241,7 @@ class TestApplication(testlib.MachineCase):
             toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag)
             b.click(toggle_sel)
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
-            if m.image == "rhel-8-2": # podman < 1.7 quotes command
+            if m.image in ["rhel-8-2", "rhel-8-3"]: # podman < 1.7 quotes command
                 image_command = image_command.replace(r'\"', r'\\\"')
                 image_command = image_command.replace(r' "', r' \"')
             b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") dd:nth-child(8)'.format(image_name, image_tag), image_command)
@@ -500,7 +500,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)") != "")
         cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)")
         memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(6)")
-        if auth or m.image not in ["rhel-8-2"]:
+        if auth or m.image not in ["rhel-8-2", "rhel-8-3"]:
             self.assertIn('%', cpu)
             num = cpu[:-1]
             self.assertTrue(num.replace('.', '', 1).isdigit())
@@ -684,7 +684,7 @@ class TestApplication(testlib.MachineCase):
 
         # Check memory configuration
         # Only works with CGroupsV2
-        if auth or m.image not in ["rhel-8-2"]:
+        if auth or m.image not in ["rhel-8-2", "rhel-8-3"]:
             b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
             b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
             b.wait_present('div.modal-body label:contains("Memory Limit") + div.form-inline > input[value="512"]')
@@ -759,7 +759,7 @@ class TestApplication(testlib.MachineCase):
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
-        if auth or m.image not in ["rhel-8-2"]:
+        if auth or m.image not in ["rhel-8-2", "rhel-8-3"]:
             memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
             self.assertEqual(memory, '536870912')
 
@@ -831,7 +831,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_text('#containers-containers tr:contains("busybox-without-publish") + tr dt:contains("Ports") + dd', "")
 
         # Rootless only works with CGroupsV2
-        if auth or m.image not in ["rhel-8-2"]:
+        if auth or m.image not in ["rhel-8-2", "rhel-8-3"]:
             cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish").strip()
             # podman ≥ 1.8 translates 0 default into actual value
             self.assertIn(cpuShares, ['0', '1024'])
