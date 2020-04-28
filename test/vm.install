@@ -22,11 +22,14 @@ podman pull docker.io/busybox
 podman pull docker.io/alpine
 podman pull docker.io/registry:2
 
+# pull images for user podman tests; podman insists on user session
+loginctl enable-linger $(id -u admin)
 sudo -i -u admin bash << EOF
 podman pull docker.io/busybox
 podman pull docker.io/alpine
 podman pull docker.io/registry:2
 EOF
+loginctl disable-linger $(id -u admin)
 
 # HACK: https://bugzilla.redhat.com/show_bug.cgi?id=1782435
 # segfaults at boot and breaks every test due to unexpected messages
