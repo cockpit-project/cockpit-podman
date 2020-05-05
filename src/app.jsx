@@ -168,7 +168,6 @@ class Application extends React.Component {
                         // Copy only images that could not be deleted with this event
                         // So when event from system come, only copy user images and vice versa
                         const copyImages = {};
-                        console.log(prevState, reply);
                         Object.entries(prevState.images || {}).forEach(([id, image]) => {
                             if (image.isSystem !== system)
                                 copyImages[id] = image;
@@ -325,12 +324,24 @@ class Application extends React.Component {
         cockpit.script("echo $XDG_RUNTIME_DIR")
                 .done(xrd => {
                     sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
-                    this.init(false);
+                    if (!utils.isRootUser()) {
+                        this.init(false);
+                    } else {
+                        this.setState({
+                            userImagesLoaded: true,
+                            userContainersLoaded: true,
+                            userServiceAvailable: false
+                        });
+                    }
                 })
                 .fail(e => console.log("Could not read $XDG_RUNTIME_DIR: ", e.message));
     }
 
     checkUserService() {
+        if (utils.isRootUser()) {
+            this.setState({ userServiceExists: false });
+            return;
+        }
         const argv = ["systemctl", "--user", "is-enabled", "io.podman.socket"];
 
         cockpit.spawn(argv, { environ: ["LC_ALL=C"], err: "out" })

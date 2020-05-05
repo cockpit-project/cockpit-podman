@@ -273,4 +273,4 @@ export function isRootUser() {
     return window.cockpit.user().then((user) => {
         return user.name === 'root';
     });
-};
+}
