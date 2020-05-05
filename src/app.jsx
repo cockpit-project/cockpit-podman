@@ -330,12 +330,21 @@ class Application extends React.Component {
     }
 
     componentDidMount() {
-        this.checkUserService();
         this.init(true);
-        cockpit.script("echo $XDG_RUNTIME_DIR")
+        cockpit.script("[ `id -u` -eq 0 ] || echo $XDG_RUNTIME_DIR")
                 .done(xrd => {
-                    sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
-                    this.init(false);
+                    const isRoot = !xrd || xrd.split("/").pop() == "root";
+                    if (!isRoot) {
+                        sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
+                        this.init(false);
+                        this.checkUserService();
+                    } else {
+                        this.setState({
+                            userImagesLoaded: true,
+                            userContainersLoaded: true,
+                            userServiceExists: false
+                        });
+                    }
                 })
                 .fail(e => console.log("Could not read $XDG_RUNTIME_DIR: ", e.message));
     }
