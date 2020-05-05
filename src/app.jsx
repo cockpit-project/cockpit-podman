@@ -120,16 +120,6 @@ class Application extends React.Component {
         });
     }
 
-    updateServicesAvailable (system, newValue) {
-        const service = system ? "systemServiceAvailable" : "userServiceAvailable";
-        let value = newValue;
-        if (service === "userServiceAvailable" && utils.isRootUser()) {
-            value = false;
-        }
-
-        this.setState({ [service]: value });
-    }
-
     updateContainerStats(id, system) {
         utils.podmanCall("GetContainerStats", { name: id }, system)
                 .then(reply => {
@@ -305,8 +295,7 @@ class Application extends React.Component {
     init(system) {
         utils.podmanCall("GetVersion", {}, system)
                 .then(reply => {
-                    this.setState({ version: reply.version });
-                    this.updateServicesAvailable(system, true);
+                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.version });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system);
                     utils.monitor("GetEvents", {},
