@@ -268,3 +268,9 @@ export function compare_versions(a, b) {
 
     return a_ints.length - b_ints.length;
 }
+
+export function isRootUser() {
+    return window.cockpit.user().then((user) => {
+        return user.name === 'root';
+    });
+};
