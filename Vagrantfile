@@ -20,11 +20,14 @@ Vagrant.configure(2) do |config|
     config.vm.provision "shell", inline: <<-EOF
         set -eu
 
-        sudo dnf install -y cockpit
+        sudo dnf install -y cockpit podman
 
         printf "[WebService]\nAllowUnencrypted=true\n" > /etc/cockpit/cockpit.conf
 
         systemctl enable cockpit.socket
         systemctl start cockpit.socket
+
+        systemctl enable io.podman.{socket,service}
+        systemctl start io.podman.{socket,service}
     EOF
 end
