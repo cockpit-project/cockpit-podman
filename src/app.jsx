@@ -178,6 +178,7 @@ class Application extends React.Component {
                         // Copy only images that could not be deleted with this event
                         // So when event from system come, only copy user images and vice versa
                         const copyImages = {};
+                        console.log(prevState, reply);
                         Object.entries(prevState.images || {}).forEach(([id, image]) => {
                             if (image.isSystem !== system)
                                 copyImages[id] = image;
@@ -304,7 +305,8 @@ class Application extends React.Component {
     init(system) {
         utils.podmanCall("GetVersion", {}, system)
                 .then(reply => {
-                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.version });
+                    this.setState({ version: reply.version });
+                    this.updateServicesAvailable(system, true);
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system);
                     utils.monitor("GetEvents", {},
