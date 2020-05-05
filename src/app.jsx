@@ -120,6 +120,16 @@ class Application extends React.Component {
         });
     }
 
+    updateServicesAvailable (system, newValue) {
+        const service = system ? "systemServiceAvailable" : "userServiceAvailable";
+        let value = newValue;
+        if (service === "userServiceAvailable" && utils.isRootUser()) {
+            value = false;
+        }
+
+        this.setState({ [service]: value });
+    }
+
     updateContainerStats(id, system) {
         utils.podmanCall("GetContainerStats", { name: id }, system)
                 .then(reply => {
