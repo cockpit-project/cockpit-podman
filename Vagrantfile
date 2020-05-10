@@ -27,7 +27,7 @@ Vagrant.configure(2) do |config|
         systemctl enable cockpit.socket
         systemctl start cockpit.socket
 
-        systemctl enable io.podman.{socket,service}
-        systemctl start io.podman.{socket,service}
+        systemctl enable io.podman.socket
+        systemctl start io.podman.socket
     EOF
 end
