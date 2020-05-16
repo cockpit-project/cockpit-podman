@@ -241,7 +241,7 @@ class TestApplication(testlib.MachineCase):
             toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag)
             b.click(toggle_sel)
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
-            if m.image in ["rhel-8-2", "rhel-8-3"]: # podman < 1.7 quotes command
+            if m.image in ["rhel-8-3"]: # podman < 1.7 quotes command
                 image_command = image_command.replace(r'\"', r'\\\"')
                 image_command = image_command.replace(r' "', r' \"')
             b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") dd:nth-child(8)'.format(image_name, image_tag), image_command)
@@ -575,7 +575,7 @@ class TestApplication(testlib.MachineCase):
         # Troubleshoot action
         b.click("#app .pf-c-empty-state button.pf-m-link")
         b.enter_page("/system/services")
-        b.wait_in_text("#service", "io.podman.socket")
+        b.wait_in_text("#service-details", "io.podman.socket")
 
         # Start action, with enabling (by default)
         b.go("/podman")
