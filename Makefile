@@ -149,7 +149,7 @@ vm: $(VM_IMAGE)
 
 # run the browser integration tests; skip check for SELinux denials
 check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common
-	TEST_AUDIT_NO_SELINUX=1 test/check-application
+	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests
 
 # checkout Cockpit's bots for standard test VM images and API to launch them
 # must be from master, as only that has current and existing images; but testvm.py API is stable
@@ -162,7 +162,7 @@ bots:
 # checkout Cockpit's test API; this has no API stability guarantee, so check out a stable tag
 # when you start a new project, use the latest release, and update it from time to time
 test/common:
-	git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 219
+	git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 220
 	git checkout --force FETCH_HEAD -- test/common
 	git reset test/common
 
