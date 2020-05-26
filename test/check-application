@@ -86,7 +86,7 @@ class TestApplication(testlib.MachineCase):
             self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system io.podman.socket.*")
 
-        self.login_and_go("/podman", authorized=auth)
+        self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_present("#app")
 
         b.wait_present(".content-filter input")
@@ -481,7 +481,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, "podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
-        self.login_and_go("/podman", authorized=auth)
+        self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_present("#app")
         self.filter_containers('all')
 
@@ -629,7 +629,7 @@ class TestApplication(testlib.MachineCase):
         b.logout()
         disable_user()
         disable_system()
-        self.login_and_go("/podman", authorized=False)
+        self.login_and_go("/podman", authorized=False, superuser=False)
         b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         b.wait_present("#containers-containers")
@@ -657,7 +657,7 @@ class TestApplication(testlib.MachineCase):
             # Just drop user containers so we can user simpler selectors
             self.execute(False, "podman rmi alpine busybox registry:2")
 
-        self.login_and_go("/podman", authorized=auth)
+        self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_in_text("#containers-images", "busybox:latest")
         b.wait_in_text("#containers-images", "alpine:latest")
 
