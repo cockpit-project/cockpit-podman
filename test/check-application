@@ -704,7 +704,7 @@ class TestApplication(testlib.MachineCase):
         b.set_checked("#run-image-dialog-tty", True)
 
         # Set up command line
-        b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done'")
+        b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
 
         # Configure published ports
         b.set_input_text('.publish-port-form[data-key="0"] input:first-child', '5000')
@@ -755,7 +755,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("div.modal-dialog")
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
-        self.check_container(sha, auth, ['busybox-with-tty', 'busybox:latest', 'sh -c "for i in $(seq 20); do sleep 1; echo $i; done"', 'running', "system" if auth else "admin"])
+        self.check_container(sha, auth, ['busybox-with-tty', 'busybox:latest', 'sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"', 'running', "system" if auth else "admin"])
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
