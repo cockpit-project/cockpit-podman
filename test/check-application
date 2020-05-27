@@ -86,7 +86,7 @@ class TestApplication(testlib.MachineCase):
             self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system io.podman.socket.*")
 
-        self.login_and_go("/podman", authorized=auth)
+        self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_present("#app")
 
         b.wait_present(".content-filter input")
@@ -481,7 +481,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, "podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
-        self.login_and_go("/podman", authorized=auth)
+        self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_present("#app")
         self.filter_containers('all')
 
@@ -629,7 +629,7 @@ class TestApplication(testlib.MachineCase):
         b.logout()
         disable_user()
         disable_system()
-        self.login_and_go("/podman", authorized=False)
+        self.login_and_go("/podman", authorized=False, superuser=False)
         b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         b.wait_present("#containers-containers")
@@ -657,7 +657,7 @@ class TestApplication(testlib.MachineCase):
             # Just drop user containers so we can user simpler selectors
             self.execute(False, "podman rmi alpine busybox registry:2")
 
-        self.login_and_go("/podman", authorized=auth)
+        self.login_and_go("/podman", authorized=auth, superuser=auth)
         b.wait_in_text("#containers-images", "busybox:latest")
         b.wait_in_text("#containers-images", "alpine:latest")
 
@@ -704,7 +704,7 @@ class TestApplication(testlib.MachineCase):
         b.set_checked("#run-image-dialog-tty", True)
 
         # Set up command line
-        b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done'")
+        b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
 
         # Configure published ports
         b.set_input_text('.publish-port-form[data-key="0"] input:first-child', '5000')
@@ -755,7 +755,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("div.modal-dialog")
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
-        self.check_container(sha, auth, ['busybox-with-tty', 'busybox:latest', 'sh -c "for i in $(seq 20); do sleep 1; echo $i; done"', 'running', "system" if auth else "admin"])
+        self.check_container(sha, auth, ['busybox-with-tty', 'busybox:latest', 'sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"', 'running', "system" if auth else "admin"])
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
