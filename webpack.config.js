@@ -123,28 +123,90 @@ module.exports = {
                 test: /\.(jsx|js)$/
             },
             {
-                test: /\.(scss|css)$/,
+                test: /\.less$/,
+                use: [
+                    extract.loader,
+                    'css-loader',
+                    'less-loader',
+                ]
+            },
+            /* HACK: remove unwanted fonts from PatternFly's css */
+            {
+                test: /patternfly-cockpit.scss$/,
                 use: [
                     extract.loader,
                     {
                         loader: 'css-loader',
-                        options: { url: false }
+                        options: {
+                            sourceMap: true,
+                            url: false,
+                        },
+                    },
+                    {
+                        loader: 'string-replace-loader',
+                        options: {
+                            multiple: [
+                                {
+                                    search: /src:url[(]"patternfly-icons-fake-path\/glyphicons-halflings-regular[^}]*/g,
+                                    replace: 'font-display:block; src:url("../base1/fonts/glyphicons.woff") format("woff");',
+                                },
+                                {
+                                    search: /src:url[(]"patternfly-fonts-fake-path\/PatternFlyIcons[^}]*/g,
+                                    replace: 'src:url("../base1/fonts/patternfly.woff") format("woff");',
+                                },
+                                {
+                                    search: /src:url[(]"\.\.\/fonts\/fontawesome[^}]*/,
+                                    replace: 'font-display:block; src:url("../base1/fonts/fontawesome.woff?v=4.2.0") format("woff");',
+                                },
+                                {
+                                    search: /src:url\("patternfly-icons-fake-path\/pficon[^}]*/g,
+                                    replace: 'src:url("../base1/fonts/patternfly.woff") format("woff");',
+                                },
+                                {
+                                    search: /@font-face[^}]*patternfly-fonts-fake-path[^}]*}/g,
+                                    replace: '',
+                                },
+                            ]
+                        },
                     },
                     {
                         loader: 'sass-loader',
-                    }
+                        options: {
+                            sassOptions: {
+                                includePaths: [
+                                    // Teach webpack to resolve these references in order to build PF3 scss
+                                    path.resolve(nodedir, 'font-awesome-sass', 'assets', 'stylesheets'),
+                                    path.resolve(nodedir, 'patternfly', 'dist', 'sass'),
+                                    path.resolve(nodedir, 'bootstrap-sass', 'assets', 'stylesheets'),
+                                ],
+                                outputStyle: 'compressed',
+                            },
+                            sourceMap: true,
+                        },
+                    },
                 ]
             },
             {
-                test: /\.less$/,
+                test: /\.s?css$/,
+                exclude: /patternfly-cockpit.scss/,
                 use: [
                     extract.loader,
                     {
-                        loader: 'css-loader'
+                        loader: 'css-loader',
+                        options: {
+                            sourceMap: true,
+                            url: false
+                        }
                     },
                     {
-                        loader: "less-loader"
-                    }
+                        loader: 'sass-loader',
+                        options: {
+                            sourceMap: true,
+                            sassOptions: {
+                                outputStyle: 'compressed',
+                            }
+                        }
+                    },
                 ]
             },
         ]

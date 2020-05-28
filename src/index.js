@@ -19,6 +19,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import '../lib/patternfly/patternfly-cockpit.scss';
 import Application from './app.jsx';
 import './podman.scss';
 
