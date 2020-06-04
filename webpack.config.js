@@ -125,14 +125,6 @@ module.exports = {
                 loader: 'babel-loader',
                 test: /\.(jsx|js)$/
             },
-            {
-                test: /\.less$/,
-                use: [
-                    extract.loader,
-                    'css-loader',
-                    'less-loader',
-                ]
-            },
             /* HACK: remove unwanted fonts from PatternFly's css */
             {
                 test: /patternfly-cockpit.scss$/,
