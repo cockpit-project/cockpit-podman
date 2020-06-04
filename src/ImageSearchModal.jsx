@@ -176,19 +176,21 @@ export class ImageSearchModal extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <div className='image-search-modal-footer-grid'>
-                        <input className='form-control image-tag-entry'
+                    <div className="ct-form image-search-tag-form">
+                        <label className="control-label" htmlFor="image-search-tag">{_("Tag")}</label>
+                        <input className="form-control image-tag-entry"
+                               id="image-search-tag"
                                type='text'
                                placeholder={_("Tag")}
                                value={this.state.imageTag || ''}
                                onChange={e => this.onValueChanged('imageTag', e.target.value)} />
-                        <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
-                            {_("Download")}
-                        </Button>
-                        <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
-                            {_("Cancel")}
-                        </Button>
                     </div>
+                    <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
+                        {_("Download")}
+                    </Button>
+                    <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                        {_("Cancel")}
+                    </Button>
                 </Modal.Footer>
             </Modal>
         );
