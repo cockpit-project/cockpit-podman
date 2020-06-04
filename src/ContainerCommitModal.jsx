@@ -6,7 +6,7 @@ import cockpit from 'cockpit';
 import * as utils from './util.js';
 import { ErrorNotification } from './Notification.jsx';
 
-import '../lib/form-layout.less';
+import '../lib/form-layout.scss';
 
 const _ = cockpit.gettext;
 

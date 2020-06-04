@@ -10,7 +10,7 @@ import { FileAutoComplete } from '../lib/cockpit-components-file-autocomplete.js
 import * as utils from './util.js';
 import cockpit from 'cockpit';
 
-import '../lib/form-layout.less';
+import '../lib/form-layout.scss';
 
 const _ = cockpit.gettext;
 
