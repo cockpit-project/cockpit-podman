@@ -1,13 +1,14 @@
 import React from 'react';
 import { ListGroup, ListGroupItem, Modal } from 'patternfly-react';
-import { Button } from '@patternfly/react-core';
+import { Button, InputGroup, InputGroupText } from '@patternfly/react-core';
+import { SearchIcon } from '@patternfly/react-icons';
 
 import { ErrorNotification } from './Notification.jsx';
 import * as utils from './util.js';
 import varlink from './varlink.js';
 import cockpit from 'cockpit';
 
-import '../lib/form-layout.less';
+import '../lib/form-layout.scss';
 import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
@@ -128,10 +129,10 @@ export class ImageSearchModal extends React.Component {
                         </fieldset>
                     </form>
                 }
-                <div className="input-group">
-                    <span className="input-group-addon">
-                        <span className="fa fa-search" />
-                    </span>
+                <InputGroup>
+                    <InputGroupText id="username" aria-label={_("Search")}>
+                        <SearchIcon />
+                    </InputGroupText>
                     <input id='search-image-dialog-name'
                         autoFocus
                         className='form-control'
@@ -140,7 +141,7 @@ export class ImageSearchModal extends React.Component {
                         value={this.state.imageIdentifier}
                         onKeyPress={this.onKeyPress}
                         onChange={e => this.onValueChanged('imageIdentifier', e.target.value)} />
-                </div>
+                </InputGroup>
 
                 {this.state.searchInProgress && <div id='search-image-dialog-waiting' className='spinner' />}
 
