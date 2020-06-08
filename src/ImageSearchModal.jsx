@@ -1,13 +1,14 @@
 import React from 'react';
 import { ListGroup, ListGroupItem, Modal } from 'patternfly-react';
-import { Button } from '@patternfly/react-core';
+import { Button, InputGroup, InputGroupText } from '@patternfly/react-core';
+import { SearchIcon } from '@patternfly/react-icons';
 
 import { ErrorNotification } from './Notification.jsx';
 import * as utils from './util.js';
 import varlink from './varlink.js';
 import cockpit from 'cockpit';
 
-import '../lib/form-layout.less';
+import '../lib/form-layout.scss';
 import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
@@ -128,10 +129,10 @@ export class ImageSearchModal extends React.Component {
                         </fieldset>
                     </form>
                 }
-                <div className="input-group">
-                    <span className="input-group-addon">
-                        <span className="fa fa-search" />
-                    </span>
+                <InputGroup>
+                    <InputGroupText id="username" aria-label={_("Search")}>
+                        <SearchIcon />
+                    </InputGroupText>
                     <input id='search-image-dialog-name'
                         autoFocus
                         className='form-control'
@@ -140,7 +141,7 @@ export class ImageSearchModal extends React.Component {
                         value={this.state.imageIdentifier}
                         onKeyPress={this.onKeyPress}
                         onChange={e => this.onValueChanged('imageIdentifier', e.target.value)} />
-                </div>
+                </InputGroup>
 
                 {this.state.searchInProgress && <div id='search-image-dialog-waiting' className='spinner' />}
 
@@ -176,19 +177,21 @@ export class ImageSearchModal extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <div className='image-search-modal-footer-grid'>
-                        <input className='form-control image-tag-entry'
+                    <div className="ct-form image-search-tag-form">
+                        <label className="control-label" htmlFor="image-search-tag">{_("Tag")}</label>
+                        <input className="form-control image-tag-entry"
+                               id="image-search-tag"
                                type='text'
                                placeholder={_("Tag")}
                                value={this.state.imageTag || ''}
                                onChange={e => this.onValueChanged('imageTag', e.target.value)} />
-                        <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
-                            {_("Download")}
-                        </Button>
-                        <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
-                            {_("Cancel")}
-                        </Button>
                     </div>
+                    <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
+                        {_("Download")}
+                    </Button>
+                    <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                        {_("Cancel")}
+                    </Button>
                 </Modal.Footer>
             </Modal>
         );

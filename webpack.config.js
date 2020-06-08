@@ -99,6 +99,9 @@ if (production) {
 module.exports = {
     mode: production ? 'production' : 'development',
     entry: info.entries,
+    resolve: {
+        alias: { 'font-awesome': path.resolve(nodedir, 'font-awesome-sass/assets/stylesheets') },
+    },
     externals: externals,
     output: output,
     devtool: "source-map",
@@ -121,14 +124,6 @@ module.exports = {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 test: /\.(jsx|js)$/
-            },
-            {
-                test: /\.less$/,
-                use: [
-                    extract.loader,
-                    'css-loader',
-                    'less-loader',
-                ]
             },
             /* HACK: remove unwanted fonts from PatternFly's css */
             {
@@ -155,7 +150,7 @@ module.exports = {
                                     replace: 'src:url("../base1/fonts/patternfly.woff") format("woff");',
                                 },
                                 {
-                                    search: /src:url[(]"\.\.\/fonts\/fontawesome[^}]*/,
+                                    search: /src:url[(]"patternfly-fonts-fake-path\/fontawesome[^}]*/,
                                     replace: 'font-display:block; src:url("../base1/fonts/fontawesome.woff?v=4.2.0") format("woff");',
                                 },
                                 {
