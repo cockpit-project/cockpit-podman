@@ -1,5 +1,3 @@
-// Copied from  https://github.com/cockpit-project/cockpit/blob/master/pkg/lib/listing.scss
-
 /* Listing pattern */
 
 @import "./variables.scss";
@@ -70,9 +68,9 @@
 }
 
 .ct-listing > table > thead th {
-    font-weight: normal;
+    font-size: var(--pf-global--FontSize--md);
+    font-weight: var(--pf-global--FontWeight--bold);
     padding: $listing-ct-padding $listing-ct-padding * 2;
-    color: $listing-ct-metadata;
 }
 
 .ct-listing > table > thead th:first-child {
@@ -87,7 +85,6 @@
 tbody > tr.listing-ct-item {
     border: 1px solid transparent;
     border-top: 1px solid var(--color-ct-list-border);
-    border-bottom: 1px solid var(--color-ct-list-border);
     cursor: pointer;
 }
 
@@ -273,6 +270,16 @@ tr.listing-ct-item.listing-ct-selected .badge {
 tr.listing-ct-item td:last-child {
     text-align: right;
 }
+.pf-c-table {
+    tbody, thead:not(.listing-ct-empty) {
+        tr:not(.pf-m-expanded) {
+            td:last-child,
+            th:last-child {
+                text-align: right;
+            }
+        }
+    }
+}
 
 div.listing-ct-panel {
     box-shadow: 1px 1px 1px 1px $listing-ct-open;
@@ -291,9 +298,11 @@ div.listing-ct-head {
     border-style: solid;
     border-width: 1px 1px 0 1px;
     overflow: hidden;
+    align-items: center;
+}
+table:not(.pf-c-table) div.listing-ct-head {
     display: flex;
     flex-flow: row-reverse wrap;
-    align-items: center;
 }
 
 div.listing-ct-head:last-child {
@@ -323,18 +332,7 @@ tbody.active .listing-ct-head {
     padding-right: 7px;
 }
 
-.listing-ct-head .nav li a {
-    font-size: 13px;
-    /* Counteract listing-ct-head padding */
-    margin-top: -$listing-ct-padding;
-    margin: 0;
-}
-
-.listing-ct-head .nav-tabs {
-    border-bottom: none;
-}
-
-.listing-ct-head .nav-tabs-pf {
+.listing-ct-head .pf-c-nav {
     flex: auto;
 }
 
@@ -612,25 +610,6 @@ div.listing-ct-head {
 
 tbody tr.listing-ct-noexpand {
     cursor: default;
-}
-
-/* Fix up nav-tabs-pf to work properly */
-
-.nav-tabs-pf > li:first-child a {
-    margin-left: 0px !important;
-    padding-left: $listing-ct-spacing !important;
-}
-
-.nav-tabs-pf > li a:before {
-    right: 0px !important;
-}
-
-.nav-tabs-pf > li > a:active:before,
-.nav-tabs-pf > li > a:focus:before,
-.nav-tabs-pf > li > a:hover:before,
-.nav-tabs-pf > li.active a:before {
-    height: $listing-ct-open-width;
-    left: 0px;
 }
 
 .listing-ct-item td,
