@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@patternfly/react-core';
+import { PlusCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
@@ -170,12 +171,12 @@ class Images extends React.Component {
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No images that match the current filter");
         const getNewImageAction = [
-            <a key="get-new-image-action" role="link" tabIndex="0"
-               onClick={() => this.setState({ showSearchImageModal: true })}
-               className="card-pf-link-with-icon pull-right">
-                <span className="pficon pficon-add-circle-o" />
+            <Button variant="link" key="get-new-image-action"
+                    onClick={() => this.setState({ showSearchImageModal: true })}
+                    className="pull-right"
+                    icon={<PlusCircleIcon />}>
                 {_("Get new image")}
-            </a>
+            </Button>
         ];
         let filtered = [];
         if (this.props.images !== null) {

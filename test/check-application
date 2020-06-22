@@ -351,7 +351,7 @@ class TestApplication(testlib.MachineCase):
 
             def openDialog(self):
                 # Open get new image modal
-                b.click("header a:contains(Get new image)")
+                b.click("header button:contains(Get new image)")
                 b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
                 b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
 
@@ -876,8 +876,8 @@ class TestApplication(testlib.MachineCase):
 
         b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
         b.click("#containers-images tbody tr:contains('busybox:latest') + tr.ct-listing-panel a:contains('Used By')")
-        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.listing-ct-body tbody th:contains('busybox-without-publish')")
-        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.listing-ct-body tbody th:contains('busybox-with-tty')")
+        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody th:contains('busybox-without-publish')")
+        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody th:contains('busybox-with-tty')")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-toggle')
         b.click("#containers-images tbody tr:contains('alpine:latest') + tr.ct-listing-panel a:contains('Used By')")
