@@ -10,6 +10,8 @@ import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
 import { DropDown } from './Dropdown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
+import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
+import ContainerRestoreModal from './ContainerRestoreModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
@@ -23,8 +25,14 @@ class Containers extends React.Component {
         super(props);
         this.state = {
             selectContainerDeleteModal: false,
+            selectContainerCheckpointModal: false,
+            selectContainerRestoreModal: false,
             setContainerRemoveErrorModal: false,
             containerWillDelete: {},
+            containerWillCheckpoint: {},
+            containerWillRestore: {},
+            checkpointInProgress: false,
+            restoreInProgress: false,
             width: 0,
         };
         this.renderRow = this.renderRow.bind(this);
@@ -34,7 +42,11 @@ class Containers extends React.Component {
         this.stopContainer = this.stopContainer.bind(this);
         this.deleteContainer = this.deleteContainer.bind(this);
         this.handleCancelContainerDeleteModal = this.handleCancelContainerDeleteModal.bind(this);
+        this.handleCheckpointContainerDeleteModal = this.handleCheckpointContainerDeleteModal.bind(this);
+        this.handleRestoreContainerDeleteModal = this.handleRestoreContainerDeleteModal.bind(this);
         this.handleRemoveContainer = this.handleRemoveContainer.bind(this);
+        this.handleCheckpointContainer = this.handleCheckpointContainer.bind(this);
+        this.handleRestoreContainer = this.handleRestoreContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
 
@@ -56,11 +68,18 @@ class Containers extends React.Component {
                 setContainerRemoveErrorModal: true,
             }));
         } else {
-            this.setState((prevState) => ({
+            this.setState({
                 containerWillDelete: container,
                 selectContainerDeleteModal: true,
-            }));
+            });
         }
+    }
+
+    checkpointContainer(container) {
+        this.setState({
+            containerWillCheckpoint: container,
+            selectContainerCheckpointModal: true,
+        });
     }
 
     stopContainer(container, force) {
@@ -93,6 +112,13 @@ class Containers extends React.Component {
                     const error = cockpit.format(_("Failed to restart container $0"), container.Names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
+    }
+
+    restoreContainer(container) {
+        this.setState({
+            containerWillRestore: container,
+            selectContainerRestoreModal: true,
+        });
     }
 
     renderRow(containersStats, container, containerDetail) {
@@ -156,11 +182,18 @@ class Containers extends React.Component {
             </Button>,
         ];
         if (!isRunning) {
-            actions.push(
-                <Button key={container.Id + "start"} variant="secondary" onClick={() => this.startContainer(container)}>
-                    {_("Start")}
-                </Button>
-            );
+            if (container.isSystem && container.hasCheckpoint) {
+                const runActions = [];
+                runActions.push({ label: _("Start"), onActivate: () => this.startContainer(container) });
+                runActions.push({ label: _("Restore"), onActivate: () => this.restoreContainer(container) });
+                actions.push(<DropDown key={_(container.Id) + "stop"} actions={runActions} />);
+            } else {
+                actions.push(
+                    <Button key={container.Id + "start"} variant="secondary" onClick={() => this.startContainer(container)}>
+                        {_("Start")}
+                    </Button>
+                );
+            }
         } else {
             const restartActions = [];
             const stopActions = [];
@@ -171,6 +204,8 @@ class Containers extends React.Component {
 
             stopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container) });
             stopActions.push({ label: _("Force Stop"), onActivate: () => this.stopContainer(container, true) });
+            if (container.isSystem)
+                stopActions.push({ label: _("Checkpoint"), onActivate: () => this.checkpointContainer(container) });
             actions.push(<DropDown key={_(container.Id) + "stop"} actions={stopActions} />);
         }
 
@@ -204,6 +239,50 @@ class Containers extends React.Component {
                     const error = cockpit.format(_("Failed to remove container $0"), this.state.containerWillDelete.names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
+    }
+
+    handleCheckpointContainer(args) {
+        const container = this.state.containerWillCheckpoint;
+        this.setState({ checkpointInProgress: true });
+        client.postContainer(container.isSystem, "checkpoint", container.Id, args)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to checkpoint container $0"), container.Names);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                })
+                .finally(() => {
+                    this.setState({
+                        checkpointInProgress: false,
+                        selectContainerCheckpointModal: false
+                    });
+                });
+    }
+
+    handleRestoreContainer(args) {
+        const container = this.state.containerWillRestore;
+        this.setState({ restoreInProgress: true });
+        client.postContainer(container.isSystem, "restore", container.Id, args)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to restore container $0"), container.Names);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                })
+                .finally(() => {
+                    this.setState({
+                        restoreInProgress: false,
+                        selectContainerRestoreModal: false
+                    });
+                });
+    }
+
+    handleCheckpointContainerDeleteModal() {
+        this.setState((prevState) => ({
+            selectContainerCheckpointModal: !prevState.selectContainerCheckpointModal,
+        }));
+    }
+
+    handleRestoreContainerDeleteModal() {
+        this.setState((prevState) => ({
+            selectContainerRestoreModal: !prevState.selectContainerRestoreModal,
+        }));
     }
 
     handleCancelRemoveError() {
@@ -268,6 +347,22 @@ class Containers extends React.Component {
                 handleCancelContainerDeleteModal={this.handleCancelContainerDeleteModal}
                 handleRemoveContainer={this.handleRemoveContainer}
             />;
+        const containerCheckpointModal =
+            <ContainerCheckpointModal
+                selectContainerCheckpointModal={this.state.selectContainerCheckpointModal}
+                handleCheckpointContainer={this.handleCheckpointContainer}
+                handleCheckpointContainerDeleteModal={this.handleCheckpointContainerDeleteModal}
+                containerWillCheckpoint={this.state.containerWillCheckpoint}
+                checkpointInProgress={this.state.checkpointInProgress}
+            />;
+        const containerRestoreModal =
+            <ContainerRestoreModal
+                selectContainerRestoreModal={this.state.selectContainerRestoreModal}
+                handleRestoreContainer={this.handleRestoreContainer}
+                handleRestoreContainerDeleteModal={this.handleRestoreContainerDeleteModal}
+                containerWillCheckpoint={this.state.containerWillRestore}
+                restoreInProgress={this.state.restoreInProgress}
+            />;
         const containerRemoveErrorModal =
             <ContainerRemoveErrorModal
                 setContainerRemoveErrorModal={this.state.setContainerRemoveErrorModal}
@@ -293,6 +388,8 @@ class Containers extends React.Component {
                     rows={rows}
                 />
                 {containerDeleteModal}
+                {containerCheckpointModal}
+                {containerRestoreModal}
                 {containerRemoveErrorModal}
                 {this.state.showCommitModal && containerCommitModal}
             </div>
