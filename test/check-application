@@ -773,12 +773,14 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:8001 \u2192 8001/tcp')
         b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:7001 \u2192 7001/tcp')
         ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
-        if m.image != "fedora-32":
+
+        if m.image in ["rhel-8-3"]:  # podman 1.x
             self.assertIn('6000 5000 tcp', ports)
             self.assertIn('6001 5001 udp', ports)
             self.assertIn('8001 8001 tcp', ports)
             self.assertNotIn('7001 7001 tcp', ports)
         else:
+            # podman 2.x
             self.assertIn('5000/tcp:[{ 6000}]', ports)
             self.assertIn('5001/udp:[{ 6001}]', ports)
             self.assertIn('8001/tcp:[{ 8001}]', ports)
