@@ -249,7 +249,7 @@ class Application extends React.Component {
         case 'import':
         case 'init':
         case 'wait':
-        case 'restart': // We get seperate died-init-start events after the restart event
+        case 'restart': // We get separate died-init-start events after the restart event
             break;
         /* The following events need only to update the Container list
          * We do get the container affected in the event object but for
