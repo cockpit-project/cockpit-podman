@@ -11,6 +11,7 @@ import { DropDown } from './Dropdown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
 import * as utils from './util.js';
+import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
 import ScrollableAnchor from 'react-scrollable-anchor';
 
@@ -48,7 +49,7 @@ class Containers extends React.Component {
     }
 
     deleteContainer(container, event) {
-        if (container.status == "running") {
+        if (container.State == "running") {
             this.setState((prevState) => ({
                 containerWillDelete: container,
                 setContainerRemoveErrorModal: true,
@@ -62,59 +63,56 @@ class Containers extends React.Component {
     }
 
     stopContainer(container, force) {
-        const args = { name: container.names };
+        const args = {};
 
         if (force)
-            args.timeout = 0;
-        utils.podmanCall("StopContainer", args, container.isSystem)
+            args.t = 0;
+        client.postContainer(container.isSystem, "stop", container.Id, args)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to stop container $0"), container.names);
-                    const errorDetail = ex.parameters && ex.parameters.reason;
-                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                    const error = cockpit.format(_("Failed to stop container $0"), container.Names);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     }
 
     startContainer(container) {
-        utils.podmanCall("StartContainer", { name: container.names }, container.isSystem)
+        client.postContainer(container.isSystem, "start", container.Id, {})
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to start container $0"), container.names);
-                    const errorDetail = ex.parameters && ex.parameters.reason;
-                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                    const error = cockpit.format(_("Failed to start container $0"), container.Names);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     }
 
     restartContainer (container, force) {
-        const args = { name: container.names };
+        const args = {};
 
         if (force)
-            args.timeout = 0;
-        utils.podmanCall("RestartContainer", args, container.isSystem)
+            args.t = 0;
+        client.postContainer(container.isSystem, "restart", container.Id, args)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to restart container $0"), container.names);
-                    const errorDetail = ex.parameters && ex.parameters.reason;
-                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                    const error = cockpit.format(_("Failed to restart container $0"), container.Names);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     }
 
     renderRow(containersStats, container) {
-        const containerStats = containersStats[container.id + container.isSystem.toString()];
-        const isRunning = container.status == "running";
-        const image = container.image;
+        const containerStats = containersStats[container.Id + container.isSystem.toString()];
+        const isRunning = container.State == "running";
+        const image = container.Image;
 
         let proc = "";
         let mem = "";
         if (containerStats) {
-            proc = containerStats.cpu ? utils.format_cpu_percent(containerStats.cpu * 100) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
-            mem = containerStats.mem_usage ? utils.format_memory_and_limit(containerStats.mem_usage, containerStats.mem_limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+            proc = containerStats.cpu_stats ? containerStats.cpu_stats.cpu.toFixed(2) + "%" : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+            mem = containerStats.memory_stats ? utils.format_memory_and_limit(containerStats.memory_stats.usage, containerStats.memory_stats.limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
         }
         const columns = [
-            { name: container.names, header: true },
+            { name: container.Names, header: true },
             image,
-            utils.quote_cmdline(container.command),
+            utils.quote_cmdline(container.Command),
             proc,
             mem,
             container.isSystem ? _("system") : this.props.user,
-            container.status /* TODO: i18n */,
+            container.State /* FIXME: i18n */,
         ];
         const tabs = [{
             name: _("Details"),
@@ -123,16 +121,16 @@ class Containers extends React.Component {
         }, {
             name: _("Logs"),
             renderer: ContainerLogs,
-            data: { containerId: container.id, width:this.state.width, system:container.isSystem }
+            data: { containerId: container.Id, width:this.state.width, system:container.isSystem }
         }, {
             name: _("Console"),
             renderer: ContainerTerminal,
-            data: { containerId: container.id, containerStatus: container.status, width:this.state.width, system:container.isSystem }
+            data: { containerId: container.Id, containerStatus: container.State, width:this.state.width, system:container.isSystem }
         }];
 
         var actions = [
             <Button
-                key={container.id + "delete"}
+                key={container.Id + "delete"}
                 variant="danger"
                 className="btn-delete"
                 aria-label={_("Delete image")}
@@ -140,10 +138,10 @@ class Containers extends React.Component {
                 <span className="pficon pficon-delete" />
             </Button>,
             <Button
-                key={container.id + "commit"}
+                key={container.Id + "commit"}
                 variant="secondary"
                 className="btn-commit"
-                data-container-id={container.id}
+                data-container-id={container.Id}
                 data-toggle="modal" data-target="#container-commit-dialog"
                 onClick={() => this.setState({ showCommitModal: true, containerWillCommit: container })}
             >
@@ -152,7 +150,7 @@ class Containers extends React.Component {
         ];
         if (!isRunning) {
             actions.push(
-                <Button key={container.ID + "start"} variant="secondary" onClick={() => this.startContainer(container)}>
+                <Button key={container.Id + "start"} variant="secondary" onClick={() => this.startContainer(container)}>
                     {_("Start")}
                 </Button>
             );
@@ -162,18 +160,18 @@ class Containers extends React.Component {
 
             restartActions.push({ label: _("Restart"), onActivate: () => this.restartContainer(container) });
             restartActions.push({ label: _("Force Restart"), onActivate: () => this.restartContainer(container, true) });
-            actions.push(<DropDown key={_(container.ID) + "restart"} actions={restartActions} />);
+            actions.push(<DropDown key={_(container.Id) + "restart"} actions={restartActions} />);
 
             stopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container) });
             stopActions.push({ label: _("Force Stop"), onActivate: () => this.stopContainer(container, true) });
-            actions.push(<DropDown key={_(container.ID) + "stop"} actions={stopActions} />);
+            actions.push(<DropDown key={_(container.Id) + "stop"} actions={stopActions} />);
         }
 
         return (
-            <ScrollableAnchor id={container.id} key={container.id}>
+            <ScrollableAnchor id={container.Id} key={container.Id}>
                 <Listing.ListingRow
-                        key={container.id + container.isSystem.toString()}
-                        rowId={container.id + container.isSystem.toString()}
+                        key={container.Id + container.isSystem.toString()}
+                        rowId={container.Id + container.isSystem.toString()}
                         columns={columns}
                         tabRenderers={tabs}
                         listingActions={actions}
@@ -189,15 +187,14 @@ class Containers extends React.Component {
     }
 
     handleRemoveContainer() {
-        const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
+        const id = this.state.containerWillDelete ? this.state.containerWillDelete.Id : "";
         this.setState({
             selectContainerDeleteModal: false
         });
-        utils.podmanCall("RemoveContainer", { name: id }, this.state.containerWillDelete.isSystem)
+        client.delContainer(this.state.containerWillDelete.isSystem, id, false)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to remove container $0"), this.state.containerWillDelete.names);
-                    const errorDetail = ex.parameters && ex.parameters.reason;
-                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     }
 
@@ -207,18 +204,16 @@ class Containers extends React.Component {
         });
     }
 
-    // TODO: force
     handleForceRemoveContainer() {
-        const id = this.state.containerWillDelete ? this.state.containerWillDelete.id : "";
-        return utils.podmanCall("RemoveContainer", { name: id, force: true }, this.state.containerWillDelete.isSystem)
-                .then(reply => {
+        const id = this.state.containerWillDelete ? this.state.containerWillDelete.Id : "";
+        return client.delContainer(this.state.containerWillDelete.isSystem, id, true)
+                .then(() => {
                     this.setState({
                         setContainerRemoveErrorModal: false
                     });
                 }, ex => {
                     const error = cockpit.format(_("Failed to force remove container $0"), this.state.containerWillDelete.names);
-                    const errorDetail = ex.parameters && ex.parameters.reason;
-                    this.props.onAddNotification({ type: 'danger', error, errorDetail });
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     }
 
@@ -242,11 +237,11 @@ class Containers extends React.Component {
         const containersStats = this.props.containersStats;
         let filtered = [];
         if (this.props.containers !== null)
-            filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].status == "running");
+            filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State == "running");
         if (this.props.textFilter.length > 0) {
             const lcf = this.props.textFilter.toLowerCase();
-            filtered = filtered.filter(id => this.props.containers[id].names.toLowerCase().indexOf(lcf) >= 0 ||
-                    this.props.containers[id].image.toLowerCase().indexOf(lcf) >= 0
+            filtered = filtered.filter(id => this.props.containers[id].Names[0].toLowerCase().indexOf(lcf) >= 0 ||
+                    this.props.containers[id].Image.toLowerCase().indexOf(lcf) >= 0
             );
         }
 
@@ -254,7 +249,7 @@ class Containers extends React.Component {
             // User containers are in front of system ones
             if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
                 return this.props.containers[a].isSystem ? 1 : -1;
-            return this.props.containers[a].names > this.props.containers[b].names ? 1 : -1;
+            return this.props.containers[a].Names > this.props.containers[b].Names ? 1 : -1;
         });
 
         const rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));

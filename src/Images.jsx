@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@patternfly/react-core';
+import { PlusCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import * as Listing from '../lib/cockpit-components-listing.jsx';
@@ -9,7 +10,7 @@ import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import ModalExample from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
-import * as utils from './util.js';
+import * as client from './client.js';
 
 import './Images.css';
 
@@ -48,7 +49,7 @@ class Images extends React.Component {
             pullImageId += ":" + imageTag;
 
         this.setState({ imageDownloadInProgress: imageName });
-        utils.podmanCall("PullImage", { name: pullImageId }, system)
+        client.pullImage(system, pullImageId)
                 .then(() => {
                     this.setState({ imageDownloadInProgress: undefined });
                 })
@@ -56,7 +57,7 @@ class Images extends React.Component {
                     const error = cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest");
                     const errorDetail = (<>
                         <p> {_("Error message")}:
-                            <samp>{cockpit.format("$0 $1", ex.error, ex.parameters && ex.parameters.reason)}</samp>
+                            <samp>{cockpit.format("$0 $1", ex.message, ex.reason)}</samp>
                         </p>
                     </>);
                     this.setState({ imageDownloadInProgress: undefined });
@@ -71,13 +72,13 @@ class Images extends React.Component {
     }
 
     handleRemoveImage() {
-        const image = this.state.imageWillDelete.id;
+        const image = this.state.imageWillDelete.Id;
         this.setState({
             selectImageDeleteModal: false,
         });
-        utils.podmanCall("RemoveImage", { name: image }, this.state.imageWillDelete.isSystem)
+        client.delImage(this.state.imageWillDelete.isSystem, image, false)
                 .catch(ex => {
-                    this.imageRemoveErrorMsg = ex.parameters.reason;
+                    this.imageRemoveErrorMsg = ex.message;
                     this.setState({
                         setImageRemoveErrorModal: true,
                     });
@@ -85,8 +86,8 @@ class Images extends React.Component {
     }
 
     handleForceRemoveImage() {
-        const id = this.state.imageWillDelete ? this.state.imageWillDelete.id : "";
-        utils.podmanCall("RemoveImage", { name: id, force: true }, this.state.imageWillDelete.isSystem)
+        const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
+        client.delImage(this.state.imageWillDelete.isSystem, id, true)
                 .then(reply => {
                     this.setState({
                         setImageRemoveErrorModal: false
@@ -98,23 +99,22 @@ class Images extends React.Component {
     renderRow(image) {
         const tabs = [];
 
-        // TODO: image waiting if - else
         const runImage = (
-            <Button key={image.id + "create"}
+            <Button key={image.Id + "create"}
                 variant='secondary'
                 onClick={ e => {
                     e.stopPropagation();
                     this.setState({ showRunImageModal: image });
                 } }
                 aria-label={_("Run image")}
-                data-image={image.id}>
+                data-image={image.Id}>
                 <span className="fa fa-play" />
             </Button>
         );
         const columns = [
-            { name: image.repoTags ? image.repoTags[0] : "", header: true },
-            moment(image.created, utils.GOLANG_TIME_FORMAT).calendar(),
-            cockpit.format_bytes(image.size),
+            { name: image.RepoTags ? image.RepoTags[0] : "", header: true },
+            moment(image.Created, "YYYY-MM-DDTHH:mm:ss.SZ").calendar(),
+            cockpit.format_bytes(image.Size),
             image.isSystem ? _("system") : this.props.user,
             {
                 element: runImage,
@@ -131,7 +131,7 @@ class Images extends React.Component {
             name: _("Used By"),
             renderer: ImageUsedBy,
             data: {
-                containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.id + image.isSystem.toString()] : null,
+                containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.Id + image.isSystem.toString()] : null,
                 showAll: this.props.showAll,
             }
         });
@@ -139,7 +139,7 @@ class Images extends React.Component {
         const actions = [
             <Button
                 variant="danger"
-                key={image.id + "delete"}
+                key={image.Id + "delete"}
                 className="btn-delete"
                 aria-label={_("Delete image")}
                 onClick={() => this.deleteImage(image)}>
@@ -148,8 +148,8 @@ class Images extends React.Component {
         ];
         return (
             <Listing.ListingRow
-                    key={image.id + image.isSystem.toString()}
-                    rowId={image.id + image.isSystem.toString()}
+                    key={image.Id + image.isSystem.toString()}
+                    rowId={image.Id + image.isSystem.toString()}
                     columns={columns}
                     tabRenderers={tabs}
                     listingActions={actions} />
@@ -170,19 +170,19 @@ class Images extends React.Component {
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No images that match the current filter");
         const getNewImageAction = [
-            <a key="get-new-image-action" role="link" tabIndex="0"
-               onClick={() => this.setState({ showSearchImageModal: true })}
-               className="card-pf-link-with-icon pull-right">
-                <span className="pficon pficon-add-circle-o" />
+            <Button variant="link" key="get-new-image-action"
+                    onClick={() => this.setState({ showSearchImageModal: true })}
+                    className="pull-right"
+                    icon={<PlusCircleIcon />}>
                 {_("Get new image")}
-            </a>
+            </Button>
         ];
         let filtered = [];
         if (this.props.images !== null) {
             filtered = Object.keys(this.props.images);
             if (this.props.textFilter.length > 0) {
                 filtered = filtered.filter(id =>
-                    (this.props.images[id].repoTags || []).some(tag =>
+                    (this.props.images[id].RepoTags || []).some(tag =>
                         tag.toLowerCase().indexOf(this.props.textFilter.toLowerCase()) >= 0)
                 );
             }
@@ -192,8 +192,8 @@ class Images extends React.Component {
             // User images are in front of system ones
             if (this.props.images[a].isSystem !== this.props.images[b].isSystem)
                 return this.props.images[a].isSystem ? 1 : -1;
-            const name_a = this.props.images[a].repoTags ? this.props.images[a].repoTags[0] : "";
-            const name_b = this.props.images[b].repoTags ? this.props.images[b].repoTags[0] : "";
+            const name_a = this.props.images[a].RepoTags ? this.props.images[a].RepoTags[0] : "";
+            const name_b = this.props.images[b].RepoTags ? this.props.images[b].RepoTags[0] : "";
             if (name_a === "")
                 return 1;
             if (name_b === "")

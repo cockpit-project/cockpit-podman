@@ -1,38 +1,20 @@
 import cockpit from 'cockpit';
-import varlink from './varlink.js';
 
 const _ = cockpit.gettext;
-
-export const PODMAN_SYSTEM_ADDRESS = "unix:/run/podman/io.podman";
-
-/*
- * Podman returns dates in the format that golang's time.String() exports. Use
- * this format specifier for converting that to moment.js time, e.g.:
- *
- *     moment(date, util.GOLANG_TIME_FORMAT)
- *
- * https://github.com/containers/libpod/issues/2260
- */
-export const GOLANG_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.S Z';
 
 export function truncate_id(id) {
     if (!id) {
         return "";
     }
-    return _(id.substr(0, 12));
-}
-
-export function format_cpu_percent(cpuPercent) {
-    if (cpuPercent === undefined || isNaN(cpuPercent)) {
-        return "";
-    }
-    return cpuPercent.toFixed() + "%";
+    return id.substr(0, 12);
 }
 
 export function format_memory_and_limit(usage, limit) {
     if (usage === undefined || isNaN(usage))
         return "";
 
+    usage = usage / 1073741824; // 1024^3
+    limit = limit / 1073741824;
     var mtext = "";
     var units = 1024;
     var parts;
@@ -51,95 +33,6 @@ export function format_memory_and_limit(usage, limit) {
     } else {
         return "";
     }
-}
-
-export function getAddress(system) {
-    if (system)
-        return PODMAN_SYSTEM_ADDRESS;
-    const xrd = sessionStorage.getItem('XDG_RUNTIME_DIR');
-    if (xrd)
-        return ("unix:" + xrd + "/podman/io.podman");
-    console.warn("$XDG_RUNTIME_DIR is not present. Cannot use user service.");
-    return "";
-}
-
-// TODO: handle different kinds of errors
-function handleVarlinkCallError(ex) {
-    if (ex.error === "io.podman.ErrRequiresCgroupsV2ForRootless")
-        console.log("This OS does not support CgroupsV2. Some information may be missing.");
-    else
-        console.warn("Failed to do varlinkcall:", JSON.stringify(ex));
-}
-
-export function podmanCall(name, args, system) {
-    return varlink.call(getAddress(system), "io.podman." + name, args, system);
-}
-
-export function monitor(name, args, callback, on_close, system) {
-    return varlink.connect(getAddress(system), system)
-            .then(connection => connection.monitor("io.podman." + name, args, callback))
-            .catch(e => {
-                if (e.name === "ConnectionClosed")
-                    on_close(system);
-                else
-                    throw e;
-            });
-}
-
-export function updateImage(id, system) {
-    let image = {};
-
-    return podmanCall("GetImage", { id: id }, system)
-            .then(reply => {
-                image = reply.image;
-                return podmanCall("InspectImage", { name: id }, system);
-            })
-            .then(reply => Object.assign(image, parseImageInfo(JSON.parse(reply.image))));
-}
-
-function parseImageInfo(info) {
-    const image = {};
-
-    if (info.Config) {
-        image.entrypoint = info.Config.EntryPoint;
-        image.command = info.Config.Cmd;
-        image.ports = Object.keys(info.Config.ExposedPorts || {});
-    }
-    image.author = info.Author;
-
-    return image;
-}
-
-export function updateImages(system) {
-    return podmanCall("ListImages", {}, system)
-            .then(reply => {
-                // Some information about images is only available in the OCI
-                // data. Grab what we need and add it to the image itself until
-                // podman's API does it for us
-
-                const images = {};
-                const promises = [];
-
-                for (const image of reply.images || []) {
-                    images[image.id] = image;
-                    promises.push(podmanCall("InspectImage", { name: image.id }, system));
-                }
-
-                return Promise.all(promises)
-                        .then(replies => {
-                            for (const reply of replies) {
-                                const info = JSON.parse(reply.image);
-                                // Update image with information from InspectImage API
-                                images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
-                                images[info.Id].isSystem = system;
-                            }
-                            return images;
-                        });
-            })
-            .catch(ex => {
-                handleVarlinkCallError(ex);
-                return Promise.reject(ex);
-            });
 }
 
 export function getCommitArr(arr, cmd) {

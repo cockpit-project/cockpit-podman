@@ -22,11 +22,30 @@ import PropTypes from 'prop-types';
 import cockpit from 'cockpit';
 import { Terminal } from "xterm";
 
-import * as utils from './util.js';
+import * as client from './client.js';
 
 import "./ContainerTerminal.css";
 
 const _ = cockpit.gettext;
+const decoder = cockpit.utf8_decoder();
+const encoder = cockpit.utf8_encoder();
+
+function sequence_find(seq, find) {
+    let f;
+    const fl = find.length;
+    let s;
+    const sl = (seq.length - fl) + 1;
+    for (s = 0; s < sl; s++) {
+        for (f = 0; f < fl; f++) {
+            if (seq[s + f] !== find[f])
+                break;
+        }
+        if (f == fl)
+            return s;
+    }
+
+    return -1;
+}
 
 class ContainerTerminal extends React.Component {
     constructor(props) {
@@ -52,7 +71,7 @@ class ContainerTerminal extends React.Component {
             term: term,
             container: props.containerId,
             channel: null,
-            control_channel: null,
+            buffer: null,
             opened: false,
             errorMessage: "",
             cols: 80,
@@ -76,59 +95,92 @@ class ContainerTerminal extends React.Component {
         var realWidth = this.state.term._core._renderService.dimensions.actualCellWidth;
         var cols = Math.floor((width - padding) / realWidth);
         this.state.term.resize(cols, 24);
-        cockpit.spawn(["sh", "-c", "echo '1 24 " + cols.toString() + "'>" + this.state.control_channel], { superuser: this.props.system ? "require" : null });
+        client.resizeContainersTTY(this.props.system, this.state.container, cols, 24)
+                .catch(console.log);
         this.setState({ cols: cols });
     }
 
     connectChannel() {
-        const self = this;
-        if (self.state.channel)
+        if (this.state.channel)
             return;
 
-        if (self.props.containerStatus !== "running") {
+        if (this.props.containerStatus !== "running") {
             const message = _("Container is not running");
             this.setState({ errorMessage: message });
             return;
         }
 
-        utils.podmanCall("GetAttachSockets", { name: this.state.container }, this.props.system)
-                .then(out => {
-                    const opts = {
-                        payload: "packet",
-                        unix: out.sockets.io_socket,
-                        superuser: this.props.system ? "require" : null,
-                        binary: false
-                    };
+        // FIXME: Implement proper terminal - if not tty then need to do 'exec' and connect to it
+        // Tracked in: https://github.com/cockpit-project/cockpit-podman/issues/297
+        // Blocked on https://github.com/containers/libpod/issues/5741
+        // POC in varlink API: https://github.com/marusak/cockpit-podman/tree/proper_terminal
 
-                    const channel = cockpit.channel(opts);
-                    channel.wait()
-                            .then(() => {
-                                // Show the terminal. Once it was shown, do not show it again but reuse the previous one
-                                if (!this.state.opened) {
-                                    this.state.term.open(this.refs.terminal);
-                                    this.setState({ opened: true });
+        const channel = cockpit.channel({
+            payload: "stream",
+            unix: client.getAddress(this.props.system),
+            superuser: this.props.system ? "require" : null,
+            binary: true
+        });
 
-                                    self.state.term.onData(function(data) {
-                                        if (self.state.channel)
-                                            self.state.channel.send(data);
-                                    });
-                                }
+        channel.send("POST /v1.24/libpod/containers/" + encodeURIComponent(this.state.container) +
+                      "/attach?&stdin=true&stdout=true&stderr=true HTTP/1.0\r\n" +
+                      "Content-Length: 0\r\n\r\n");
 
-                                channel.addEventListener("message", this.onChannelMessage);
-                                channel.addEventListener('close', this.onChannelClose);
+        const buffer = channel.buffer();
 
-                                channel.send(String.fromCharCode(12)); // Send SIGWINCH to show prompt on attaching
-                                this.setState({ channel: channel, control_channel: out.sockets.control_socket, errorMessage: "" });
-                                this.resize(this.props.width);
-                            })
-                            .catch(e => {
-                                let message = cockpit.format(_("Could not open channel: $0"), e.problem);
-                                if (e.problem === "not-supported")
-                                    message = _("This version of the Web Console does not support a terminal.");
-                                this.setState({ errorMessage: message });
-                            });
-                })
-                .catch(e => this.setState({ errorMessage: cockpit.format(_("Could not attach to this container: $0"), e.problem) }));
+        // Parse the full HTTP response
+        buffer.callback = (data) => {
+            let ret = 0;
+            let pos = 0;
+            let headers = "";
+
+            // Double line break separates header from body
+            pos = sequence_find(data, [13, 10, 13, 10]);
+            if (pos == -1)
+                return ret;
+
+            if (data.subarray)
+                headers = cockpit.utf8_decoder().decode(data.subarray(0, pos));
+            else
+                headers = cockpit.utf8_decoder().decode(data.slice(0, pos));
+
+            const parts = headers.split("\r\n", 1)[0].split(" ");
+            // Check if we got `101` as we expect `HTTP/1.1 101 UPGRADED`
+            if (parts[1] != "101") {
+                console.log(parts.slice(2).join(" "));
+                buffer.callback = null;
+                return;
+            } else if (data.subarray) {
+                data = data.subarray(pos + 4);
+                ret += pos + 4;
+            } else {
+                data = data.slice(pos + 4);
+                ret += pos + 4;
+            }
+
+            // Set up callback for new incoming messages and if the first response
+            // contained any body, pass it into the callback
+            buffer.callback = this.onChannelMessage;
+            const consumed = this.onChannelMessage(data);
+            return ret + consumed;
+        };
+
+        channel.addEventListener('close', this.onChannelClose);
+
+        // Show the terminal. Once it was shown, do not show it again but reuse the previous one
+        if (!this.state.opened) {
+            this.state.term.open(this.refs.terminal);
+            this.setState({ opened: true });
+
+            this.state.term.onData((data) => {
+                if (this.state.channel)
+                    this.state.channel.send(encoder.encode(data));
+            });
+        }
+
+        channel.send(String.fromCharCode(12)); // Send SIGWINCH to show prompt on attaching
+        this.setState({ channel: channel, errorMessage: "", buffer: buffer });
+        this.resize(this.props.width);
     }
 
     componentWillUnmount() {
@@ -138,8 +190,10 @@ class ContainerTerminal extends React.Component {
         this.state.term.dispose();
     }
 
-    onChannelMessage(event, data) {
-        this.state.term.write(data.substring(1)); // Drop first character which is marking stdin/stdout/stderr
+    onChannelMessage(buffer) {
+        if (buffer)
+            this.state.term.write(decoder.decode(buffer));
+        return buffer.length;
     }
 
     onChannelClose(event, options) {
@@ -151,8 +205,9 @@ class ContainerTerminal extends React.Component {
     }
 
     disconnectChannel() {
+        if (this.state.buffer)
+            this.state.buffer.callback = null;
         if (this.state.channel) {
-            this.state.channel.removeEventListener('message', this.onChannelMessage);
             this.state.channel.removeEventListener('close', this.onChannelClose);
         }
     }

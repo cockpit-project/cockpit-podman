@@ -1,13 +1,14 @@
 import React from 'react';
 import { ListGroup, ListGroupItem, Modal } from 'patternfly-react';
-import { Button } from '@patternfly/react-core';
+import { Button, InputGroup, InputGroupText } from '@patternfly/react-core';
+import { SearchIcon } from '@patternfly/react-icons';
 
 import { ErrorNotification } from './Notification.jsx';
-import * as utils from './util.js';
-import varlink from './varlink.js';
 import cockpit from 'cockpit';
+import rest from './rest.js';
+import * as client from './client.js';
 
-import '../lib/form-layout.less';
+import '../lib/form-layout.scss';
 import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
@@ -46,7 +47,7 @@ export class ImageSearchModal extends React.Component {
     }
 
     onDownloadClicked() {
-        const selectedImageName = this.state.imageList[this.state.selected].name;
+        const selectedImageName = this.state.imageList[this.state.selected].Name;
 
         this.props.close();
         this.props.downloadImage(selectedImageName, this.state.imageTag, this.state.isSystem);
@@ -70,28 +71,28 @@ export class ImageSearchModal extends React.Component {
 
         this.setState({ searchInProgress: true });
 
-        varlink.connect(utils.getAddress(this.state.isSystem), this.state.isSystem)
-                .then(connection => {
-                    this.activeConnection = connection;
-
-                    connection.call("io.podman.SearchImages", { query: this.state.imageIdentifier })
-                            .then(reply => {
-                                if (this._isMounted)
-                                    this.setState({ imageList: reply.results || [], searchInProgress: false, searchFinished: true });
-                            })
-                            .catch(ex => {
-                                // We expect new searches to close the connection for ongoing searches
-                                if (ex.error == 'ConnectionClosed')
-                                    return;
-
-                                if (this._isMounted) {
-                                    this.setState({
-                                        searchInProgress: false,
-                                        dialogError: _("Failed to search for new images"),
-                                        dialogErrorDetail: cockpit.format("$0: $1", ex.error, ex.parameters && ex.parameters.reason)
-                                    });
-                                }
-                            });
+        this.activeConnection = rest.connect(client.getAddress(this.state.isSystem), this.state.isSystem);
+        const options = {
+            method: "GET",
+            path: "/v1.12/libpod/images/search",
+            body: "",
+            params: {
+                term: this.state.imageIdentifier,
+            },
+        };
+        this.activeConnection.call(options)
+                .then(reply => {
+                    if (this._isMounted)
+                        this.setState({ imageList: JSON.parse(reply) || [], searchInProgress: false, searchFinished: true, dialogError: "" });
+                })
+                .catch(ex => {
+                    if (this._isMounted) {
+                        this.setState({
+                            searchInProgress: false,
+                            dialogError: _("Failed to search for new images"),
+                            dialogErrorDetail: cockpit.format(_("Failed to search for images: $0"), ex.message ? ex.message : "")
+                        });
+                    }
                 });
     }
 
@@ -128,10 +129,10 @@ export class ImageSearchModal extends React.Component {
                         </fieldset>
                     </form>
                 }
-                <div className="input-group">
-                    <span className="input-group-addon">
-                        <span className="fa fa-search" />
-                    </span>
+                <InputGroup>
+                    <InputGroupText id="username" aria-label={_("Search")}>
+                        <SearchIcon />
+                    </InputGroupText>
                     <input id='search-image-dialog-name'
                         autoFocus
                         className='form-control'
@@ -140,7 +141,7 @@ export class ImageSearchModal extends React.Component {
                         value={this.state.imageIdentifier}
                         onKeyPress={this.onKeyPress}
                         onChange={e => this.onValueChanged('imageIdentifier', e.target.value)} />
-                </div>
+                </InputGroup>
 
                 {this.state.searchInProgress && <div id='search-image-dialog-waiting' className='spinner' />}
 
@@ -153,9 +154,9 @@ export class ImageSearchModal extends React.Component {
                                 <ListGroupItem active={this.state.selected == iter} onClick={() => this.onItemSelected(iter)} key={iter}>
                                     <span className='image-list-item'>
                                         <label className='control-label'>
-                                            { image.name }
+                                            { image.Name }
                                         </label>
-                                        <span className='pull-right'> { image.description } </span>
+                                        <span className='pull-right'> { image.Description } </span>
                                     </span>
                                 </ListGroupItem>
                             );
@@ -176,19 +177,21 @@ export class ImageSearchModal extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <div className='image-search-modal-footer-grid'>
-                        <input className='form-control image-tag-entry'
+                    <div className="ct-form image-search-tag-form">
+                        <label className="control-label" htmlFor="image-search-tag">{_("Tag")}</label>
+                        <input className="form-control image-tag-entry"
+                               id="image-search-tag"
                                type='text'
                                placeholder={_("Tag")}
                                value={this.state.imageTag || ''}
                                onChange={e => this.onValueChanged('imageTag', e.target.value)} />
-                        <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
-                            {_("Download")}
-                        </Button>
-                        <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
-                            {_("Cancel")}
-                        </Button>
                     </div>
+                    <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
+                        {_("Download")}
+                    </Button>
+                    <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                        {_("Cancel")}
+                    </Button>
                 </Modal.Footer>
             </Modal>
         );

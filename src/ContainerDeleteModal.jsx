@@ -10,7 +10,7 @@ const ContainerDeleteModal = (props) => {
     return (
         <Modal show={props.selectContainerDeleteModal}>
             <Modal.Header>
-                <Modal.Title>{cockpit.format(_("Please confirm deletion of $0"), utils.truncate_id(props.containerWillDelete.id))}</Modal.Title>
+                <Modal.Title>{cockpit.format(_("Please confirm deletion of $0"), utils.truncate_id(props.containerWillDelete.Id))}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {_("Deleting a container will erase all data in it.")}

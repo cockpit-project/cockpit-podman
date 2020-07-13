@@ -11,24 +11,24 @@ const truncate_id = (id) => {
 
 const ImageDetails = (props) => {
     const image = props.image;
-    const created = image.created;
+    const created = moment(image.Created, "YYYY-MM-DDTHH:mm:ss.SZ").calendar();
 
     return (
         <dl className='image-details'>
             <dt>{_("ID")}</dt>
-            <dd title={image.id}>{truncate_id(image.id)}</dd>
+            <dd title={image.Id}>{truncate_id(image.Id)}</dd>
             <dt>{_("Tags")}</dt>
-            <dd>{image.repoTags ? image.repoTags.join(" ") : ""}</dd>
+            <dd>{image.RepoTags ? image.RepoTags.join(" ") : ""}</dd>
             <dt>{_("Entrypoint")}</dt>
-            <dd>{image.entrypoint ? image.entrypoint.join(" ") : ""}</dd>
+            <dd>{image.Entrypoint ? image.Entrypoint.join(" ") : ""}</dd>
             <dt>{_("Command")}</dt>
-            <dd>{image.command ? utils.quote_cmdline(image.command) : "" }</dd>
+            <dd>{image.Command ? utils.quote_cmdline(image.Command) : "" }</dd>
             <dt>{_("Created")}</dt>
-            <dd title={created.toLocaleString()}>{moment(created, utils.GOLANG_TIME_FORMAT).calendar()}</dd>
+            <dd>{created}</dd>
             <dt>{_("Author")}</dt>
-            <dd>{image.author}</dd>
+            <dd>{image.Author}</dd>
             <dt>{_("Ports")}</dt>
-            <dd>{image.ports ? image.ports.join(', ') : ""}</dd>
+            <dd>{image.Ports ? image.Ports.join(', ') : ""}</dd>
         </dl>
     );
 };
