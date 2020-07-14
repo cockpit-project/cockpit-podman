@@ -3,7 +3,8 @@ import ReactDOM from "react-dom";
 import { Button } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
-import * as Listing from '../lib/cockpit-components-listing.jsx';
+import { ListingTable } from "../lib/cockpit-components-table.jsx";
+import { ListingPanel } from '../lib/cockpit-components-listing-panel.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
@@ -111,13 +112,15 @@ class Containers extends React.Component {
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Command)}</small>
             </div>;
+
         const columns = [
-            info_block,
+            { title: info_block },
             proc,
             mem,
-            container.isSystem ? _("system") : this.props.user,
+            container.isSystem ? _("system") : this.props.user.name,
             container.State /* FIXME: i18n */,
         ];
+
         const tabs = [{
             name: _("Details"),
             renderer: ContainerDetails,
@@ -171,17 +174,18 @@ class Containers extends React.Component {
             actions.push(<DropDown key={_(container.Id) + "stop"} actions={stopActions} />);
         }
 
-        return (
-            <ScrollableAnchor id={container.Id} key={container.Id}>
-                <Listing.ListingRow
-                        key={container.Id + container.isSystem.toString()}
-                        rowId={container.Id + container.isSystem.toString()}
-                        columns={columns}
-                        tabRenderers={tabs}
-                        listingActions={actions}
-                />
-            </ScrollableAnchor>
-        );
+        return {
+            expandedContent: <ScrollableAnchor id={container.Id} key={container.Id}>
+                <ListingPanel
+                                    colSpan='4'
+                                    listingActions={actions}
+                                    tabRenderers={tabs} />
+            </ScrollableAnchor>,
+            columns: columns,
+            initiallyExpanded: document.location.hash.substr(1) === container.Id,
+            rowId: container.Id + container.isSystem.toString(),
+            props: { key :container.Id + container.isSystem.toString() },
+        };
     }
 
     handleCancelContainerDeleteModal() {
@@ -282,9 +286,12 @@ class Containers extends React.Component {
 
         return (
             <div id="containers-containers" className="containers-containers">
-                <Listing.Listing key="ContainerListing" title={_("Containers")} columnTitles={columnTitles} emptyCaption={emptyCaption}>
-                    {rows}
-                </Listing.Listing>
+                <ListingTable caption={_("Containers")}
+                    variant='compact'
+                    emptyCaption={emptyCaption}
+                    columns={columnTitles}
+                    rows={rows}
+                />
                 {containerDeleteModal}
                 {containerRemoveErrorModal}
                 {this.state.showCommitModal && containerCommitModal}
