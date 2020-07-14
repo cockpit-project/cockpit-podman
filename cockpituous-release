@@ -14,17 +14,5 @@ RELEASE_SRPM="_release/srpm"
 job release-source
 job release-srpm -V
 
-# Authenticate for pushing into Fedora dist-git (works in Cockpituous release container)
-cat ~/.fedora-password | kinit cockpit@FEDORAPROJECT.ORG
-# Do fedora builds for the tag, using tarball
-job release-koji master
-job release-koji f31
-job release-koji f32
-job release-bodhi F31
-job release-bodhi F32
-
-# These are likely the first of your release targets; but run them after Fedora uploads,
-# so that failures there will fail the release early, before publishing on GitHub
-
 job release-github
 job release-copr @cockpit/cockpit-podman
