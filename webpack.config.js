@@ -17,6 +17,7 @@ const builddir = (process.env.SRCDIR || __dirname);
 const distdir = builddir + path.sep + "dist";
 const section = process.env.ONLYDIR || null;
 const nodedir = path.resolve((process.env.SRCDIR || __dirname), "node_modules");
+const libdir = (process.env.SRCDIR || __dirname) + path.sep + "lib";
 /* A standard nodejs and webpack pattern */
 var production = process.env.NODE_ENV === 'production';
 
@@ -201,6 +202,17 @@ module.exports = {
                                 outputStyle: 'compressed',
                             }
                         }
+                    },
+                    {
+                        loader: 'sass-resources-loader',
+                            // Make PF3 and PF4 variables globably accessible to be used by the components scss
+                            options: {
+                                resources: [
+                                    path.resolve(libdir, './_global-variables.scss'),
+                                    path.resolve(nodedir, './@patternfly/patternfly/patternfly-variables.scss'),
+                                    path.resolve(nodedir, './patternfly/dist/sass/patternfly/_variables.scss')
+                                ],
+                            },
                     },
                 ]
             },

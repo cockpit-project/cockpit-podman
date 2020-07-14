@@ -1,11 +1,11 @@
 import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
-import * as Listing from '../lib/cockpit-components-listing.jsx';
+import { ListingTable } from "../lib/cockpit-components-table.jsx";
 
 const _ = cockpit.gettext;
 
-const renderRow = (containerStats, container, showAll) => {
+const renderRow = (containerStats, container) => {
     const isRunning = container.State == "running";
 
     let proc = "";
@@ -15,25 +15,22 @@ const renderRow = (containerStats, container, showAll) => {
         mem = containerStats.memory_stats ? utils.format_memory_and_limit(containerStats.memory_stats.usage, containerStats.memory_stats.limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
     }
     const columns = [
-        { name: container.Names, header: true },
+        { title: container.Names, header: true },
         utils.quote_cmdline(container.Command),
         proc,
         mem,
         container.State /* FIXME: i18n */,
 
     ];
-    return <Listing.ListingRow
-                navigateToItem={() => {
-                    const loc = document.location.toString().split('#')[0];
-                    document.location = loc + '#' + container.Id;
-                    if (!isRunning)
-                        showAll();
-                    return false;
-                }}
-                key={"usedby-" + container.Id}
-                rowId={"usedby-" + container.Id}
-                columns={columns}
-    />;
+    return {
+        columns: columns,
+        rowId: "usedby-" + container.Id,
+        props: {
+            key: "usedby-" + container.Id,
+            running: isRunning,
+            containerId: container.Id,
+        }
+    };
 };
 
 const ImageUsedBy = (props) => {
@@ -47,16 +44,26 @@ const ImageUsedBy = (props) => {
 
     if (cs !== null) {
         cs.forEach(c => {
-            containers.push(renderRow(c.stats, c.container, props.showAll));
+            containers.push(renderRow(c.stats, c.container));
         });
     } else {
         emptyCaption = _("Loading...");
     }
 
     return (
-        <Listing.Listing columnTitles={columnTitles} emptyCaption={emptyCaption}>
-            { containers }
-        </Listing.Listing>
+        <ListingTable
+            onRowClick={(_, x) => {
+                const loc = document.location.toString().split('#')[0];
+                document.location = loc + '#' + x.props.containerId;
+                if (!x.props.running)
+                    props.showAll();
+                return false;
+            }}
+            variant='compact'
+            emptyCaption={emptyCaption}
+            columns={columnTitles}
+            rows={containers}
+        />
     );
 };
 

@@ -3,7 +3,8 @@ import { Button } from '@patternfly/react-core';
 import { PlusCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
-import * as Listing from '../lib/cockpit-components-listing.jsx';
+import { ListingTable } from "../lib/cockpit-components-table.jsx";
+import { ListingPanel } from '../lib/cockpit-components-listing-panel.jsx';
 import ImageDetails from './ImageDetails.jsx';
 import ImageUsedBy from './ImageUsedBy.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
@@ -100,26 +101,25 @@ class Images extends React.Component {
         const tabs = [];
 
         const runImage = (
-            <Button key={image.Id + "create"}
-                variant='secondary'
-                onClick={ e => {
-                    e.stopPropagation();
-                    this.setState({ showRunImageModal: image });
-                } }
-                aria-label={_("Run image")}
-                data-image={image.Id}>
-                <span className="fa fa-play" />
-            </Button>
+            <div>
+                <Button key={image.Id + "create"}
+                    variant='secondary'
+                    onClick={ e => {
+                        e.stopPropagation();
+                        this.setState({ showRunImageModal: image });
+                    } }
+                    aria-label={_("Run image")}
+                    data-image={image.Id}>
+                    <span className="fa fa-play" />
+                </Button>
+            </div>
         );
         const columns = [
-            { name: image.RepoTags ? image.RepoTags[0] : "", header: true },
+            { title: image.RepoTags ? image.RepoTags[0] : "", header: true },
             moment(image.Created, "YYYY-MM-DDTHH:mm:ss.SZ").calendar(),
             cockpit.format_bytes(image.Size),
-            image.isSystem ? _("system") : this.props.user,
-            {
-                element: runImage,
-                tight: true
-            }
+            image.isSystem ? _("system") : this.props.user.name,
+            runImage,
         ];
 
         tabs.push({
@@ -146,14 +146,15 @@ class Images extends React.Component {
                 <span className="pficon pficon-delete" />
             </Button>
         ];
-        return (
-            <Listing.ListingRow
-                    key={image.Id + image.isSystem.toString()}
-                    rowId={image.Id + image.isSystem.toString()}
-                    columns={columns}
-                    tabRenderers={tabs}
-                    listingActions={actions} />
-        );
+        return {
+            expandedContent: <ListingPanel
+                                colSpan='4'
+                                listingActions={actions}
+                                tabRenderers={tabs} />,
+            columns: columns,
+            rowId: image.Id + image.isSystem.toString(),
+            props: { key :image.Id + image.isSystem.toString() },
+        };
     }
 
     handleCancelImageRemoveError() {
@@ -220,14 +221,13 @@ class Images extends React.Component {
 
         return (
             <div id="containers-images" key="images" className="containers-images">
-                <Listing.Listing
-                            key="ImagesListing"
-                            title={_("Images")}
-                            columnTitles={columnTitles}
-                            emptyCaption={emptyCaption}
-                            actions={getNewImageAction}>
-                    {imageRows}
-                </Listing.Listing>
+                <ListingTable caption={_("Images")}
+                    variant='compact'
+                    emptyCaption={emptyCaption}
+                    columns={columnTitles}
+                    rows={imageRows}
+                    actions={getNewImageAction}
+                />
                 {imageDeleteModal}
                 {imageRemoveErrorModal}
                 {this.state.showRunImageModal &&

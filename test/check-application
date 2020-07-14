@@ -25,9 +25,9 @@ registries = ['localhost:5000']
 """
 
 def checkImage(browser, name, owner):
-    browser.wait_present("#containers-images > section > table")
+    browser.wait_present("#containers-images > table")
     browser.wait_js_func("""(function (first, last) {
-        let items = ph_select("#containers-images > section > table tbody");
+        let items = ph_select("#containers-images > table tbody");
         for (i = 0; i < items.length; i++)
             if (items[i].innerText.trim().startsWith(first) && items[i].innerText.trim().endsWith(last))
                 return true;
@@ -122,10 +122,10 @@ class TestApplication(testlib.MachineCase):
         # show image listing toggle
         busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/busybox:latest"], auth).lower()
         b.wait_present(busybox_sel)
-        b.click(busybox_sel + " td.listing-ct-toggle")
-        b.wait_present(busybox_sel + " + tr button.btn-delete")
-        b.wait_in_text("#containers-images tbody tr .image-details:first-child:contains('busybox:latest')", "Commandsh")
-        b.click(busybox_sel + " td.listing-ct-toggle")
+        b.click(busybox_sel + " td.pf-c-table__toggle button")
+        b.wait_visible(busybox_sel + " + tr button.btn-delete")
+        b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child:contains('busybox:latest')", "Commandsh")
+        b.click(busybox_sel + " td.pf-c-table__toggle button")
 
         # make sure no running containers shown
         self.filter_containers('running')
@@ -153,10 +153,10 @@ class TestApplication(testlib.MachineCase):
 
         # running busybox shown
         if auth:
-            b.wait_present("#containers-containers tr th:contains('swamped-crate-system')")
+            b.wait_present("#containers-containers .container-name:contains('swamped-crate-system')")
             self.check_container(system_containers["swamped-crate-system"], True, ['swamped-crate-system', 'busybox:latest', 'sleep 1000', 'running'])
 
-        b.wait_present("#containers-containers tr:contains('swamped-crate-user')")
+        b.wait_present("#containers-containers .container-name:contains('swamped-crate-user')")
         self.check_container(user_containers["swamped-crate-user"], False, ['swamped-crate-user', 'busybox:latest', 'sleep 1000', 'running'])
 
         # exited alpine not shown
@@ -172,18 +172,18 @@ class TestApplication(testlib.MachineCase):
 
         self.check_container(user_containers["test-sh-user"], False, ['test-sh-user', 'alpine:latest', 'sh', 'exited'])
 
-        b.click('#containers-containers tbody tr:contains("swamped-crate-user") td.listing-ct-toggle')
+        b.click('#containers-containers tbody tr:contains("swamped-crate-user") td.pf-c-table__toggle button')
         b.wait_present('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
 
         if auth:
-            b.click('#containers-containers tbody tr:contains("swamped-crate-system") td.listing-ct-toggle')
+            b.click('#containers-containers tbody tr:contains("swamped-crate-system") td.pf-c-table__toggle button')
             b.wait_present('#containers-containers tbody tr:contains("swamped-crate-system") + tr button.btn-delete')
 
         # Checked order of containers
         if auth:
-            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "swamped-crate-usertest-sh-userswamped-crate-systemtest-sh-system")
+            b.wait_collected_text("#containers-containers .container-name", "swamped-crate-usertest-sh-userswamped-crate-systemtest-sh-system")
         else:
-            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "swamped-crate-usertest-sh-user")
+            b.wait_collected_text("#containers-containers .container-name", "swamped-crate-usertest-sh-user")
 
         # show running container
         self.filter_containers('running')
@@ -206,14 +206,14 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-containers", "swamped-crate-user")
 
         b.wait_present('#containers-containers tr:contains("test-sh-user")')
-        b.click('#containers-containers tbody tr:contains("test-sh-user") td.listing-ct-toggle')
+        b.click('#containers-containers tbody tr:contains("test-sh-user") td.pf-c-table__toggle button')
         b.click('#containers-containers tbody tr:contains("test-sh-user") + tr button.btn-delete')
         self.confirm_modal("btn-ctr-delete")
         b.wait_not_in_text("#containers-containers", "test-sh-user")
 
         if auth:
             b.wait_present('#containers-containers tr:contains("test-sh-system")')
-            b.click('#containers-containers tbody tr:contains("test-sh-system") td.listing-ct-toggle')
+            b.click('#containers-containers tbody tr:contains("test-sh-system") td.pf-c-table__toggle button')
             b.click('#containers-containers tbody tr:contains("test-sh-system") + tr button.btn-delete')
             self.confirm_modal("btn-ctr-delete")
             b.wait_not_in_text("#containers-containers", "test-sh-system")
@@ -221,7 +221,7 @@ class TestApplication(testlib.MachineCase):
         def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
             self.filter_containers("all")
             b.wait_present('#containers-containers tr:contains({0})'.format(container_name))
-            b.click('#containers-containers tbody tr:contains({0}) td.listing-ct-toggle'.format(container_name))
+            b.click('#containers-containers tbody tr:contains({0}) td.pf-c-table__toggle button'.format(container_name))
             # open commit modal and close it using cancel
             b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
             self.confirm_modal("btn-ctr-cancel-commit")
@@ -238,7 +238,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_present('#containers-images tr:contains("{0}:{1}")'.format(image_name, image_tag))
             checkImage(b, "localhost/{0}:{1}".format(image_name, image_tag), owner)
             # open the listing toggle of testimg and check the commit paramerters
-            toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.listing-ct-toggle'.format(image_name, image_tag)
+            toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.pf-c-table__toggle button'.format(image_name, image_tag)
             b.click(toggle_sel)
             b.wait_present('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
             b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") dd:nth-child(8)'.format(image_name, image_tag), image_command)
@@ -274,7 +274,7 @@ class TestApplication(testlib.MachineCase):
         else:
             self.execute(False, "podman run -d --name test-sh alpine sh")
         b.wait_present('#containers-containers tr:contains("alpine:latest")')
-        b.click('#containers-containers tbody tr:contains("alpine:latest") td.listing-ct-toggle')
+        b.click('#containers-containers tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
         # open commit modal and check error modal
         b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
         # check required field error
@@ -295,7 +295,7 @@ class TestApplication(testlib.MachineCase):
 
         # delete image busybox that hasn't been used
         b.wait_present(busybox_sel)
-        b.click(busybox_sel + " td.listing-ct-toggle")
+        b.click(busybox_sel + " td.pf-c-table__toggle button")
         b.click(busybox_sel + " + tr button.btn-delete")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
@@ -304,7 +304,7 @@ class TestApplication(testlib.MachineCase):
         # delete image alpine that has been used by a container
         alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/alpine:latest"], auth).lower()
         b.wait_present(alpine_sel)
-        b.click(alpine_sel + " td.listing-ct-toggle")
+        b.click(alpine_sel + " td.pf-c-table__toggle button")
         b.click(alpine_sel + " + tr button.btn-delete")
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
@@ -312,19 +312,19 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("modal-dialog div #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", alpine_sel)
 
-        b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "")
+        b.wait_collected_text("#containers-containers .container-name", "")
         self.execute(auth, "podman run -d --name c registry:2 sh")
-        b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "c")
+        b.wait_collected_text("#containers-containers .container-name", "c")
         self.execute(auth, "podman run -d --name a registry:2 sh")
-        b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "ac")
+        b.wait_collected_text("#containers-containers .container-name", "ac")
 
         self.execute(False, "podman run -d --name b registry:2 sh")
         if auth:
-            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "bac")
+            b.wait_collected_text("#containers-containers .container-name", "bac")
             self.execute(False, "podman run -d --name d registry:2 sh")
-            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "bdac")
+            b.wait_collected_text("#containers-containers .container-name", "bdac")
         else:
-            b.wait_collected_text("#containers-containers table > tbody th:nth-child(2)", "abc")
+            b.wait_collected_text("#containers-containers .container-name", "abc")
 
     def testDownloadImage(self):
         b = self.browser
@@ -409,7 +409,7 @@ class TestApplication(testlib.MachineCase):
                 # show image listing toggle
                 sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(self.imageSha, "true" if self.user == "system" else "false")
                 b.wait_present(sel)
-                b.click(sel + " td.listing-ct-toggle")
+                b.click(sel + " td.pf-c-table__toggle button")
 
                 # Click the delete icon on the image row
                 b.wait_present(sel + ' + tr button.btn-delete')
@@ -488,7 +488,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_present("#containers-containers")
         b.wait_present('#containers-containers tr:contains("swamped-crate")')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
 
         # Start the container
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Start)')
@@ -498,9 +498,9 @@ class TestApplication(testlib.MachineCase):
         with b.wait_timeout(5):
             self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh', 'running', "system" if auth else "admin"])
         # Check we show usage
-        b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)") != "")
-        cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)")
-        memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(6)")
+        b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)") != "")
+        cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
+        memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)")
         if auth or m.image not in ["rhel-8-2", "rhel-8-3"]:
             self.assertIn('%', cpu)
             num = cpu[:-1]
@@ -535,9 +535,9 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force Stop)')
 
         self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh'])
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(7)') in ['stopped', 'exited'])
-        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)", "")
-        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(6)", "")
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
+        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)", "")
+        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)", "")
 
     def testNotRunning(self):
         b = self.browser
@@ -675,14 +675,14 @@ class TestApplication(testlib.MachineCase):
 
         # Check command in alpine
         b.wait_present('#containers-images tr:contains("alpine:latest")')
-        b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-actions button')
+        b.click('#containers-images tbody tr:contains("alpine:latest") td button .fa-play')
         b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
         b.wait_present("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
         b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-actions button')
+        b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
         b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
 
         # Inspect and fill modal dialog
@@ -781,7 +781,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait(lambda: "3" in self.execute(auth, "podman logs busybox-with-tty"))
 
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
 
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6000 \u2192 5000/tcp')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6001 \u2192 5001/udp')
@@ -833,8 +833,8 @@ class TestApplication(testlib.MachineCase):
 
         # Create another instance without port publishing
         b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.listing-ct-toggle')
-        b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-actions button')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
+        b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
         b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
 
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
@@ -846,7 +846,7 @@ class TestApplication(testlib.MachineCase):
         b.click('div.modal-footer button:contains("Run")')
         b.wait_not_present("div.modal-dialog")
         b.wait_present('#containers-containers tr:contains("busybox-without-publish")')
-        b.click('#containers-containers tbody tr:contains("busybox-without-publish") td.listing-ct-toggle')
+        b.click('#containers-containers tbody tr:contains("busybox-without-publish") td.pf-c-table__toggle button')
         b.wait_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
         b.wait_text('#containers-containers tr:contains("busybox-without-publish") + tr dt:contains("Ports") + dd', "")
 
@@ -858,21 +858,21 @@ class TestApplication(testlib.MachineCase):
 
         b.set_val("#containers-containers-filter", "all")
 
-        b.click("a:contains('Console')")
-        b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.focus(".xterm-helper-textarea")
+        b.click(".pf-m-expanded a:contains('Console')")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+        b.focus(".pf-m-expanded .xterm-helper-textarea")
         b.key_press('echo hello\r')
-        b.wait_text(".xterm-accessibility-tree > div:nth-child(2)", "hello")
-        b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ # ")
-        b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
         b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
-        b.wait_text(".xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'running'])
-        b.wait_text(".xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
         b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
@@ -893,18 +893,18 @@ class TestApplication(testlib.MachineCase):
 
         b.set_val("#containers-containers-filter", "all")
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
-        b.click('#containers-containers tr:contains("busybox-without-publish")')
-        b.click("a:contains('Console')")
-        b.wait_text("span.empty-message", "Container is not running")
+        b.click('#containers-containers tr:contains("busybox-without-publish") .pf-c-table__toggle button')
+        b.click(".pf-m-expanded a:contains('Console')")
+        b.wait_text(".pf-m-expanded span.empty-message", "Container is not running")
 
-        b.click('#containers-images tbody tr:contains("busybox:latest") td.listing-ct-toggle')
-        b.click("#containers-images tbody tr:contains('busybox:latest') + tr.ct-listing-panel a:contains('Used By')")
-        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody th:contains('busybox-without-publish')")
-        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody th:contains('busybox-with-tty')")
+        b.click('#containers-images tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
+        b.click("#containers-images tbody tr:contains('busybox:latest') a:contains('Used By')")
+        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-without-publish')")
+        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-with-tty')")
 
-        b.click('#containers-images tbody tr:contains("alpine:latest") td.listing-ct-toggle')
-        b.click("#containers-images tbody tr:contains('alpine:latest') + tr.ct-listing-panel a:contains('Used By')")
-        b.wait_visible("#containers-images tbody tr:contains('alpine:latest') + tr div.ct-listing-panel-body thead.listing-ct-empty td:contains('No containers are using this image')")
+        b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
+        b.click("#containers-images tbody tr:contains('alpine:latest') a:contains('Used By')")
+        b.wait_visible("#containers-images tbody tr:contains('alpine:latest') + tr div.ct-listing-panel-body thead.ct-table-empty td:contains('No containers are using this image')")
 
         b.set_input_text('#containers-filter', 'foobar')
         b.wait_present('#containers-containers thead tr td:contains("No containers that match the current filter")')
@@ -919,9 +919,9 @@ class TestApplication(testlib.MachineCase):
     def check_content(self, type, present, not_present):
         b = self.browser
         for item in present:
-            b.wait_visible('#containers-{0} tbody tr:contains({1})'.format(type, item))
+            b.wait_visible('#containers-{0} tbody tr:first-child:contains({1})'.format(type, item))
         for item in not_present:
-            b.wait_not_present('#containers-{0} tbody tr:contains({1})'.format(type, item))
+            b.wait_not_present('#containers-{0} tbody tr:first-child:contains({1})'.format(type, item))
 
     def check_containers(self, present, not_present):
         self.check_content("containers", present, not_present)
