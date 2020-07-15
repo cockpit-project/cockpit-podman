@@ -119,6 +119,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                        placeholder={_("Container path")}
                        value={item.containerPath || ''}
                        onChange={e => onChange(idx, 'containerPath', e.target.value)} />
+                <div />
                 <Select.Select className='form-control'
                                initial={item.mode}
                                onChange={value => onChange(idx, 'mode', value)}>
@@ -127,6 +128,19 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                     </Select.SelectEntry>
                     <Select.SelectEntry data='rw' key='rw'>
                         {_("ReadWrite")}
+                    </Select.SelectEntry>
+                </Select.Select>
+                <Select.Select className='form-control'
+                               initial={item.mode}
+                               onChange={value => onChange(idx, 'selinux', value)}>
+                    <Select.SelectEntry data='' key=''>
+                        {_("No SELinux label")}
+                    </Select.SelectEntry>
+                    <Select.SelectEntry data='z' key='z'>
+                        {_("Shared")}
+                    </Select.SelectEntry>
+                    <Select.SelectEntry data='Z' key='Z'>
+                        {_("Private")}
                     </Select.SelectEntry>
                 </Select.Select>
             </div>
@@ -268,8 +282,11 @@ export class ImageRunModal extends React.Component {
                     .filter(volume => volume.hostPath && volume.containerPath)
                     .map(volume => {
                         const record = { source: volume.hostPath, destination: volume.containerPath, type: "bind" };
+                        record.options = [];
                         if (volume.mode)
-                            record.options = [volume.mode];
+                            record.options.push(volume.mode);
+                        if (volume.selinux)
+                            record.options.push(volume.selinux);
                         return record;
                     });
         }
