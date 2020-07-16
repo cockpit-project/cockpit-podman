@@ -72,6 +72,18 @@ class TestApplication(testlib.MachineCase):
         else:
             return self.admin_s.execute(cmd)
 
+    def testRootUser(self):
+        b = self.browser
+        m = self.machine
+
+        self.login_and_go("/podman", user="root")
+        b.wait_present("#app")
+
+        # `User Service is also available` banner should not be present
+        b.wait_not_present("#overview div.pf-c-alert")
+        # There should not be any duplicate images listed
+        b.wait_js_func("ph_count_check", "#containers-images tbody", 5)
+
     def testBasicSystem(self):
         self._testBasic(True)
 
