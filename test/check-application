@@ -528,6 +528,14 @@ class TestApplication(testlib.MachineCase):
             full = numbers[1].strip().split()
             self.assertTrue(full[0].replace('.', '', 1).isdigit())
             self.assertIn(full[1], ["GiB", "MiB"])
+
+            # Test that the value is updated dynamically
+            self.execute(auth, "podman exec -i swamped-crate dd bs=1024 count=1000000 < /dev/urandom > outfile")
+            new_cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
+            self.assertIn('%', new_cpu)
+            new_num = new_cpu[:-1]
+            self.assertTrue(new_num.replace('.', '', 1).isdigit())
+            self.assertTrue(new_num > num)
         else:
             # No support for CGroupsV2
             self.assertEqual(cpu, "n/a")
