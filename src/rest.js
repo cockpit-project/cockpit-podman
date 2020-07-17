@@ -1,17 +1,15 @@
 import cockpit from "cockpit";
 
 function manage_error(reject, error, content) {
-    let message = "";
+    let content_o = {};
     if (content) {
         try {
-            message = JSON.parse(content).message;
-        } catch (e) {
-            message = content;
+            content_o = JSON.parse(content);
+        } catch {
+            content_o.message = content;
         }
     }
-    const c = { ...error };
-    if (message)
-        c.message = message;
+    const c = { ...error, ...content_o };
     reject(c);
 }
 
