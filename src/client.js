@@ -63,14 +63,13 @@ export function getContainers(system, id) {
     });
 }
 
-export function getContainerStats(system, id) {
+export function getContainerStats(system, id, callback) {
     return new Promise((resolve, reject) => {
         const options = {
-            stream: false, // FIXME that it actually streams
+            stream: true,
         };
-        podmanCall("libpod/containers/" + id + "/stats", "GET", options, system)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
+        podmanMonitor("libpod/containers/" + id + "/stats", "GET", options, callback, system)
+                .then(resolve, reject);
     });
 }
 

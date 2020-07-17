@@ -121,17 +121,17 @@ class Application extends React.Component {
     }
 
     updateContainerStats(id, system) {
-        client.getContainerStats(system, id)
-                .then(reply => {
-                    this.updateState("containersStats", reply.Id + system.toString(), reply);
-                })
-                .catch(ex => {
-                    if (ex.error === "io.podman.ErrRequiresCgroupsV2ForRootless") { // TODO - Check if this message still applies
-                        console.log("This OS does not support CgroupsV2. Some information may be missing.");
-                        this.updateState("containersStats", id + system.toString(), -1);
-                    } else
-                        console.warn("Failed to update container stats:", JSON.stringify(ex));
-                });
+        client.getContainerStats(system, id, reply => {
+            if (reply.response) // executed when container stop, with reply: {cause, message, response}
+                console.warn("Failed to update container stats:", JSON.stringify(reply.message));
+            else
+                this.updateState("containersStats", reply.Id + system.toString(), reply);
+        }).catch(ex => {
+            if (ex.cause == "no support for CGroups V1 in rootless environments") {
+                console.log("This OS does not support CgroupsV2. Some information may be missing.");
+            } else
+                console.warn("Failed to update container stats:", JSON.stringify(ex.message));
+        });
     }
 
     updateContainersAfterEvent(system) {
