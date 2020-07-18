@@ -26,6 +26,7 @@ class Images extends React.Component {
             selectImageDeleteModal: false,
             setImageRemoveErrorModal: false,
             imageWillDelete: {},
+            intermediateOpened: false,
         };
 
         this.deleteImage = this.deleteImage.bind(this);
@@ -115,7 +116,7 @@ class Images extends React.Component {
             </div>
         );
         const columns = [
-            { title: image.RepoTags ? image.RepoTags[0] : "", header: true },
+            { title: image.RepoTags ? image.RepoTags[0] : "<none>:<none>", header: true },
             moment(image.Created, "YYYY-MM-DDTHH:mm:ss.SZ").calendar(),
             cockpit.format_bytes(image.Size),
             image.isSystem ? _("system") : this.props.user.name,
@@ -178,15 +179,19 @@ class Images extends React.Component {
                 {_("Get new image")}
             </Button>
         ];
+
+        const intermediateOpened = this.state.intermediateOpened;
+
         let filtered = [];
         if (this.props.images !== null) {
-            filtered = Object.keys(this.props.images);
-            if (this.props.textFilter.length > 0) {
-                filtered = filtered.filter(id =>
-                    (this.props.images[id].RepoTags || []).some(tag =>
-                        tag.toLowerCase().indexOf(this.props.textFilter.toLowerCase()) >= 0)
-                );
-            }
+            filtered = Object.keys(this.props.images).filter(id => {
+                const tags = this.props.images[id].RepoTags || [];
+                if (!intermediateOpened && tags.length < 1)
+                    return false;
+                if (this.props.textFilter.length > 0)
+                    return tags.some(tag => tag.toLowerCase().indexOf(this.props.textFilter.toLowerCase()) >= 0);
+                return true;
+            });
         }
 
         filtered.sort((a, b) => {
@@ -203,6 +208,16 @@ class Images extends React.Component {
         });
 
         const imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
+
+        const interm = this.props.images && Object.keys(this.props.images).some(id => !this.props.images[id].RepoTags);
+        let toggleIntermediate = "";
+        if (interm) {
+            toggleIntermediate = <span className="listing-action">
+                <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened })}>
+                    {intermediateOpened ? _("Hide intermediate images") : _("Show intermediate images")}</Button>
+            </span>;
+        }
+
         const imageDeleteModal =
             <ModalExample
                     selectImageDeleteModal={this.state.selectImageDeleteModal}
@@ -228,6 +243,7 @@ class Images extends React.Component {
                     rows={imageRows}
                     actions={getNewImageAction}
                 />
+                {toggleIntermediate}
                 {imageDeleteModal}
                 {imageRemoveErrorModal}
                 {this.state.showRunImageModal &&
