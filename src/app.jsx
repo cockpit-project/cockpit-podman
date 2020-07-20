@@ -49,6 +49,7 @@ class Application extends React.Component {
             systemImagesLoaded: false,
             containers: null,
             containersStats: {},
+            containersDetails: {},
             userContainersLoaded: null,
             systemContainersLoaded: null,
             userServiceExists: false,
@@ -134,6 +135,14 @@ class Application extends React.Component {
         });
     }
 
+    inspectContainerDetail(id, system) {
+        client.inspectContainer(system, id)
+                .then(reply => {
+                    this.updateState("containersDetails", reply.Id + system.toString(), reply);
+                })
+                .catch(e => console.log(e));
+    }
+
     updateContainersAfterEvent(system, init) {
         client.getContainers(system)
                 .then(reply => {
@@ -159,6 +168,7 @@ class Application extends React.Component {
                         for (const container of reply || []) {
                             if (container.State === "running")
                                 this.updateContainerStats(container.Id, system);
+                            this.inspectContainerDetail(container.Id, system);
                         }
                     }
                 })
@@ -200,13 +210,16 @@ class Application extends React.Component {
 
                         reply.isSystem = system;
                         this.updateState("containers", reply.Id + system.toString(), reply);
-                        if (reply.State == "running")
+                        if (reply.State == "running") {
+                            this.inspectContainerDetail(reply.Id, system);
                             this.updateContainerStats(reply.Id, system);
-                        else {
+                        } else {
                             this.setState(prevState => {
                                 const copyStats = Object.assign({}, prevState.containersStats);
+                                const copyDetails = Object.assign({}, prevState.containersDetails);
                                 delete copyStats[reply.Id + system.toString()];
-                                return { containersStats: copyStats };
+                                delete copyDetails[reply.Id + system.toString()];
+                                return { containersStats: copyStats, containersDetails: copyDetails };
                             });
                         }
                     }
@@ -499,6 +512,7 @@ class Application extends React.Component {
                 version={this.state.version}
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
                 containersStats={this.state.containersStats}
+                containersDetails={this.state.containersDetails}
                 onlyShowRunning={this.state.onlyShowRunning}
                 textFilter={this.state.textFilter}
                 user={permission.user || _("user")}

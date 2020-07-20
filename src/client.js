@@ -73,6 +73,17 @@ export function getContainerStats(system, id, callback) {
     });
 }
 
+export function inspectContainer(system, id) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            size: false // set true to display filesystem usage
+        };
+        podmanCall("libpod/containers/" + id + "/json", "GET", options, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
 export function delContainer(system, id, force) {
     return new Promise((resolve, reject) => {
         const options = {
