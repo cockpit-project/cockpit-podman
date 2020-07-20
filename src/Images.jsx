@@ -185,6 +185,12 @@ class Images extends React.Component {
         let filtered = [];
         if (this.props.images !== null) {
             filtered = Object.keys(this.props.images).filter(id => {
+                if (this.props.ownerFilter !== "all") {
+                    if (this.props.ownerFilter === "system" && !this.props.images[id].isSystem)
+                        return false;
+                    if (this.props.ownerFilter !== "system" && this.props.images[id].isSystem)
+                        return false;
+                }
                 const tags = this.props.images[id].RepoTags || [];
                 if (!intermediateOpened && tags.length < 1)
                     return false;

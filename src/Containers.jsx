@@ -246,6 +246,17 @@ class Containers extends React.Component {
         let filtered = [];
         if (this.props.containers !== null)
             filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State == "running");
+
+        if (this.props.ownerFilter !== "all") {
+            filtered = filtered.filter(id => {
+                if (this.props.ownerFilter === "system" && !this.props.containers[id].isSystem)
+                    return false;
+                if (this.props.ownerFilter !== "system" && this.props.containers[id].isSystem)
+                    return false;
+                return true;
+            });
+        }
+
         if (this.props.textFilter.length > 0) {
             const lcf = this.props.textFilter.toLowerCase();
             filtered = filtered.filter(id => this.props.containers[id].Names[0].toLowerCase().indexOf(lcf) >= 0 ||
