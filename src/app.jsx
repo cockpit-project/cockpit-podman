@@ -55,6 +55,7 @@ class Application extends React.Component {
             userServiceExists: false,
             onlyShowRunning: true,
             textFilter: "",
+            ownerFilter: "all",
             dropDownValue: 'Everything',
             notifications: [],
             showStartService: true,
@@ -65,6 +66,7 @@ class Application extends React.Component {
         this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onFilterChanged = this.onFilterChanged.bind(this);
+        this.onOwnerChanged = this.onOwnerChanged.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
         this.updateContainerStats = this.updateContainerStats.bind(this);
@@ -106,6 +108,12 @@ class Application extends React.Component {
     onFilterChanged(value) {
         this.setState({
             textFilter: value
+        });
+    }
+
+    onOwnerChanged(value) {
+        this.setState({
+            ownerFilter: value
         });
     }
 
@@ -501,6 +509,7 @@ class Application extends React.Component {
                 imageContainerList={imageContainerList}
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
+                ownerFilter={this.state.ownerFilter}
                 showAll={this.showAll}
                 user={permission.user || _("user")}
                 userServiceAvailable={this.state.userServiceAvailable}
@@ -515,6 +524,7 @@ class Application extends React.Component {
                 containersDetails={this.state.containersDetails}
                 onlyShowRunning={this.state.onlyShowRunning}
                 textFilter={this.state.textFilter}
+                ownerFilter={this.state.ownerFilter}
                 user={permission.user || _("user")}
                 onAddNotification={this.onAddNotification}
             />;
@@ -541,6 +551,9 @@ class Application extends React.Component {
                         onlyShowRunning={this.state.onlyShowRunning}
                         onChange={this.onChange}
                         onFilterChanged={this.onFilterChanged}
+                        onOwnerChanged={this.onOwnerChanged}
+                        twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
+                        user={permission.user}
                     />
                 </div>
                 <div className="container-fluid">

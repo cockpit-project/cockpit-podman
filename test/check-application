@@ -144,6 +144,29 @@ class TestApplication(testlib.MachineCase):
         self.execute(False, "podman run -d --name test-sh-user alpine sh")
         self.execute(False, "podman run -d --name swamped-crate-user busybox sleep 1000")
 
+        # Test owner filtering
+        if auth:
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 8)
+            b.wait_js_func("ph_count_check", "#containers-containers tbody", 2)
+
+            b.set_val("#containers-containers-owner", "system")
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 5)
+            b.wait_in_text("#containers-images", "system")
+            b.wait_js_func("ph_count_check", "#containers-containers tbody", 1)
+            b.wait_in_text("#containers-containers", "system")
+
+            b.set_val("#containers-containers-owner", "user")
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 3)
+            b.wait_in_text("#containers-images", "admin")
+            b.wait_js_func("ph_count_check", "#containers-containers tbody", 1)
+            b.wait_in_text("#containers-containers", "admin")
+
+            b.set_val("#containers-containers-owner", "all")
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 8)
+            b.wait_js_func("ph_count_check", "#containers-containers tbody", 2)
+        else: # No 'owner' selector when not privileged
+            b.wait_not_present("#containers-containers-owner")
+
         user_containers = {}
         system_containers = {}
         for container in self.execute(True, "podman ps --all --no-trunc").strip().split("\n")[1:]:
@@ -374,6 +397,8 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present("#overview div.pf-c-alert")
             # There should not be any duplicate images listed
             b.wait_js_func("ph_count_check", "#containers-images tbody", 3)
+            # There should not be 'owner' selector
+            b.wait_not_present("#containers-containers-owner")
 
     def testDownloadImage(self):
         b = self.browser
