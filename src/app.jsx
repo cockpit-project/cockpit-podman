@@ -134,7 +134,7 @@ class Application extends React.Component {
         });
     }
 
-    updateContainersAfterEvent(system) {
+    updateContainersAfterEvent(system, init) {
         client.getContainers(system)
                 .then(reply => {
                     this.setState(prevState => {
@@ -148,8 +148,6 @@ class Application extends React.Component {
                         for (const container of reply || []) {
                             container.isSystem = system;
                             copyContainers[container.Id + system.toString()] = container;
-                            if (container.State === "running")
-                                this.updateContainerStats(container.Id, system);
                         }
 
                         return {
@@ -157,6 +155,12 @@ class Application extends React.Component {
                             [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
                         };
                     });
+                    if (init) {
+                        for (const container of reply || []) {
+                            if (container.State === "running")
+                                this.updateContainerStats(container.Id, system);
+                        }
+                    }
                 })
                 .catch(e => console.log(e));
     }
@@ -301,7 +305,7 @@ class Application extends React.Component {
                 .then(reply => {
                     this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.ServerVersion });
                     this.updateImagesAfterEvent(system);
-                    this.updateContainersAfterEvent(system);
+                    this.updateContainersAfterEvent(system, true);
                     client.streamEvents(system,
                                         message => this.handleEvent(message, system))
                             .then(() => {
