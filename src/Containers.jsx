@@ -95,7 +95,7 @@ class Containers extends React.Component {
                 });
     }
 
-    renderRow(containersStats, container) {
+    renderRow(containersStats, container, containerDetail) {
         const containerStats = containersStats[container.Id + container.isSystem.toString()];
         const isRunning = container.State == "running";
         const image = container.Image;
@@ -124,7 +124,7 @@ class Containers extends React.Component {
         const tabs = [{
             name: _("Details"),
             renderer: ContainerDetails,
-            data: { container: container }
+            data: { container: container, containerDetail: containerDetail }
         }, {
             name: _("Logs"),
             renderer: ContainerLogs,
@@ -260,7 +260,7 @@ class Containers extends React.Component {
             return this.props.containers[a].Names > this.props.containers[b].Names ? 1 : -1;
         });
 
-        const rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id]));
+        const rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id], this.props.containersDetails[id]));
         const containerDeleteModal =
             <ContainerDeleteModal
                 selectContainerDeleteModal={this.state.selectContainerDeleteModal}

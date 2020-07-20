@@ -24,7 +24,7 @@ const render_container_published_ports = (ports) => {
     return result;
 };
 
-const ContainerDetails = ({ container }) => (
+const ContainerDetails = ({ container, containerDetail }) => (
     <dl className='container-details'>
         <dt>{_("ID")}</dt>
         <dd>{container.Id}</dd>
@@ -38,6 +38,14 @@ const ContainerDetails = ({ container }) => (
         <dd>{render_container_state(container)}</dd>
         <dt>{_("Ports")}</dt>
         <dd>{render_container_published_ports(container.Ports)}</dd>
+        <dt>{_("IP Address")}</dt>
+        <dd>{containerDetail ? containerDetail.NetworkSettings.IPAddress : ""}</dd>
+        <dt>{_("IP Prefix Length")}</dt>
+        <dd>{containerDetail ? containerDetail.NetworkSettings.IPPrefixLen : ""}</dd>
+        <dt>{_("Gateway")}</dt>
+        <dd>{containerDetail ? containerDetail.NetworkSettings.Gateway : ""}</dd>
+        <dt>{_("MAC Address")}</dt>
+        <dd>{containerDetail ? containerDetail.NetworkSettings.MacAddress : ""}</dd>
     </dl>
 );
 
