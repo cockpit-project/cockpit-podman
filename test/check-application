@@ -18,10 +18,10 @@ from machine_core import ssh_connection
 
 REGISTRIES_CONF="""
 [registries.search]
-registries = ['localhost:5000']
+registries = ['localhost:5000', 'localhost:6000']
 
 [registries.insecure]
-registries = ['localhost:5000']
+registries = ['localhost:5000', 'localhost:6000']
 """
 
 def checkImage(browser, name, owner):
@@ -406,12 +406,14 @@ class TestApplication(testlib.MachineCase):
         execute = self.execute
 
         def prepare():
-            # Create and start registry container
+            # Create and start registry containers
             self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
+            self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
             # Add local insecure registry into registries conf
             self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop podman.service".format(REGISTRIES_CONF))
-            # Push busybox image to the local registry
+            # Push busybox image to the local registries
             self.execute(True, "podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+            self.execute(True, "podman tag busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
             self.execute(True, "podman rmi -f busybox")
 
@@ -433,6 +435,7 @@ class TestApplication(testlib.MachineCase):
             def fillDialog(self):
                 # Search for image specified with self.imageName and self.imageTag
                 b.click("#{0}".format(self.user))
+                b.set_val('#registry-select', "localhost:5000")
                 # HACK: Sometimes the value is not shown fully. FIXME
                 b.set_input_text("#search-image-dialog-name", self.imageName, value_check=False)
                 if self.imageTag:
@@ -468,7 +471,7 @@ class TestApplication(testlib.MachineCase):
                 checkImage(b, "localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest"), "system" if self.user == "system" else "admin")
 
                 # Find out this image ID
-                self.imageSha = execute(self.user == "system", "podman inspect --format '{{{{.Id}}}}' {0}:{1}".format(self.imageName, self.imageTag or "latest")).strip()
+                self.imageSha = execute(self.user == "system", "podman inspect --format '{{{{.Id}}}}' localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest")).strip()
 
                 return self
 
@@ -505,6 +508,19 @@ class TestApplication(testlib.MachineCase):
         self.login_and_go("/podman", authorized=True, superuser=True)
         b.wait_present("#app")
 
+        # Test registries
+        b.click("header button:contains(Get new image)")
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+        # HACK: Sometimes the value is not shown fully. FIXME
+        b.set_input_text("#search-image-dialog-name", "my-busybox", value_check=False)
+
+        b.wait_present("div.list-group .image-list-item label:contains('localhost:5000/my-busybox')")
+        b.wait_present("div.list-group .image-list-item label:contains('localhost:6000/my-busybox')")
+
+        b.set_val('#registry-select', "localhost:6000")
+        b.wait_not_present("div.list-group .image-list-item label:contains('localhost:5000/my-busybox')")
+        b.wait_present("div.list-group .image-list-item label:contains('localhost:6000/my-busybox')")
+
         dialog0 = DownloadImageDialog('my-busybox', user="system")
         dialog0.openDialog() \
               .fillDialog() \
@@ -518,7 +534,7 @@ class TestApplication(testlib.MachineCase):
               .expectDownloadSuccess()
         dialog1.deleteImage(True)
 
-        dialog0.deleteImage()
+        dialog0.deleteImage(True)
 
         dialog = DownloadImageDialog('my-busybox', 'latest', user="system")
         dialog.openDialog() \

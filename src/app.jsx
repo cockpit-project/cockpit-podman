@@ -324,7 +324,11 @@ class Application extends React.Component {
     init(system) {
         client.getInfo(system)
                 .then(reply => {
-                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.version.Version });
+                    this.setState({
+                        [system ? "systemServiceAvailable" : "userServiceAvailable"]: true,
+                        version: reply.version.Version,
+                        registries: reply.registries,
+                    });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system, true);
                     client.streamEvents(system,
@@ -514,6 +518,7 @@ class Application extends React.Component {
                 user={permission.user || _("user")}
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
+                registries={this.state.registries}
             />;
         const containerList =
             <Containers
