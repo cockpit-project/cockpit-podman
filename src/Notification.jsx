@@ -26,7 +26,7 @@ const _ = cockpit.gettext;
 export const ErrorNotification = ({ errorMessage, errorDetail, onDismiss }) => {
     return (
         <Alert isInline variant='danger' title={errorMessage}
-            action={onDismiss ? <AlertActionCloseButton onClose={onDismiss} /> : null}>
+            actionClose={onDismiss ? <AlertActionCloseButton onClose={onDismiss} /> : null}>
             { errorDetail && <p> {_("Error message")}: <samp>{errorDetail}</samp> </p> }
         </Alert>
     );
