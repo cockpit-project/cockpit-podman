@@ -45,7 +45,7 @@ export function streamEvents(system, callback) {
 
 export function getInfo(system) {
     return new Promise((resolve, reject) => {
-        podmanCall("info", "GET", {}, system)
+        podmanCall("libpod/info", "GET", {}, system)
                 .then(reply => resolve(JSON.parse(reply)))
                 .catch(reject);
     });
