@@ -324,7 +324,7 @@ class Application extends React.Component {
     init(system) {
         client.getInfo(system)
                 .then(reply => {
-                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.ServerVersion });
+                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.version.Version });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system, true);
                     client.streamEvents(system,
