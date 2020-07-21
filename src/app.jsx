@@ -443,7 +443,7 @@ class Application extends React.Component {
             return (
                 <EmptyState variant={EmptyStateVariant.full}>
                     <EmptyStateIcon icon={ExclamationCircleIcon} />
-                    <Title size="lg">
+                    <Title headingLevel="h2" size="lg">
                         { _("Podman Service is Not Active") }
                     </Title>
                     <div className="checkbox">
@@ -494,12 +494,12 @@ class Application extends React.Component {
         if (!this.state.systemServiceAvailable && permission.allowed) {
             startService = <Alert variant='default'
                 title={_("System Podman service is also available")}
-                action={action} />;
+                actionClose={action} />;
         }
         if (!this.state.userServiceAvailable && this.state.userServiceExists) {
             startService = <Alert variant='default'
                 title={_("User Podman service is also available")}
-                action={action} />;
+                actionClose={action} />;
         }
 
         const imageList =
@@ -534,7 +534,7 @@ class Application extends React.Component {
                     {this.state.notifications.map((notification, index) => {
                         return (
                             <Alert key={index} title={notification.error} variant={notification.type}
-                                   action={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
+                                   actionClose={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
                                 {notification.errorDetail}
                             </Alert>
                         );
