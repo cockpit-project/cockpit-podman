@@ -261,6 +261,7 @@ class Images extends React.Component {
                     close={() => this.setState({ showSearchImageModal: false })}
                     downloadImage={this.downloadImage}
                     user={this.props.user}
+                    registries={this.props.registries}
                     userServiceAvailable={this.props.userServiceAvailable}
                     systemServiceAvailable={this.props.systemServiceAvailable} /> }
                 {this.state.imageDownloadInProgress && <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>}
