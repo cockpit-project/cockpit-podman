@@ -1,0 +1,21 @@
+Source: cockpit-podman
+Section: admin
+Priority: optional
+Maintainer: Cockpit <cockpit-devel@lists.fedorahosted.org>
+Build-Depends: debhelper-compat (= 12),
+               appstream-util,
+Standards-Version: 4.5.0
+Homepage: https://github.com/cockpit-project/cockpit-podman
+
+Package: cockpit-podman
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends},
+         cockpit-bridge (>= 138),
+         cockpit-system (>= 138),
+         podman (>= 2.0.2),
+Description: Cockpit component for Podman containers
+ The Cockpit Web Console enables users to administer GNU/Linux servers using a
+ web browser.
+ .
+ This package adds an user interface for Podman containers.
