@@ -1,7 +1,46 @@
 #!/bin/sh
 # image-customize script to enable cockpit in test VMs
-# The application RPM will be installed separately
 set -eu
+
+# for Debian based images, build and install debs; for RPM based ones, the locally built rpm gets installed separately
+if [ -d /var/tmp/debian ]; then
+    apt-get update
+    eatmydata apt-get install -y cockpit-ws cockpit-system podman
+
+    # HACK: starting podman.service complains about missing crun: https://bugs.debian.org/961016
+    eatmydata apt-get install -y crun
+
+    # HACK: deb is not yet shipping the REST and user units: https://bugs.debian.org/966118
+    (cd /lib/systemd/system
+     curl -O https://raw.githubusercontent.com/containers/podman/master/contrib/systemd/system/podman.service
+     curl -O https://raw.githubusercontent.com/containers/podman/master/contrib/systemd/system/podman.socket
+     ln -s ../system/podman.service /lib/systemd/user/podman.service
+     ln -s ../system/podman.socket /lib/systemd/user/podman.socket)
+
+    # build source package
+    cd /var/tmp
+    TAR=$(ls cockpit-podman-*.tar.gz)
+    VERSION="${TAR#cockpit-podman-}"
+    VERSION="${VERSION%.tar.gz}"
+    ln -s $TAR cockpit-podman_${VERSION}.orig.tar.gz
+    tar xf "$TAR"
+    cd cockpit-podman
+    cp -r ../debian .
+    sed -i "s/(0-1)/(${VERSION}-1)/" debian/changelog
+    dpkg-buildpackage -S -us -uc -nc
+    cd ..
+
+    # build and install binary package
+    pbuilder build --buildresult . *.dsc
+    dpkg -i *.deb
+
+    # Debian does not enable user namespaces by default
+    echo kernel.unprivileged_userns_clone = 1 > /etc/sysctl.d/00-local-userns.conf
+    systemctl restart systemd-sysctl
+
+    # disable services that get in the way of /var/lib/containers
+    systemctl disable docker.service io.podman.service
+fi
 
 systemctl enable cockpit.socket podman.socket
 

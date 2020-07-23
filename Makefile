@@ -146,10 +146,19 @@ $(RPMFILE): $(TARFILE) $(RPM_NAME).spec
 	# sanity check
 	test -e "$(RPMFILE)"
 
-# build a VM with locally built rpm installed
-$(VM_IMAGE): $(RPMFILE) bots
+# determine what to depend on and do for Fedora/RHEL/Debian VM preparation
+ifneq ($(filter debian-%,$(TEST_OS)),)
+VM_DEP=$(TARFILE) packaging/debian/rules packaging/debian/control
+VM_PACKAGE=--upload `pwd`/$(TARFILE):/var/tmp/ --upload `pwd`/packaging/debian:/var/tmp/
+else
+VM_DEP=$(RPMFILE)
+VM_PACKAGE=--install cockpit-ws --install `pwd`/$(RPMFILE)
+endif
+
+# build a VM with locally built rpm/dsc installed
+$(VM_IMAGE): $(VM_DEP) bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
-	bots/image-customize -v -i cockpit-ws -i `pwd`/$(RPMFILE) -s $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize -v $(VM_PACKAGE) -s $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
