@@ -8,4 +8,3 @@ override_dh_auto_clean:
 
 override_dh_auto_test:
 	# don't call `make check`, these are integration tests
-	appstream-util validate-relax --nonet *.metainfo.xml
