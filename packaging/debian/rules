@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	# don't call `make clean`, in a release dist/ is precious
+
+override_dh_auto_test:
+	# don't call `make check`, these are integration tests
+	appstream-util validate-relax --nonet *.metainfo.xml
