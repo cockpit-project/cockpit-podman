@@ -103,6 +103,9 @@ module.exports = {
     resolve: {
         alias: { 'font-awesome': path.resolve(nodedir, 'font-awesome-sass/assets/stylesheets') },
     },
+    watchOptions: {
+        ignored: /node_modules/,
+    },
     externals: externals,
     output: output,
     devtool: "source-map",
