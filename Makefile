@@ -6,6 +6,8 @@ ifeq ($(TEST_OS),)
 TEST_OS = fedora-31
 endif
 export TEST_OS
+TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz
+RPMFILE=$(shell rpmspec -D"VERSION $(VERSION)" -q cockpit-podman.spec.in).rpm
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check if/when npm install ran
 NODE_MODULES_TEST=package-lock.json
@@ -103,12 +105,14 @@ devel-install: $(WEBPACK_TEST)
 	mkdir -p ~/.local/share/cockpit
 	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
+dist-gzip: $(TARFILE)
+
 # when building a distribution tarball, call webpack with a 'production' environment
-# # we don't ship node_modules for license and compactness reasons; we ship a
+# we don't ship node_modules for license and compactness reasons; we ship a
 # pre-built dist/ (so it's not necessary) and ship packge-lock.json (so that
 # node_modules/ can be reconstructed if necessary)
-dist-gzip: NODE_ENV=production
-dist-gzip: all $(RPM_NAME).spec
+$(TARFILE): NODE_ENV=production
+$(TARFILE): $(WEBPACK_TEST) $(RPM_NAME).spec
 	mv node_modules node_modules.release
 	touch -r package.json $(NODE_MODULES_TEST)
 	touch dist/*
@@ -117,13 +121,15 @@ dist-gzip: all $(RPM_NAME).spec
 		$$(git ls-files) package-lock.json $(RPM_NAME).spec dist/
 	mv node_modules.release node_modules
 
-srpm: dist-gzip $(RPM_NAME).spec
+srpm: $(TARFILE) $(RPM_NAME).spec
 	rpmbuild -bs \
 	  --define "_sourcedir `pwd`" \
 	  --define "_srcrpmdir `pwd`" \
 	  $(RPM_NAME).spec
 
-rpm: dist-gzip $(RPM_NAME).spec
+rpm: $(RPMFILE)
+
+$(RPMFILE): $(TARFILE) $(RPM_NAME).spec
 	mkdir -p "`pwd`/output"
 	mkdir -p "`pwd`/rpmbuild"
 	rpmbuild -bb \
@@ -137,11 +143,13 @@ rpm: dist-gzip $(RPM_NAME).spec
 	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
+	# sanity check
+	test -e "$(RPMFILE)"
 
 # build a VM with locally built rpm installed
-$(VM_IMAGE): rpm bots
+$(VM_IMAGE): $(RPMFILE) bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
-	bots/image-customize -v -i cockpit-ws -i `pwd`/$(RPM_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize -v -i cockpit-ws -i `pwd`/$(RPMFILE) -s $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
