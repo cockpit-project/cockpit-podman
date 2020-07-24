@@ -80,7 +80,7 @@ download-po: $(WEBLATE_REPO)
 #
 
 %.spec: %.spec.in
-	sed -e 's/@VERSION@/$(VERSION)/g' $< > $@
+	sed -e 's/%{VERSION}/$(VERSION)/g' $< > $@
 
 $(WEBPACK_TEST): $(NODE_MODULES_TEST) $(shell find src/ -type f) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
 	NODE_ENV=$(NODE_ENV) npm run build
