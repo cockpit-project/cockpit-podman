@@ -37,7 +37,7 @@ function podmanMonitor(name, method, args, callback, system) {
 
 export function streamEvents(system, callback) {
     return new Promise((resolve, reject) => {
-        podmanMonitor("events", "GET", {}, callback, system)
+        podmanMonitor("libpod/events", "GET", {}, callback, system)
                 .then(reply => resolve(JSON.parse(reply)))
                 .catch(reject);
     });
