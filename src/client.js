@@ -1,4 +1,6 @@
+/* eslint-disable no-trailing-spaces */
 import rest from './rest.js';
+import cockpit from "cockpit";
 
 const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
 
@@ -195,4 +197,77 @@ export function pullImage(system, reference) {
                 .then(reply => resolve(JSON.parse(reply)))
                 .catch(reject);
     });
+}
+
+export function getDiskUsage(system) {
+    return new Promise((resolve, reject) => {
+        podmanCall("libpod/system/df", "GET", {}, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
+export function getCGroupInfo(onNotify) {
+    // need to check prefix k8s
+    var cgroupPrefixes = ["machine.slice/libpod-"];
+    var usageSamples = {};
+
+    var usageMetricsChannel = cockpit.metrics(1000, {
+        source: "internal",
+        metrics: [{
+            name: "cgroup.memory.usage",
+            units: "bytes"
+        },
+        {
+            name: "cgroup.cpu.usage",
+            units: "millisec",
+            derive: "rate"
+        },
+        {
+            name: "cgroup.memory.limit",
+            units: "bytes"
+        },
+        {
+            name: "cgroup.cpu.shares",
+            units: "count"
+        }]
+    });
+
+    var usageGrid = cockpit.grid(1000, -1, -0);
+
+    // called when something changed
+    usageMetricsChannel.onchanged = function () {
+        var prefixGot = false;
+        (usageMetricsChannel.meta.metrics || []).forEach(function (metric) {
+            (metric.instances || []).forEach(function (cgroup) {
+                cgroupPrefixes.forEach(function (prefix) {
+                    var id = cgroup.substr(prefix.length, 64);
+                    if (cgroup.startsWith(prefix) && cgroup.substr(21, 7) != "conmon-") {
+                        // if (!usageSamples[id])
+                        usageSamples[id] = [
+                            usageGrid.add(usageMetricsChannel, ["cgroup.memory.usage", cgroup]),
+                            usageGrid.add(usageMetricsChannel, ["cgroup.cpu.usage", cgroup]),
+                            usageGrid.add(usageMetricsChannel, ["cgroup.memory.limit", cgroup]),
+                            usageGrid.add(usageMetricsChannel, ["cgroup.cpu.shares", cgroup]),
+                        ];
+                        prefixGot = true;
+                    }
+                });
+            });
+        });
+        // still notify when no container
+        if (prefixGot) 
+            delete usageSamples[-1];
+        else 
+            usageSamples[-1] = [usageGrid.add(usageMetricsChannel, ["cgroup.memory.usage", usageMetricsChannel.meta.metrics[0].instances[0]])];
+    };
+
+    usageMetricsChannel.follow();
+    usageGrid.walk();
+
+    usageGrid.addEventListener("notify", function (event, index, count) {
+        var usages = Object.assign({}, usageSamples) || {};
+        onNotify(usages);
+    });
+    return usageGrid;
 }

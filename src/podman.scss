@@ -236,3 +236,44 @@
     font-weight: 400;
 }
 
+.res-usage-holder {
+    width: 100%;
+    padding: 0px 20px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: start;
+}
+
+@media screen and (min-width: 768px) {
+    .res-usage-holder {
+        padding: 0rem 3rem 2rem 3rem;
+    }
+}
+
+.res-usage-holder > .cpu-mem-usage-graph {
+    flex: 1;
+    height: 10rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.cpu-mem-usage-graph > .cpu-mem-uage-title {
+    margin-left: 1rem;
+}
+
+#cpuGraph, #memGraph {
+    flex: 1;
+}
+
+.storage-usage-holder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+}
+
+.storage-usage-bar {
+    height: 6px;
+    background-color: rgb(31, 111, 231);
+}

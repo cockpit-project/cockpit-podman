@@ -31,6 +31,7 @@ import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
+import CpuMemUsage from './CpuMemUsage.jsx';
 
 const _ = cockpit.gettext;
 const permission = cockpit.permission({ admin: true });
@@ -60,6 +61,8 @@ class Application extends React.Component {
             notifications: [],
             showStartService: true,
             version: '1.3.0',
+            hostCpus: null,
+            totalStorageUsage: null,
         };
         this.onAddNotification = this.onAddNotification.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -76,6 +79,7 @@ class Application extends React.Component {
         this.handleImageEvent = this.handleImageEvent.bind(this);
         this.handleContainerEvent = this.handleContainerEvent.bind(this);
         this.checkUserService = this.checkUserService.bind(this);
+        this.updateDiskUsageAfterEvent = this.updateDiskUsageAfterEvent.bind(this);
     }
 
     onAddNotification(notification) {
@@ -151,7 +155,30 @@ class Application extends React.Component {
                 .catch(e => console.log(e));
     }
 
+    updateDiskUsageAfterEvent() {
+        const extract_usage = usage => {
+            var res = 0;
+            (usage.Images || []).forEach(image => { res += image.Size });
+            (usage.Containers || []).forEach(container => { res += container.Size });
+            return res;
+        };
+        client.getDiskUsage(true)
+                .then(usageRoot => {
+                    var totalStorageUsage = extract_usage(usageRoot);
+                    client.getDiskUsage(false)
+                            .then(usageRootless => {
+                                totalStorageUsage += extract_usage(usageRootless);
+                                this.setState(prevState => {
+                                    return { totalStorageUsage: totalStorageUsage };
+                                });
+                            })
+                            .catch(e => console.log(e));
+                })
+                .catch(e => console.log(e));
+    }
+
     updateContainersAfterEvent(system, init) {
+        this.updateDiskUsageAfterEvent();
         client.getContainers(system)
                 .then(reply => {
                     this.setState(prevState => {
@@ -184,6 +211,7 @@ class Application extends React.Component {
     }
 
     updateImagesAfterEvent(system) {
+        this.updateDiskUsageAfterEvent();
         client.getImages(system)
                 .then(reply => {
                     this.setState(prevState => {
@@ -324,7 +352,10 @@ class Application extends React.Component {
     init(system) {
         client.getInfo(system)
                 .then(reply => {
-                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.ServerVersion });
+                    this.setState({
+                        [system ? "systemServiceAvailable" : "userServiceAvailable"]: true, version: reply.ServerVersion,
+                        hostCpus: reply.NCPU
+                    });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system, true);
                     client.streamEvents(system,
@@ -559,6 +590,10 @@ class Application extends React.Component {
                 <div className="container-fluid">
                     { this.state.showStartService ? startService : null }
                 </div>
+                <CpuMemUsage
+                    key="cpumemusage"
+                    hostCpus={this.state.hostCpus}
+                    totalStorageUsage={this.state.totalStorageUsage} />
                 <div key="containerslists" className="container-fluid">
                     {containerList}
                 </div>
