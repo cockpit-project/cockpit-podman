@@ -122,10 +122,16 @@ export class ImageSearchModal extends React.Component {
                     <form className="ct-form">
                         <label className="control-label" htmlFor="as-user">{_("Download as:")}</label>
                         <fieldset id="as-user">
-                            <input type="radio" value="system" id="system" onChange={this.onToggleUser} checked={this.state.isSystem} />
-                            <label className="radio" htmlFor="system">{_("System")}</label>
-                            <input type="radio" value="user" id="user" onChange={this.onToggleUser} checked={!this.state.isSystem} />
-                            <label className="radio" htmlFor="user">{this.props.user.name}</label>
+                            <div className="radio">
+                                <label>
+                                    <input type="radio" value="system" id="system" onChange={this.onToggleUser} checked={this.state.isSystem} />
+                                    {_("System")}
+                                </label>
+                                <label>
+                                    <input type="radio" value="user" id="user" onChange={this.onToggleUser} checked={!this.state.isSystem} />
+                                    {this.props.user.name}
+                                </label>
+                            </div>
                         </fieldset>
                     </form>
                 }
