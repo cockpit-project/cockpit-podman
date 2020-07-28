@@ -18,6 +18,8 @@ import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
 import ScrollableAnchor from 'react-scrollable-anchor';
 
+import './Containers.scss';
+
 const _ = cockpit.gettext;
 
 class Containers extends React.Component {
@@ -314,45 +316,77 @@ class Containers extends React.Component {
 
     render() {
         const columnTitles = [_("Container"), _("CPU"), _("Memory"), _("Owner"), _("State")];
+        const partitionedContainers = { 'no-pod': [] };
+        let filtered = [];
 
         let emptyCaption = _("No containers");
-        if (this.props.containers === null)
+        const emptyCaptionPod = _("No containers in this pod");
+        if (this.props.containers === null || this.props.pods === null)
             emptyCaption = _("Loading...");
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No containers that match the current filter");
         else if (this.props.onlyShowRunning)
             emptyCaption = _("No running containers");
 
-        const containersStats = this.props.containersStats;
-        let filtered = [];
-        if (this.props.containers !== null)
-            filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State == "running");
+        if (this.props.containers !== null && this.props.pods !== null) {
+            if (this.props.containers !== null && this.props.pods !== null)
+                filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State == "running");
 
-        if (this.props.ownerFilter !== "all") {
-            filtered = filtered.filter(id => {
-                if (this.props.ownerFilter === "system" && !this.props.containers[id].isSystem)
-                    return false;
-                if (this.props.ownerFilter !== "system" && this.props.containers[id].isSystem)
-                    return false;
-                return true;
-            });
-        }
+            if (this.props.ownerFilter !== "all") {
+                filtered = filtered.filter(id => {
+                    if (this.props.ownerFilter === "system" && !this.props.containers[id].isSystem)
+                        return false;
+                    if (this.props.ownerFilter !== "system" && this.props.containers[id].isSystem)
+                        return false;
+                    return true;
+                });
+            }
 
-        if (this.props.textFilter.length > 0) {
-            const lcf = this.props.textFilter.toLowerCase();
-            filtered = filtered.filter(id => this.props.containers[id].Names[0].toLowerCase().indexOf(lcf) >= 0 ||
+            if (this.props.textFilter.length > 0) {
+                const lcf = this.props.textFilter.toLowerCase();
+                filtered = filtered.filter(id => this.props.containers[id].Names[0].toLowerCase().indexOf(lcf) >= 0 ||
+                    (this.props.containers[id].Pod &&
+                     this.props.pods[this.props.containers[id].Pod + this.props.containers[id].isSystem.toString()].Name.toLowerCase().indexOf(lcf) >= 0) ||
                     this.props.containers[id].Image.toLowerCase().indexOf(lcf) >= 0
-            );
+                );
+            }
+
+            // Remove infra containers
+            filtered = filtered.filter(id => !this.props.containers[id].IsInfra);
+
+            filtered.sort((a, b) => {
+                // User containers are in front of system ones
+                if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
+                    return this.props.containers[a].isSystem ? 1 : -1;
+                return this.props.containers[a].Names > this.props.containers[b].Names ? 1 : -1;
+            });
+
+            Object.keys(this.props.pods || {}).forEach(pod => { partitionedContainers[pod] = [] });
+
+            filtered.forEach(id => {
+                const container = this.props.containers[id];
+                if (container)
+                    (partitionedContainers[container.Pod ? (container.Pod + container.isSystem.toString()) : 'no-pod'] || []).push(container);
+            });
+
+            // Apply filters to pods
+            Object.keys(partitionedContainers).forEach(section => {
+                const lcf = this.props.textFilter.toLowerCase();
+                if (section != "no-pod") {
+                    const pod = this.props.pods[section];
+                    if ((this.state.filter == "running" && pod.Status != "Running") ||
+                        // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
+                        (!partitionedContainers[section].length && pod.Name.toLowerCase().indexOf(lcf) < 0) ||
+                        ((this.props.ownerFilter !== "all") &&
+                         ((this.props.ownerFilter === "system" && !pod.isSystem) ||
+                            (this.props.ownerFilter !== "system" && pod.isSystem))))
+                        delete partitionedContainers[section];
+                }
+            });
+            // If there are pods to show and the generic container list is empty don't show  it at all
+            if (Object.keys(partitionedContainers).length > 1 && !partitionedContainers["no-pod"].length)
+                delete partitionedContainers["no-pod"];
         }
-
-        filtered.sort((a, b) => {
-            // User containers are in front of system ones
-            if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
-                return this.props.containers[a].isSystem ? 1 : -1;
-            return this.props.containers[a].Names > this.props.containers[b].Names ? 1 : -1;
-        });
-
-        const rows = filtered.map(id => this.renderRow(containersStats, this.props.containers[id], this.props.containersDetails[id]));
         const containerDeleteModal =
             <ContainerDeleteModal
                 selectContainerDeleteModal={this.state.selectContainerDeleteModal}
@@ -393,19 +427,63 @@ class Containers extends React.Component {
             />;
 
         return (
-            <div id="containers-containers" className="containers-containers">
-                <ListingTable caption={_("Containers")}
-                    variant='compact'
-                    emptyCaption={emptyCaption}
-                    columns={columnTitles}
-                    rows={rows}
-                />
-                {containerDeleteModal}
-                {containerCheckpointModal}
-                {containerRestoreModal}
-                {containerRemoveErrorModal}
-                {this.state.showCommitModal && containerCommitModal}
-            </div>
+            (this.props.containers === null || this.props.pods === null)
+                ? <ListingTable caption={_("Containers")}
+                                variant='compact'
+                                emptyCaption={emptyCaption}
+                                columns={columnTitles}
+                                rows={[]} />
+                : <>
+                    <header className='ct-table-header'>
+                        <h3 className='ct-table-heading'> {_("Containers")} </h3>
+                    </header>
+                    {Object.keys(partitionedContainers)
+                            .sort((a, b) => {
+                                if (a == "no-pod") return -1;
+                                else if (b == "no-pod") return 1;
+
+                                // User pods are in front of system ones
+                                if (this.props.pods[a].isSystem !== this.props.pods[b].isSystem)
+                                    return this.props.pods[a].isSystem ? 1 : -1;
+                                return this.props.pods[a].Name > this.props.pods[b].Name ? 1 : -1;
+                            })
+                            .map(section => {
+                                const tableProps = {};
+                                const rows = partitionedContainers[section].map(container => {
+                                    return this.renderRow(this.props.containersStats, container,
+                                                          this.props.containersDetails[container.Id + container.isSystem.toString()]);
+                                });
+                                let caption;
+                                if (section !== 'no-pod') {
+                                    tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
+                                    caption = this.props.pods[section].Name;
+                                } else {
+                                    tableProps['aria-label'] = _("Containers");
+                                }
+                                return (
+                                    <div key={'table-' + section}
+                                         id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
+                                         className={"container-section" + (section != "no-pod" ? " panel panel-default" : "")}>
+                                        {caption && <div className='panel-heading'>
+                                            <h4 className='panel-title'>
+                                                <div className='pod-name'>{caption}</div>
+                                                <div>{_("pod group")}</div>
+                                            </h4>
+                                        </div>}
+                                        <ListingTable variant='compact'
+                                                      emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
+                                                      columns={columnTitles}
+                                                      rows={rows}
+                                                      {...tableProps} />
+                                    </div>
+                                );
+                            })}
+                    {containerDeleteModal}
+                    {containerCheckpointModal}
+                    {containerRestoreModal}
+                    {containerRemoveErrorModal}
+                    {this.state.showCommitModal && containerCommitModal}
+                </>
         );
     }
 }

@@ -20,6 +20,7 @@
 import React from 'react';
 import { ToastNotificationList } from 'patternfly-react';
 import {
+    Page, PageSection, PageSectionVariants, Card, Gallery,
     Alert, AlertActionLink, AlertActionCloseButton, Button, Title,
     EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions
 } from '@patternfly/react-core';
@@ -52,6 +53,8 @@ class Application extends React.Component {
             containersDetails: {},
             userContainersLoaded: null,
             systemContainersLoaded: null,
+            userPodsLoaded: null,
+            systemPodsLoaded: null,
             userServiceExists: false,
             onlyShowRunning: true,
             textFilter: "",
@@ -230,6 +233,33 @@ class Application extends React.Component {
                 });
     }
 
+    updatePodsAfterEvent(system) {
+        client.getPods(system)
+                .then(reply => {
+                    this.setState(prevState => {
+                        // Copy only pods that could not be deleted with this event
+                        // So when event from system come, only copy user pods and vice versa
+                        const copyPods = {};
+                        Object.entries(prevState.pods || {}).forEach(([id, pod]) => {
+                            if (pod.isSystem !== system)
+                                copyPods[id] = pod;
+                        });
+                        for (const pod of reply || []) {
+                            pod.isSystem = system;
+                            copyPods[pod.Id + system.toString()] = pod;
+                        }
+
+                        return {
+                            pods: copyPods,
+                            [system ? "systemPodsLoaded" : "userPodsLoaded"]: true,
+                        };
+                    });
+                })
+                .catch(ex => {
+                    console.warn("Failed to do Update Pods:", JSON.stringify(ex));
+                });
+    }
+
     updateContainerAfterEvent(id, system) {
         client.getContainers(system, id)
                 .then(reply => Promise.all(
@@ -277,6 +307,21 @@ class Application extends React.Component {
                 });
     }
 
+    updatePodAfterEvent(id, system) {
+        client.getPods(system, id)
+                .then(reply => {
+                    if (reply && reply.length > 0) {
+                        reply = reply[0];
+
+                        reply.isSystem = system;
+                        this.updateState("pods", reply.Id + system.toString(), reply);
+                    }
+                })
+                .catch(ex => {
+                    console.warn("Failed to do Update Pod:", JSON.stringify(ex));
+                });
+    }
+
     handleImageEvent(event, system) {
         switch (event.Action) {
         case 'push':
@@ -310,6 +355,12 @@ class Application extends React.Component {
          * We do get the container affected in the event object but for
          * now we 'll do a batch update
          */
+        case 'start':
+            // HACK: We don't get 'started' event for pods got started by the first container which was added to them
+            // https://github.com/containers/podman/issues/7213
+            this.updatePodsAfterEvent(system);
+            this.updateContainerAfterEvent(event.Actor.ID, system);
+            break;
         case 'checkpoint':
         case 'create':
         case 'died':
@@ -318,7 +369,6 @@ class Application extends React.Component {
         case 'pause':
         case 'prune':
         case 'restore':
-        case 'start':
         case 'stop':
         case 'sync':
         case 'unmount':
@@ -338,6 +388,24 @@ class Application extends React.Component {
         }
     }
 
+    handlePodEvent(event, system) {
+        switch (event.Action) {
+        case 'create':
+        case 'kill':
+        case 'pause':
+        case 'start':
+        case 'stop':
+        case 'unpause':
+            this.updatePodAfterEvent(event.Actor.ID, system);
+            break;
+        case 'remove':
+            this.updatePodsAfterEvent(system);
+            break;
+        default:
+            console.warn('Unhandled event type ', event.Type, event.Action);
+        }
+    }
+
     handleEvent(event, system) {
         switch (event.Type) {
         case 'container':
@@ -345,6 +413,9 @@ class Application extends React.Component {
             break;
         case 'image':
             this.handleImageEvent(event, system);
+            break;
+        case 'pod':
+            this.handlePodEvent(event, system);
             break;
         default:
             console.warn('Unhandled event type ', event.Type);
@@ -361,6 +432,7 @@ class Application extends React.Component {
                     });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system, true);
+                    this.updatePodsAfterEvent(system);
                     client.streamEvents(system,
                                         message => this.handleEvent(message, system))
                             .then(() => {
@@ -383,7 +455,8 @@ class Application extends React.Component {
                     this.setState({
                         [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
                         [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
-                        [system ? "systemImagesLoaded" : "userImagesLoaded"]: true
+                        [system ? "systemImagesLoaded" : "userImagesLoaded"]: true,
+                        [system ? "systemPodsLoaded" : "userPodsLoaded"]: true
                     });
                 });
     }
@@ -401,6 +474,7 @@ class Application extends React.Component {
                         this.setState({
                             userImagesLoaded: true,
                             userContainersLoaded: true,
+                            userPodsLoaded: true,
                             userServiceExists: false
                         });
                     }
@@ -453,6 +527,7 @@ class Application extends React.Component {
                     this.setState({
                         userServiceAvailable: false,
                         userContainersLoaded: true,
+                        userPodsLoaded: true,
                         userImagesLoaded: true
                     });
                     console.warn("Failed to start user podman.socket:", JSON.stringify(err));
@@ -555,6 +630,7 @@ class Application extends React.Component {
                 key="containerList"
                 version={this.state.version}
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
+                pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
                 containersStats={this.state.containersStats}
                 containersDetails={this.state.containersDetails}
                 onlyShowRunning={this.state.onlyShowRunning}
@@ -563,6 +639,7 @@ class Application extends React.Component {
                 user={permission.user || _("user")}
                 onAddNotification={this.onAddNotification}
             />;
+
         const notificationList = (
             <section className='toast-notification-wrapper'>
                 <ToastNotificationList>
@@ -579,9 +656,9 @@ class Application extends React.Component {
         );
 
         return (
-            <div id="overview" key="overview">
+            <Page id="overview" key="overview">
                 {notificationList}
-                <div key="containerheader" className="content-filter">
+                <PageSection className="content-filter" key="containerheader" variant={PageSectionVariants.light}>
                     <ContainerHeader
                         onlyShowRunning={this.state.onlyShowRunning}
                         onChange={this.onChange}
@@ -590,17 +667,19 @@ class Application extends React.Component {
                         twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
                         user={permission.user}
                     />
-                </div>
-                <div className="container-fluid">
-                    { this.state.showStartService ? startService : null }
-                </div>
-                <div key="containerslists" className="container-fluid">
-                    {containerList}
-                </div>
-                <div key="imageslists" className="container-fluid">
-                    {imageList}
-                </div>
-            </div>
+                </PageSection>
+                <PageSection>
+                    <Gallery hasGutter>
+                        { this.state.showStartService ? startService : null }
+                        <Card id="containers-containers" className="containers-containers">
+                            {containerList}
+                        </Card>
+                        <Card id="containers-images" key="images" className="containers-images">
+                            {imageList}
+                        </Card>
+                    </Gallery>
+                </PageSection>
+            </Page>
         );
     }
 }

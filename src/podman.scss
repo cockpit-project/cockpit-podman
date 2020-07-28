@@ -1,18 +1,19 @@
 @import "./css-overrides/toast.scss";
 
-/* Collapse top padding with additional container fluids */
-/* FIXME: This should go into PF overrides in Cockpit. */
-/* Remove it here when it lands there. */
-.container-fluid + .container-fluid {
-    padding-top: 0;
+#app .pf-l-gallery {
+    --pf-l-gallery--GridTemplateColumns: 1fr;
+}
+#app .pf-c-card {
+    padding: 1rem;
 }
 
-/* Fix alignment with icons in buttons */
-/* Alignment works on the PF4 demo, but (oddly) not in cockpit-podman */
-.pf-c-button {
-    > &__icon {
-        vertical-align: middle;
-        margin-right: var(--pf-global--spacer--sm);
+// Stretch body to fill the page
+body {
+    display: flex;
+    flex-direction: column;
+
+    @at-root #app {
+        min-height: 100%;
     }
 }
 
@@ -104,13 +105,15 @@
 }
 
 .content-filter {
-    background: var(--pf-global--BackgroundColor--150);
+    background: var(--pf-global--BackgroundColor--100);
     border-bottom: 1px solid var(--color-border);
     padding: 0.75rem 1.25rem;
     position: sticky;
     display: flex;
     align-items: baseline;
     min-height: 4rem;
+    top: 0;
+    z-index: 99;
 }
 
 .content-filter .ct-select {

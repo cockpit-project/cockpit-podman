@@ -77,6 +77,53 @@ class TestApplication(testlib.MachineCase):
         else:
             return self.admin_s.execute(cmd)
 
+    def waitPodRow(self, podName, present=False):
+        if present:
+            self.browser.wait_present("#table-" + podName)
+        else:
+            self.browser.wait_not_present("#table-" + podName)
+
+
+    def waitPodContainer(self, podName, containerList):
+        if len(containerList):
+            for container in containerList:
+                self.check_container(container["id"], True, [container["name"], container["image"], container["command"], container["state"]], podName)
+        else:
+            if self.browser.val("#containers-containers-filter") == "all":
+                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No containers in this pod ")
+            else:
+                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No running containers in this pod ")
+
+    @testlib.nondestructive
+    def testPods(self):
+        b = self.browser
+        m = self.machine
+
+        self.login_and_go("/podman")
+        b.wait_present("#app")
+
+        self.browser.wait_in_text("#containers-containers .ct-table-empty", "No running containers")
+
+        # Run a pods as system
+        self.machine.execute("podman pod create --infra=false --name pod-1")
+
+        self.waitPodRow("pod-1", False)
+        self.filter_containers("all")
+        self.waitPodContainer("pod-1", [])
+
+        containerId = self.machine.execute("podman run -d --pod pod-1 --name test-pod-1-system alpine sleep 100").strip()
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
+        self.machine.execute("podman pod stop pod-1")
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
+        self.filter_containers("running")
+        self.waitPodRow("pod-1", False)
+
+        self.filter_containers("all")
+        b.set_input_text('#containers-filter', 'pod-1')
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
+        b.set_input_text('#containers-filter', 'test-pod-1-system')
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
+
     @testlib.nondestructive
     def testBasicSystem(self):
         self._testBasic(True)
@@ -1150,9 +1197,9 @@ class TestApplication(testlib.MachineCase):
     def check_images(self, present, not_present):
         self.check_content("images", present, not_present)
 
-    def check_container(self, row_id, auth, expected_strings):
+    def check_container(self, row_id, auth, expected_strings, pod="no-pod"):
         """Check the container with row_name has the expected_string shown in the row"""
-        sel = "#containers-containers tbody tr[data-row-id={0}{1}]".format(row_id, auth).lower()
+        sel = "#containers-containers #table-" + pod + " tbody tr[data-row-id={0}{1}]".format(row_id, auth).lower()
         b = self.browser
         for str in expected_strings:
             b.wait_in_text(sel, str)

@@ -1,0 +1,31 @@
+.pod-name {
+    font-weight: var(--pf-global--FontWeight--bold);
+    font-size: var(--pf-global--FontSize--md);
+    padding-right: 1rem;
+}
+
+.container-section {
+    .panel {
+        margin-bottom: 0;
+    }
+
+    .panel-heading {
+        color: inherit;
+        background-color: inherit;
+    }
+
+    .panel-title {
+        display: flex;
+        font-weight: var(--pf-global--FontWeight--normal);
+        font-size: var(--pf-global--FontSize--sm);
+    }
+}
+
+.container-section {
+    margin: var(--pf-global--spacer--xl) 0 0;
+}
+
+// Shrink space when only pods are shown (podless containers are not visible)
+.ct-table-header + .container-section {
+    margin-top: var(--pf-global--spacer--md);
+}
