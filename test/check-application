@@ -934,10 +934,14 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#run-image-dialog-name", "busybox-without-publish")
 
         # Set up command line
-        b.set_input_text('#run-image-dialog-command', '/bin/sh')
+        b.set_input_text('#run-image-dialog-command', '/bin/sh -c "sleep 1000m"')
+
+        # Run without tty, console should be able to `exec`
+        b.set_checked("#run-image-dialog-tty", False)
 
         b.click('div.modal-footer button:contains("Run")')
         b.wait_not_present("div.modal-dialog")
+
         b.wait_present('#containers-containers tr:contains("busybox-without-publish")')
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") td.pf-c-table__toggle button')
         b.wait_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')

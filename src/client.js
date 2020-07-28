@@ -119,13 +119,34 @@ export function postContainer(system, action, id, args) {
     });
 }
 
-export function resizeContainersTTY(system, id, width, height) {
+export function execContainer(system, id) {
+    const args = {
+        AttachStderr: true,
+        AttachStdout: true,
+        AttachStdin: true,
+        Tty: true,
+        Cmd: ["/bin/sh"],
+    };
+
+    return new Promise((resolve, reject) => {
+        podmanCall("libpod/containers/" + id + "/exec", "POST", {}, system, JSON.stringify(args))
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
+export function resizeContainersTTY(system, id, exec, width, height) {
     const args = {
         h: height,
         w: width,
     };
+
+    let point = "containers/";
+    if (!exec)
+        point = "exec/";
+
     return new Promise((resolve, reject) => {
-        podmanCall("libpod/containers/" + id + "/resize", "POST", args, system)
+        podmanCall("libpod/" + point + id + "/resize", "POST", args, system)
                 .then(resolve)
                 .catch(reject);
     });
