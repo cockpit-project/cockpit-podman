@@ -1,31 +1,22 @@
 .podman-search .modal-content {
     display: grid;
-    height: calc(100vh - 1.5rem);
+    min-height: calc(100vh - 1.5rem);
     grid-template-rows: auto 1fr auto;
 }
 
 @media (min-width: 768px) {
     .podman-search .modal-content {
-        height: calc(100vh - 5rem);
-    }
-}
-
-.podman-search h5 {
-    font-size: var(--pf-global--FontSize--xl);
-    margin: 2rem 0 1rem;
-}
-
-@media (max-width: 767px) {
-    /* Conserve vertical space on phones */
-    .podman-search h5 {
-        display: none;
+        min-height: calc(100vh - 5rem);
+        max-height: calc(100vh - 5rem);
     }
 }
 
 .podman-search .modal-body {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-auto-flow: row;
     overflow: hidden;
+    grid-template-rows: auto auto 1fr;
+    grid-gap: var(--pf-global--spacer--sm);
 }
 
 .podman-search .list-group {
@@ -33,6 +24,10 @@
     flex: auto;
     margin: 0;
     border: 1px solid var(--pf-global--BorderColor--100);
+    /* Limit height to 75% of screen height;
+       it causes double-scrolling on mobile, but this allows people to scroll
+       the modal even on super-long lists */
+    max-height: 75vh;
 }
 
 #search-image-dialog-waiting.spinner {
@@ -48,9 +43,13 @@
     border-top: 1px solid var(--pf-global--BorderColor--200);
 }
 
+.image-list-item > .image-name {
+    color: var(--pf-global--Color--100);
+}
+
 @media (min-width: 768px) {
     .image-list-item {
-        grid-template-columns: 1fr 2fr;
+        grid-template-columns: 1fr max-content;
     }
 }
 
@@ -80,6 +79,10 @@
     color: var(--pf-global--Color--100);
 }
 
+.podman-search .modal-footer {
+    margin-top: var(--pf-global--spacer--sm);
+}
+
 .podman-search .modal-footer::before,
 .podman-search .modal-footer::after {
     display: none;
@@ -93,6 +96,11 @@
 
 .podman-search .modal-footer > .btn {
     margin: 0;
+}
+
+.no-results {
+    border: 1px solid var(--pf-global--BorderColor--100);
+    padding: var(--pf-global--spacer--md);
 }
 
 .image-tag-entry {

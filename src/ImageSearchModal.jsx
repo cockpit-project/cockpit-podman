@@ -125,12 +125,12 @@ export class ImageSearchModal extends React.Component {
             <>
                 { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
                     <form className="ct-form">
-                        <label className="control-label" htmlFor="as-user">{_("Download as:")}</label>
+                        <label className="control-label" htmlFor="as-user">{_("Owner")}</label>
                         <fieldset id="as-user">
                             <div className="radio">
                                 <label>
                                     <input type="radio" value="system" id="system" onChange={this.onToggleUser} checked={this.state.isSystem} />
-                                    {_("System")}
+                                    {_("system")}
                                 </label>
                                 <label>
                                     <input type="radio" value="user" id="user" onChange={this.onToggleUser} checked={!this.state.isSystem} />
@@ -177,17 +177,16 @@ export class ImageSearchModal extends React.Component {
                 {this.state.searchInProgress && <div id='search-image-dialog-waiting' className='spinner' />}
 
                 {this.state.searchFinished && !this.state.imageIdentifier == '' && <>
-                    <h5> {_("Images")} </h5>
-                    {this.state.imageList.length == 0 && <div> {cockpit.format(_("No results for $0. Please retry another term."), this.state.imageIdentifier)} </div>}
+                    {this.state.imageList.length == 0 && <div className="no-results"> {cockpit.format(_("No results for $0. Please retry another term."), this.state.imageIdentifier)} </div>}
                     {this.state.imageList.length > 0 && <ListGroup>
                         {this.state.imageList.map((image, iter) => {
                             return (
                                 <ListGroupItem active={this.state.selected == iter} onClick={() => this.onItemSelected(iter)} key={iter}>
                                     <span className='image-list-item'>
-                                        <label className='control-label'>
+                                        <label className='image-name control-label'>
                                             { image.Name }
                                         </label>
-                                        <span className='pull-right'> { image.Description } </span>
+                                        <span className='image-description'> { image.Description } </span>
                                     </span>
                                 </ListGroupItem>
                             );
@@ -201,7 +200,7 @@ export class ImageSearchModal extends React.Component {
             <Modal show onHide={this.props.close} className="podman-search">
                 <Modal.Header>
                     <Modal.CloseButton onClick={this.props.close} />
-                    <Modal.Title> {_("Search Image")} </Modal.Title>
+                    <Modal.Title> {_("Search for an image")} </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {defaultBody}
@@ -213,7 +212,7 @@ export class ImageSearchModal extends React.Component {
                         <input className="form-control image-tag-entry"
                                id="image-search-tag"
                                type='text'
-                               placeholder={_("Tag")}
+                               placeholder="latest"
                                value={this.state.imageTag || ''}
                                onChange={e => this.onValueChanged('imageTag', e.target.value)} />
                     </div>
