@@ -427,7 +427,7 @@ class TestApplication(testlib.MachineCase):
             def openDialog(self):
                 # Open get new image modal
                 b.click("header button:contains(Get new image)")
-                b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+                b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
                 b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
 
                 return self
@@ -510,7 +510,7 @@ class TestApplication(testlib.MachineCase):
 
         # Test registries
         b.click("header button:contains(Get new image)")
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search Image")')
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
         # HACK: Sometimes the value is not shown fully. FIXME
         b.set_input_text("#search-image-dialog-name", "my-busybox", value_check=False)
 
