@@ -56,6 +56,9 @@ class ContainerTerminal extends React.Component {
         this.disconnectChannel = this.disconnectChannel.bind(this);
         this.connectChannel = this.connectChannel.bind(this);
         this.resize = this.resize.bind(this);
+        this.connectToTty = this.connectToTty.bind(this);
+        this.execAndConnect = this.execAndConnect.bind(this);
+        this.setUpBuffer = this.setUpBuffer.bind(this);
 
         const term = new Terminal({
             cols: 80,
@@ -70,6 +73,7 @@ class ContainerTerminal extends React.Component {
         this.state = {
             term: term,
             container: props.containerId,
+            sessionId: props.containerId,
             channel: null,
             buffer: null,
             opened: false,
@@ -95,7 +99,7 @@ class ContainerTerminal extends React.Component {
         var realWidth = this.state.term._core._renderService.dimensions.actualCellWidth;
         var cols = Math.floor((width - padding) / realWidth);
         this.state.term.resize(cols, 24);
-        client.resizeContainersTTY(this.props.system, this.state.container, cols, 24)
+        client.resizeContainersTTY(this.props.system, this.state.sessionId, this.props.tty, cols, 24)
                 .catch(console.log);
         this.setState({ cols: cols });
     }
@@ -110,22 +114,13 @@ class ContainerTerminal extends React.Component {
             return;
         }
 
-        // FIXME: Implement proper terminal - if not tty then need to do 'exec' and connect to it
-        // Tracked in: https://github.com/cockpit-project/cockpit-podman/issues/297
-        // Blocked on https://github.com/containers/libpod/issues/5741
-        // POC in varlink API: https://github.com/marusak/cockpit-podman/tree/proper_terminal
+        if (this.props.tty)
+            this.connectToTty();
+        else
+            this.execAndConnect();
+    }
 
-        const channel = cockpit.channel({
-            payload: "stream",
-            unix: client.getAddress(this.props.system),
-            superuser: this.props.system ? "require" : null,
-            binary: true
-        });
-
-        channel.send("POST /v1.24/libpod/containers/" + encodeURIComponent(this.state.container) +
-                      "/attach?&stdin=true&stdout=true&stderr=true HTTP/1.0\r\n" +
-                      "Content-Length: 0\r\n\r\n");
-
+    setUpBuffer(channel) {
         const buffer = channel.buffer();
 
         // Parse the full HTTP response
@@ -157,7 +152,6 @@ class ContainerTerminal extends React.Component {
                 data = data.slice(pos + 4);
                 ret += pos + 4;
             }
-
             // Set up callback for new incoming messages and if the first response
             // contained any body, pass it into the callback
             buffer.callback = this.onChannelMessage;
@@ -177,8 +171,45 @@ class ContainerTerminal extends React.Component {
                     this.state.channel.send(encoder.encode(data));
             });
         }
-
         channel.send(String.fromCharCode(12)); // Send SIGWINCH to show prompt on attaching
+
+        return buffer;
+    }
+
+    execAndConnect() {
+        client.execContainer(this.props.system, this.state.container)
+                .then(r => {
+                    const channel = cockpit.channel({
+                        payload: "stream",
+                        unix: client.getAddress(this.props.system),
+                        superuser: this.props.system ? "require" : null,
+                        binary: true
+                    });
+
+                    const body = JSON.stringify({ Detach: false, Tty: false });
+                    channel.send("POST /v1.24/libpod/exec/" + encodeURIComponent(r.Id) +
+                              "/start HTTP/1.0\r\n" +
+                              "Content-Length: " + body.length + "\r\n\r\n" + body);
+
+                    const buffer = this.setUpBuffer(channel);
+                    this.setState({ channel: channel, errorMessage: "", buffer: buffer, sessionId: r.Id }, () => this.resize(this.props.width));
+                })
+                .catch(console.log);
+    }
+
+    connectToTty() {
+        const channel = cockpit.channel({
+            payload: "stream",
+            unix: client.getAddress(this.props.system),
+            superuser: this.props.system ? "require" : null,
+            binary: true
+        });
+
+        channel.send("POST /v1.24/libpod/containers/" + encodeURIComponent(this.state.container) +
+                      "/attach?&stdin=true&stdout=true&stderr=true HTTP/1.0\r\n" +
+                      "Content-Length: 0\r\n\r\n");
+
+        const buffer = this.setUpBuffer(channel);
         this.setState({ channel: channel, errorMessage: "", buffer: buffer });
         this.resize(this.props.width);
     }
@@ -232,7 +263,10 @@ class ContainerTerminal extends React.Component {
 
 ContainerTerminal.propTypes = {
     containerId: PropTypes.string.isRequired,
-    containerStatus: PropTypes.string.isRequired
+    containerStatus: PropTypes.string.isRequired,
+    width: PropTypes.number.isRequired,
+    system: PropTypes.bool.isRequired,
+    tty: PropTypes.bool.isRequired,
 };
 
 export default ContainerTerminal;

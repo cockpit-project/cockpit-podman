@@ -121,6 +121,8 @@ class Containers extends React.Component {
             container.State /* FIXME: i18n */,
         ];
 
+        const tty = containerDetail ? containerDetail.Config.Tty : false;
+
         const tabs = [{
             name: _("Details"),
             renderer: ContainerDetails,
@@ -132,7 +134,7 @@ class Containers extends React.Component {
         }, {
             name: _("Console"),
             renderer: ContainerTerminal,
-            data: { containerId: container.Id, containerStatus: container.State, width:this.state.width, system:container.isSystem }
+            data: { containerId: container.Id, containerStatus: container.State, width:this.state.width, system:container.isSystem, tty: tty }
         }];
 
         var actions = [
