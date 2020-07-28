@@ -246,7 +246,7 @@ class Images extends React.Component {
             />;
 
         return (
-            <div id="containers-images" key="images" className="containers-images">
+            <>
                 <ListingTable caption={_("Images")}
                     variant='compact'
                     emptyCaption={emptyCaption}
@@ -275,7 +275,7 @@ class Images extends React.Component {
                     userServiceAvailable={this.props.userServiceAvailable}
                     systemServiceAvailable={this.props.systemServiceAvailable} /> }
                 {this.state.imageDownloadInProgress && <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>}
-            </div>
+            </>
         );
     }
 }

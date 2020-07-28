@@ -196,6 +196,17 @@ export function getImages(system, id) {
     });
 }
 
+export function getPods(system, id) {
+    return new Promise((resolve, reject) => {
+        const options = {};
+        if (id)
+            options.filters = JSON.stringify({ id: [id] });
+        podmanCall("libpod/pods/json", "GET", options, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
 export function delImage(system, id, force) {
     return new Promise((resolve, reject) => {
         const options = {
