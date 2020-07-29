@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@patternfly/react-core';
-import { PlusCircleIcon } from '@patternfly/react-icons';
+import { PlusIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "../lib/cockpit-components-table.jsx";
@@ -172,10 +172,10 @@ class Images extends React.Component {
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No images that match the current filter");
         const getNewImageAction = [
-            <Button variant="link" key="get-new-image-action"
+            <Button variant="secondary" key="get-new-image-action"
                     onClick={() => this.setState({ showSearchImageModal: true })}
                     className="pull-right"
-                    icon={<PlusCircleIcon />}>
+                    icon={<PlusIcon />}>
                 {_("Get new image")}
             </Button>
         ];
