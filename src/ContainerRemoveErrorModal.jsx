@@ -6,7 +6,7 @@ import cockpit from 'cockpit';
 const _ = cockpit.gettext;
 
 const ContainerRemoveErrorModal = (props) => {
-    const name = props.containerWillDelete ? _(props.containerWillDelete.Name) : "";
+    const name = props.containerWillDelete ? _(props.containerWillDelete.Names) : "";
     const [inProgress, setInProgress] = useState(false);
     return (
         <Modal key={name} show={props.setContainerRemoveErrorModal}>
