@@ -155,11 +155,11 @@ class TestApplication(testlib.MachineCase):
 
         # Test owner filtering
         if auth:
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 8)
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 6)
             b.wait_js_func("ph_count_check", "#containers-containers tbody", 2)
 
             b.set_val("#containers-containers-owner", "system")
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 5)
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 3)
             b.wait_in_text("#containers-images", "system")
             b.wait_js_func("ph_count_check", "#containers-containers tbody", 1)
             b.wait_in_text("#containers-containers", "system")
@@ -171,7 +171,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_in_text("#containers-containers", "admin")
 
             b.set_val("#containers-containers-owner", "all")
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 8)
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 6)
             b.wait_js_func("ph_count_check", "#containers-containers tbody", 2)
         else: # No 'owner' selector when not privileged
             b.wait_not_present("#containers-containers-owner")
@@ -435,7 +435,7 @@ class TestApplication(testlib.MachineCase):
             # `User Service is also available` banner should not be present
             b.wait_not_present("#overview div.pf-c-alert")
             # There should not be any duplicate images listed
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 3)
+            b.wait_js_func("ph_count_check", "#containers-images tbody", 1)
             # There should not be 'owner' selector
             b.wait_not_present("#containers-containers-owner")
 
