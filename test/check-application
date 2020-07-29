@@ -322,11 +322,41 @@ class TestApplication(testlib.MachineCase):
         b.click(".btn-ctr-cancel-commit")
 
         # delete image busybox that hasn't been used
+        # First try to just untag and then remove with more tags
+        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:1")
+        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:2")
+        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:3")
+        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:4")
+
         b.wait_present(busybox_sel)
         b.click(busybox_sel + " td.pf-c-table__toggle button")
+
+        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:1")
+        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:2")
+        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:3")
+        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:4")
+
         b.click(busybox_sel + " + tr button.btn-delete")
+        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:latest') input"))
+        b.set_checked("label:contains('docker.io/library/busybox:1') input", True)
+        b.set_checked("label:contains('docker.io/library/busybox:3') input", True)
+        b.set_checked("label:contains('docker.io/library/busybox:latest') input", False)
         b.click(".modal-dialog div #btn-img-delete")
         b.wait_not_present("modal-dialog div #btn-img-delete")
+        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:latest")
+        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:2")
+        b.wait_not_in_text(busybox_sel + " + tr", "docker.io/library/busybox:1")
+        b.wait_not_in_text(busybox_sel + " + tr", "docker.io/library/busybox:3")
+
+        b.click(busybox_sel + " + tr button.btn-delete")
+        b.click("button:contains('select all')")
+        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:latest') input"))
+        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:2') input"))
+        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:4') input"))
+        b.click(".modal-dialog div #btn-img-delete")
+        b.wait_not_present("modal-dialog div #btn-img-delete")
+        b.click(".modal-dialog div #btn-img-deleteerror")
+        b.wait_not_present("modal-dialog div #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", busybox_sel)
 
         # Check that we correctly show networking information
@@ -477,7 +507,7 @@ class TestApplication(testlib.MachineCase):
 
                 return self
 
-            def deleteImage(self, force=False):
+            def deleteImage(self, force=False, another=None):
                 if self.imageTag:
                     imageTagSuffix =  ":" + self.imageTag
                 else:
@@ -493,6 +523,10 @@ class TestApplication(testlib.MachineCase):
                 # Click the delete icon on the image row
                 b.wait_present(sel + ' + tr button.btn-delete')
                 b.click(sel +' + tr button.btn-delete')
+
+                b.set_checked("label:contains('localhost:5000/{0}{1}') input".format(self.imageName, imageTagSuffix), True)
+                if another:
+                    b.set_checked("label:contains('{0}') input".format(another), True)
 
                 # Confirm deletion in the delete dialog
                 b.click(".modal-dialog #btn-img-delete")
@@ -534,7 +568,7 @@ class TestApplication(testlib.MachineCase):
               .fillDialog() \
               .selectImageAndDownload() \
               .expectDownloadSuccess()
-        dialog1.deleteImage(True)
+        dialog1.deleteImage(True, another="docker.io/library/busybox:latest")
 
         dialog0.deleteImage(True)
 
