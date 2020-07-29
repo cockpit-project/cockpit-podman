@@ -2,7 +2,6 @@ import React from 'react';
 import { Modal } from 'patternfly-react';
 import { Button, Checkbox } from '@patternfly/react-core';
 import cockpit from 'cockpit';
-import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -28,8 +27,7 @@ class ContainerCheckpointModal extends React.Component {
             <Modal show={this.props.selectContainerCheckpointModal}>
                 <Modal.Header>
                     <Modal.Title>
-                        {cockpit.format(_("Checkpoint container $0"),
-                                        utils.truncate_id(this.props.containerWillCheckpoint.Id))}
+                        {cockpit.format(_("Checkpoint container $0"), this.props.containerWillCheckpoint.Names)}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>

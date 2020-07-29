@@ -2,7 +2,6 @@ import React from 'react';
 import { Modal } from 'patternfly-react';
 import { Button } from '@patternfly/react-core';
 import cockpit from 'cockpit';
-import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -10,7 +9,7 @@ const ContainerDeleteModal = (props) => {
     return (
         <Modal show={props.selectContainerDeleteModal}>
             <Modal.Header>
-                <Modal.Title>{cockpit.format(_("Please confirm deletion of $0"), utils.truncate_id(props.containerWillDelete.Id))}</Modal.Title>
+                <Modal.Title>{cockpit.format(_("Please confirm deletion of $0"), props.containerWillDelete.Names)}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {_("Deleting a container will erase all data in it.")}
