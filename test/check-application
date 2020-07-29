@@ -67,6 +67,8 @@ class TestApplication(testlib.MachineCase):
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
 
+        self.has_criu = self.machine.image not in ["debian-testing"]
+
     def cgroupsV2(self):
         # We will introduce images that are still cgroupsV1 later on
         return True
@@ -690,9 +692,10 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        # Set machine to cgroup1 and reboot
-        self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"; reboot')
-        m.wait_reboot()
+        # Set machine to cgroup1 and reboot; Debian uses hybrid mode and does not have grubby
+        if not m.image.startswith("debian"):
+            self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"; reboot')
+            m.wait_reboot()
 
         self.login_and_go("/podman", authorized=True, superuser=True)
         b.wait_present("#app")
@@ -717,7 +720,14 @@ class TestApplication(testlib.MachineCase):
         b.set_checked('.modal-dialog input#checkpoint-dialog-tcpEstablished', True)
         b.set_checked('.modal-dialog input#checkpoint-dialog-ignoreRootFS', True)
         b.click('.modal-dialog button:contains(Checkpoint)')
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
+
+        if self.has_criu:
+            b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
+        else:
+            # expect proper error message
+            b.wait_in_text(".pf-c-alert", "Failed to checkpoint container swamped-crate")
+            b.wait_in_text(".pf-c-alert", "Checkpoint/Restore requires at least CRIU")
+            return
 
         # Restore the container
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
@@ -774,7 +784,10 @@ class TestApplication(testlib.MachineCase):
         b.set_checked('.modal-dialog input#checkpoint-dialog-ignoreRootFS', True)
         b.click('.modal-dialog button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
-        b.wait_in_text('.pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
+        if self.has_criu:
+            b.wait_in_text('.pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
+        else:
+            b.wait_in_text(".pf-c-alert", "Checkpoint/Restore requires at least CRIU")
 
     @testlib.nondestructive
     def testNotRunning(self):
