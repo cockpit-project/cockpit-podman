@@ -1,4 +1,6 @@
+import cockpit from 'cockpit';
 import rest from './rest.js';
+import { downloadFile } from "./util.js";
 
 const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
 export const VERSION = "/v1.12/";
@@ -151,6 +153,59 @@ export function execContainer(system, id) {
     return new Promise((resolve, reject) => {
         podmanCall("libpod/containers/" + id + "/exec", "POST", {}, system, JSON.stringify(args))
                 .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
+export async function postContainerAndSave(system, action, id, args) {
+    let file;
+    try {
+        file = (await cockpit.script("mktemp -p /var/tmp")).slice(0, -1);
+    } catch {
+        throw new Error("Failed to create temporary file");
+    }
+
+    const saveChannel = cockpit.channel({
+        payload: "fsreplace1",
+        path: file,
+        binary: true
+    });
+    await saveChannel.wait();
+
+    const options = {
+        method: "POST",
+        path: VERSION + "libpod/containers/" + id + "/" + action,
+        body: "",
+        params: args,
+        redirect: saveChannel.id,
+        binary: true
+    };
+    try {
+        await rest.call(getAddress(system), system, options);
+        saveChannel.control({ command: "done" });
+    } catch {
+        saveChannel.control({ command: "done" });
+        await new Promise(resolve => saveChannel.addEventListener("close", resolve));
+
+        const errorFile = cockpit.file(file);
+        const error = await errorFile.read();
+        errorFile.close();
+        throw new Error(error);
+    }
+
+    await new Promise(resolve => saveChannel.addEventListener("close", resolve));
+
+    return file;
+}
+
+export function postContainerAndDownload(system, action, id, filename, args) {
+    return new Promise((resolve, reject) => {
+        postContainerAndSave(system, action, id, args)
+                .then(path => {
+                    console.log(path);
+                    downloadFile(path, filename);
+                    resolve();
+                })
                 .catch(reject);
     });
 }

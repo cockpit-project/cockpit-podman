@@ -11,7 +11,8 @@ class ContainerCheckpointModal extends React.Component {
             keep: false,
             leaveRunning: false,
             tcpEstablished: false,
-            ignoreRootFS: false
+            ignoreRootFS: false,
+            export: false
         };
         this.handleChange = this.handleChange.bind(this);
     }
@@ -51,6 +52,9 @@ class ContainerCheckpointModal extends React.Component {
                     <Checkbox label={_("Do not include root file-system changes when exporting")}
                                   id="checkpoint-dialog-ignoreRootFS" name="ignoreRootFS"
                                   isChecked={this.state.ignoreRootFS} onChange={this.handleChange} />
+                    <Checkbox label={_("Export the checkpoint into a tarball and download it")}
+                                  id="checkpoint-dialog-export" name="export" isChecked={this.state.export}
+                                  onChange={this.handleChange} />
                 </Form>
             </Modal>
         );

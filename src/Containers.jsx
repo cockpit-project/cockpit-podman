@@ -259,7 +259,10 @@ class Containers extends React.Component {
     handleCheckpointContainer(args) {
         const container = this.state.containerWillCheckpoint;
         this.setState({ checkpointInProgress: true });
-        client.postContainer(container.isSystem, "checkpoint", container.Id, args)
+        (args.export
+            ? client.postContainerAndDownload(container.isSystem, "checkpoint", container.Id,
+                                              `checkpoint-${container.Id}.tar.gz`, args)
+            : client.postContainer(container.isSystem, "checkpoint", container.Id, args))
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to checkpoint container $0"), container.Names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -289,9 +292,7 @@ class Containers extends React.Component {
     }
 
     handleCheckpointContainerDeleteModal() {
-        this.setState((prevState) => ({
-            selectContainerCheckpointModal: !prevState.selectContainerCheckpointModal,
-        }));
+        this.setState({ selectContainerCheckpointModal: false });
     }
 
     handleRestoreContainerDeleteModal() {

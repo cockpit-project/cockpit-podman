@@ -172,3 +172,36 @@ export function compare_versions(a, b) {
 
     return a_ints.length - b_ints.length;
 }
+
+/*
+ * Generates a link for downloading a file from a server.
+ * This is adopted from Cockpit's SOS report code.
+ */
+export async function downloadFile(path, filename) {
+    // Construct the download URL
+    const file_size = await cockpit.script(`du -b "${path}" | cut -f1`);
+    const query = window.btoa(JSON.stringify({
+        payload: "fsread1",
+        binary: "raw",
+        path: path,
+        superuser: true,
+        max_read_size: parseInt(file_size),
+        external: {
+            "content-disposition": 'attachment; filename="' + filename + '"',
+            "content-type": "application/octet-stream"
+        }
+    }));
+    const prefix = (new URL(cockpit.transport.uri("channel/" + cockpit.transport.csrf_token))).pathname;
+    const file_url = prefix + '?' + query;
+
+    // Trigger the download
+    /* const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.style.visibility = "hidden";
+    document.body.appendChild(iframe);
+    iframe.src = file_url; */
+    const link = document.createElement("a");
+    document.body.appendChild(link);
+    link.href = file_url;
+    link.click();
+}
