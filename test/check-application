@@ -38,13 +38,15 @@ class TestApplication(testlib.MachineCase):
 
     def setUp(self):
         super().setUp()
+        self.machine.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
+
         # backup/restore pristine podman state, so that tests can run on existing testbeds
         self.restore_dir("/var/lib/containers")
+        self.addCleanup(self.machine.execute, "systemctl stop podman.service")
+
         # HACK: sometimes podman leaks mounts
         self.addCleanup(self.machine.execute, "podman rm --force --all && "
             "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
-
-        self.machine.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
 
         # Create admin session
         self.machine.execute("""
