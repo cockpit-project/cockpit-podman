@@ -9,6 +9,7 @@ import ContainerDetails from './ContainerDetails.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
 import { DropDown } from './Dropdown.jsx';
+import * as Select from '../lib/cockpit-components-select.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
 import ContainerRestoreModal from './ContainerRestoreModal.jsx';
@@ -36,6 +37,7 @@ class Containers extends React.Component {
             checkpointInProgress: false,
             restoreInProgress: false,
             width: 0,
+            filter: "running",
         };
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
@@ -51,6 +53,7 @@ class Containers extends React.Component {
         this.handleRestoreContainer = this.handleRestoreContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
+        this.handleFilterChange = this.handleFilterChange.bind(this);
 
         window.addEventListener('resize', this.onWindowResize);
     }
@@ -61,6 +64,10 @@ class Containers extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowResize);
+    }
+
+    handleFilterChange (value) {
+        this.setState({ filter: value });
     }
 
     deleteContainer(container, event) {
@@ -325,12 +332,11 @@ class Containers extends React.Component {
             emptyCaption = _("Loading...");
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No containers that match the current filter");
-        else if (this.props.onlyShowRunning)
+        else if (this.state.filter == "running")
             emptyCaption = _("No running containers");
 
         if (this.props.containers !== null && this.props.pods !== null) {
-            if (this.props.containers !== null && this.props.pods !== null)
-                filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyShowRunning || this.props.containers[id].State == "running");
+            filtered = Object.keys(this.props.containers).filter(id => !(this.state.filter == "running") || this.props.containers[id].State == "running");
 
             if (this.props.ownerFilter !== "all") {
                 filtered = filtered.filter(id => {
@@ -425,6 +431,14 @@ class Containers extends React.Component {
                 container={this.state.containerWillCommit}
                 version={this.props.version}
             />;
+        const filterRunning =
+            <>
+                <label className="heading-label" htmlFor="containers-containers-filter">{_("Show")}</label>
+                <Select.Select id="containers-containers-filter" initial={this.state.filter} onChange={this.handleFilterChange}>
+                    <Select.SelectEntry data='running'>{_("Only running")}</Select.SelectEntry>
+                    <Select.SelectEntry data='all'>{_("All")}</Select.SelectEntry>
+                </Select.Select>
+            </>;
 
         return (
             (this.props.containers === null || this.props.pods === null)
@@ -432,10 +446,12 @@ class Containers extends React.Component {
                                 variant='compact'
                                 emptyCaption={emptyCaption}
                                 columns={columnTitles}
+                                actions={filterRunning}
                                 rows={[]} />
                 : <>
                     <header className='ct-table-header'>
                         <h3 className='ct-table-heading'> {_("Containers")} </h3>
+                        <div className='ct-table-actions'> {filterRunning} </div>
                     </header>
                     {Object.keys(partitionedContainers)
                             .sort((a, b) => {

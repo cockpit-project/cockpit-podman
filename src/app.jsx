@@ -56,7 +56,6 @@ class Application extends React.Component {
             userPodsLoaded: null,
             systemPodsLoaded: null,
             userServiceExists: false,
-            onlyShowRunning: true,
             textFilter: "",
             ownerFilter: "all",
             dropDownValue: 'Everything',
@@ -67,14 +66,12 @@ class Application extends React.Component {
         this.onAddNotification = this.onAddNotification.bind(this);
         this.updateState = this.updateState.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
-        this.onChange = this.onChange.bind(this);
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
         this.updateContainerStats = this.updateContainerStats.bind(this);
         this.startService = this.startService.bind(this);
-        this.showAll = this.showAll.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
         this.handleImageEvent = this.handleImageEvent.bind(this);
         this.handleContainerEvent = this.handleContainerEvent.bind(this);
@@ -100,12 +97,6 @@ class Application extends React.Component {
             notificationsArray.splice(index, 1);
             this.setState({ notifications: notificationsArray });
         }
-    }
-
-    onChange(value) {
-        this.setState({
-            onlyShowRunning: value != "all"
-        });
     }
 
     onFilterChanged(value) {
@@ -534,10 +525,6 @@ class Application extends React.Component {
                 });
     }
 
-    showAll() {
-        this.setState({ onlyShowRunning: false });
-    }
-
     goToServicePage(e) {
         if (!e || e.button !== 0)
             return;
@@ -619,7 +606,6 @@ class Application extends React.Component {
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
-                showAll={this.showAll}
                 user={permission.user || _("user")}
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
@@ -633,7 +619,6 @@ class Application extends React.Component {
                 pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
                 containersStats={this.state.containersStats}
                 containersDetails={this.state.containersDetails}
-                onlyShowRunning={this.state.onlyShowRunning}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
                 user={permission.user || _("user")}
@@ -660,8 +645,6 @@ class Application extends React.Component {
                 {notificationList}
                 <PageSection className="content-filter" key="containerheader" variant={PageSectionVariants.light}>
                     <ContainerHeader
-                        onlyShowRunning={this.state.onlyShowRunning}
-                        onChange={this.onChange}
                         onFilterChanged={this.onFilterChanged}
                         onOwnerChanged={this.onOwnerChanged}
                         twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
