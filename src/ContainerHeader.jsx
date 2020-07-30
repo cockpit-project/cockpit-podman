@@ -8,10 +8,8 @@ class ContainerHeader extends React.Component {
         super(props);
         this.state = {
             owner: 'all',
-            filter: 'running',
             filterText: ''
         };
-        this.handleFilterChange = this.handleFilterChange.bind(this);
         this.handleFilterTextChange = this.handleFilterTextChange.bind(this);
         this.handleOwnerChange = this.handleOwnerChange.bind(this);
     }
@@ -19,13 +17,6 @@ class ContainerHeader extends React.Component {
     filterChanged() {
         if (this.props.onFilterChanged)
             this.props.onFilterChanged(this.state.filterText);
-    }
-
-    handleFilterChange (value) {
-        this.setState({ filter: value });
-        if (this.props.onChange) {
-            this.props.onChange(value);
-        }
     }
 
     handleOwnerChange (value) {
@@ -42,11 +33,6 @@ class ContainerHeader extends React.Component {
     render() {
         return (
             <>
-                <label className="heading-label" htmlFor="containers-containers-filter">{_("Containers")}</label>
-                <Select.Select id="containers-containers-filter" initial={this.state.filter} onChange={this.handleFilterChange}>
-                    <Select.SelectEntry data='running'>{_("Only running")}</Select.SelectEntry>
-                    <Select.SelectEntry data='all'>{_("All")}</Select.SelectEntry>
-                </Select.Select>
                 { this.props.twoOwners &&
                     <>
                         <label className="heading-label" htmlFor="containers-containers-owner">{_("Owner")}</label>
