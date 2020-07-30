@@ -9,7 +9,7 @@ import ImageDetails from './ImageDetails.jsx';
 import ImageUsedBy from './ImageUsedBy.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
-import ModalExample from './ImageDeleteModal.jsx';
+import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
 import * as client from './client.js';
 
@@ -73,18 +73,30 @@ class Images extends React.Component {
         }));
     }
 
-    handleRemoveImage() {
+    handleRemoveImage(tags, all) {
         const image = this.state.imageWillDelete.Id;
         this.setState({
             selectImageDeleteModal: false,
         });
-        client.delImage(this.state.imageWillDelete.isSystem, image, false)
-                .catch(ex => {
-                    this.imageRemoveErrorMsg = ex.message;
-                    this.setState({
-                        setImageRemoveErrorModal: true,
+        if (all)
+            client.delImage(this.state.imageWillDelete.isSystem, image, false)
+                    .catch(ex => {
+                        this.imageRemoveErrorMsg = ex.message;
+                        this.setState({
+                            setImageRemoveErrorModal: true,
+                        });
                     });
-                });
+        else {
+            // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
+            const tag = tags.shift();
+            const i = tag.lastIndexOf(":");
+            client.untagImage(this.state.imageWillDelete.isSystem, image, tag.substring(0, i), tag.substring(i + 1, tag.length))
+                    .then(() => {
+                        if (tags.length > 0)
+                            this.handleRemoveImage(tags, all);
+                    })
+                    .catch(console.log);
+        }
     }
 
     handleForceRemoveImage() {
@@ -224,13 +236,6 @@ class Images extends React.Component {
             </span>;
         }
 
-        const imageDeleteModal =
-            <ModalExample
-                    selectImageDeleteModal={this.state.selectImageDeleteModal}
-                    imageWillDelete={this.state.imageWillDelete}
-                    handleCancelImageDeleteModal={this.handleCancelImageDeleteModal}
-                    handleRemoveImage={this.handleRemoveImage}
-            />;
         const imageRemoveErrorModal =
             <ImageRemoveErrorModal
                     setImageRemoveErrorModal={this.state.setImageRemoveErrorModal}
@@ -250,8 +255,12 @@ class Images extends React.Component {
                     actions={getNewImageAction}
                 />
                 {toggleIntermediate}
-                {imageDeleteModal}
                 {imageRemoveErrorModal}
+                {this.state.selectImageDeleteModal &&
+                <ImageDeleteModal
+                    imageWillDelete={this.state.imageWillDelete}
+                    handleCancelImageDeleteModal={this.handleCancelImageDeleteModal}
+                    handleRemoveImage={this.handleRemoveImage} /> }
                 {this.state.showRunImageModal &&
                 <ImageRunModal
                     close={() => this.setState({ showRunImageModal: undefined })}

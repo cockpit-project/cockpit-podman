@@ -207,6 +207,18 @@ export function delImage(system, id, force) {
     });
 }
 
+export function untagImage(system, id, repo, tag) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            repo: repo,
+            tag: tag
+        };
+        podmanCall("libpod/images/" + id + "/untag", "POST", options, system)
+                .then(resolve)
+                .catch(reject);
+    });
+}
+
 export function pullImage(system, reference) {
     return new Promise((resolve, reject) => {
         const options = {
