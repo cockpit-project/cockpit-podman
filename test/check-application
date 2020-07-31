@@ -62,8 +62,8 @@ class TestApplication(testlib.MachineCase):
 
         # Enable user service as well
         self.restore_dir("/home/admin/.local/share/containers")
-        self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
-        self.addCleanup(self.admin_s.execute, "podman rm --force --all")
+        self.admin_s.execute("systemctl --now --user enable podman.socket")
+        self.addCleanup(self.admin_s.execute, "podman rm --force --all; systemctl --user stop podman.service podman.socket")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
 
