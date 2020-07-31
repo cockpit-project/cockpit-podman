@@ -725,8 +725,8 @@ class TestApplication(testlib.MachineCase):
             b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
         else:
             # expect proper error message
-            b.wait_in_text(".pf-c-alert", "Failed to checkpoint container swamped-crate")
-            b.wait_in_text(".pf-c-alert", "Checkpoint/Restore requires at least CRIU")
+            b.wait_in_text(".pf-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
+            b.wait_in_text(".pf-c-alert.pf-m-danger", "Checkpoint/Restore requires at least CRIU")
             return
 
         # Restore the container
@@ -785,9 +785,9 @@ class TestApplication(testlib.MachineCase):
         b.click('.modal-dialog button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
         if self.has_criu:
-            b.wait_in_text('.pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
+            b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
         else:
-            b.wait_in_text(".pf-c-alert", "Checkpoint/Restore requires at least CRIU")
+            b.wait_in_text(".pf-c-alert.pf-m-danger", "Checkpoint/Restore requires at least CRIU")
 
     @testlib.nondestructive
     def testNotRunning(self):
