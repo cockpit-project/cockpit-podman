@@ -66,6 +66,7 @@ class TestApplication(testlib.MachineCase):
         self.addCleanup(self.admin_s.execute, "podman rm --force --all")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
+        self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
         self.has_criu = self.machine.image not in ["debian-testing"]
 
