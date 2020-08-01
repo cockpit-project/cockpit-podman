@@ -63,6 +63,9 @@ class TestApplication(testlib.MachineCase):
         # Enable user service as well
         self.restore_dir("/home/admin/.local/share/containers")
         self.admin_s.execute("systemctl --now --user enable podman.socket")
+        # HACK: user podman.service leaks a "podman pause" outside of the unit: https://github.com/containers/podman/issues/7180
+        self.addCleanup(self.admin_s.execute, "pkill -u $USER -e podman; while pgrep -u $USER -a podman; do sleep 1; done")
+
         self.addCleanup(self.admin_s.execute, "podman rm --force --all; systemctl --user stop podman.service podman.socket")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
@@ -807,7 +810,8 @@ class TestApplication(testlib.MachineCase):
 
         def disable_user():
             self.execute(False, "systemctl --user disable --now podman.socket")
-            self.execute(False, "killall podman || true")
+            # HACK: user podman.service leaks a "podman pause" outside of the unit: https://github.com/containers/podman/issues/7180
+            self.execute(False, "pkill -u $USER -e podman; while pgrep -u $USER -a podman; do sleep 1; done")
 
         def is_active_system(string):
             b.wait(lambda: self.execute(True, "systemctl is-active podman.socket || true").strip() == string)
@@ -857,6 +861,8 @@ class TestApplication(testlib.MachineCase):
 
         b.logout()
         disable_system()
+        # HACK: Due to https://github.com/containers/podman/issues/7180, avoid user podman.service to time out; make sure to start it afresh
+        disable_user()
         enable_user()
         self.login_and_go("/podman")
         b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "System Podman service is also available")
