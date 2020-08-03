@@ -72,6 +72,7 @@ class TestApplication(testlib.MachineCase):
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
         self.has_criu = self.machine.image not in ["debian-testing"]
+        self.has_selinux = self.machine.image not in ["debian-testing"]
 
     def cgroupsV2(self):
         # We will introduce images that are still cgroupsV1 later on
@@ -1013,7 +1014,12 @@ class TestApplication(testlib.MachineCase):
         m.execute("chown admin:admin {0}".format(rodir))
         m.execute("chown admin:admin {0}".format(rwdir))
         b.set_val('.volume-form[data-key="0"] select:first-of-type', "ro")
-        b.set_val('.volume-form[data-key="0"] select:nth-of-type(2)', "z")
+
+        if self.has_selinux:
+            b.set_val('.volume-form[data-key="0"] select:nth-of-type(2)', "z")
+        else:
+            b.wait_not_present('.volume-form[data-key="0"] select:nth-of-type(2)')
+
         b.set_input_text('.volume-form[data-key="0"] .pf-m-typeahead input', rodir)
         b.key_press(["\r"])
         b.set_input_text('.volume-form[data-key="0"] > div > input', '/tmp/ro')
@@ -1024,7 +1030,12 @@ class TestApplication(testlib.MachineCase):
         b.click('.volume-form[data-key="1"] .btn-close')
         b.wait_not_present('.volume-form[data-key="1"]')
         b.click('.volume-form[data-key="0"] .btn-add')
-        b.set_val('.volume-form[data-key="2"] select:nth-of-type(2)', "Z")
+
+        if self.has_selinux:
+            b.set_val('.volume-form[data-key="2"] select:nth-of-type(2)', "Z")
+        else:
+            b.wait_not_present('.volume-form[data-key="0"] select:nth-of-type(2)')
+
         b.set_input_text('.volume-form[data-key="2"] .pf-m-typeahead input', rwdir)
         b.key_press(["\r"])
         b.set_input_text('.volume-form[data-key="2"] > div > input', '/tmp/rw')
@@ -1076,15 +1087,16 @@ class TestApplication(testlib.MachineCase):
         self.assertIn('rw', rwmnt)
         self.assertIn(rwdir[4:], rwmnt)
 
-        # rw was set to :Z so it should change, but not be shared
-        rw_label_new = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
-        self.assertNotEqual(rw_label, rw_label_new)
-        self.assertRegex(rw_label_new, "container_file_t:s0:c\d*,c\d*$")
+        if self.has_selinux:
+            # rw was set to :Z so it should change, but not be shared
+            rw_label_new = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
+            self.assertNotEqual(rw_label, rw_label_new)
+            self.assertRegex(rw_label_new, "container_file_t:s0:c\d*,c\d*$")
 
-        # ro was set to :z to it should change and be shared
-        ro_label_new = m.execute("ls -dZ {0}".format(rodir)).split(" ")[0]
-        self.assertNotEqual(ro_label, ro_label_new)
-        self.assertRegex(ro_label_new, "container_file_t:s0$")
+            # ro was set to :z to it should change and be shared
+            ro_label_new = m.execute("ls -dZ {0}".format(rodir)).split(" ")[0]
+            self.assertNotEqual(ro_label, ro_label_new)
+            self.assertRegex(ro_label_new, "container_file_t:s0$")
 
         def get_int(n):
             try:

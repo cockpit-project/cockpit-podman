@@ -60,6 +60,7 @@ class Application extends React.Component {
             notifications: [],
             showStartService: true,
             version: '1.3.0',
+            selinuxAvailable: false,
         };
         this.onAddNotification = this.onAddNotification.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -406,6 +407,9 @@ class Application extends React.Component {
                     }
                 })
                 .fail(e => console.log("Could not read $XDG_RUNTIME_DIR: ", e.message));
+        cockpit.spawn("selinuxenabled", { error: "ignore" })
+                .then(() => this.setState({ selinuxAvailable: true }))
+                .catch(() => this.setState({ selinuxAvailable: false }));
     }
 
     checkUserService() {
@@ -549,6 +553,7 @@ class Application extends React.Component {
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
                 registries={this.state.registries}
+                selinuxAvailable={this.state.selinuxAvailable}
             />;
         const containerList =
             <Containers

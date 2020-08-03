@@ -264,6 +264,7 @@ class Images extends React.Component {
                 {this.state.showRunImageModal &&
                 <ImageRunModal
                     close={() => this.setState({ showRunImageModal: undefined })}
+                    selinuxAvailable={this.props.selinuxAvailable}
                     image={this.state.showRunImageModal} /> }
                 {this.state.showSearchImageModal &&
                 <ImageSearchModal
