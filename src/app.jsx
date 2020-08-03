@@ -139,6 +139,7 @@ class Application extends React.Component {
         }).catch(ex => {
             if (ex.cause == "no support for CGroups V1 in rootless environments") {
                 console.log("This OS does not support CgroupsV2. Some information may be missing.");
+                this.updateState("containersStats", id + system.toString(), -1);
             } else
                 console.warn("Failed to update container stats:", JSON.stringify(ex.message));
         });

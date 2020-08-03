@@ -75,8 +75,7 @@ class TestApplication(testlib.MachineCase):
         self.has_selinux = self.machine.image not in ["debian-testing"]
 
     def cgroupsV2(self):
-        # We will introduce images that are still cgroupsV1 later on
-        return True
+        return self.machine.image not in ["debian-testing"]
 
     def execute(self, system, cmd):
         if system:

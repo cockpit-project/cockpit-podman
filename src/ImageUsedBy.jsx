@@ -11,8 +11,8 @@ const renderRow = (containerStats, container) => {
     let proc = "";
     let mem = "";
     if (containerStats) {
-        proc = containerStats.cpu_stats ? containerStats.cpu_stats.cpu.toFixed(2) + "%" : <abbr title={_("not available")}>{_("n/a")}</abbr>;
-        mem = containerStats.memory_stats ? utils.format_memory_and_limit(containerStats.memory_stats.usage, containerStats.memory_stats.limit) : <abbr title={_("not available")}>{_("n/a")}</abbr>;
+        proc = containerStats.cpu_stats ? containerStats.cpu_stats.cpu.toFixed(2) + "%" : <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
+        mem = containerStats.memory_stats ? utils.format_memory_and_limit(containerStats.memory_stats.usage, containerStats.memory_stats.limit) : <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
     }
     const columns = [
         { title: container.Names, header: true },
