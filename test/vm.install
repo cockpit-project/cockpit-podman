@@ -46,8 +46,10 @@ if [ -d /var/tmp/debian ]; then
     systemctl disable docker.service io.podman.service
 fi
 
-# HACK: avoid leaking processes with podman < 2.0.4; see https://github.com/containers/podman/commit/2b6dd3fb4384
-sed -i '/KillMode=process/d; s/Type=oneshot/Type=simple/' /lib/systemd/user/podman.service /lib/systemd/system/podman.service
+if rpm -q podman >/dev/null 2>&1; then
+    # HACK: podman 2.0.3 breaks API; upgrade to 2.0.4 in updates-testing
+    dnf update -y --enablerepo=updates-testing podman
+fi
 
 systemctl enable cockpit.socket
 
