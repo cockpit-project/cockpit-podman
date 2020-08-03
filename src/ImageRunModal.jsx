@@ -106,7 +106,7 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
         </>
     );
 
-const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
+const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
     (
         <>
             <div role='group' className='ct-form-split'>
@@ -130,19 +130,21 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem }) =>
                         {_("ReadWrite")}
                     </Select.SelectEntry>
                 </Select.Select>
-                <Select.Select className='form-control'
-                               initial={item.mode}
-                               onChange={value => onChange(idx, 'selinux', value)}>
-                    <Select.SelectEntry data='' key=''>
-                        {_("No SELinux label")}
-                    </Select.SelectEntry>
-                    <Select.SelectEntry data='z' key='z'>
-                        {_("Shared")}
-                    </Select.SelectEntry>
-                    <Select.SelectEntry data='Z' key='Z'>
-                        {_("Private")}
-                    </Select.SelectEntry>
-                </Select.Select>
+                { options && options.selinuxAvailable &&
+                    <Select.Select className='form-control'
+                                   initial={item.mode}
+                                   onChange={value => onChange(idx, 'selinux', value)}>
+                        <Select.SelectEntry data='' key=''>
+                            {_("No SELinux label")}
+                        </Select.SelectEntry>
+                        <Select.SelectEntry data='z' key='z'>
+                            {_("Shared")}
+                        </Select.SelectEntry>
+                        <Select.SelectEntry data='Z' key='Z'>
+                            {_("Private")}
+                        </Select.SelectEntry>
+                    </Select.Select>
+                }
             </div>
             <div role='group' className='ct-form-split run-image-dialog-actions'>
                 <Button variant='secondary'
@@ -207,7 +209,7 @@ class DynamicListForm extends React.Component {
                                 {
                                     React.cloneElement(this.props.itemcomponent, {
                                         idx: idx, item: item, id: (idx === 0 && id) || undefined,
-                                        onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem
+                                        onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
                                     })
                                 }
                             </div>
@@ -223,6 +225,7 @@ DynamicListForm.propTypes = {
     id: PropTypes.string.isRequired,
     itemcomponent: PropTypes.object.isRequired,
     formclass: PropTypes.string,
+    options: PropTypes.object,
 };
 
 export class ImageRunModal extends React.Component {
@@ -427,6 +430,7 @@ export class ImageRunModal extends React.Component {
                                  formclass='volume-form'
                                  onChange={value => this.onValueChanged('volumes', value)}
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
+                                 options={{ selinuxAvailable: this.props.selinuxAvailable }}
                                  itemcomponent={ <Volume />} />
 
                 <hr />
