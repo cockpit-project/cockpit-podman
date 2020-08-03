@@ -189,7 +189,7 @@ class ContainerTerminal extends React.Component {
                     const body = JSON.stringify({ Detach: false, Tty: false });
                     channel.send("POST /v1.24/libpod/exec/" + encodeURIComponent(r.Id) +
                               "/start HTTP/1.0\r\n" +
-                              "Content-Length: " + body.length + "\r\n\r\n" + body);
+                              "Upgrade: WebSocket\r\nConnection: Upgrade\r\nContent-Length: " + body.length + "\r\n\r\n" + body);
 
                     const buffer = this.setUpBuffer(channel);
                     this.setState({ channel: channel, errorMessage: "", buffer: buffer, sessionId: r.Id }, () => this.resize(this.props.width));
@@ -207,7 +207,7 @@ class ContainerTerminal extends React.Component {
 
         channel.send("POST /v1.24/libpod/containers/" + encodeURIComponent(this.state.container) +
                       "/attach?&stdin=true&stdout=true&stderr=true HTTP/1.0\r\n" +
-                      "Content-Length: 0\r\n\r\n");
+                      "Upgrade: WebSocket\r\nConnection: Upgrade\r\nContent-Length: 0\r\n\r\n");
 
         const buffer = this.setUpBuffer(channel);
         this.setState({ channel: channel, errorMessage: "", buffer: buffer });
