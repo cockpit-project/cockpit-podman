@@ -144,7 +144,7 @@ class Containers extends React.Component {
             proc,
             mem,
             container.isSystem ? _("system") : this.props.user.name,
-            container.State /* FIXME: i18n */,
+            _(container.State), // States are defined in util.js
         ];
 
         const tty = containerDetail ? containerDetail.Config.Tty : false;

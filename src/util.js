@@ -2,6 +2,9 @@ import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
 
+// https://github.com/containers/podman/blob/master/libpod/define/containerstate.go
+export const states = [_("configured"), _("created"), _("running"), _("stopped"), _("paused"), _("exited"), _("removing")];
+
 export function truncate_id(id) {
     if (!id) {
         return "";

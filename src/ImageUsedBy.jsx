@@ -19,8 +19,7 @@ const renderRow = (containerStats, container) => {
         utils.quote_cmdline(container.Command),
         proc,
         mem,
-        container.State /* FIXME: i18n */,
-
+        _(container.State), // States are defined in util.js
     ];
     return {
         columns: columns,
