@@ -910,6 +910,7 @@ class TestApplication(testlib.MachineCase):
         self.allow_restart_journal_messages()
         self.allow_authorize_journal_messages()
         self.allow_journal_messages(".*podman/podman.sock/.*: couldn't connect:.*")
+        self.allow_journal_messages(".*podman/podman.sock/.*/events.*: received truncated HTTP response.*")
 
     @testlib.nondestructive
     def testRunImageSystem(self):
