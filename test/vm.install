@@ -12,6 +12,12 @@ if [ -d /var/tmp/debian ]; then
         apt-get update
         eatmydata apt-get install -y podman
     fi
+    # HACK: conmon 2.0.13 fixes podman exec; upgrade to 2.0.18 in unstable: https://bugs.debian.org/964858
+    if dpkg --compare-versions $(dpkg-query --show -f '${Version}' conmon) lt 2.0.18; then
+        echo 'deb http://deb.debian.org/debian unstable main' > /etc/apt/sources.list.d/unstable.list
+        apt-get update
+        eatmydata apt-get install -y conmon
+    fi
 
     # HACK: starting podman.service complains about missing crun: https://bugs.debian.org/961016
     eatmydata apt-get install -y crun
