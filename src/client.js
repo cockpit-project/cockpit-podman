@@ -119,6 +119,14 @@ export function postContainer(system, action, id, args) {
     });
 }
 
+export function postPod(system, action, id, args) {
+    return new Promise((resolve, reject) => {
+        podmanCall("libpod/pods/" + id + "/" + action, "POST", args, system)
+                .then(resolve)
+                .catch(reject);
+    });
+}
+
 export function execContainer(system, id) {
     const args = {
         AttachStderr: true,
