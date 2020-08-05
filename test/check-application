@@ -151,6 +151,12 @@ class TestApplication(testlib.MachineCase):
         self.performPodAction("pod-1", "system", "Restart")
         b.wait(lambda: old_pid != m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system".strip()))
 
+        self.performPodAction("pod-1", "system", "Delete")
+        b.click(".modal-dialog button:contains(Delete)")
+        b.wait_in_text(".modal-body", "running or paused containers cannot be removed without force")
+        b.click(".modal-dialog button:contains('Force Delete')")
+        self.waitPodRow("pod-1", False)
+
     @testlib.nondestructive
     def testBasicSystem(self):
         self._testBasic(True)
