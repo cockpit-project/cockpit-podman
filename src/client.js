@@ -38,6 +38,33 @@ function podmanMonitor(name, method, args, callback, system) {
     return connection.monitor(options, callback, system);
 }
 
+function podmanUpload(name, method, args, system, stream) {
+    const options = {
+        method: method,
+        path: "/v1.12/" + name,
+        params: args,
+        binary: true
+    };
+    const connection = rest.connect(getAddress(system), system);
+
+    const upload = connection.upload(options, true);
+    const reader = stream.getReader();
+
+    return reader.read()
+            .then(function process({ value, done }) {
+                if (done) {
+                    upload.input(value, false);
+                } else {
+                    upload.input(value, true);
+                    return reader.read().then(process);
+                }
+            })
+            .then(() => new Promise((resolve, reject) => {
+                upload.then(resolve)
+                        .catch(reject);
+            }));
+}
+
 export function streamEvents(system, callback) {
     return new Promise((resolve, reject) => {
         podmanMonitor("libpod/events", "GET", {}, callback, system)
@@ -136,6 +163,14 @@ export function delPod(system, id, force) {
             force: force,
         };
         podmanCall("libpod/pods/" + id, "DELETE", options, system)
+                .then(resolve)
+                .catch(reject);
+    });
+}
+
+export function postContainerWithUpload(system, action, id, stream, args) {
+    return new Promise((resolve, reject) => {
+        podmanUpload("libpod/containers/" + id + "/" + action, "POST", args, system, stream)
                 .then(resolve)
                 .catch(reject);
     });

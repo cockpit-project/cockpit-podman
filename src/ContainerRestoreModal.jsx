@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
+import { Button, Checkbox, FileUpload, Form, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
@@ -9,18 +9,34 @@ class ContainerRestoreModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            keep: false,
-            tcpEstablished: false,
-            ignoreRootFS: false,
-            ignoreStaticIP: false,
-            ignoreStaticMAC: false
+            checkboxes: {
+                keep: false,
+                tcpEstablished: false,
+                ignoreRootFS: false,
+                ignoreStaticIP: false,
+                ignoreStaticMAC: false,
+                useLocalCheckpoint: false
+            },
+            containerName: "",
+            tarball: "",
+            tarballFilename: ""
         };
-        this.handleChange = this.handleChange.bind(this);
+        this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     }
 
-    handleChange(checked, event) {
-        if (event.target.type === "checkbox")
-            this.setState({ [event.target.name]: event.target.checked });
+    handleCheckboxChange(checked, event) {
+        const name = event.target.name;
+        this.setState(state => ({ checkboxes: Object.assign(state.checkboxes, { [name]: checked }) }));
+    }
+
+    usingLocalCheckpoint() {
+        return this.state.checkboxes.useLocalCheckpoint && this.props.containerWillCheckpoint.hasCheckpoint;
+    }
+
+    podmanParameters() {
+        const result = Object.assign({ import: !this.usingLocalCheckpoint() }, this.state.checkboxes);
+        delete result.useLocalCheckpoint;
+        return result;
     }
 
     render() {
@@ -30,9 +46,12 @@ class ContainerRestoreModal extends React.Component {
                    position="top" variant="medium"
                    title={cockpit.format(_("Restore container $0"), utils.truncate_id(this.props.containerWillCheckpoint.Id))}
                    footer={<>
-                       <Button variant="primary" isDisabled={this.props.restoreInProgress}
+                       <Button variant="primary"
+                               isDisabled={this.props.restoreInProgress ||
+                                           (!this.usingLocalCheckpoint() && this.state.tarball === "")}
                                isLoading={this.props.restoreInProgress}
-                               onClick={() => this.props.handleRestoreContainer(this.state)}>
+                               onClick={() => this.props.handleRestoreContainer(this.podmanParameters(),
+                                                                                this.state.tarball)}>
                            {_("Restore")}
                        </Button>
                        <Button variant="link" isDisabled={this.props.restoreInProgress}
@@ -42,6 +61,15 @@ class ContainerRestoreModal extends React.Component {
                    </>}
             >
                 <Form isHorizontal>
+                    <FileUpload isDisabled={this.usingLocalCheckpoint()} id="restore-dialog-checkpoint-upload"
+                                filenamePlaceholder={_("Select the checkpoint tarball...")}
+                                onChange={(value, filename) =>
+                                    this.setState({ tarball: value, tarballFilename: filename })}
+                                value={this.state.tarball} filename={this.state.tarballFilename} />
+                    <Checkbox label={_("Use local checkpoint")} id="restore-dialog-use-local-checkpoint"
+                              name="useLocalCheckpoint" onChange={this.handleCheckboxChange}
+                              isChecked={this.usingLocalCheckpoint()}
+                              isDisabled={!this.props.containerWillCheckpoint.hasCheckpoint} />
                     <Checkbox label={_("Keep all temporary checkpoint files")} id="restore-dialog-keep" name="keep"
                               isChecked={this.state.keep} onChange={this.handleChange} />
                     <Checkbox label={_("Restore with established TCP connections")}

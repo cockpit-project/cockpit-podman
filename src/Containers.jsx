@@ -197,7 +197,7 @@ class Containers extends React.Component {
             </Button>,
         ];
         if (!isRunning) {
-            if (container.isSystem && container.hasCheckpoint) {
+            if (container.isSystem) {
                 const runActions = [];
                 runActions.push({ label: _("Start"), onActivate: () => this.startContainer(container) });
                 runActions.push({ label: _("Restore"), onActivate: () => this.restoreContainer(container) });
@@ -275,10 +275,13 @@ class Containers extends React.Component {
                 });
     }
 
-    handleRestoreContainer(args) {
+    handleRestoreContainer(params, tarball) {
         const container = this.state.containerWillRestore;
         this.setState({ restoreInProgress: true });
-        client.postContainer(container.isSystem, "restore", container.Id, args)
+
+        (params.import
+            ? client.postContainerWithUpload(container.isSystem, "restore", container.Id, tarball.stream(), params)
+            : client.postContainer(container.isSystem, "restore", container.Id, params))
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to restore container $0"), container.Names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -296,9 +299,7 @@ class Containers extends React.Component {
     }
 
     handleRestoreContainerDeleteModal() {
-        this.setState((prevState) => ({
-            selectContainerRestoreModal: !prevState.selectContainerRestoreModal,
-        }));
+        this.setState({ selectContainerRestoreModal: false });
     }
 
     handleCancelRemoveError() {

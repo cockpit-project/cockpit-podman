@@ -34,6 +34,16 @@ function connect(address, system) {
         });
     };
 
+    connection.upload = function(options, send_raw) {
+        const req = http.request(options);
+        return {
+            input: (input, stream) => send_raw ? req.input(input, stream) : req.input(JSON.stringify(input), stream),
+            then: req.then,
+            catch: req.catch,
+            close: req.close
+        };
+    };
+
     connection.call = function (options) {
         return new Promise((resolve, reject) => {
             options = options || {};
