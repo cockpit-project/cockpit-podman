@@ -127,6 +127,17 @@ export function postPod(system, action, id, args) {
     });
 }
 
+export function delPod(system, id, force) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            force: force,
+        };
+        podmanCall("libpod/pods/" + id, "DELETE", options, system)
+                .then(resolve)
+                .catch(reject);
+    });
+}
+
 export function execContainer(system, id) {
     const args = {
         AttachStderr: true,

@@ -2,19 +2,24 @@ import React from 'react';
 
 import * as client from './client.js';
 import {
-    Dropdown,
-    DropdownPosition,
-    DropdownItem,
-    KebabToggle
+    Button, Alert,
+    Dropdown, DropdownPosition, DropdownItem,
+    KebabToggle, List, ListItem,
 } from '@patternfly/react-core';
+import { Modal } from 'patternfly-react';
 
 import cockpit from 'cockpit';
+
+import "./PodActions.scss";
+
 const _ = cockpit.gettext;
 
 export class PodActions extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            deleteModalOpen: false,
+            deleteOperationInProgress: false,
             isOpen: false
         };
         this.onToggle = isOpen => {
@@ -26,6 +31,15 @@ export class PodActions extends React.Component {
             this.setState({
                 isOpen: !this.state.isOpen
             });
+        };
+        this.handlePodDelete = (force = false) => {
+            const pod = props.pod;
+            client.delPod(pod.isSystem, pod.Id, force)
+                    .catch(ex => {
+                        if (!force)
+                            this.setState({ deleteModalOpen: false, forceDeleteModalOpen: true });
+                        this.setState({ deleteError: ex.message });
+                    });
         };
     }
 
@@ -117,16 +131,47 @@ export class PodActions extends React.Component {
             );
         }
 
+        dropdownItems.push(
+            <DropdownItem key="action-delete"
+                          className="pod-action-delete"
+                          onClick={() => this.setState({ deleteModalOpen: true })}
+                          component="button">
+                {_("Delete")}
+            </DropdownItem>,
+        );
+
         if (!dropdownItems.length)
             return null;
 
         return (
-            <Dropdown onSelect={this.onSelect}
-                      position={DropdownPosition.right}
-                      toggle={<KebabToggle onToggle={this.onToggle} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
-                      isOpen={isOpen}
-                      isPlain
-                      dropdownItems={dropdownItems} />
+            <>
+                <Dropdown onSelect={this.onSelect}
+                          position={DropdownPosition.right}
+                          toggle={<KebabToggle onToggle={this.onToggle} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
+                          isOpen={isOpen}
+                          isPlain
+                          dropdownItems={dropdownItems} />
+                {(this.state.deleteModalOpen || this.state.forceDeleteModalOpen) && <Modal show>
+                    <Modal.Header>
+                        <Modal.Title>
+                            {this.state.forceDeleteModalOpen ? cockpit.format(_("Please confirm force deletion of pod $0"), pod.Name) : cockpit.format(_("Please confirm deletion of pod $0"), pod.Name)}
+                        </Modal.Title>
+                    </Modal.Header>
+                    {(pod.Containers || []).length > 0 && <Modal.Body>
+                        {this.state.deleteError && <Alert variant="danger" isInline title={_("An error occured")}>{this.state.deleteError}</Alert>}
+                        <p className="containers-delete-modal-title">{_("Deleting this pod will remove the following containers:")}</p>
+                        <List>
+                            {pod.Containers
+                                    .filter(container => container.Id != pod.InfraId)
+                                    .map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
+                        </List>
+                    </Modal.Body>}
+                    <Modal.Footer>
+                        <Button variant="danger" onClick={() => this.handlePodDelete(this.state.forceDeleteModalOpen)}>{this.state.forceDeleteModalOpen ? _("Force Delete") : _("Delete")}</Button>{' '}
+                        <Button variant="link" onClick={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}>{_("Cancel")}</Button>
+                    </Modal.Footer>
+                </Modal>}
+            </>
         );
     }
 }
