@@ -1,31 +1,35 @@
-.pod-name {
-    font-weight: var(--pf-global--FontWeight--bold);
-    font-size: var(--pf-global--FontSize--md);
-    padding-right: 1rem;
+.container-section:not(.pod-card) {
+    --pf-c-card--BoxShadow: none;
 }
-
 .container-section {
-    .panel {
-        margin-bottom: 0;
+    margin-top: var(--pf-global--spacer--md);
+
+    .pf-c-card__header {
+        border-color: #ddd;
+        padding-top: var(--pf-global--spacer--md);
     }
 
-    .panel-heading {
-        color: inherit;
-        background-color: inherit;
+    .pf-c-card__body {
+        padding: 0;
     }
 
-    .panel-title {
-        display: flex;
+    .pf-c-card__title {
+        padding: 0;
         font-weight: var(--pf-global--FontWeight--normal);
         font-size: var(--pf-global--FontSize--sm);
+
+        .pod-name {
+            font-weight: var(--pf-global--FontWeight--bold);
+            font-size: var(--pf-global--FontSize--md);
+            padding-right: 1rem;
+        }
+    }
+
+    .pf-c-card__header {
+        padding-bottom: var(--pf-global--spacer-sm);
     }
 }
 
-.container-section {
-    margin: var(--pf-global--spacer--xl) 0 0;
-}
-
-// Shrink space when only pods are shown (podless containers are not visible)
-.ct-table-header + .container-section {
-    margin-top: var(--pf-global--spacer--md);
+.ct-table-empty td {
+    padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md) var(--pf-global--spacer--lg);
 }
