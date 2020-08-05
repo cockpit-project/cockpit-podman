@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from "react-dom";
-import { Button, Badge } from '@patternfly/react-core';
+import { Button, Badge, Card, CardBody, CardHeader, CardTitle, CardActions } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "../lib/cockpit-components-table.jsx";
@@ -21,8 +21,6 @@ import ScrollableAnchor from 'react-scrollable-anchor';
 
 import './Containers.scss';
 import { PodActions } from './PodActions.jsx';
-
-import '../lib/table.css';
 
 const _ = cockpit.gettext;
 
@@ -480,25 +478,27 @@ class Containers extends React.Component {
                                     tableProps['aria-label'] = _("Containers");
                                 }
                                 return (
-                                    <div key={'table-' + section}
+                                    <Card key={'table-' + section}
                                          id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
-                                         className={"container-section" + (section != "no-pod" ? " panel panel-default" : "")}>
-                                        {caption && <div className='panel-heading'>
-                                            <h4 className='panel-title'>
-                                                <div className='pod-name'>{caption}</div>
-                                                <div>{_("pod group")}</div>
-                                            </h4>
-                                            <div className='panel-actions'>
+                                         className={"container-section" + (section != "no-pod" ? " pod-card" : "")}>
+                                        {caption && <CardHeader>
+                                            <CardTitle>
+                                                <span className='pod-name'>{caption}</span>
+                                                <span>{_("pod group")}</span>
+                                            </CardTitle>
+                                            <CardActions className='panel-actions'>
                                                 <Badge isRead>{_(this.props.pods[section].Status)}</Badge>
                                                 <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
-                                            </div>
-                                        </div>}
-                                        <ListingTable variant='compact'
-                                                      emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
-                                                      columns={columnTitles}
-                                                      rows={rows}
-                                                      {...tableProps} />
-                                    </div>
+                                            </CardActions>
+                                        </CardHeader>}
+                                        <CardBody>
+                                            <ListingTable variant='compact'
+                                                          emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
+                                                          columns={columnTitles}
+                                                          rows={rows}
+                                                          {...tableProps} />
+                                        </CardBody>
+                                    </Card>
                                 );
                             })}
                     {containerDeleteModal}
