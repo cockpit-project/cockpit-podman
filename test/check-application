@@ -100,6 +100,13 @@ class TestApplication(testlib.MachineCase):
             else:
                 self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No running containers in this pod ")
 
+    def performPodAction(self, podName, podOwner, action):
+        b = self.browser
+
+        b.click("#pod-{0}-{1}-action-toggle".format(podName, podOwner))
+        b.click("ul[aria-labelledby=pod-{1}-{2}-action-toggle] li > button.pod-action-{0}".format(action.lower(), podName, podOwner))
+        b.wait_not_present("ul[aria-labelledby=pod-{0}-{1}-action-toggle]".format(podName, podOwner))
+
     @testlib.nondestructive
     def testPods(self):
         b = self.browser
@@ -129,6 +136,20 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
         b.set_input_text('#containers-filter', 'test-pod-1-system')
         self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
+
+        # Check Pod Actions
+        self.performPodAction("pod-1", "system", "Start")
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
+
+        self.performPodAction("pod-1", "system", "Stop")
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId }])
+
+        self.machine.execute("podman pod start pod-1")
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
+
+        old_pid = m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system")
+        self.performPodAction("pod-1", "system", "Restart")
+        b.wait(lambda: old_pid != m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system".strip()))
 
     @testlib.nondestructive
     def testBasicSystem(self):

@@ -5,6 +5,9 @@ const _ = cockpit.gettext;
 // https://github.com/containers/podman/blob/master/libpod/define/containerstate.go
 export const states = [_("configured"), _("created"), _("running"), _("stopped"), _("paused"), _("exited"), _("removing")];
 
+// https://github.com/containers/podman/blob/master/libpod/define/podstate.go
+export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"), _("Exited"), _("Error")];
+
 export function truncate_id(id) {
     if (!id) {
         return "";

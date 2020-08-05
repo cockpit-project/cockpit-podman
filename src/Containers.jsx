@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from "react-dom";
-import { Button } from '@patternfly/react-core';
+import { Button, Badge } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "../lib/cockpit-components-table.jsx";
@@ -20,6 +20,9 @@ import ContainerCommitModal from './ContainerCommitModal.jsx';
 import ScrollableAnchor from 'react-scrollable-anchor';
 
 import './Containers.scss';
+import { PodActions } from './PodActions.jsx';
+
+import '../lib/table.css';
 
 const _ = cockpit.gettext;
 
@@ -153,7 +156,7 @@ class Containers extends React.Component {
             proc,
             mem,
             container.isSystem ? _("system") : this.props.user.name,
-            _(container.State), // States are defined in util.js
+            { title: <Badge isRead>{_(container.State)}</Badge> }, // States are defined in util.js
         ];
 
         const tty = containerDetail ? containerDetail.Config.Tty : false;
@@ -485,6 +488,10 @@ class Containers extends React.Component {
                                                 <div className='pod-name'>{caption}</div>
                                                 <div>{_("pod group")}</div>
                                             </h4>
+                                            <div className='panel-actions'>
+                                                <Badge isRead>{_(this.props.pods[section].Status)}</Badge>
+                                                <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
+                                            </div>
                                         </div>}
                                         <ListingTable variant='compact'
                                                       emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
