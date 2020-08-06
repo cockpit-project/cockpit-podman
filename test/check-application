@@ -723,7 +723,7 @@ class TestApplication(testlib.MachineCase):
             self.assertIn(full[1], ["GiB", "MiB"])
 
             # Test that the value is updated dynamically
-            self.execute(auth, "podman exec -i swamped-crate dd bs=1024 count=1000000 < /dev/urandom > outfile")
+            self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 count=1000000 < /dev/urandom > /dev/null'")
             new_cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
             self.assertIn('%', new_cpu)
             new_num = new_cpu[:-1]
