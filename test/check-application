@@ -632,6 +632,8 @@ class TestApplication(testlib.MachineCase):
         b.set_val('#registry-select', "localhost:6000")
         b.wait_not_present("div.list-group .image-list-item label:contains('localhost:5000/my-busybox')")
         b.wait_present("div.list-group .image-list-item label:contains('localhost:6000/my-busybox')")
+        b.click(".modal-dialog button:contains('Cancel')")
+        b.wait_not_present('div.modal-dialog')
 
         dialog0 = DownloadImageDialog('my-busybox', user="system")
         dialog0.openDialog() \
