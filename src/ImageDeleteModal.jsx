@@ -5,13 +5,21 @@ import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
 
+function sortTags(a, b) {
+    if (a.endsWith(":latest"))
+        return -1;
+    if (b.endsWith(":latest"))
+        return 1;
+    return a.localeCompare(b);
+}
+
 export class ImageDeleteModal extends React.Component {
     constructor(props) {
         super(props);
 
         const tags = {};
         const repoTags = this.props.imageWillDelete.RepoTags ? this.props.imageWillDelete.RepoTags : [];
-        repoTags.forEach((x, i) => {
+        repoTags.sort(sortTags).forEach((x, i) => {
             tags[x] = (i === 0);
         });
 
@@ -40,13 +48,12 @@ export class ImageDeleteModal extends React.Component {
     }
 
     render() {
-        const repoTag = this.props.imageWillDelete.RepoTags ? this.props.imageWillDelete.RepoTags[0] : "";
-        const repoTags = Object.keys(this.state.tags);
+        const repoTags = Object.keys(this.state.tags).sort(sortTags);
         const checkedTags = repoTags.filter(x => this.state.tags[x]);
         return (
             <Modal show>
                 <Modal.Header>
-                    <Modal.Title>{cockpit.format(_("Delete $0"), repoTag)}</Modal.Title>
+                    <Modal.Title>{cockpit.format(_("Delete $0"), repoTags ? repoTags[0] : "")}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     { repoTags.length > 1 && <p>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</p> }
