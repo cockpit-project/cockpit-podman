@@ -352,35 +352,32 @@ class TestApplication(testlib.MachineCase):
 
         # run a container (will exit immediately) and test the display of commit modal
         if auth:
-            self.execute(True, "podman run -d --name test-sh alpine sh")
-            container_commit("test-sh")
+            self.execute(True, "podman run -d --name test-sh0 alpine sh")
+            container_commit("test-sh0")
             checkImage(b, "localhost/testimg:testtag", "system")
-            self.execute(True, "podman rm -f test-sh; podman rmi testimg:testtag")
+            self.execute(True, "podman rm -f test-sh0; podman rmi testimg:testtag")
 
-        self.execute(False, "podman run -d --name test-sh alpine sh")
-        container_commit("test-sh", owner="admin")
+        self.execute(False, "podman run -d --name test-sh1 alpine sh")
+        container_commit("test-sh1", owner="admin")
         checkImage(b, "localhost/testimg:testtag", "admin")
-        self.execute(False, "podman rm -f test-sh; podman rmi testimg:testtag")
+        self.execute(False, "podman rm -f test-sh1; podman rmi testimg:testtag")
 
         # test commit of a running container
         if auth:
-            self.execute(True, "podman run -d --name test-sh busybox sleep 1000")
-            container_commit("test-sh", image_command=r'sh -c "while echo \"Hello World\"; do sleep 1; done "')
-            self.execute(True, "podman rm -f test-sh; podman rmi testimg:testtag")
+            self.execute(True, "podman run -d --name test-sh2 busybox sleep 1000")
+            container_commit("test-sh2", image_command=r'sh -c "while echo \"Hello World\"; do sleep 1; done "')
+            self.execute(True, "podman rm -f test-sh2; podman rmi testimg:testtag")
 
         # HACK - this does not work, see https://github.com/containers/libpod/issues/3970
-        # self.execute(False, "podman run -d --name test-sh alpine sleep 1000")
-        # container_commit("test-sh", owner="admin")
-        # self.execute(False, "podman rm -f test-sh; podman rmi testimg:testtag")
+        # self.execute(False, "podman run -d --name test-sh3 alpine sleep 1000")
+        # container_commit("test-sh3", owner="admin")
+        # self.execute(False, "podman rm -f test-sh3; podman rmi testimg:testtag")
 
-        if auth:
-            self.execute(True, "podman run -d --name test-sh alpine sh")
-        else:
-            self.execute(False, "podman run -d --name test-sh alpine sh")
-        b.wait_present('#containers-containers tr:contains("alpine:latest")')
-        b.click('#containers-containers tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
+        self.execute(auth, "podman run -d --name test-sh4 alpine sh")
+        b.wait_present('#containers-containers tr:contains("test-sh4")')
+        b.click('#containers-containers tbody tr:contains("test-sh4") td.pf-c-table__toggle button')
         # open commit modal and check error modal
-        b.click('#containers-containers tbody tr:contains("alpine:latest") + tr button.btn-commit')
+        b.click('#containers-containers tbody tr:contains("test-sh4") + tr button.btn-commit')
         # check required field error
         b.click(".modal-dialog div .btn-ctr-commit")
         b.wait_present('.modal-dialog div:contains("Image name is required")')
@@ -439,7 +436,7 @@ class TestApplication(testlib.MachineCase):
         # Rootless don't have this info
         if auth:
             # Remove current container for easier selectors
-            self.execute(auth, "podman rm -f test-sh")
+            self.execute(auth, "podman rm -f test-sh4")
             b.wait_not_present(".container-details")
 
             self.execute(auth, "podman run -dt --name net_check alpine")
