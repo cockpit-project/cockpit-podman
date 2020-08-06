@@ -523,7 +523,7 @@ class TestApplication(testlib.MachineCase):
             self.execute(True, "podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
             self.execute(True, "podman tag busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
-            self.execute(True, "podman rmi -f busybox")
+            self.execute(True, "podman rmi -f busybox localhost:5000/my-busybox localhost:6000/my-busybox")
 
         class DownloadImageDialog:
             def __init__(self, imageName, imageTag=None, user="system"):
@@ -646,7 +646,7 @@ class TestApplication(testlib.MachineCase):
               .expectDownloadSuccess()
         dialog1.deleteImage(True, another="docker.io/library/busybox:latest")
 
-        dialog0.deleteImage(True)
+        dialog0.deleteImage()
 
         dialog = DownloadImageDialog('my-busybox', 'latest', user="system")
         dialog.openDialog() \
