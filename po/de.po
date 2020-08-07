@@ -1,10 +1,11 @@
 # Martin Pitt <mpitt@redhat.com>, 2019. #zanata
 # Mike FABIAN <mfabian@redhat.com>, 2020.
+# Matej Marusak <marusak.matej@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-27 13:41+0000\n"
+"POT-Creation-Date: 2020-08-04 13:16+0000\n"
 "PO-Revision-Date: 2020-01-07 10:25+0000\n"
 "Last-Translator: Mike FABIAN <mfabian@redhat.com>\n"
 "Language-Team: German <https://translate.stg.fedoraproject.org/projects/"
@@ -13,198 +14,260 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"Plural-Forms: nplurals=2; plural=n != 1\n"
 "X-Generator: Weblate 3.9.1\n"
 
-#: src/ImageDeleteModal.jsx:16
-msgid "Are you sure you want to delete this image?"
-msgstr "Sind Sie sicher, dass Sie dieses Image löschen wollen?"
+#: src/ImageRunModal.jsx:72 src/ImageRunModal.jsx:102 src/ImageRunModal.jsx:156
+msgid "Add item"
+msgstr ""
 
-#: src/ContainerCommitModal.jsx:171 src/ImageDetails.jsx:28
+#: src/ContainerCommitModal.jsx:138
+msgid "Add on build variable"
+msgstr ""
+
+#: src/ContainerHeader.jsx:42 src/Containers.jsx:439
+msgid "All"
+msgstr ""
+
+#: src/ImageSearchModal.jsx:164
+msgid "All registries"
+msgstr ""
+
+#: src/ContainerCommitModal.jsx:185 src/ImageDetails.jsx:28
 msgid "Author"
 msgstr "Autor"
 
-#: src/app.jsx:403
+#: src/app.jsx:555
 msgid "Automatically start podman on boot"
 msgstr "Podman automatisch beim Hochfahren starten"
 
-#: src/Containers.jsx:221 src/ImageUsedBy.jsx:40
+#: src/Containers.jsx:325 src/ImageUsedBy.jsx:36
 msgid "CPU"
 msgstr "CPU"
 
-#: src/ImageRunModal.jsx:343
+#: src/ImageRunModal.jsx:393
 msgid "CPU Shares"
 msgstr ""
 
-#: src/ContainerCommitModal.jsx:214 src/ContainerRemoveErrorModal.jsx:19
-#: src/ImageRemoveErrorModal.jsx:19 src/ImageRunModal.jsx:406
-#: src/ImageSearchModal.jsx:185
+#: src/ContainerCheckpointModal.jsx:54 src/ContainerCommitModal.jsx:228
+#: src/ContainerDeleteModal.jsx:19 src/ContainerRemoveErrorModal.jsx:23
+#: src/ContainerRestoreModal.jsx:57 src/ImageDeleteModal.jsx:70
+#: src/ImageRemoveErrorModal.jsx:20 src/ImageRunModal.jsx:460
+#: src/ImageSearchModal.jsx:223
 msgid "Cancel"
 msgstr "Abbruch"
 
-#: src/ContainerCommitModal.jsx:181 src/ContainerDetails.jsx:35
-#: src/Containers.jsx:221 src/ImageDetails.jsx:24 src/ImageRunModal.jsx:299
-#: src/ImageRunModal.jsx:303 src/ImageUsedBy.jsx:40
+#: src/ContainerCheckpointModal.jsx:51 src/Containers.jsx:219
+msgid "Checkpoint"
+msgstr ""
+
+#: src/ContainerCheckpointModal.jsx:30
+#, fuzzy
+#| msgid "Failed to commit container $0"
+msgid "Checkpoint container $0"
+msgstr "Konnte Container $0 nicht committen"
+
+#: src/ContainerCommitModal.jsx:195 src/ContainerDetails.jsx:35
+#: src/ImageDetails.jsx:24 src/ImageRunModal.jsx:349 src/ImageRunModal.jsx:353
+#: src/ImageUsedBy.jsx:36
 msgid "Command"
 msgstr "Befehl"
 
-#: src/ContainerCommitModal.jsx:215 src/Containers.jsx:139
+#: src/ContainerCommitModal.jsx:227 src/Containers.jsx:192
 msgid "Commit"
 msgstr "Committen"
 
-#: src/ContainerCommitModal.jsx:206
+#: src/ContainerCommitModal.jsx:220
 msgid "Commit Image"
 msgstr "Image committen"
 
-#: src/Containers.jsx:122
+#: src/Containers.jsx:170
 msgid "Console"
 msgstr "Konsole"
 
-#: src/ContainerCommitModal.jsx:133 src/ImageRunModal.jsx:292
+#: src/Containers.jsx:325
+#, fuzzy
+#| msgid "Containers"
+msgid "Container"
+msgstr "Container"
+
+#: src/ContainerCommitModal.jsx:147 src/ImageRunModal.jsx:342
 msgid "Container Name"
 msgstr "Container-Name"
 
-#: src/ImageRunModal.jsx:266
+#: src/ImageRunModal.jsx:316
 msgid "Container failed to be created"
 msgstr "Container konnte nicht erstellt werden"
 
-#: src/ContainerRemoveErrorModal.jsx:16
+#: src/ImageRunModal.jsx:309
+#, fuzzy
+#| msgid "Container failed to be created"
+msgid "Container failed to be started"
+msgstr "Container konnte nicht erstellt werden"
+
+#: src/ContainerRemoveErrorModal.jsx:17
 msgid "Container is currently running."
 msgstr "Container läuft gerade."
 
-#: src/ContainerTerminal.jsx:89
+#: src/ContainerTerminal.jsx:112
 msgid "Container is not running"
 msgstr "Container läuft nicht"
 
-#: src/ImageRunModal.jsx:107
+#: src/ImageRunModal.jsx:119
 msgid "Container path"
 msgstr "Container-Pfad"
 
-#: src/ImageRunModal.jsx:41
+#: src/ImageRunModal.jsx:43
 msgid "Container port"
 msgstr "Container-Port"
 
-#: src/Containers.jsx:266
+#: src/Containers.jsx:445 src/Containers.jsx:453 src/Containers.jsx:477
 msgid "Containers"
 msgstr "Container"
 
-#: src/ContainerTerminal.jsx:131
-msgid "Could not attach to this container: $0"
-msgstr "Konnte nicht mit diesem Container verbinden: $0"
-
-#: src/ContainerTerminal.jsx:125
-msgid "Could not open channel: $0"
-msgstr "Konnte keinen Kanal öffnen: $0"
-
-#: src/ContainerDetails.jsx:31 src/ImageDetails.jsx:26 src/Images.jsx:201
+#: src/ContainerDetails.jsx:31 src/ImageDetails.jsx:26 src/Images.jsx:180
 msgid "Created"
 msgstr "Erstellt"
 
-#: src/ContainerDeleteModal.jsx:20 src/ImageDeleteModal.jsx:20
+#: src/ContainerDeleteModal.jsx:18
 msgid "Delete"
 msgstr "Löschen"
 
-#: src/ImageDeleteModal.jsx:13
+#: src/ImageDeleteModal.jsx:49
 msgid "Delete $0"
 msgstr "$0 löschen"
 
-#: src/ContainerDeleteModal.jsx:16
+#: src/Containers.jsx:180 src/Images.jsx:157
+#, fuzzy
+#| msgid "Get new image"
+msgid "Delete image"
+msgstr "Neues Image herunterladen"
+
+#: src/ImageDeleteModal.jsx:68
+#, fuzzy
+#| msgid "Get new image"
+msgid "Delete tagged images"
+msgstr "Neues Image herunterladen"
+
+#: src/ContainerDeleteModal.jsx:15
 msgid "Deleting a container will erase all data in it."
 msgstr "Beim Löschen des Containers werden alle Daten darin verloren gehen."
 
-#: src/Containers.jsx:118 src/Images.jsx:154
+#: src/Containers.jsx:162 src/Images.jsx:139
 msgid "Details"
 msgstr "Details"
 
-#: src/ImageSearchModal.jsx:188
+#: src/ContainerCheckpointModal.jsx:43
+msgid "Do not include root file-system changes when exporting"
+msgstr ""
+
+#: src/ImageSearchModal.jsx:220
 msgid "Download"
 msgstr "Herunterladen"
-
-#: src/ImageSearchModal.jsx:121
-msgid "Download as:"
-msgstr "Herunterladen als:"
 
 #: src/ImageDetails.jsx:22
 msgid "Entrypoint"
 msgstr "Einsprungspunkt"
 
-#: src/ImageRunModal.jsx:386
+#: src/ImageRunModal.jsx:437
 msgid "Environment"
 msgstr "Umgebung"
 
-#: src/Images.jsx:74 src/Notification.jsx:30
+#: src/Images.jsx:61 src/Notification.jsx:30
 msgid "Error message"
 msgstr "Fehlermeldung"
-
-#: src/ContainerHeader.jsx:37
-msgid "Everything"
-msgstr "Alles"
 
 #: src/ContainerDetails.jsx:12
 msgid "Exited"
 msgstr "Beendet"
 
-#: src/ContainerCommitModal.jsx:104
+#: src/Containers.jsx:260
+#, fuzzy
+#| msgid "Failed to commit container $0"
+msgid "Failed to checkpoint container $0"
+msgstr "Konnte Container $0 nicht committen"
+
+#: src/ContainerCommitModal.jsx:110
 msgid "Failed to commit container $0"
 msgstr "Konnte Container $0 nicht committen"
 
-#: src/Images.jsx:72
+#: src/Images.jsx:59
 msgid "Failed to download image $0:$1"
 msgstr "Konnte Image $0 nicht herunterladen: $1"
 
-#: src/Containers.jsx:208
+#: src/Containers.jsx:313
 msgid "Failed to force remove container $0"
 msgstr ""
 
-#: src/Containers.jsx:187
+#: src/Containers.jsx:250
 msgid "Failed to remove container $0"
 msgstr "Konnte Container $0 nicht neu entfernen"
 
-#: src/Containers.jsx:91
+#: src/Containers.jsx:121
 msgid "Failed to restart container $0"
 msgstr "Konnte Container $0 nicht neu starten"
 
-#: src/ImageSearchModal.jsx:89
+#: src/Containers.jsx:276
+#, fuzzy
+#| msgid "Failed to restart container $0"
+msgid "Failed to restore container $0"
+msgstr "Konnte Container $0 nicht neu starten"
+
+#: src/ImageSearchModal.jsx:98
+#, fuzzy
+#| msgid "Failed to search for new images"
+msgid "Failed to search for images: $0"
+msgstr "Konnte nicht nach neuen Images suchen"
+
+#: src/ImageSearchModal.jsx:97
 msgid "Failed to search for new images"
 msgstr "Konnte nicht nach neuen Images suchen"
 
-#: src/Containers.jsx:78
+#: src/Containers.jsx:109
 msgid "Failed to start container $0"
 msgstr "Konnte Container $0 nicht starten"
 
-#: src/Containers.jsx:69
+#: src/Containers.jsx:101
 msgid "Failed to stop container $0"
 msgstr "Konnte Container $0 nicht stoppen"
 
-#: src/ContainerRemoveErrorModal.jsx:20 src/ImageRemoveErrorModal.jsx:20
+#: src/ContainerRemoveErrorModal.jsx:22 src/ImageRemoveErrorModal.jsx:19
 msgid "Force Delete"
 msgstr "Löschen erzwingen"
 
-#: src/Containers.jsx:153
+#: src/Containers.jsx:213
 msgid "Force Restart"
 msgstr "Neustart erzwingen"
 
-#: src/Containers.jsx:157
+#: src/Containers.jsx:217
 msgid "Force Stop"
 msgstr "Stoppen erzwingen"
 
-#: src/ContainerCommitModal.jsx:140
+#: src/ContainerCommitModal.jsx:154
 msgid "Format"
 msgstr "Format"
 
-#: src/Images.jsx:212
+#: src/ContainerDetails.jsx:45
+msgid "Gateway"
+msgstr ""
+
+#: src/Images.jsx:191
 msgid "Get new image"
 msgstr "Neues Image herunterladen"
 
-#: src/ImageRunModal.jsx:335
+#: src/ImageRunModal.jsx:385
 msgid "GiB"
 msgstr "GiB"
 
-#: src/ImageRunModal.jsx:102
+#: src/Images.jsx:235
+msgid "Hide intermediate images"
+msgstr ""
+
+#: src/ImageRunModal.jsx:114
 msgid "Host path"
 msgstr ""
 
-#: src/ImageRunModal.jsx:49
+#: src/ImageRunModal.jsx:51
 msgid "Host port"
 msgstr ""
 
@@ -212,105 +275,156 @@ msgstr ""
 msgid "ID"
 msgstr "ID"
 
-#: src/ContainerDetails.jsx:33 src/Containers.jsx:221
-#: src/ImageRunModal.jsx:283
+#: src/ContainerDetails.jsx:41
+msgid "IP Address"
+msgstr ""
+
+#: src/ContainerDetails.jsx:43
+msgid "IP Prefix Length"
+msgstr ""
+
+#: src/ContainerRestoreModal.jsx:43
+msgid "Ignore IP address if set statically"
+msgstr ""
+
+#: src/ContainerRestoreModal.jsx:46
+msgid "Ignore MAC address if set statically"
+msgstr ""
+
+#: src/ContainerDetails.jsx:33 src/ImageRunModal.jsx:333
 msgid "Image"
 msgstr "Image"
 
-#: src/ContainerCommitModal.jsx:161
+#: src/ContainerCommitModal.jsx:175
 msgid "Image Name"
 msgstr "Image-Name"
 
-#: src/ImageSearchModal.jsx:147 src/Images.jsx:249
+#: src/Images.jsx:250
 msgid "Images"
 msgstr "Images"
 
-#: src/ContainerHeader.jsx:38
-msgid "Images and running containers"
-msgstr "Images und laufende Container"
+#: src/ContainerCheckpointModal.jsx:35 src/ContainerRestoreModal.jsx:38
+msgid "Keep all temporary checkpoint files"
+msgstr ""
 
-#: src/ImageRunModal.jsx:79
+#: src/ImageRunModal.jsx:86
 msgid "Key"
 msgstr "Schlüssel"
 
-#: src/ImageRunModal.jsx:329
+#: src/ImageRunModal.jsx:379
 msgid "KiB"
 msgstr "KiB"
 
-#: src/Containers.jsx:225 src/ImageUsedBy.jsx:53
+#: src/ContainerCheckpointModal.jsx:37
+msgid "Leave running after writing checkpoint to disk"
+msgstr ""
+
+#: src/ContainerLogs.jsx:51
+#, fuzzy
+#| msgid "Loading..."
+msgid "Loading logs..."
+msgstr "Lade..."
+
+#: src/Containers.jsx:332 src/ImageUsedBy.jsx:49
 msgid "Loading..."
 msgstr "Lade..."
 
-#: src/Containers.jsx:221 src/ImageUsedBy.jsx:40
+#: src/Containers.jsx:166
+msgid "Logs"
+msgstr ""
+
+#: src/ContainerDetails.jsx:47
+msgid "MAC Address"
+msgstr ""
+
+#: src/Containers.jsx:325 src/ImageUsedBy.jsx:36
 msgid "Memory"
 msgstr "Speicher"
 
-#: src/ImageRunModal.jsx:309
+#: src/ImageRunModal.jsx:359
 msgid "Memory Limit"
 msgstr "Speicher-Limit"
 
-#: src/ContainerCommitModal.jsx:176
+#: src/ContainerCommitModal.jsx:190
 msgid "Message"
 msgstr "Nachricht"
 
-#: src/ImageRunModal.jsx:332
+#: src/ImageRunModal.jsx:382
 msgid "MiB"
 msgstr "MiB"
 
-#: src/Containers.jsx:221 src/ImageRunModal.jsx:288 src/ImageUsedBy.jsx:40
-#: src/Images.jsx:201
+#: src/ImageDeleteModal.jsx:52
+msgid "Multiple tags exist for this image. Select the tagged images to delete."
+msgstr ""
+
+#: src/ImageRunModal.jsx:338 src/ImageUsedBy.jsx:36 src/Images.jsx:180
 msgid "Name"
 msgstr "Name"
 
-#: src/Containers.jsx:223
+#: src/ImageRunModal.jsx:138
+msgid "No SELinux label"
+msgstr ""
+
+#: src/Containers.jsx:329
 msgid "No containers"
 msgstr "Keine Container"
 
-#: src/ImageUsedBy.jsx:41
+#: src/ImageUsedBy.jsx:37
 msgid "No containers are using this image"
 msgstr "Kein Container benutzt dieses Image"
 
-#: src/Containers.jsx:227
+#: src/Containers.jsx:330
+#, fuzzy
+#| msgid "No containers are using this image"
+msgid "No containers in this pod"
+msgstr "Kein Container benutzt dieses Image"
+
+#: src/Containers.jsx:334
 msgid "No containers that match the current filter"
 msgstr "Aktueller Filter passt auf keinen Container"
 
-#: src/Images.jsx:202
+#: src/Images.jsx:181
 msgid "No images"
 msgstr "Keine Images"
 
-#: src/Images.jsx:206
+#: src/Images.jsx:185
 msgid "No images that match the current filter"
 msgstr "Aktueller Filter passt auf kein Image"
 
-#: src/ImageSearchModal.jsx:148
+#: src/ImageSearchModal.jsx:180
 msgid "No results for $0. Please retry another term."
 msgstr ""
 
-#: src/Containers.jsx:229
+#: src/Containers.jsx:336
 msgid "No running containers"
 msgstr "Keine laufenden Container"
 
-#: src/ContainerCommitModal.jsx:194
+#: src/ContainerCommitModal.jsx:208
 msgid "On Build"
 msgstr ""
 
-#: src/Containers.jsx:221 src/Images.jsx:201
+#: src/Containers.jsx:438
+msgid "Only running"
+msgstr ""
+
+#: src/ContainerHeader.jsx:38 src/Containers.jsx:325
+#: src/ImageSearchModal.jsx:128 src/Images.jsx:180
 msgid "Owner"
 msgstr "Eigentümer"
 
-#: src/ContainerCommitModal.jsx:186
+#: src/ContainerCommitModal.jsx:200
 msgid "Pause"
 msgstr "Anhalten"
 
-#: src/ContainerCommitModal.jsx:190
+#: src/ContainerCommitModal.jsx:204
 msgid "Pause the container"
 msgstr "Den Container anhalten"
 
-#: src/ContainerDeleteModal.jsx:13
+#: src/ContainerDeleteModal.jsx:12
 msgid "Please confirm deletion of $0"
 msgstr "Bitte bestätigen Sie das Löschen von $0"
 
-#: src/ContainerRemoveErrorModal.jsx:13 src/ImageRemoveErrorModal.jsx:13
+#: src/ContainerRemoveErrorModal.jsx:14 src/ImageRemoveErrorModal.jsx:13
 msgid "Please confirm forced deletion of $0"
 msgstr "Bitte bestätigen Sie das erzwungene Löschen von $0"
 
@@ -318,88 +432,142 @@ msgstr "Bitte bestätigen Sie das erzwungene Löschen von $0"
 msgid "Podman Containers"
 msgstr "Podman-Container"
 
-#: src/app.jsx:396
+#: src/app.jsx:548
 msgid "Podman Service is Not Active"
 msgstr "Podman-Service ist nicht aktiv"
 
 #: src/ContainerDetails.jsx:39 src/ImageDetails.jsx:30
-#: src/ImageRunModal.jsx:370
+#: src/ImageRunModal.jsx:420
 msgid "Ports"
 msgstr "Ports"
 
-#: src/Images.jsx:268
+#: src/ImageRunModal.jsx:144
+msgid "Private"
+msgstr ""
+
+#: src/Images.jsx:277
 msgid "Pulling"
 msgstr "Herunterladen"
 
-#: src/ImageRunModal.jsx:114
+#: src/ImageRunModal.jsx:127
 msgid "ReadOnly"
 msgstr "Nur lesen"
 
-#: src/ImageRunModal.jsx:117
+#: src/ImageRunModal.jsx:130
 msgid "ReadWrite"
 msgstr "Lesen und Schreiben"
 
-#: src/Containers.jsx:152
+#: src/ImageRunModal.jsx:68 src/ImageRunModal.jsx:98 src/ImageRunModal.jsx:152
+msgid "Remove item"
+msgstr ""
+
+#: src/ContainerCommitModal.jsx:133
+msgid "Remove on build variable"
+msgstr ""
+
+#: src/Containers.jsx:212
 msgid "Restart"
 msgstr "Neustart"
 
-#: src/ImageRunModal.jsx:409
+#: src/ContainerRestoreModal.jsx:54 src/Containers.jsx:199
+#, fuzzy
+#| msgid "Restart"
+msgid "Restore"
+msgstr "Neustart"
+
+#: src/ContainerRestoreModal.jsx:32
+#, fuzzy
+#| msgid "Failed to remove container $0"
+msgid "Restore container $0"
+msgstr "Konnte Container $0 nicht neu entfernen"
+
+#: src/ContainerRestoreModal.jsx:40
+msgid "Restore with established TCP connections"
+msgstr ""
+
+#: src/ImageRunModal.jsx:457
 msgid "Run"
 msgstr "Starten"
 
-#: src/ImageRunModal.jsx:398
+#: src/ImageRunModal.jsx:449
 msgid "Run Image"
 msgstr "Image starten"
 
-#: src/ImageSearchModal.jsx:171
-msgid "Search Image"
-msgstr "Image suchen"
+#: src/Images.jsx:124
+#, fuzzy
+#| msgid "Run Image"
+msgid "Run image"
+msgstr "Image starten"
 
-#: src/ImageSearchModal.jsx:138
+#: src/ImageSearchModal.jsx:150
 msgid "Search by name or description"
 msgstr "Nach Name oder Beschreibung suchen"
 
-#: src/Images.jsx:160
-msgid "Security"
-msgstr "Sicherheit"
+#: src/ImageSearchModal.jsx:145
+#, fuzzy
+#| msgid "Search Image"
+msgid "Search for"
+msgstr "Image suchen"
 
-#: src/ContainerCommitModal.jsx:198
+#: src/ImageSearchModal.jsx:203
+#, fuzzy
+#| msgid "Search Image"
+msgid "Search for an image"
+msgstr "Image suchen"
+
+#: src/ContainerCommitModal.jsx:212
 msgid "Set container on build variables"
 msgstr ""
 
-#: src/Images.jsx:201
+#: src/ImageRunModal.jsx:141
+msgid "Shared"
+msgstr ""
+
+#: src/Containers.jsx:436
+msgid "Show"
+msgstr ""
+
+#: src/Images.jsx:235
+msgid "Show intermediate images"
+msgstr ""
+
+#: src/Images.jsx:180
 msgid "Size"
 msgstr "Größe"
 
-#: src/Containers.jsx:145 src/app.jsx:444
+#: src/Containers.jsx:198 src/Containers.jsx:204 src/app.jsx:592
 msgid "Start"
 msgstr "Starten"
 
-#: src/app.jsx:410
+#: src/app.jsx:560
 msgid "Start podman"
 msgstr "Podman starten"
 
-#: src/ContainerDetails.jsx:37 src/Containers.jsx:221 src/ImageUsedBy.jsx:40
+#: src/ContainerDetails.jsx:37 src/Containers.jsx:325 src/ImageUsedBy.jsx:36
 msgid "State"
 msgstr "Zustand"
 
-#: src/Containers.jsx:156
+#: src/Containers.jsx:216
 msgid "Stop"
 msgstr "Stoppen"
 
-#: src/ImageSearchModal.jsx:124
+#: src/ContainerCheckpointModal.jsx:40
+msgid "Support preserving established TCP connections"
+msgstr ""
+
+#: src/ContainerHeader.jsx:41
 msgid "System"
 msgstr "System"
 
-#: src/app.jsx:449
+#: src/app.jsx:597
 msgid "System Podman service is also available"
 msgstr "System-Podman ist auch verfügbar"
 
-#: src/ImageRunModal.jsx:56
+#: src/ImageRunModal.jsx:58
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ContainerCommitModal.jsx:166 src/ImageSearchModal.jsx:181
+#: src/ContainerCommitModal.jsx:180 src/ImageSearchModal.jsx:211
 msgid "Tag"
 msgstr "Etikett"
 
@@ -407,23 +575,15 @@ msgstr "Etikett"
 msgid "Tags"
 msgstr "Etiketten"
 
-#: src/ImageSecurity.jsx:15
-msgid "The scan from $time ($type) found no vulnerabilities."
-msgstr ""
-
-#: src/ContainerTerminal.jsx:127
-msgid "This version of the Web Console does not support a terminal."
-msgstr "Diese Version der Web-Konsole unterstützt kein Terminal."
-
-#: src/app.jsx:416
+#: src/app.jsx:564
 msgid "Troubleshoot"
 msgstr "Fehler suchen"
 
-#: src/ContainerHeader.jsx:44
+#: src/ContainerHeader.jsx:50
 msgid "Type to filter…"
 msgstr "Tippen zum filtern…"
 
-#: src/ImageRunModal.jsx:59
+#: src/ImageRunModal.jsx:61
 msgid "UDP"
 msgstr "UDP"
 
@@ -431,40 +591,132 @@ msgstr "UDP"
 msgid "Up since $0"
 msgstr "Läuft seit $0"
 
-#: src/Images.jsx:169
+#: src/Images.jsx:144
 msgid "Used By"
 msgstr "Benutzt von"
 
-#: src/app.jsx:454
+#: src/ContainerHeader.jsx:40
+msgid "User"
+msgstr ""
+
+#: src/app.jsx:602
 msgid "User Podman service is also available"
 msgstr "Benutzer-Podman ist auch verfügbar"
 
-#: src/ImageRunModal.jsx:84
+#: src/ImageRunModal.jsx:91
 msgid "Value"
 msgstr "Wert"
 
-#: src/ImageRunModal.jsx:378
+#: src/ImageRunModal.jsx:428
 msgid "Volumes"
 msgstr ""
 
-#: src/ImageRunModal.jsx:362
+#: src/ImageRunModal.jsx:412
 msgid "With terminal"
 msgstr "Mit Terminal"
 
-#: src/Containers.jsx:105 src/Containers.jsx:106 src/ImageUsedBy.jsx:13
-#: src/ImageUsedBy.jsx:14
+#: src/util.js:6
+msgid "configured"
+msgstr ""
+
+#: src/manifest.json
+#, fuzzy
+#| msgid "Containers"
+msgid "container"
+msgstr "Container"
+
+#: src/util.js:6
+#, fuzzy
+#| msgid "Created"
+msgid "created"
+msgstr "Erstellt"
+
+#: src/util.js:6
+#, fuzzy
+#| msgid "Exited"
+msgid "exited"
+msgstr "Beendet"
+
+#: src/manifest.json
+#, fuzzy
+#| msgid "Image"
+msgid "image"
+msgstr "Image"
+
+#: src/ImageSearchModal.jsx:154
+msgid "in"
+msgstr ""
+
+#: src/Containers.jsx:141 src/Containers.jsx:142 src/ImageUsedBy.jsx:14
+#: src/ImageUsedBy.jsx:15
 msgid "n/a"
 msgstr "n.v."
 
-#: src/Containers.jsx:105 src/Containers.jsx:106 src/ImageUsedBy.jsx:13
-#: src/ImageUsedBy.jsx:14
+#: src/Containers.jsx:141 src/Containers.jsx:142 src/ImageUsedBy.jsx:14
+#: src/ImageUsedBy.jsx:15
 msgid "not available"
 msgstr "nicht verfügbar"
 
-#: src/Containers.jsx:114 src/Images.jsx:146
+#: src/util.js:6
+#, fuzzy
+#| msgid "Pause"
+msgid "paused"
+msgstr "Anhalten"
+
+#: src/Containers.jsx:486
+msgid "pod group"
+msgstr ""
+
+#: src/manifest.json
+#, fuzzy
+#| msgid "Start podman"
+msgid "podman"
+msgstr "Podman starten"
+
+#: src/util.js:6
+msgid "removing"
+msgstr ""
+
+#: src/util.js:6
+msgid "running"
+msgstr ""
+
+#: src/ImageDeleteModal.jsx:63
+msgid "select all"
+msgstr ""
+
+#: src/util.js:6
+msgid "stopped"
+msgstr ""
+
+#: src/Containers.jsx:155 src/ImageSearchModal.jsx:133 src/Images.jsx:134
 msgid "system"
 msgstr "System"
 
-#: src/app.jsx:466 src/app.jsx:477
+#: src/app.jsx:614 src/app.jsx:630
 msgid "user"
 msgstr "Benutzer"
+
+#~ msgid "Are you sure you want to delete this image?"
+#~ msgstr "Sind Sie sicher, dass Sie dieses Image löschen wollen?"
+
+#~ msgid "Could not attach to this container: $0"
+#~ msgstr "Konnte nicht mit diesem Container verbinden: $0"
+
+#~ msgid "Could not open channel: $0"
+#~ msgstr "Konnte keinen Kanal öffnen: $0"
+
+#~ msgid "Download as:"
+#~ msgstr "Herunterladen als:"
+
+#~ msgid "Everything"
+#~ msgstr "Alles"
+
+#~ msgid "Images and running containers"
+#~ msgstr "Images und laufende Container"
+
+#~ msgid "Security"
+#~ msgstr "Sicherheit"
+
+#~ msgid "This version of the Web Console does not support a terminal."
+#~ msgstr "Diese Version der Web-Konsole unterstützt kein Terminal."
