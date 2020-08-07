@@ -14,7 +14,7 @@ WEBPACK_TEST=dist/index.html
 
 WEBLATE_REPO=tmp/weblate-repo
 WEBLATE_REPO_URL=https://github.com/cockpit-project/cockpit-podman-weblate.git
-WEBLATE_REPO_BRANCH=master
+WEBLATE_REPO_BRANCH=rhel8
 
 all: $(WEBPACK_TEST)
 
