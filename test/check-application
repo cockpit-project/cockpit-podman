@@ -485,12 +485,6 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, "echo 'FROM docker.io/library/registry:2\nRUN ls' > {0}/Dockerfile".format(tmpdir))
         self.execute(auth, "podman build {0}".format(tmpdir))
 
-        # HACK due to https://github.com/containers/podman/issues/7022
-        b.reload()
-        b.enter_page("/podman")
-        b.wait_present(".listing-action")
-        b.wait_in_text("#containers-images", "registry")
-
         b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
         b.wait_in_text("#containers-images", "<none>:<none>")

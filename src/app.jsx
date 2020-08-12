@@ -326,6 +326,7 @@ class Application extends React.Component {
         case 'untag':
         case 'remove':
         case 'prune':
+        case 'build':
             this.updateImagesAfterEvent(system);
             break;
         default:
