@@ -1,5 +1,6 @@
 import cockpit from 'cockpit';
 
+const moment = require('moment');
 const _ = cockpit.gettext;
 
 // https://github.com/containers/podman/blob/master/libpod/define/containerstate.go
@@ -13,6 +14,13 @@ export function truncate_id(id) {
         return "";
     }
     return id.substr(0, 12);
+}
+
+// On some places time is passed as timestamp and on some as string
+export function localize_time(time) {
+    if (Number.isInteger(time))
+        return moment(time * 1000).calendar();
+    return moment(time, "YYYY-MM-DDTHH:mm:ss.SZ").calendar();
 }
 
 export function format_memory_and_limit(usage, limit) {

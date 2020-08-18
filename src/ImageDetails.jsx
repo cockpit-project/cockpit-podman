@@ -2,7 +2,6 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
-const moment = require('moment');
 const _ = cockpit.gettext;
 
 const truncate_id = (id) => {
@@ -11,7 +10,6 @@ const truncate_id = (id) => {
 
 const ImageDetails = (props) => {
     const image = props.image;
-    const created = moment(image.Created, "YYYY-MM-DDTHH:mm:ss.SZ").calendar();
 
     return (
         <dl className='image-details'>
@@ -24,7 +22,7 @@ const ImageDetails = (props) => {
             <dt>{_("Command")}</dt>
             <dd>{image.Command ? utils.quote_cmdline(image.Command) : "" }</dd>
             <dt>{_("Created")}</dt>
-            <dd>{created}</dd>
+            <dd>{utils.localize_time(image.Created)}</dd>
             <dt>{_("Author")}</dt>
             <dd>{image.Author}</dd>
             <dt>{_("Ports")}</dt>

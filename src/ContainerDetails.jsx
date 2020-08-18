@@ -2,12 +2,11 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
-const moment = require('moment');
 const _ = cockpit.gettext;
 
 const render_container_state = (container) => {
     if (container.State === "running") {
-        return cockpit.format(_("Up since $0"), moment(container.StartedAt * 1000).calendar());
+        return cockpit.format(_("Up since $0"), utils.localize_time(container.StartedAt));
     }
     return cockpit.format(_("Exited"));
 };
@@ -29,7 +28,7 @@ const ContainerDetails = ({ container, containerDetail }) => (
         <dt>{_("ID")}</dt>
         <dd>{container.Id}</dd>
         <dt>{_("Created")}</dt>
-        <dd>{moment(container.Created * 1000).calendar()}</dd>
+        <dd>{utils.localize_time(container.Created)}</dd>
         <dt>{_("Image")}</dt>
         <dd>{container.Image}</dd>
         <dt>{_("Command")}</dt>
