@@ -12,10 +12,10 @@ import { ImageSearchModal } from './ImageSearchModal.jsx';
 import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
 import * as client from './client.js';
+import * as utils from './util.js';
 
 import './Images.css';
 
-const moment = require('moment');
 const _ = cockpit.gettext;
 
 class Images extends React.Component {
@@ -127,9 +127,10 @@ class Images extends React.Component {
                 </Button>
             </div>
         );
+
         const columns = [
             { title: image.RepoTags ? image.RepoTags[0] : "<none>:<none>", header: true },
-            moment(image.Created, "YYYY-MM-DDTHH:mm:ss.SZ").calendar(),
+            utils.localize_time(image.Created),
             cockpit.format_bytes(image.Size),
             image.isSystem ? _("system") : this.props.user.name,
             runImage,
