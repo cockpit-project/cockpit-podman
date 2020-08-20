@@ -79,7 +79,7 @@ export class ImageSearchModal extends React.Component {
 
         const options = {
             method: "GET",
-            path: "/v1.12/libpod/images/search",
+            path: client.VERSION + "libpod/images/search",
             body: "",
             params: {
                 term: registry + this.state.imageIdentifier,

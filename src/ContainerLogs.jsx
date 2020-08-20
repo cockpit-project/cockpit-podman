@@ -98,7 +98,7 @@ class ContainerLogs extends React.Component {
         const connection = rest.connect(client.getAddress(this.props.system), this.props.system);
         const options = {
             method: "GET",
-            path: "/v1.12/libpod/containers/" + this.props.containerId + "/logs",
+            path: client.VERSION + "libpod/containers/" + this.props.containerId + "/logs",
             body: "",
             params: {
                 follow: true,

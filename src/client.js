@@ -1,6 +1,7 @@
 import rest from './rest.js';
 
 const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
+export const VERSION = "/v1.12/";
 
 export function getAddress(system) {
     if (system)
@@ -15,7 +16,7 @@ export function getAddress(system) {
 function podmanCall(name, method, args, system, body) {
     const options = {
         method: method,
-        path: "/v1.12/" + name,
+        path: VERSION + name,
         body: body || "",
         params: args,
     };
@@ -26,7 +27,7 @@ function podmanCall(name, method, args, system, body) {
 function podmanMonitor(name, method, args, callback, system) {
     const options = {
         method: method,
-        path: "/v1.12/" + name,
+        path: VERSION + name,
         body: "",
         params: args,
     };

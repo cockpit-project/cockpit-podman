@@ -442,7 +442,7 @@ class Application extends React.Component {
                         this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
                     });
 
-                    ch.send("GET /v1.24/libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
+                    ch.send("GET " + client.VERSION + "libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
                 })
                 .catch(() => {
                     this.setState({
