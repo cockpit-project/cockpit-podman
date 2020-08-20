@@ -1,8 +1,26 @@
 dist: trusty
-sudo: false
-language: node_js
-node_js:
+
+language: nodejs
+
+nodejs:
   - "8"
+
+arch:
+  - amd64
+  - ppc64le
+  
+matrix:
+  include:
+    - arch: ppc64le
+      dist: focal
+      
+  exclude:
+    - arch: ppc64le
+      dist: trusty
+      
 script:
   - npm install
   - npm run build
+
+before_install:
+  - curl https://raw.githubusercontent.com/creationix/nvm/v0.35.3/install.sh | bash
