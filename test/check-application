@@ -800,6 +800,9 @@ class TestApplication(testlib.MachineCase):
         b.set_checked('.modal-dialog input#checkpoint-dialog-ignoreRootFS', True)
         b.click('.modal-dialog button:contains(Checkpoint)')
 
+        with b.wait_timeout(300):
+            b.wait_not_present(".modal-dialog")
+
         if self.has_criu:
             b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
         else:
