@@ -174,6 +174,7 @@ module.exports = {
                             sassOptions: {
                                 includePaths: [
                                     // Teach webpack to resolve these references in order to build PF3 scss
+                                    path.resolve(nodedir),
                                     path.resolve(nodedir, 'font-awesome-sass', 'assets', 'stylesheets'),
                                     path.resolve(nodedir, 'patternfly', 'dist', 'sass'),
                                     path.resolve(nodedir, 'bootstrap-sass', 'assets', 'stylesheets'),
