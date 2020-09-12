@@ -154,7 +154,7 @@ class TestApplication(testlib.MachineCase):
         self.performPodAction("pod-1", "system", "Delete")
         b.click(".modal-dialog button:contains(Delete)")
         b.wait_in_text(".modal-body", "running or paused containers cannot be removed without force")
-        b.click(".modal-dialog button:contains('Force Delete')")
+        b.click(".modal-dialog button:contains('Force delete')")
         self.waitPodRow("pod-1", False)
 
     @testlib.nondestructive
@@ -744,7 +744,7 @@ class TestApplication(testlib.MachineCase):
         # Restart the container
         old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate")
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart) + button')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force Restart)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force restart)')
         b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
 
         with b.wait_timeout(5):
@@ -758,9 +758,9 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop) + button')
         if not auth:
             # Check that the checkpoint option is not present for rootless
-            b.wait_visible('#containers-containers tr:contains("busybox:latest") + tr a:contains("Force Stop")')
+            b.wait_visible('#containers-containers tr:contains("busybox:latest") + tr a:contains("Force stop")')
             b.wait_not_present('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force Stop)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force stop)')
 
         self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh'])
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
@@ -833,7 +833,7 @@ class TestApplication(testlib.MachineCase):
         # Stop the container
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop) + button')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force Stop)')
+        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force stop)')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
 
         # Restore the container
@@ -1015,14 +1015,14 @@ class TestApplication(testlib.MachineCase):
         # Check command in alpine
         b.wait_present('#containers-images tr:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") td button .fa-play')
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run image")')
         b.wait_present("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run image")')
 
         # Inspect and fill modal dialog
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
@@ -1038,7 +1038,7 @@ class TestApplication(testlib.MachineCase):
         if auth or self.cgroupsV2():
             b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
             b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
-            b.wait_present('div.modal-body label:contains("Memory Limit") + div.form-inline > input[value="512"]')
+            b.wait_present('div.modal-body label:contains("Memory limit") + div.form-inline > input[value="512"]')
             b.set_input_text("#run-image-dialog-memory-limit input.form-control", "0.5")
             b.set_val('#memory-unit-select', "GiB")
 
@@ -1046,7 +1046,7 @@ class TestApplication(testlib.MachineCase):
         if auth:
             b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
             b.wait_present("#run-image-dialog-cpu-priority-checkbox:checked")
-            b.wait_present('div.modal-body label:contains("CPU Shares") + div.form-inline > input[value=""]')
+            b.wait_present('div.modal-body label:contains("CPU shares") + div.form-inline > input[value=""]')
             b.set_input_text("#run-image-dialog-cpu-priority input.form-control", "512")
         else:
             b.wait_not_present("#run-image-dialog-cpu-priority-checkbox")
@@ -1198,7 +1198,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run Image")')
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run image")')
 
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
         b.set_input_text("#run-image-dialog-name", "busybox-without-publish")
@@ -1265,12 +1265,12 @@ class TestApplication(testlib.MachineCase):
         b.wait_text(".pf-m-expanded span.empty-message", "Container is not running")
 
         b.click('#containers-images tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
-        b.click("#containers-images tbody tr:contains('busybox:latest') a:contains('Used By')")
+        b.click("#containers-images tbody tr:contains('busybox:latest') a:contains('Used by')")
         b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-without-publish')")
         b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-with-tty')")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
-        b.click("#containers-images tbody tr:contains('alpine:latest') a:contains('Used By')")
+        b.click("#containers-images tbody tr:contains('alpine:latest') a:contains('Used by')")
         b.wait_visible("#containers-images tbody tr:contains('alpine:latest') + tr div.ct-listing-panel-body thead.ct-table-empty td:contains('No containers are using this image')")
 
         b.set_input_text('#containers-filter', 'foobar')

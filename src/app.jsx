@@ -545,7 +545,7 @@ class Application extends React.Component {
                 <EmptyState variant={EmptyStateVariant.full}>
                     <EmptyStateIcon icon={ExclamationCircleIcon} />
                     <Title headingLevel="h2" size="lg">
-                        { _("Podman Service is Not Active") }
+                        { _("Podman service is not active") }
                     </Title>
                     <div className="checkbox">
                         <label>

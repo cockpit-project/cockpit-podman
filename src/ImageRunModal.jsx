@@ -339,7 +339,7 @@ export class ImageRunModal extends React.Component {
                 </label>
                 <input id='run-image-dialog-name'
                     type='text'
-                    placeholder={_("Container Name")}
+                    placeholder={_("Container name")}
                     value={dialogValues.containerName}
                     onChange={e => this.onValueChanged('containerName', e.target.value)}
                     className='form-control' />
@@ -356,7 +356,7 @@ export class ImageRunModal extends React.Component {
                     className='form-control' />
 
                 <label className='control-label' htmlFor='run-image-dialog-memory'>
-                    {_("Memory Limit")}
+                    {_("Memory limit")}
                 </label>
                 <div role='group' className='form-inline' id="run-image-dialog-memory-limit">
                     <div className="checkbox">
@@ -390,7 +390,7 @@ export class ImageRunModal extends React.Component {
                 { this.state.image.isSystem &&
                     <>
                         <label className='control-label' htmlFor='run-image-cpu-priority'>
-                            {_("CPU Shares")}
+                            {_("CPU shares")}
                         </label>
                         <div role='group' className='form-inline' id="run-image-dialog-cpu-priority">
                             <div className="checkbox">
@@ -446,7 +446,7 @@ export class ImageRunModal extends React.Component {
             <Modal show onHide={this.props.close}>
                 <Modal.Header>
                     <Modal.CloseButton onClick={this.props.close} />
-                    <Modal.Title> {_("Run Image")} </Modal.Title>
+                    <Modal.Title> {_("Run image")} </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {defaultBody}

@@ -211,11 +211,11 @@ class Containers extends React.Component {
             const stopActions = [];
 
             restartActions.push({ label: _("Restart"), onActivate: () => this.restartContainer(container) });
-            restartActions.push({ label: _("Force Restart"), onActivate: () => this.restartContainer(container, true) });
+            restartActions.push({ label: _("Force restart"), onActivate: () => this.restartContainer(container, true) });
             actions.push(<DropDown key={_(container.Id) + "restart"} actions={restartActions} />);
 
             stopActions.push({ label: _("Stop"), onActivate: () => this.stopContainer(container) });
-            stopActions.push({ label: _("Force Stop"), onActivate: () => this.stopContainer(container, true) });
+            stopActions.push({ label: _("Force stop"), onActivate: () => this.stopContainer(container, true) });
             if (container.isSystem)
                 stopActions.push({ label: _("Checkpoint"), onActivate: () => this.checkpointContainer(container) });
             actions.push(<DropDown key={_(container.Id) + "stop"} actions={stopActions} />);

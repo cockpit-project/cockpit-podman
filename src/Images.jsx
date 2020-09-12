@@ -142,7 +142,7 @@ class Images extends React.Component {
             data: { image: image }
         });
         tabs.push({
-            name: _("Used By"),
+            name: _("Used by"),
             renderer: ImageUsedBy,
             data: {
                 containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.Id + image.isSystem.toString()] : null,
