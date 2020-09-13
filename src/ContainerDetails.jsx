@@ -37,13 +37,13 @@ const ContainerDetails = ({ container, containerDetail }) => (
         <dd>{render_container_state(container)}</dd>
         <dt>{_("Ports")}</dt>
         <dd>{render_container_published_ports(container.Ports)}</dd>
-        <dt>{_("IP Address")}</dt>
+        <dt>{_("IP address")}</dt>
         <dd>{containerDetail ? containerDetail.NetworkSettings.IPAddress : ""}</dd>
-        <dt>{_("IP Prefix Length")}</dt>
+        <dt>{_("IP prefix length")}</dt>
         <dd>{containerDetail ? containerDetail.NetworkSettings.IPPrefixLen : ""}</dd>
         <dt>{_("Gateway")}</dt>
         <dd>{containerDetail ? containerDetail.NetworkSettings.Gateway : ""}</dd>
-        <dt>{_("MAC Address")}</dt>
+        <dt>{_("MAC address")}</dt>
         <dd>{containerDetail ? containerDetail.NetworkSettings.MacAddress : ""}</dd>
     </dl>
 );

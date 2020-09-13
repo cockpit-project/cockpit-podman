@@ -144,7 +144,7 @@ class ContainerCommitModal extends React.Component {
         const commitContent =
             <div className="ct-form">
                 <label className="control-label" htmlFor="commit-dialog-container-name">
-                    {_("Container Name")}
+                    {_("Container name")}
                 </label>
                 <span id="commit-dialog-container-name">
                     {this.props.container.names}
@@ -172,7 +172,7 @@ class ContainerCommitModal extends React.Component {
                 </fieldset>
 
                 <label className="control-label" htmlFor="commit-dialog-image-name">
-                    {_("Image Name")}
+                    {_("Image name")}
                 </label>
                 <FormControl name="imageName" id="commit-dialog-image-name" type="text" onChange={this.handleInputChange} />
 
@@ -205,7 +205,7 @@ class ContainerCommitModal extends React.Component {
                 </label>
 
                 <label className="control-label" htmlFor="commit-dialog-setonbuild">
-                    {_("On Build")}
+                    {_("On build")}
                 </label>
                 <label id="commit-dialog-setonbuild-label" className="checkbox-inline">
                     <input name="setonbuild" id="commit-dialog-setonbuild" type="checkbox" disabled={this.state.onbuildDisabled} onChange={this.handleInputChange} />
@@ -217,7 +217,7 @@ class ContainerCommitModal extends React.Component {
         return (
             <Modal show aria-labelledby="contained-modal-title-lg">
                 <Modal.Header>
-                    <Modal.Title id="contained-modal-title-lg">{_("Commit Image")}</Modal.Title>
+                    <Modal.Title id="contained-modal-title-lg">{_("Commit image")}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {commitContent}

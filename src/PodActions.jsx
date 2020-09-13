@@ -70,7 +70,7 @@ export class PodActions extends React.Component {
                                               this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Force Stop")}
+                    {_("Force stop")}
                 </DropdownItem>,
                 <DropdownItem key="action-restart"
                               className="pod-action-restart"
@@ -167,7 +167,7 @@ export class PodActions extends React.Component {
                         </List>
                     </Modal.Body>}
                     <Modal.Footer>
-                        <Button variant="danger" onClick={() => this.handlePodDelete(this.state.forceDeleteModalOpen)}>{this.state.forceDeleteModalOpen ? _("Force Delete") : _("Delete")}</Button>{' '}
+                        <Button variant="danger" onClick={() => this.handlePodDelete(this.state.forceDeleteModalOpen)}>{this.state.forceDeleteModalOpen ? _("Force delete") : _("Delete")}</Button>{' '}
                         <Button variant="link" onClick={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}>{_("Cancel")}</Button>
                     </Modal.Footer>
                 </Modal>}
