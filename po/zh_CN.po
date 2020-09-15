@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-28 21:56+0000\n"
+"POT-Creation-Date: 2020-09-12 15:08+0200\n"
 "PO-Revision-Date: 2020-09-02 22:29+0000\n"
 "Last-Translator: Harry Chen <harrychen0314@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
@@ -28,7 +28,7 @@ msgstr "添加项目"
 msgid "Add on build variable"
 msgstr "添加构建变量"
 
-#: src/ContainerHeader.jsx:42 src/Containers.jsx:440
+#: src/Containers.jsx:440 src/ContainerHeader.jsx:42
 msgid "All"
 msgstr "所有"
 
@@ -40,7 +40,7 @@ msgstr ""
 msgid "An error occured"
 msgstr "发生了一个错误"
 
-#: src/ContainerCommitModal.jsx:185 src/ImageDetails.jsx:26
+#: src/ImageDetails.jsx:26 src/ContainerCommitModal.jsx:185
 msgid "Author"
 msgstr "作者"
 
@@ -56,15 +56,15 @@ msgstr "CPU"
 msgid "CPU shares"
 msgstr "CPU 份额"
 
-#: src/ContainerCheckpointModal.jsx:54 src/ContainerCommitModal.jsx:228
-#: src/ContainerDeleteModal.jsx:19 src/ContainerRemoveErrorModal.jsx:23
-#: src/ContainerRestoreModal.jsx:57 src/ImageDeleteModal.jsx:77
 #: src/ImageRemoveErrorModal.jsx:20 src/ImageRunModal.jsx:460
-#: src/ImageSearchModal.jsx:223 src/PodActions.jsx:171
+#: src/PodActions.jsx:171 src/ContainerCheckpointModal.jsx:54
+#: src/ContainerRestoreModal.jsx:57 src/ContainerRemoveErrorModal.jsx:23
+#: src/ContainerDeleteModal.jsx:19 src/ImageSearchModal.jsx:223
+#: src/ImageDeleteModal.jsx:77 src/ContainerCommitModal.jsx:228
 msgid "Cancel"
 msgstr "取消"
 
-#: src/ContainerCheckpointModal.jsx:51 src/Containers.jsx:220
+#: src/Containers.jsx:220 src/ContainerCheckpointModal.jsx:51
 msgid "Checkpoint"
 msgstr "检查点"
 
@@ -74,13 +74,13 @@ msgstr "检查点"
 msgid "Checkpoint container $0"
 msgstr "提交容器 $0 失败"
 
-#: src/ContainerCommitModal.jsx:195 src/ContainerDetails.jsx:34
-#: src/ImageDetails.jsx:22 src/ImageRunModal.jsx:349 src/ImageRunModal.jsx:353
-#: src/ImageUsedBy.jsx:36
+#: src/ContainerDetails.jsx:34 src/ImageRunModal.jsx:349
+#: src/ImageRunModal.jsx:353 src/ImageDetails.jsx:22 src/ImageUsedBy.jsx:36
+#: src/ContainerCommitModal.jsx:195
 msgid "Command"
 msgstr "命令"
 
-#: src/ContainerCommitModal.jsx:227 src/Containers.jsx:193
+#: src/Containers.jsx:193 src/ContainerCommitModal.jsx:227
 msgid "Commit"
 msgstr "提交"
 
@@ -98,10 +98,6 @@ msgstr "控制台"
 msgid "Container"
 msgstr "容器"
 
-#: src/ContainerCommitModal.jsx:147 src/ImageRunModal.jsx:342
-msgid "Container name"
-msgstr "容器名称"
-
 #: src/ImageRunModal.jsx:316
 msgid "Container failed to be created"
 msgstr "容器创建失败"
@@ -118,6 +114,10 @@ msgstr "容器正在运行。"
 msgid "Container is not running"
 msgstr "容器未运行"
 
+#: src/ImageRunModal.jsx:342 src/ContainerCommitModal.jsx:147
+msgid "Container name"
+msgstr "容器名称"
+
 #: src/ImageRunModal.jsx:119
 msgid "Container path"
 msgstr "容器路径"
@@ -130,13 +130,13 @@ msgstr "容器端口"
 msgid "Containers"
 msgstr "容器"
 
-#: src/ContainerDetails.jsx:30 src/ImageDetails.jsx:24 src/Images.jsx:181
-#: src/util.js:10
+#: src/ContainerDetails.jsx:30 src/util.js:10 src/ImageDetails.jsx:24
+#: src/Images.jsx:181
 msgid "Created"
 msgstr "已创建"
 
-#: src/ContainerDeleteModal.jsx:18 src/PodActions.jsx:139
-#: src/PodActions.jsx:170
+#: src/PodActions.jsx:139 src/PodActions.jsx:170
+#: src/ContainerDeleteModal.jsx:18
 msgid "Delete"
 msgstr "删除"
 
@@ -184,7 +184,7 @@ msgstr "环境"
 msgid "Error"
 msgstr "错误"
 
-#: src/Images.jsx:61 src/Notification.jsx:30
+#: src/Notification.jsx:30 src/Images.jsx:61
 msgid "Error message"
 msgstr "错误信息"
 
@@ -266,8 +266,8 @@ msgstr "停止容器 $0 失败"
 msgid "Failed to stop pod $0"
 msgstr "停止 Pod $0 失败"
 
-#: src/ContainerRemoveErrorModal.jsx:22 src/ImageRemoveErrorModal.jsx:19
-#: src/PodActions.jsx:170
+#: src/ImageRemoveErrorModal.jsx:19 src/PodActions.jsx:170
+#: src/ContainerRemoveErrorModal.jsx:22
 msgid "Force delete"
 msgstr "强制删除"
 
@@ -443,12 +443,12 @@ msgstr "构建时"
 msgid "Only running"
 msgstr "仅运行"
 
-#: src/ContainerHeader.jsx:38 src/Containers.jsx:326
+#: src/Containers.jsx:326 src/ContainerHeader.jsx:38
 #: src/ImageSearchModal.jsx:128 src/Images.jsx:181
 msgid "Owner"
 msgstr "所有者"
 
-#: src/ContainerCommitModal.jsx:200 src/PodActions.jsx:129
+#: src/PodActions.jsx:129 src/ContainerCommitModal.jsx:200
 msgid "Pause"
 msgstr "暂停"
 
@@ -478,7 +478,7 @@ msgstr "请确认是否删除 $0"
 msgid "Please confirm force deletion of pod $0"
 msgstr "请确认是否强制删除 $0"
 
-#: src/ContainerRemoveErrorModal.jsx:14 src/ImageRemoveErrorModal.jsx:13
+#: src/ImageRemoveErrorModal.jsx:13 src/ContainerRemoveErrorModal.jsx:14
 msgid "Please confirm forced deletion of $0"
 msgstr "请确认是否强制删除 $0"
 
@@ -490,8 +490,8 @@ msgstr "Podman 容器"
 msgid "Podman service is not active"
 msgstr "Podman 服务未激活"
 
-#: src/ContainerDetails.jsx:38 src/ImageDetails.jsx:28
-#: src/ImageRunModal.jsx:420
+#: src/ContainerDetails.jsx:38 src/ImageRunModal.jsx:420
+#: src/ImageDetails.jsx:28
 msgid "Ports"
 msgstr "端口"
 
@@ -525,7 +525,7 @@ msgstr "设置容器构建时的变量"
 msgid "Restart"
 msgstr "重启"
 
-#: src/ContainerRestoreModal.jsx:54 src/Containers.jsx:200
+#: src/Containers.jsx:200 src/ContainerRestoreModal.jsx:54
 #, fuzzy
 #| msgid "Restart"
 msgid "Restore"
@@ -549,7 +549,7 @@ msgstr "继续"
 msgid "Run"
 msgstr "运行"
 
-#: src/ImageRunModal.jsx:449
+#: src/ImageRunModal.jsx:449 src/Images.jsx:124
 msgid "Run image"
 msgstr "运行镜像"
 
@@ -634,7 +634,7 @@ msgstr "系统 Podman 服务同样可用"
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ContainerCommitModal.jsx:180 src/ImageSearchModal.jsx:211
+#: src/ImageSearchModal.jsx:211 src/ContainerCommitModal.jsx:180
 msgid "Tag"
 msgstr "标签"
 
