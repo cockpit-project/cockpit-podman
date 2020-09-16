@@ -37,7 +37,7 @@ class ContainerHeader extends React.Component {
                     <>
                         <label className="heading-label" htmlFor="containers-containers-owner">{_("Owner")}</label>
                         <Select.Select id="containers-containers-owner" initial={this.state.owner} onChange={this.handleOwnerChange}>
-                            <Select.SelectEntry data='user'>{this.props.user ? this.props.user.name : _("User")}</Select.SelectEntry>
+                            <Select.SelectEntry data='user'>{this.props.user}</Select.SelectEntry>
                             <Select.SelectEntry data='system'>{_("System")}</Select.SelectEntry>
                             <Select.SelectEntry data='all'>{_("All")}</Select.SelectEntry>
                         </Select.Select>

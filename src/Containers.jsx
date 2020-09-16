@@ -153,7 +153,7 @@ class Containers extends React.Component {
             { title: info_block },
             proc,
             mem,
-            container.isSystem ? _("system") : this.props.user.name,
+            container.isSystem ? _("system") : this.props.user,
             { title: <Badge isRead>{_(container.State)}</Badge> }, // States are defined in util.js
         ];
 
@@ -339,7 +339,7 @@ class Containers extends React.Component {
         if (this.props.containers !== null && this.props.pods !== null) {
             filtered = Object.keys(this.props.containers).filter(id => !(this.state.filter == "running") || this.props.containers[id].State == "running");
 
-            if (this.props.ownerFilter !== "all") {
+            if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
                 filtered = filtered.filter(id => {
                     if (this.props.ownerFilter === "system" && !this.props.containers[id].isSystem)
                         return false;
@@ -384,7 +384,7 @@ class Containers extends React.Component {
                     if ((this.state.filter == "running" && pod.Status != "Running") ||
                         // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
                         (!partitionedContainers[section].length && pod.Name.toLowerCase().indexOf(lcf) < 0) ||
-                        ((this.props.ownerFilter !== "all") &&
+                        ((this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") &&
                          ((this.props.ownerFilter === "system" && !pod.isSystem) ||
                             (this.props.ownerFilter !== "system" && pod.isSystem))))
                         delete partitionedContainers[section];

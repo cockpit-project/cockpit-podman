@@ -161,6 +161,112 @@ class TestApplication(testlib.MachineCase):
     def testBasicSystem(self):
         self._testBasic(True)
 
+        b = self.browser
+
+        # Test dropping and gaining privileges
+        b.set_val("#containers-containers-owner", "all")
+        self.filter_containers("all")
+        self.execute(False, "podman pod create --infra=false --name pod_user")
+        self.execute(True, "podman pod create --infra=false --name pod_system")
+
+        checkImage(b, "docker.io/library/registry:2", "system")
+        checkImage(b, "docker.io/library/registry:2", "admin")
+        b.wait_present("#containers-containers .pod-name:contains('pod_user')")
+        b.wait_present("#containers-containers .pod-name:contains('pod_system')")
+        b.wait_present("#containers-containers .container-name:contains('a')")
+        b.wait_present("#containers-containers .container-name:contains('b')")
+
+        # Drop privileges
+        b.switch_to_top()
+        b.click("#super-user-indicator button")
+        b.click(".modal-dialog:contains('Switch to limited access') button:contains('Limit access')")
+        b.wait_not_present(".modal-dialog:contains('Switch to limited access')")
+        b.wait_text("#super-user-indicator", "Limited access")
+        b.switch_to_frame("cockpit1:localhost/podman")
+
+        # All system things should disappear
+        b.wait_not_present("#containers-containers .pod-name:contains('pod_system')")
+        b.wait_not_present("#containers-containers .container-name:contains('a')")
+        b.wait_present("#containers-containers .pod-name:contains('pod_user')")
+        b.wait_present("#containers-containers .container-name:contains('b')")
+        # Checking images is harder but if there would be more than one this would fail
+        b.wait_present("#containers-images:contains('docker.io/library/registry:2')")
+
+        # Owner select should disappear
+        b.wait_not_present("#containers-containers-owner")
+
+        # Also user selection in image download should not be visible
+        b.click("header button:contains(Get new image)")
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
+        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
+        b.wait_not_present("#as-user")
+        b.click(".modal-dialog button:contains('Cancel')")
+        b.wait_not_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
+
+        # Gain privileges
+        b.switch_to_top()
+        b.click("#super-user-indicator button")
+        b.wait_in_text(".modal-dialog:contains('Administrative access')", "Please authenticate")
+        b.set_input_text(".modal-dialog:contains('Administrative access') input", "foobar")
+        b.click(".modal-dialog button:contains('Authenticate')")
+        b.wait_not_present(".modal-dialog:contains('Administrative access')")
+        b.wait_text("#super-user-indicator", "Administrative access")
+        b.switch_to_frame("cockpit1:localhost/podman")
+
+        # We are notified that we can also start the system one
+        b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "System Podman service is also available")
+        b.click("#overview div.pf-c-alert .pf-c-alert__action > button:contains(Start)")
+        b.wait_not_present("#overview div.pf-c-alert .pf-c-alert__title")
+
+        checkImage(b, "docker.io/library/registry:2", "system")
+        checkImage(b, "docker.io/library/registry:2", "admin")
+        b.wait_present("#containers-containers .pod-name:contains('pod_user')")
+        b.wait_present("#containers-containers .pod-name:contains('pod_system')")
+        b.wait_present("#containers-containers .container-name:contains('a')")
+        b.wait_present("#containers-containers .container-name:contains('b')")
+
+        # Owner select should appear
+        b.wait_present("#containers-containers-owner")
+
+        # Also user selection in image download should be visible
+        b.click("header button:contains(Get new image)")
+        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
+        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
+        b.wait_present("#as-user")
+        b.click(".modal-dialog button:contains('Cancel')")
+        b.wait_not_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
+
+        # Check that when we filter only system stuff an then drop privileges that we show user stuff
+        b.set_val("#containers-containers-owner", "system")
+        b.wait_not_present("#containers-containers .pod-name:contains('pod_user')")
+        b.wait_not_present("#containers-containers .container-name:contains('b')")
+        # Checking images is harder but if there would be more than one this would fail
+        b.wait_present("#containers-images:contains('docker.io/library/registry:2')")
+
+        b.switch_to_top()
+        b.click("#super-user-indicator button")
+        b.click(".modal-dialog:contains('Switch to limited access') button:contains('Limit access')")
+        b.wait_not_present(".modal-dialog:contains('Switch to limited access')")
+        b.wait_text("#super-user-indicator", "Limited access")
+        b.switch_to_frame("cockpit1:localhost/podman")
+
+        b.wait_present("#containers-containers .pod-name:contains('pod_user')")
+        b.wait_present("#containers-containers .container-name:contains('b')")
+        # Checking images is harder but if there would be more than one this would fail
+        b.wait_present("#containers-images:contains('docker.io/library/registry:2')")
+
+        # Test that when root is logged in we don't present "user" and "system"
+        b.logout()
+        self.login_and_go("/podman", user="root")
+        b.wait_present("#app")
+
+        # `User Service is also available` banner should not be present
+        b.wait_not_present("#overview div.pf-c-alert")
+        # There should not be any duplicate images listed
+        b.wait_js_func("ph_count_check", "#containers-images tbody", 1)
+        # There should not be 'owner' selector
+        b.wait_not_present("#containers-containers-owner")
+
     @testlib.nondestructive
     def testBasicUser(self):
         self._testBasic(False)
@@ -498,19 +604,6 @@ class TestApplication(testlib.MachineCase):
 
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
-
-        # Test that when root is logged in we don't present "user" and "system"
-        if auth:
-            b.logout()
-            self.login_and_go("/podman", user="root")
-            b.wait_present("#app")
-
-            # `User Service is also available` banner should not be present
-            b.wait_not_present("#overview div.pf-c-alert")
-            # There should not be any duplicate images listed
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 1)
-            # There should not be 'owner' selector
-            b.wait_not_present("#containers-containers-owner")
 
     @testlib.nondestructive
     def testDownloadImage(self):

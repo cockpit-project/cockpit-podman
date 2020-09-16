@@ -27,6 +27,7 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
+import { superuser } from "../lib/superuser";
 import moment from "moment";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
@@ -34,7 +35,6 @@ import Images from './Images.jsx';
 import * as client from './client.js';
 
 const _ = cockpit.gettext;
-const permission = cockpit.permission({ admin: true });
 
 moment.locale(cockpit.language);
 
@@ -63,6 +63,8 @@ class Application extends React.Component {
             showStartService: true,
             version: '1.3.0',
             selinuxAvailable: false,
+            currentUser: _("User"),
+            privileged: false,
         };
         this.onAddNotification = this.onAddNotification.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -415,6 +417,20 @@ class Application extends React.Component {
         }
     }
 
+    cleanupAfterService(system, key) {
+        ["images", "containers", "pods"].forEach(t => {
+            if (this.state[t])
+                this.setState(prevState => {
+                    const copy = {};
+                    Object.entries(prevState[t] || {}).forEach(([id, v]) => {
+                        if (v.isSystem !== system)
+                            copy[id] = v;
+                    });
+                    return { [t]: copy };
+                });
+        });
+    }
+
     init(system) {
         client.getInfo(system)
                 .then(reply => {
@@ -430,16 +446,19 @@ class Application extends React.Component {
                                         message => this.handleEvent(message, system))
                             .then(() => {
                                 this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                                this.cleanupAfterService(system);
                             })
                             .catch(e => {
                                 console.log(e);
                                 this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                                this.cleanupAfterService(system);
                             });
 
                     // Listen if podman is still running
                     const ch = cockpit.channel({ superuser: system ? "require" : null, payload: "stream", unix: client.getAddress(system) });
                     ch.addEventListener("close", () => {
                         this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                        this.cleanupAfterService(system);
                     });
 
                     ch.send("GET " + client.VERSION + "libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
@@ -476,6 +495,13 @@ class Application extends React.Component {
         cockpit.spawn("selinuxenabled", { error: "ignore" })
                 .then(() => this.setState({ selinuxAvailable: true }))
                 .catch(() => this.setState({ selinuxAvailable: false }));
+
+        superuser.addEventListener("changed", () => this.setState({ privileged: !!superuser.allowed }));
+        this.setState({ privileged: superuser.allowed });
+
+        cockpit.user().then(user => {
+            this.setState({ currentUser: user.name || _("User") });
+        });
     }
 
     checkUserService() {
@@ -592,7 +618,7 @@ class Application extends React.Component {
             <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
             <AlertActionCloseButton onClose={() => this.setState({ showStartService: false })} />
         </>);
-        if (!this.state.systemServiceAvailable && permission.allowed) {
+        if (!this.state.systemServiceAvailable && this.state.privileged) {
             startService = <Alert variant='default'
                 title={_("System Podman service is also available")}
                 actionClose={action} />;
@@ -611,7 +637,7 @@ class Application extends React.Component {
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
-                user={permission.user || _("user")}
+                user={this.state.currentUser}
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
                 registries={this.state.registries}
@@ -627,8 +653,10 @@ class Application extends React.Component {
                 containersDetails={this.state.containersDetails}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
-                user={permission.user || _("user")}
+                user={this.state.currentUser}
                 onAddNotification={this.onAddNotification}
+                userServiceAvailable={this.state.userServiceAvailable}
+                systemServiceAvailable={this.state.systemServiceAvailable}
             />;
 
         const notificationList = (
@@ -654,7 +682,7 @@ class Application extends React.Component {
                         onFilterChanged={this.onFilterChanged}
                         onOwnerChanged={this.onOwnerChanged}
                         twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
-                        user={permission.user}
+                        user={this.state.currentUser}
                     />
                 </PageSection>
                 <PageSection>
