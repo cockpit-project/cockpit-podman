@@ -132,7 +132,7 @@ class Images extends React.Component {
             { title: image.RepoTags ? image.RepoTags[0] : "<none>:<none>", header: true },
             utils.localize_time(image.Created),
             cockpit.format_bytes(image.Size),
-            image.isSystem ? _("system") : this.props.user.name,
+            image.isSystem ? _("system") : this.props.user,
             runImage,
         ];
 
@@ -198,12 +198,13 @@ class Images extends React.Component {
         let filtered = [];
         if (this.props.images !== null) {
             filtered = Object.keys(this.props.images).filter(id => {
-                if (this.props.ownerFilter !== "all") {
+                if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
                     if (this.props.ownerFilter === "system" && !this.props.images[id].isSystem)
                         return false;
                     if (this.props.ownerFilter !== "system" && this.props.images[id].isSystem)
                         return false;
                 }
+
                 const tags = this.props.images[id].RepoTags || [];
                 if (!intermediateOpened && tags.length < 1)
                     return false;

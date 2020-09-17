@@ -134,7 +134,7 @@ export class ImageSearchModal extends React.Component {
                                 </label>
                                 <label>
                                     <input type="radio" value="user" id="user" onChange={this.onToggleUser} checked={!this.state.isSystem} />
-                                    {this.props.user.name}
+                                    {this.props.user}
                                 </label>
                             </div>
                         </fieldset>
