@@ -185,20 +185,18 @@ bots:
 # checkout Cockpit's test API; this has no API stability guarantee, so check out a stable tag
 # when you start a new project, use the latest release, and update it from time to time
 test/common:
-	git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 228
-	git checkout --force FETCH_HEAD -- test/common
-	git reset test/common
+	flock Makefile sh -ec '\
+	    git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 228; \
+	    git checkout --force FETCH_HEAD -- test/common; \
+	    git reset test/common'
 
 lib/patternfly/_fonts.scss:
-	git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 227
-	mkdir -p pkg/lib/patternfly && git add pkg/lib/patternfly
-	git checkout --force FETCH_HEAD -- pkg/lib/patternfly
-	git reset -- pkg/lib/patternfly
+	flock Makefile sh -ec '\
+	    git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 227; \
+	    mkdir -p pkg/lib/patternfly && git add pkg/lib/patternfly; \
+	    git checkout --force FETCH_HEAD -- pkg/lib/patternfly; \
+	    git reset -- pkg/lib/patternfly'
 	mkdir -p lib && mv pkg/lib/patternfly lib/patternfly && rmdir -p pkg/lib
-
-# force serialization of the targets that call git, as they compete for the git lock
-bots: test/common
-test/common: lib/patternfly/_fonts.scss
 
 $(NODE_MODULES_TEST): package.json
 	# if it exists already, npm install won't update it; force that so that we always get up-to-date packages
