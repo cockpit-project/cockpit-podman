@@ -279,7 +279,7 @@ class TestApplication(testlib.MachineCase):
             self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
-        self.login_and_go("/podman", authorized=auth, superuser=auth)
+        self.login_and_go("/podman", superuser=auth)
         b.wait_present("#app")
 
         b.wait_present(".content-filter input")
@@ -715,7 +715,7 @@ class TestApplication(testlib.MachineCase):
 
         prepare()
 
-        self.login_and_go("/podman", authorized=True, superuser=True)
+        self.login_and_go("/podman", superuser=True)
         b.wait_present("#app")
 
         # Test registries
@@ -782,7 +782,7 @@ class TestApplication(testlib.MachineCase):
             self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
-        self.login_and_go("/podman", authorized=auth, superuser=auth)
+        self.login_and_go("/podman", superuser=auth)
         b.wait_present("#app")
         self.filter_containers('all')
 
@@ -869,7 +869,7 @@ class TestApplication(testlib.MachineCase):
             self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"; reboot')
             m.wait_reboot()
 
-        self.login_and_go("/podman", authorized=True, superuser=True)
+        self.login_and_go("/podman", superuser=True)
         b.wait_present("#app")
         self.filter_containers('all')
 
@@ -942,7 +942,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/podman", authorized=True, superuser=True)
+        self.login_and_go("/podman", superuser=True)
         b.wait_present("#app")
         self.filter_containers('all')
 
@@ -1059,7 +1059,7 @@ class TestApplication(testlib.MachineCase):
         b.logout()
         disable_user()
         disable_system()
-        self.login_and_go("/podman", authorized=False, superuser=False)
+        self.login_and_go("/podman", superuser=False)
         b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         # HACK: https://github.com/containers/libpod/issues/6660
@@ -1096,7 +1096,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/podman", authorized=auth, superuser=auth)
+        self.login_and_go("/podman", superuser=auth)
 
         if auth:
             # Just drop user containers so we can user simpler selectors
