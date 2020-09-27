@@ -49,7 +49,10 @@ if [ -d /var/tmp/debian ]; then
     systemctl restart systemd-sysctl
 
     # disable services that get in the way of /var/lib/containers
-    systemctl disable docker.service io.podman.service
+    if systemctl is-enabled docker.service; then
+        systemctl disable docker.service
+    fi
+    systemctl disable io.podman.service
 fi
 
 if rpm -q podman >/dev/null 2>&1; then
