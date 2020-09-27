@@ -6,26 +6,9 @@ set -eu
 if [ -d /var/tmp/debian ]; then
     apt-get update
     eatmydata apt-get install -y cockpit-ws cockpit-system podman
-    # HACK: 2.0.3 breaks API: https://bugs.debian.org/966501; upgrade to 2.0.4 in unstable
-    if dpkg --compare-versions $(dpkg-query --show -f '${Version}' podman) lt 2.0.4; then
-        echo 'deb http://deb.debian.org/debian unstable main' > /etc/apt/sources.list.d/unstable.list
-        apt-get update
-        eatmydata apt-get install -y podman
-    fi
-    # HACK: conmon 2.0.13 fixes podman exec; upgrade to 2.0.18 in unstable: https://bugs.debian.org/964858
-    if dpkg --compare-versions $(dpkg-query --show -f '${Version}' conmon) lt 2.0.18; then
-        echo 'deb http://deb.debian.org/debian unstable main' > /etc/apt/sources.list.d/unstable.list
-        apt-get update
-        eatmydata apt-get install -y conmon
-    fi
 
     # HACK: starting podman.service complains about missing crun: https://bugs.debian.org/961016
     eatmydata apt-get install -y crun
-
-    # HACK: podman.service should not be enabled: https://github.com/containers/podman/issues/7190
-    systemctl disable podman.service
-    systemctl disable --global podman.service
-    sed -i '/\[Install\]/,$ d' /lib/systemd/system/podman.service /lib/systemd/user/podman.service
 
     # build source package
     cd /var/tmp
@@ -52,12 +35,6 @@ if [ -d /var/tmp/debian ]; then
     if systemctl is-enabled docker.service; then
         systemctl disable docker.service
     fi
-    systemctl disable io.podman.service
-fi
-
-if rpm -q podman >/dev/null 2>&1; then
-    # HACK: podman 2.0.3 breaks API; upgrade to 2.0.4 in updates-testing
-    dnf update -y --enablerepo=updates-testing podman
 fi
 
 systemctl enable cockpit.socket
