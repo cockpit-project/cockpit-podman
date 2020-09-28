@@ -80,7 +80,7 @@ info.files.forEach(function(value) {
 info.files = files;
 
 var plugins = [
-    new copy(info.files),
+    new copy({ patterns: info.files }),
     new extract({filename: "[name].css"})
 ];
 
@@ -90,7 +90,6 @@ if (production) {
     output.filename = "[name].min.js";
 
     plugins.unshift(new CompressionPlugin({
-        asset: "[path].gz[query]",
         test: /\.(js|html)$/,
         minRatio: 0.9,
         deleteOriginalAssets: true
