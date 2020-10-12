@@ -13,9 +13,9 @@ function manage_error(reject, error, content) {
     reject(c);
 }
 
-function connect(address, system) {
+function connect(address, system, host) {
     /* This doesn't create a channel until a request */
-    const http = cockpit.http(address, { superuser: system ? "require" : null });
+    const http = cockpit.http(address, { superuser: system ? "require" : null, host });
     const connection = {};
 
     connection.monitor = function(options, callback, system, return_raw) {
@@ -56,8 +56,8 @@ function connect(address, system) {
  * Connects to the podman service, performs a single call, and closes the
  * connection.
  */
-async function call (address, system, parameters) {
-    const connection = connect(address, system);
+async function call (address, system, parameters, host) {
+    const connection = connect(address, system, host);
     const result = await connection.call(parameters);
     connection.close();
     return result;
