@@ -13,3 +13,17 @@ For now you can do basic image and container tasks for both system and user cont
 
  - This project is based on the [Cockpit Starter Kit](https://github.com/cockpit-project/starter-kit).
    See [Starter Kit Intro](http://cockpit-project.org/blog/cockpit-starter-kit.html) for details.
+
+# Automated release
+
+Releases are automated using [Cockpituous release](https://github.com/cockpit-project/cockpituous/tree/master/release)
+which aims to fully automate project releases to GitHub, Fedora, Ubuntu, COPR, Docker
+Hub, and other places. The intention is that the only manual step for releasing
+a project is to create a signed tag for the version number.
+
+The release steps are controlled by the
+[cockpituous-release](./cockpituous-release) script.
+
+Pushing the release tag triggers the [release.yml](.github/workflows/release.yml)
+[GitHub action](https://github.com/features/actions) workflow. This uses the
+[cockpit-project organization secrets](https://github.com/organizations/cockpit-project/settings/secrets).
