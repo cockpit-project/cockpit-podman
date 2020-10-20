@@ -35,3 +35,6 @@ up with security updates and bug fixes. This is done with the
 [npm-update bot script](https://github.com/cockpit-project/bots/blob/master/npm-update)
 which is run weekly or upon [manual request](https://github.com/cockpit-project/starter-kit/actions) through the
 [npm-update.yml](.github/workflows/npm-update.yml) [GitHub action](https://github.com/features/actions).
+
+Similarly, translations are refreshed every Tuesday evening (or manually) through the
+[po-refresh.yml](.github/workflows/po-refresh.yml) action.
