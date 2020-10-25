@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from 'patternfly-react';
-import { Button } from '@patternfly/react-core';
+import { Button, Modal } from '@patternfly/react-core';
 import * as dockerNames from 'docker-names';
 
 import * as Select from '../lib/cockpit-components-select.jsx';
@@ -443,23 +442,21 @@ export class ImageRunModal extends React.Component {
             </div>
         );
         return (
-            <Modal show onHide={this.props.close}>
-                <Modal.Header>
-                    <Modal.CloseButton onClick={this.props.close} />
-                    <Modal.Title> {_("Run image")} </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {defaultBody}
-                </Modal.Body>
-                <Modal.Footer>
-                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <Button variant='primary' onClick={this.onRunClicked}>
-                        {_("Run")}
-                    </Button>
-                    <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
-                        {_("Cancel")}
-                    </Button>
-                </Modal.Footer>
+            <Modal isOpen
+                   position="top" variant="medium"
+                   onClose={this.props.close}
+                   title={_("Run image")}
+                   footer={<>
+                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
+                       <Button variant='primary' onClick={this.onRunClicked}>
+                           {_("Run")}
+                       </Button>
+                       <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                           {_("Cancel")}
+                       </Button>
+                   </>}
+            >
+                {defaultBody}
             </Modal>
         );
     }

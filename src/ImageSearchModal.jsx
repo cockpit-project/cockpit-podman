@@ -1,6 +1,6 @@
 import React from 'react';
-import { ListGroup, ListGroupItem, Modal } from 'patternfly-react';
-import { Button, InputGroup } from '@patternfly/react-core';
+import { ListGroup, ListGroupItem } from 'patternfly-react';
+import { Button, InputGroup, Modal } from '@patternfly/react-core';
 
 import * as Select from '../lib/cockpit-components-select.jsx';
 import { ErrorNotification } from './Notification.jsx';
@@ -197,32 +197,30 @@ export class ImageSearchModal extends React.Component {
         );
 
         return (
-            <Modal show onHide={this.props.close} className="podman-search">
-                <Modal.Header>
-                    <Modal.CloseButton onClick={this.props.close} />
-                    <Modal.Title> {_("Search for an image")} </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {defaultBody}
-                </Modal.Body>
-                <Modal.Footer>
-                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <div className="ct-form image-search-tag-form">
-                        <label className="control-label" htmlFor="image-search-tag">{_("Tag")}</label>
-                        <input className="form-control image-tag-entry"
-                               id="image-search-tag"
-                               type='text'
-                               placeholder="latest"
-                               value={this.state.imageTag || ''}
-                               onChange={e => this.onValueChanged('imageTag', e.target.value)} />
-                    </div>
-                    <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
-                        {_("Download")}
-                    </Button>
-                    <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
-                        {_("Cancel")}
-                    </Button>
-                </Modal.Footer>
+            <Modal isOpen className="podman-search"
+                   position="top" variant="medium"
+                   onClose={this.props.close}
+                   title={_("Search for an image")}
+                   footer={<>
+                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
+                       <div className="ct-form image-search-tag-form">
+                           <label className="control-label" htmlFor="image-search-tag">{_("Tag")}</label>
+                           <input className="form-control image-tag-entry"
+                                  id="image-search-tag"
+                                  type='text'
+                                  placeholder="latest"
+                                  value={this.state.imageTag || ''}
+                                  onChange={e => this.onValueChanged('imageTag', e.target.value)} />
+                       </div>
+                       <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
+                           {_("Download")}
+                       </Button>
+                       <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                           {_("Cancel")}
+                       </Button>
+                   </>}
+            >
+                {defaultBody}
             </Modal>
         );
     }

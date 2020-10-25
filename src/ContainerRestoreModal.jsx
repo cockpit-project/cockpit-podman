@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal } from 'patternfly-react';
-import { Button, Checkbox } from '@patternfly/react-core';
+import { Button, Checkbox, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
@@ -26,38 +25,34 @@ class ContainerRestoreModal extends React.Component {
 
     render() {
         return (
-            <Modal show={this.props.selectContainerRestoreModal}>
-                <Modal.Header>
-                    <Modal.Title>
-                        {cockpit.format(_("Restore container $0"),
-                                        utils.truncate_id(this.props.containerWillCheckpoint.Id))}
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="ct-form">
-                        <Checkbox label={_("Keep all temporary checkpoint files")} id="restore-dialog-keep" name="keep"
+            <Modal isOpen={this.props.selectContainerRestoreModal}
+                   position="top" variant="medium"
+                   onClose={this.props.handleRestoreContainerDeleteModal}
+                   title={cockpit.format(_("Restore container $0"), utils.truncate_id(this.props.containerWillCheckpoint.Id))}
+                   footer={<>
+                       <Button variant="primary" isDisabled={this.props.restoreInProgress}
+                               onClick={() => this.props.handleRestoreContainer(this.state)}>
+                           {_("Restore")}
+                       </Button>
+                       <Button variant="link" onClick={this.props.handleRestoreContainerDeleteModal}>
+                           {_("Cancel")}
+                       </Button>
+                       {this.props.restoreInProgress && <div className="spinner spinner-sm pull-right" />}
+                   </>}
+            >
+                <div className="ct-form">
+                    <Checkbox label={_("Keep all temporary checkpoint files")} id="restore-dialog-keep" name="keep"
                                   isChecked={this.state.keep} onChange={this.handleChange} />
-                        <Checkbox label={_("Restore with established TCP connections")}
+                    <Checkbox label={_("Restore with established TCP connections")}
                                   id="restore-dialog-tcpEstablished" name="tcpEstablished"
                                   isChecked={this.state.tcpEstablished} onChange={this.handleChange} />
-                        <Checkbox label={_("Ignore IP address if set statically")} id="restore-dialog-ignoreStaticIP"
+                    <Checkbox label={_("Ignore IP address if set statically")} id="restore-dialog-ignoreStaticIP"
                                   name="ignoreStaticIP" isChecked={this.state.ignoreStaticIP}
                                   onChange={this.handleChange} />
-                        <Checkbox label={_("Ignore MAC address if set statically")} id="restore-dialog-ignoreStaticMAC"
+                    <Checkbox label={_("Ignore MAC address if set statically")} id="restore-dialog-ignoreStaticMAC"
                                   name="ignoreStaticMAC" isChecked={this.state.ignoreStaticMAC}
                                   onChange={this.handleChange} />
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="primary" isDisabled={this.props.restoreInProgress}
-                            onClick={() => this.props.handleRestoreContainer(this.state)}>
-                        {_("Restore")}
-                    </Button>
-                    <Button variant="link" onClick={this.props.handleRestoreContainerDeleteModal}>
-                        {_("Cancel")}
-                    </Button>
-                    {this.props.restoreInProgress && <div className="spinner spinner-sm pull-right" />}
-                </Modal.Footer>
+                </div>
             </Modal>
         );
     }

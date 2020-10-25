@@ -155,9 +155,9 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: old_pid != m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system".strip()))
 
         self.performPodAction("pod-1", "system", "Delete")
-        b.click(".modal-dialog button:contains(Delete)")
-        b.wait_in_text(".modal-body", "running or paused containers cannot be removed without force")
-        b.click(".modal-dialog button:contains('Force delete')")
+        b.click(".pf-c-modal-box button:contains(Delete)")
+        b.wait_in_text(".pf-c-modal-box__body", "running or paused containers cannot be removed without force")
+        b.click(".pf-c-modal-box button:contains('Force delete')")
         self.waitPodRow("pod-1", False)
 
     @testlib.nondestructive
@@ -200,11 +200,11 @@ class TestApplication(testlib.MachineCase):
 
         # Also user selection in image download should not be visible
         b.click("header button:contains(Get new image)")
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
-        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
+        b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
+        b.wait_present("div.pf-c-modal-box footer button:contains(Download):disabled")
         b.wait_not_present("#as-user")
-        b.click(".modal-dialog button:contains('Cancel')")
-        b.wait_not_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
+        b.click(".pf-c-modal-box button:contains('Cancel')")
+        b.wait_not_present('div.pf-c-modal-box header:contains("Search for an image")')
 
         # Gain privileges
         b.switch_to_top()
@@ -233,11 +233,11 @@ class TestApplication(testlib.MachineCase):
 
         # Also user selection in image download should be visible
         b.click("header button:contains(Get new image)")
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
-        b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
+        b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
+        b.wait_present("div.pf-c-modal-box footer button:contains(Download):disabled")
         b.wait_present("#as-user")
-        b.click(".modal-dialog button:contains('Cancel')")
-        b.wait_not_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
+        b.click(".pf-c-modal-box button:contains('Cancel')")
+        b.wait_not_present('div.pf-c-modal-box header:contains("Search for an image")')
 
         # Check that when we filter only system stuff an then drop privileges that we show user stuff
         b.set_val("#containers-containers-owner", "system")
@@ -446,14 +446,14 @@ class TestApplication(testlib.MachineCase):
             self.confirm_modal("btn-ctr-cancel-commit")
             # open commit modal and create an image
             b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
-            b.wait_present(".modal-dialog div")
+            b.wait_present(".pf-c-modal-box")
             # set commit parameters
             b.set_input_text("#commit-dialog-image-name", image_name)
             b.set_input_text("#commit-dialog-image-tag", image_tag)
             b.set_input_text("#commit-dialog-author", image_author)
             b.set_input_text("#commit-dialog-command", image_command)
-            b.click(".modal-dialog div .btn-ctr-commit")
-            b.wait_not_present(".modal-dialog div")
+            b.click(".pf-c-modal-box footer .btn-ctr-commit")
+            b.wait_not_present(".pf-c-modal-box")
             b.wait_present('#containers-images tr:contains("{0}:{1}")'.format(image_name, image_tag))
             checkImage(b, "localhost/{0}:{1}".format(image_name, image_tag), owner)
             # open the listing toggle of testimg and check the commit paramerters
@@ -494,18 +494,18 @@ class TestApplication(testlib.MachineCase):
         # open commit modal and check error modal
         b.click('#containers-containers tbody tr:contains("test-sh4") + tr button.btn-commit')
         # check required field error
-        b.click(".modal-dialog div .btn-ctr-commit")
-        b.wait_present('.modal-dialog div:contains("Image name is required")')
-        b.click(".modal-dialog div .pf-c-alert .pf-c-button")
-        b.wait_not_present(".modal-dialog div .alert")
+        b.click(".pf-c-modal-box footer .btn-ctr-commit")
+        b.wait_present('.pf-c-modal-box:contains("Image name is required")')
+        b.click(".pf-c-modal-box .pf-c-alert .pf-c-button")
+        b.wait_not_present(".pf-c-modal-box .alert")
 
         # check error
         b.set_input_text("#commit-dialog-image-name", "TEST")
-        b.click(".modal-dialog div .btn-ctr-commit")
-        b.wait_present('.modal-dialog div:contains("Failed to commit container")')
-        b.click(".modal-dialog div .pf-c-alert .pf-c-button")
-        b.wait_not_present(".modal-dialog div .alert")
-        b.wait_present(".modal-dialog div .btn-ctr-commit:not([disabled])")
+        b.click(".pf-c-modal-box footer .btn-ctr-commit")
+        b.wait_present('.pf-c-modal-box:contains("Failed to commit container")')
+        b.click(".pf-c-modal-box .pf-c-alert .pf-c-button")
+        b.wait_not_present(".pf-c-modal-box .alert")
+        b.wait_present(".pf-c-modal-box footer .btn-ctr-commit:not([disabled])")
 
         b.click(".btn-ctr-cancel-commit")
 
@@ -529,8 +529,8 @@ class TestApplication(testlib.MachineCase):
         b.set_checked("label:contains('docker.io/library/busybox:1') input", True)
         b.set_checked("label:contains('docker.io/library/busybox:3') input", True)
         b.set_checked("label:contains('docker.io/library/busybox:latest') input", False)
-        b.click(".modal-dialog div #btn-img-delete")
-        b.wait_not_present("modal-dialog div #btn-img-delete")
+        b.click(".pf-c-modal-box #btn-img-delete")
+        b.wait_not_present("pf-c-modal-box #btn-img-delete")
         b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:latest")
         b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:2")
         b.wait_not_in_text(busybox_sel + " + tr", "docker.io/library/busybox:1")
@@ -541,10 +541,10 @@ class TestApplication(testlib.MachineCase):
         self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:latest') input"))
         self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:2') input"))
         self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:4') input"))
-        b.click(".modal-dialog div #btn-img-delete")
-        b.wait_not_present("modal-dialog div #btn-img-delete")
-        b.click(".modal-dialog div #btn-img-deleteerror")
-        b.wait_not_present("modal-dialog div #btn-img-deleteerror")
+        b.click(".pf-c-modal-box #btn-img-delete")
+        b.wait_not_present("pf-c-modal-box #btn-img-delete")
+        b.click(".pf-c-modal-box #btn-img-deleteerror")
+        b.wait_not_present("pf-c-modal-box #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", busybox_sel)
 
         # Check that we correctly show networking information
@@ -567,10 +567,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_present(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
         b.click(alpine_sel + " + tr button.btn-delete")
-        b.click(".modal-dialog div #btn-img-delete")
-        b.wait_not_present("modal-dialog div #btn-img-delete")
-        b.click(".modal-dialog div #btn-img-deleteerror")
-        b.wait_not_present("modal-dialog div #btn-img-deleteerror")
+        b.click(".pf-c-modal-box #btn-img-delete")
+        b.wait_not_present("pf-c-modal-box #btn-img-delete")
+        b.click(".pf-c-modal-box #btn-img-deleteerror")
+        b.wait_not_present("pf-c-modal-box #btn-img-deleteerror")
         b.wait_not_in_text("#containers-images", alpine_sel)
 
         b.wait_collected_text("#containers-containers .container-name", "")
@@ -630,8 +630,8 @@ class TestApplication(testlib.MachineCase):
             def openDialog(self):
                 # Open get new image modal
                 b.click("header button:contains(Get new image)")
-                b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
-                b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):disabled")
+                b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
+                b.wait_present("div.pf-c-modal-box footer button:contains(Download):disabled")
 
                 return self
 
@@ -650,25 +650,25 @@ class TestApplication(testlib.MachineCase):
                 # Select and download the self.imageName image
                 b.wait_present("div.list-group .image-list-item label:contains({0})".format(self.imageName))
                 b.click("div.list-group .image-list-item label:contains({0})".format(self.imageName))
-                b.wait_present("div.modal-dialog div.modal-footer button:contains(Download):not([disabled])")
-                b.click("div.modal-dialog div.modal-footer button:contains(Download)")
+                b.wait_present("div.pf-c-modal-box footer button:contains(Download):not([disabled])")
+                b.click("div.pf-c-modal-box footer button:contains(Download)")
 
                 return self
 
             def expectDownloadErrorForNonExistingTag(self):
-                b.wait_not_present('div.modal-dialog')
+                b.wait_not_present('div.pf-c-modal-box')
                 b.wait_present('h4.pf-c-alert__title:contains("Danger alert:Failed to download image localhost:5000/{0}:{1}")'.format(self.imageName, self.imageTag))
 
                 return self
 
             def expectSearchErrorForNotExistingImage(self):
-                b.wait_present("div.modal-body:contains(No results for {0})".format(self.imageName))
+                b.wait_present(".pf-c-modal-box__body:contains(No results for {0})".format(self.imageName))
 
                 return self
 
             def expectDownloadSuccess(self):
                 # Confirm that the modal dialog is not open anymore
-                b.wait_not_present('div.modal-dialog')
+                b.wait_not_present('div.pf-c-modal-box')
                 # Confirm that the image got downloaded
                 b.wait_present('#containers-images tr:contains("{0}")'.format(self.imageName))
                 checkImage(b, "localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest"), "system" if self.user == "system" else "admin")
@@ -700,11 +700,11 @@ class TestApplication(testlib.MachineCase):
                     b.set_checked("label:contains('{0}') input".format(another), True)
 
                 # Confirm deletion in the delete dialog
-                b.click(".modal-dialog #btn-img-delete")
+                b.click(".pf-c-modal-box #btn-img-delete")
 
                 if force:
                     # Confirm force delete
-                    b.click(".modal-dialog #btn-img-deleteerror")
+                    b.click(".pf-c-modal-box #btn-img-deleteerror")
 
                 b.wait_not_present(sel)
 
@@ -717,7 +717,7 @@ class TestApplication(testlib.MachineCase):
 
         # Test registries
         b.click("header button:contains(Get new image)")
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Search for an image")')
+        b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
         # HACK: Sometimes the value is not shown fully. FIXME
         b.set_input_text("#search-image-dialog-name", "my-busybox", value_check=False)
 
@@ -727,8 +727,8 @@ class TestApplication(testlib.MachineCase):
         b.set_val('#registry-select', "localhost:6000")
         b.wait_not_present("div.list-group .image-list-item label:contains('localhost:5000/my-busybox')")
         b.wait_present("div.list-group .image-list-item label:contains('localhost:6000/my-busybox')")
-        b.click(".modal-dialog button:contains('Cancel')")
-        b.wait_not_present('div.modal-dialog')
+        b.click(".pf-c-modal-box button:contains('Cancel')")
+        b.wait_not_present('div.pf-c-modal-box')
 
         dialog0 = DownloadImageDialog('my-busybox', user="system")
         dialog0.openDialog() \
@@ -885,13 +885,13 @@ class TestApplication(testlib.MachineCase):
         # Checkpoint the container
         b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Stop) + button')
         b.click('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
-        b.set_checked('.modal-dialog input#checkpoint-dialog-keep', True)
-        b.set_checked('.modal-dialog input#checkpoint-dialog-tcpEstablished', True)
-        b.set_checked('.modal-dialog input#checkpoint-dialog-ignoreRootFS', True)
-        b.click('.modal-dialog button:contains(Checkpoint)')
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
+        b.click('.pf-c-modal-box button:contains(Checkpoint)')
 
         with b.wait_timeout(300):
-            b.wait_not_present(".modal-dialog")
+            b.wait_not_present(".pf-c-modal-box")
 
         if self.has_criu:
             b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
@@ -905,19 +905,19 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Start) + button')
         b.click('#containers-containers tr:contains("busybox:latest") + tr #Start-dropdown ul li:has(a:contains(Restore))')
-        b.set_checked('.modal-dialog input#restore-dialog-keep', True)
-        b.set_checked('.modal-dialog input#restore-dialog-tcpEstablished', True)
-        b.set_checked('.modal-dialog input#restore-dialog-ignoreStaticIP', True)
-        b.set_checked('.modal-dialog input#restore-dialog-ignoreStaticMAC', True)
-        b.click('.modal-dialog button:contains(Restore)')
+        b.set_checked('.pf-c-modal-box input#restore-dialog-keep', True)
+        b.set_checked('.pf-c-modal-box input#restore-dialog-tcpEstablished', True)
+        b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticIP', True)
+        b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticMAC', True)
+        b.click('.pf-c-modal-box button:contains(Restore)')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') == 'running')
 
         # Checkpoint the container without stopping
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Stop) + button')
         b.click('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
-        b.set_checked('.modal-dialog input#checkpoint-dialog-leaveRunning', True)
-        b.click('.modal-dialog button:contains(Checkpoint)')
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-leaveRunning', True)
+        b.click('.pf-c-modal-box button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
 
         # Stop the container
@@ -930,7 +930,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Start) + button')
         b.click('#containers-containers tr:contains("busybox:latest") + tr #Start-dropdown ul li:has(a:contains(Restore))')
-        b.click('.modal-dialog button:contains(Restore)')
+        b.click('.pf-c-modal-box button:contains(Restore)')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') == 'running')
 
     @testlib.nondestructive
@@ -951,10 +951,10 @@ class TestApplication(testlib.MachineCase):
         # Checkpoint the container
         b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Stop) + button')
         b.click('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
-        b.set_checked('.modal-dialog input#checkpoint-dialog-keep', True)
-        b.set_checked('.modal-dialog input#checkpoint-dialog-tcpEstablished', True)
-        b.set_checked('.modal-dialog input#checkpoint-dialog-ignoreRootFS', True)
-        b.click('.modal-dialog button:contains(Checkpoint)')
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
+        b.click('.pf-c-modal-box button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
         if self.has_criu:
             b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
@@ -1105,14 +1105,14 @@ class TestApplication(testlib.MachineCase):
         # Check command in alpine
         b.wait_present('#containers-images tr:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") td button .fa-play')
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run image")')
+        b.wait_present('div.pf-c-modal-box header:contains("Run image")')
         b.wait_present("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run image")')
+        b.wait_present('div.pf-c-modal-box header:contains("Run image")')
 
         # Inspect and fill modal dialog
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
@@ -1128,7 +1128,7 @@ class TestApplication(testlib.MachineCase):
         if auth or self.cgroupsV2():
             b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
             b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
-            b.wait_present('div.modal-body label:contains("Memory limit") + div.form-inline > input[value="512"]')
+            b.wait_present('.pf-c-modal-box__body label:contains("Memory limit") + div.form-inline > input[value="512"]')
             b.set_input_text("#run-image-dialog-memory-limit input.form-control", "0.5")
             b.set_val('#memory-unit-select', "GiB")
 
@@ -1136,7 +1136,7 @@ class TestApplication(testlib.MachineCase):
         if auth:
             b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
             b.wait_present("#run-image-dialog-cpu-priority-checkbox:checked")
-            b.wait_present('div.modal-body label:contains("CPU shares") + div.form-inline > input[value=""]')
+            b.wait_present('.pf-c-modal-box__body label:contains("CPU shares") + div.form-inline > input[value=""]')
             b.set_input_text("#run-image-dialog-cpu-priority input.form-control", "512")
         else:
             b.wait_not_present("#run-image-dialog-cpu-priority-checkbox")
@@ -1210,8 +1210,8 @@ class TestApplication(testlib.MachineCase):
         b.key_press(["\r"])
         rw_label = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
 
-        b.click('div.modal-footer button:contains("Run")')
-        b.wait_not_present("div.modal-dialog")
+        b.click('.pf-c-modal-box__footer button:contains("Run")')
+        b.wait_not_present("div.pf-c-modal-box")
         b.wait_present('#containers-containers tr:contains("busybox:latest")')
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
         self.check_container(sha, auth, ['busybox-with-tty', 'busybox:latest', 'sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"', 'running', "system" if auth else "admin"])
@@ -1288,7 +1288,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
-        b.wait_present('div.modal-dialog div.modal-header h4.modal-title:contains("Run image")')
+        b.wait_present('div.pf-c-modal-box header:contains("Run image")')
 
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
         b.set_input_text("#run-image-dialog-name", "busybox-without-publish")
@@ -1299,8 +1299,8 @@ class TestApplication(testlib.MachineCase):
         # Run without tty, console should be able to `exec`
         b.set_checked("#run-image-dialog-tty", False)
 
-        b.click('div.modal-footer button:contains("Run")')
-        b.wait_not_present("div.modal-dialog")
+        b.click('.pf-c-modal-box__footer button:contains("Run")')
+        b.wait_not_present("div.pf-c-modal-box")
 
         b.wait_present('#containers-containers tr:contains("busybox-without-publish")')
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") td.pf-c-table__toggle button')
@@ -1401,10 +1401,8 @@ class TestApplication(testlib.MachineCase):
     def confirm_modal(self, key_type):
         """Wait for the pop up window and click the button with className as key_type"""
         b = self.browser
-        b.wait_present(".modal-dialog div")
-        b.wait_present(".modal-dialog div .%s" % key_type)
-        b.click(".modal-dialog div .%s" % key_type)
-        b.wait_not_present(".modal-dialog div .%s" % key_type)
+        b.click(".pf-c-modal-box footer .%s" % key_type)
+        b.wait_not_present(".pf-c-modal-box footer .%s" % key_type)
 
 if __name__ == '__main__':
     testlib.test_main()

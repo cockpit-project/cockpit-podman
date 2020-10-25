@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal } from 'patternfly-react';
-import { Button } from '@patternfly/react-core';
+import { Button, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -51,31 +50,30 @@ export class ImageDeleteModal extends React.Component {
         const repoTags = Object.keys(this.state.tags).sort(sortTags);
         const checkedTags = repoTags.filter(x => this.state.tags[x]);
         return (
-            <Modal show>
-                <Modal.Header>
-                    <Modal.Title>{cockpit.format(_("Delete $0"), repoTags ? repoTags[0] : "")}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    { repoTags.length > 1 && <p>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</p> }
-                    <p>
-                        { repoTags.map(x => {
-                            return (<label key={x} className="checkbox">
-                                <input type="checkbox"
+            <Modal isOpen
+                   position="top" variant="medium"
+                   onClose={this.props.handleCancelImageDeleteModal}
+                   title={cockpit.format(_("Delete $0"), repoTags ? repoTags[0] : "")}
+                   footer={<>
+                       <Button id="btn-img-delete" variant="danger" isDisabled={checkedTags.length === 0}
+                               onClick={() => this.props.handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
+                           {_("Delete tagged images")}
+                       </Button>
+                       <Button variant="link" onClick={this.props.handleCancelImageDeleteModal}>{_("Cancel")}</Button>
+                   </>}
+            >
+                { repoTags.length > 1 && <p>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</p> }
+                <p>
+                    { repoTags.map(x => {
+                        return (<label key={x} className="checkbox">
+                            <input type="checkbox"
                                        checked={checkedTags.indexOf(x) > -1}
                                        onChange={e => this.onValueChanged(x, e.target.checked)} />
-                                {x}
-                            </label>);
-                        })}
-                    </p>
-                    { repoTags.length > 2 && <Button variant="link" onClick={this.pickAll}>{_("select all")}</Button> }
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button id="btn-img-delete" variant="danger" isDisabled={checkedTags.length === 0}
-                            onClick={() => this.props.handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
-                        {_("Delete tagged images")}
-                    </Button>
-                    <Button variant="link" onClick={this.props.handleCancelImageDeleteModal}>{_("Cancel")}</Button>
-                </Modal.Footer>
+                            {x}
+                        </label>);
+                    })}
+                </p>
+                { repoTags.length > 2 && <Button variant="link" onClick={this.pickAll}>{_("select all")}</Button> }
             </Modal>
         );
     }

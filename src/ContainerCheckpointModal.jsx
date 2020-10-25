@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal } from 'patternfly-react';
-import { Button, Checkbox } from '@patternfly/react-core';
+import { Button, Checkbox, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -24,37 +23,34 @@ class ContainerCheckpointModal extends React.Component {
 
     render() {
         return (
-            <Modal show={this.props.selectContainerCheckpointModal}>
-                <Modal.Header>
-                    <Modal.Title>
-                        {cockpit.format(_("Checkpoint container $0"), this.props.containerWillCheckpoint.Names)}
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="ct-form">
-                        <Checkbox label={_("Keep all temporary checkpoint files")} id="checkpoint-dialog-keep"
+            <Modal isOpen={this.props.selectContainerCheckpointModal}
+                   position="top" variant="medium"
+                   onClose={this.props.handleCheckpointContainerDeleteModal}
+                   title={cockpit.format(_("Checkpoint container $0"), this.props.containerWillCheckpoint.Names)}
+                   footer={<>
+                       <Button variant="primary" isDisabled={this.props.checkpointInProgress}
+                               onClick={() => this.props.handleCheckpointContainer(this.state)}>
+                           {_("Checkpoint")}
+                       </Button>
+                       <Button variant="link" onClick={this.props.handleCheckpointContainerDeleteModal}>
+                           {_("Cancel")}
+                       </Button>
+                       {this.props.checkpointInProgress && <div className="spinner spinner-sm pull-right" />}
+                   </>}
+            >
+                <div className="ct-form">
+                    <Checkbox label={_("Keep all temporary checkpoint files")} id="checkpoint-dialog-keep"
                                   name="keep" isChecked={this.state.keep} onChange={this.handleChange} />
-                        <Checkbox label={_("Leave running after writing checkpoint to disk")}
+                    <Checkbox label={_("Leave running after writing checkpoint to disk")}
                                   id="checkpoint-dialog-leaveRunning" name="leaveRunning"
                                   isChecked={this.state.leaveRunning} onChange={this.handleChange} />
-                        <Checkbox label={_("Support preserving established TCP connections")}
+                    <Checkbox label={_("Support preserving established TCP connections")}
                                   id="checkpoint-dialog-tcpEstablished" name="tcpEstablished"
                                   isChecked={this.state.tcpEstablished} onChange={this.handleChange} />
-                        <Checkbox label={_("Do not include root file-system changes when exporting")}
+                    <Checkbox label={_("Do not include root file-system changes when exporting")}
                                   id="checkpoint-dialog-ignoreRootFS" name="ignoreRootFS"
                                   isChecked={this.state.ignoreRootFS} onChange={this.handleChange} />
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="primary" isDisabled={this.props.checkpointInProgress}
-                            onClick={() => this.props.handleCheckpointContainer(this.state)}>
-                        {_("Checkpoint")}
-                    </Button>
-                    <Button variant="link" onClick={this.props.handleCheckpointContainerDeleteModal}>
-                        {_("Cancel")}
-                    </Button>
-                    {this.props.checkpointInProgress && <div className="spinner spinner-sm pull-right" />}
-                </Modal.Footer>
+                </div>
             </Modal>
         );
     }
