@@ -1,6 +1,6 @@
 import React from 'react';
-import { Modal, FormGroup, FormControl } from 'patternfly-react';
-import { Button } from '@patternfly/react-core';
+import { FormGroup, FormControl } from 'patternfly-react';
+import { Button, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 import * as utils from './util.js';
@@ -215,19 +215,18 @@ class ContainerCommitModal extends React.Component {
             </div>;
 
         return (
-            <Modal show aria-labelledby="contained-modal-title-lg">
-                <Modal.Header>
-                    <Modal.Title id="contained-modal-title-lg">{_("Commit image")}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {commitContent}
-                </Modal.Body>
-                <Modal.Footer>
-                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
-                    <Button variant="primary" className="btn-ctr-commit" isDisabled={this.state.commitInProgress} onClick={this.handleCommit}>{_("Commit")}</Button>
-                    <Button variant="link" className="btn-ctr-cancel-commit" onClick={this.props.onHide}>{_("Cancel")}</Button>
-                    {this.state.commitInProgress && <div className="spinner spinner-sm pull-right" />}
-                </Modal.Footer>
+            <Modal isOpen
+                   position="top" variant="medium"
+                   onClose={this.props.onHide}
+                   title={_("Commit image")}
+                   footer={<>
+                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
+                       <Button variant="primary" className="btn-ctr-commit" isDisabled={this.state.commitInProgress} onClick={this.handleCommit}>{_("Commit")}</Button>
+                       <Button variant="link" className="btn-ctr-cancel-commit" onClick={this.props.onHide}>{_("Cancel")}</Button>
+                       {this.state.commitInProgress && <div className="spinner spinner-sm pull-right" />}
+                   </>}
+            >
+                {commitContent}
             </Modal>
         );
     }

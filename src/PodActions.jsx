@@ -2,11 +2,10 @@ import React from 'react';
 
 import * as client from './client.js';
 import {
-    Button, Alert,
+    Button, Alert, Modal,
     Dropdown, DropdownPosition, DropdownItem,
     KebabToggle, List, ListItem,
 } from '@patternfly/react-core';
-import { Modal } from 'patternfly-react';
 
 import cockpit from 'cockpit';
 
@@ -151,13 +150,16 @@ export class PodActions extends React.Component {
                           isOpen={isOpen}
                           isPlain
                           dropdownItems={dropdownItems} />
-                {(this.state.deleteModalOpen || this.state.forceDeleteModalOpen) && <Modal show>
-                    <Modal.Header>
-                        <Modal.Title>
-                            {this.state.forceDeleteModalOpen ? cockpit.format(_("Please confirm force deletion of pod $0"), pod.Name) : cockpit.format(_("Please confirm deletion of pod $0"), pod.Name)}
-                        </Modal.Title>
-                    </Modal.Header>
-                    {(pod.Containers || []).length > 0 && <Modal.Body>
+                {(this.state.deleteModalOpen || this.state.forceDeleteModalOpen) && <Modal isOpen
+                    position="top" variant="medium"
+                    title={this.state.forceDeleteModalOpen ? cockpit.format(_("Please confirm force deletion of pod $0"), pod.Name) : cockpit.format(_("Please confirm deletion of pod $0"), pod.Name)}
+                    onClose={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}
+                    footer={<>
+                        <Button variant="danger" onClick={() => this.handlePodDelete(this.state.forceDeleteModalOpen)}>{this.state.forceDeleteModalOpen ? _("Force delete") : _("Delete")}</Button>{' '}
+                        <Button variant="link" onClick={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}>{_("Cancel")}</Button>
+                    </>}
+                >
+                    {(pod.Containers || []).length > 0 && <>
                         {this.state.deleteError && <Alert variant="danger" isInline title={_("An error occured")}>{this.state.deleteError}</Alert>}
                         <p className="containers-delete-modal-title">{_("Deleting this pod will remove the following containers:")}</p>
                         <List>
@@ -165,11 +167,7 @@ export class PodActions extends React.Component {
                                     .filter(container => container.Id != pod.InfraId)
                                     .map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
                         </List>
-                    </Modal.Body>}
-                    <Modal.Footer>
-                        <Button variant="danger" onClick={() => this.handlePodDelete(this.state.forceDeleteModalOpen)}>{this.state.forceDeleteModalOpen ? _("Force delete") : _("Delete")}</Button>{' '}
-                        <Button variant="link" onClick={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}>{_("Cancel")}</Button>
-                    </Modal.Footer>
+                    </>}
                 </Modal>}
             </>
         );
