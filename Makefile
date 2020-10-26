@@ -192,7 +192,7 @@ test/common:
 
 lib/patternfly/_fonts.scss:
 	flock Makefile sh -ec '\
-	    git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 227; \
+	    git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 231; \
 	    mkdir -p pkg/lib/patternfly && git add pkg/lib/patternfly; \
 	    git checkout --force FETCH_HEAD -- pkg/lib/patternfly; \
 	    git reset -- pkg/lib/patternfly'

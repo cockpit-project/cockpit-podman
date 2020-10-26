@@ -25,6 +25,11 @@
     }
 
     &.pf-m-compact {
+        // Remove excess padding from compact tables toggles
+        .pf-c-table__toggle {
+            padding-left: 0;
+        }
+
         > thead, > tbody {
             > tr:not(.pf-c-table__expandable-row) {
                 // We actually want the normal font size for our lists
@@ -73,6 +78,30 @@
         }
     }
 
+    // https://github.com/patternfly/patternfly-react/issues/4613
+    .pf-c-table__expandable-row {
+        th {
+            &.pf-m-no-padding {
+                padding: 0 0 0 var(--pf-c-table__expandable-row--after--border-width--base); // set padding-left to adjust for left border.
+
+                .pf-c-table__expandable-row-content {
+                    padding: 0;
+                }
+            }
+        }
+    }
+
+    .pf-c-table__expandable-row {
+        [data-label]::before {
+            display: None;
+        }
+    }
+
+    // Don't wrap labels
+    [data-label]::before {
+        white-space: nowrap;
+    }
+
     // Fix toggle button alignment
     .pf-c-table__toggle {
         // Workaround: Chrome sometimes oddly expands the table,
@@ -80,14 +109,12 @@
         // As the width is smaller than the contents, and this is a table,
         // the cell will stay at the correct width.
         width: 1px;
+    }
 
-        > .pf-c-button {
-            padding-top: var(--pf-global--spacer--sm);
-            padding-bottom: var(--pf-global--spacer--sm);
-            vertical-align: top;
-            // Not every browser supports text-top, so define top (above) as a fallback
-            vertical-align: text-top;
-        }
+    .pf-c-button.pf-m-expanded .pf-c-table__toggle-icon {
+        // Similar to PF4, but with a translate to bump the expanded icon down 3 pixels,
+        // to better align the expanded form
+        transform: translateY(3px) rotate(var(--pf-c-table__toggle--c-button--m-expanded__toggle-icon--Rotate));
     }
 
     // Shrink buttons down a little
@@ -96,6 +123,13 @@
         > .pf-c-input-group > .pf-c-button,
         > .btn-group > .pf-c-button {
             padding: 0.25rem 0.75rem;
+        }
+
+        > .pf-m-link {
+            &:only-child {
+                width: 100%;
+                text-align: left;
+            }
         }
     }
 
@@ -111,15 +145,11 @@
         }
     }
 
-    // Make last column always right aligned
-    > thead, > tbody {
-        > tr:not(.pf-c-table__expandable-row) {
-            > th, > td {
-                &:last-child:not(.first-child) {
-                    text-align: right;
-                }
-            }
-        }
+    // Properly align actions on the end
+    > tbody > tr > td:last-child > .btn-group {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
     }
 
     // Use PF4 style headings
@@ -128,11 +158,17 @@
         font-weight: var(--pf-global--FontWeight--semi-bold);
     }
 
-    .pf-m-expanded {
-        // PF4 dropped the shadow of expanded tables
-        box-shadow: none !important;
-        // Re-add bottom line
-        border-bottom: var(--pf-c-table--BorderWidth) solid var(--pf-c-table--BorderColor)
+    // Adjust the padding for nested ct-tables in ct-tables
+    .ct-table {
+        td, th {
+            &:first-child {
+                --pf-c-table--nested--first-last-child--PaddingLeft: var(--pf-global--spacer--lg);
+            }
+
+            &:last-child {
+                --pf-c-table--nested--first-last-child--PaddingRight: var(--pf-global--spacer--lg);
+            }
+        }
     }
 }
 

@@ -17,7 +17,6 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import cockpit from "cockpit";
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
@@ -32,10 +31,9 @@ import {
 } from '@patternfly/react-table';
 
 import './cockpit-components-table.scss';
-import './listing.scss';
 
 /* This is a wrapper around PF Table component
- * See https://www.patternfly.org/v4/documentation/react/components/table
+ * See https://www.patternfly.org/v4/components/table
  * Properties (all optional unless specified otherwise):
  * - caption
  * - className: additional classes added to the Table
@@ -51,6 +49,7 @@ import './listing.scss';
  *   }[]
  * - emptyCaption: header caption to show if list is empty
  * - variant: For compact tables pass 'compact'
+ * - gridBreakPoint: Specifies the grid breakpoints ('grid' | 'grid-md' | 'grid-lg' | 'grid-xl' | 'grid-2xl')
  * - sortBy: { index: Number, direction: SortByDirection }
  */
 export class ListingTable extends React.Component {
@@ -170,8 +169,9 @@ export class ListingTable extends React.Component {
                 total.push({
                     parent: rowIndex - 1,
                     cells: [{ title: currentValue.expandedContent }],
-                    fullWidth: true, noPadding: true,
-                    rowId: currentValue.rowId ? cockpit.format("$0-expanded", currentValue.rowId) : undefined
+                    fullWidth: true, noPadding: !currentValue.hasPadding,
+                    rowId: currentValue.rowId ? (currentValue.rowId + "-expanded") : undefined,
+                    props: { key: currentValue.props.key + "-expanded" },
                 });
                 rowIndex++;
             }
@@ -183,6 +183,8 @@ export class ListingTable extends React.Component {
     render() {
         const tableProps = {};
 
+        if (this.props.gridBreakPoint)
+            tableProps.gridBreakPoint = this.props.gridBreakPoint;
         tableProps.className = "ct-table";
         if (this.props.className)
             tableProps.className = tableProps.className + " " + this.props.className;
@@ -221,7 +223,7 @@ export class ListingTable extends React.Component {
         if (this.props.rows.length > 0) {
             return (
                 <Table {...tableProps}>
-                    <TableHeader />
+                    {this.props.showHeader && <TableHeader />}
                     <TableBody {...tableBodyProps} />
                 </Table>
             );
@@ -243,6 +245,7 @@ ListingTable.defaultProps = {
     columns: [],
     rows: [],
     actions: [],
+    showHeader: true,
 };
 ListingTable.propTypes = {
     caption: PropTypes.string,
@@ -251,4 +254,5 @@ ListingTable.propTypes = {
     rows: PropTypes.arrayOf(PropTypes.shape({ props: PropTypes.object })),
     actions: PropTypes.node,
     variant: PropTypes.string,
+    showHeader: PropTypes.bool,
 };
