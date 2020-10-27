@@ -16,6 +16,7 @@ addons:
       - rpm
 env:
   - TEST_OS=fedora-33
+  - TEST_OS=ubuntu-stable
 script:
   # HACK: /dev/kvm is root:kvm 0660 by default
   - sudo chmod 666 /dev/kvm
