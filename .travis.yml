@@ -1,8 +1,29 @@
-dist: bionic
-sudo: false
-language: node_js
-node_js:
-  - "lts/*"
+dist: focal
+sudo: true
+language: minimal
+addons:
+  apt:
+    packages:
+      - appstream-util
+      - chromium-browser
+      - curl
+      - git
+      - libvirt-daemon-system
+      - npm
+      - python3-libvirt
+      - qemu-kvm
+      - qemu-utils
+      - rpm
+env:
+  - TEST_OS=fedora-33
 script:
-  - npm install
-  - npm run build
+  # HACK: /dev/kvm is root:kvm 0660 by default
+  - sudo chmod 666 /dev/kvm
+
+  # test PO template generation
+  - make po/podman.pot
+
+  # FIXME: build rpm inside VM; no installed rpms on Travis Ubuntu environment
+  - sed -i '/^BuildRequires:/d' *.spec.in
+
+  - TEST_JOBS=$(nproc) make check
