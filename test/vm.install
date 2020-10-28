@@ -5,7 +5,7 @@ set -eu
 # for Debian based images, build and install debs; for RPM based ones, the locally built rpm gets installed separately
 if [ -d /var/tmp/debian ]; then
     apt-get update
-    eatmydata apt-get install -y cockpit-ws cockpit-system podman
+    eatmydata apt-get install ${APT_INSTALL_OPTIONS:-} -y cockpit-ws cockpit-system podman
 
     # HACK: podman dependencies prefer crun, but config defaults to runc: https://bugs.debian.org/971253
     eatmydata apt-get install -y runc
@@ -21,11 +21,15 @@ if [ -d /var/tmp/debian ]; then
     cp -r ../debian .
     sed -i "s/(0-1)/(${VERSION}-1)/" debian/changelog
     dpkg-buildpackage -S -us -uc -nc
-    cd ..
 
-    # build and install binary package
-    pbuilder build --buildresult . *.dsc
-    dpkg -i *.deb
+    # build and install binary package; prefer pbuilder if available (on Cockpit test VMs)
+    if [ -e /var/cache/pbuilder/base.tgz ]; then
+        pbuilder build --buildresult .. ../*.dsc
+    else
+        eatmydata apt-get install ${APT_INSTALL_OPTIONS:-} -y build-essential debhelper
+        dpkg-buildpackage -us -uc -b
+    fi
+    dpkg -i ../*.deb
 
     # Debian does not enable user namespaces by default
     echo kernel.unprivileged_userns_clone = 1 > /etc/sysctl.d/00-local-userns.conf
@@ -51,6 +55,18 @@ podman rmi --all
 podman pull docker.io/busybox
 podman pull docker.io/alpine
 podman pull docker.io/registry:2
+
+# create admin user for testing
+if ! getent passwd admin >/dev/null 2>&1; then
+    useradd --create-home -g sudo admin
+    echo 'admin:foobar' | chpasswd
+    echo 'root:foobar' | chpasswd
+fi
+
+# allow test to set up things on the machine
+mkdir -p /root/.ssh
+curl https://raw.githubusercontent.com/cockpit-project/bots/master/machine/identity.pub  >> /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
 
 # pull images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
