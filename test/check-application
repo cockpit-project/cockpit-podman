@@ -64,10 +64,11 @@ class TestApplication(testlib.MachineCase):
         # Enable user service as well
         self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
         self.restore_dir("/home/admin/.local/share/containers", reboot_safe=True)
+        self.addCleanup(self.admin_s.execute, "podman rm --force --all; systemctl --user stop podman.service podman.socket")
+
         # But disable it globally so that "systemctl --user disable" does what we expect
         self.machine.execute("systemctl --global disable podman.socket")
 
-        self.addCleanup(self.admin_s.execute, "podman rm --force --all; systemctl --user stop podman.service podman.socket")
         self.addCleanup(self.machine.execute, "killall -9 podman")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
