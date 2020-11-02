@@ -62,7 +62,7 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=self.machine.identity_file)
 
         # Enable user service as well
-        self.admin_s.execute("systemctl --now --user enable podman.socket")
+        self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
         self.restore_dir("/home/admin/.local/share/containers", reboot_safe=True)
         # But disable it globally so that "systemctl --user disable" does what we expect
         self.machine.execute("systemctl --global disable podman.socket")
