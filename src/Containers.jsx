@@ -248,7 +248,7 @@ class Containers extends React.Component {
         });
         client.delContainer(this.state.containerWillDelete.isSystem, id, false)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to remove container $0"), this.state.containerWillDelete.names);
+                    const error = cockpit.format(_("Failed to remove container $0"), this.state.containerWillDelete.Names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     }
@@ -311,7 +311,7 @@ class Containers extends React.Component {
                         setContainerRemoveErrorModal: false
                     });
                 }, ex => {
-                    const error = cockpit.format(_("Failed to force remove container $0"), this.state.containerWillDelete.names);
+                    const error = cockpit.format(_("Failed to force remove container $0"), this.state.containerWillDelete.Names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     }
