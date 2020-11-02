@@ -41,7 +41,8 @@ class TestApplication(testlib.MachineCase):
         self.machine.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
 
         # backup/restore pristine podman state, so that tests can run on existing testbeds
-        self.restore_dir("/var/lib/containers")
+        self.restore_dir("/var/lib/containers", reboot_safe=True)
+
         self.addCleanup(self.machine.execute, "systemctl stop podman.service")
 
         # HACK: sometimes podman leaks mounts
@@ -61,8 +62,8 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=self.machine.identity_file)
 
         # Enable user service as well
-        self.restore_dir("/home/admin/.local/share/containers")
         self.admin_s.execute("systemctl --now --user enable podman.socket")
+        self.restore_dir("/home/admin/.local/share/containers", reboot_safe=True)
         # But disable it globally so that "systemctl --user disable" does what we expect
         self.machine.execute("systemctl --global disable podman.socket")
         # HACK: user podman.service leaks a "podman pause" outside of the unit: https://github.com/containers/podman/issues/7180
