@@ -66,8 +66,6 @@ class TestApplication(testlib.MachineCase):
         self.restore_dir("/home/admin/.local/share/containers", reboot_safe=True)
         # But disable it globally so that "systemctl --user disable" does what we expect
         self.machine.execute("systemctl --global disable podman.socket")
-        # HACK: user podman.service leaks a "podman pause" outside of the unit: https://github.com/containers/podman/issues/7180
-        self.addCleanup(self.admin_s.execute, "pkill -u $USER -e podman; while pgrep -u $USER -a podman; do sleep 1; done")
 
         self.addCleanup(self.admin_s.execute, "podman rm --force --all; systemctl --user stop podman.service podman.socket")
         self.addCleanup(self.machine.execute, "killall -9 podman")
