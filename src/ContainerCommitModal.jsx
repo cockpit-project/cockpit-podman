@@ -107,7 +107,7 @@ class ContainerCommitModal extends React.Component {
                 .then(() => this.props.onHide())
                 .catch(ex => {
                     this.setState({
-                        dialogError: cockpit.format(_("Failed to commit container $0"), this.props.container.names),
+                        dialogError: cockpit.format(_("Failed to commit container $0"), this.props.container.Names),
                         dialogErrorDetail: cockpit.format("$0: $1", ex.message, ex.reason),
                         commitInProgress: false
                     });
@@ -147,7 +147,7 @@ class ContainerCommitModal extends React.Component {
                     {_("Container name")}
                 </label>
                 <span id="commit-dialog-container-name">
-                    {this.props.container.names}
+                    {this.props.container.Names}
                 </span>
 
                 <label className="control-label" htmlFor="commit-dialog-format">
