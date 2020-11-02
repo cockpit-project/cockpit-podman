@@ -147,7 +147,7 @@ $(RPMFILE): $(TARFILE) $(RPM_NAME).spec
 	test -e "$(RPMFILE)"
 
 # determine what to depend on and do for Fedora/RHEL/Debian VM preparation
-ifneq ($(filter debian-%,$(TEST_OS)),)
+ifneq ($(filter debian-% ubuntu-%,$(TEST_OS)),)
 VM_DEP=$(TARFILE) packaging/debian/rules packaging/debian/control
 VM_PACKAGE=--upload `pwd`/$(TARFILE):/var/tmp/ --upload `pwd`/packaging/debian:/var/tmp/
 else
