@@ -69,6 +69,7 @@ class TestApplication(testlib.MachineCase):
         self.addCleanup(self.admin_s.execute, "pkill -u $USER -e podman; while pgrep -u $USER -a podman; do sleep 1; done")
 
         self.addCleanup(self.admin_s.execute, "podman rm --force --all; systemctl --user stop podman.service podman.socket")
+        self.addCleanup(self.machine.execute, "killall -9 podman")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
