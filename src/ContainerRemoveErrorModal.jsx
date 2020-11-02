@@ -13,13 +13,12 @@ const ContainerRemoveErrorModal = (props) => {
                onClose={props.handleCancelRemoveError}
                title={cockpit.format(_("Please confirm forced deletion of $0"), name)}
                footer={<>
-                   <Button variant="danger" isDisabled={inProgress} className="btn-ctr-forcedelete"
+                   <Button variant="danger" isDisabled={inProgress} isLoading={inProgress} className="btn-ctr-forcedelete"
                            onClick={() => { setInProgress(true); props.handleForceRemoveContainer().finally(() => setInProgress(false)) }}
                    >
                        {_("Force delete")}
                    </Button>
                    <Button variant="link" onClick={props.handleCancelRemoveError}>{_("Cancel")}</Button>
-                   {inProgress && <div className="spinner spinner-sm pull-right" />}
                </>}
         >
             {_("Container is currently running.")}

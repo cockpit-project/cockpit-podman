@@ -221,9 +221,8 @@ class ContainerCommitModal extends React.Component {
                    title={_("Commit image")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
-                       <Button variant="primary" className="btn-ctr-commit" isDisabled={this.state.commitInProgress} onClick={this.handleCommit}>{_("Commit")}</Button>
+                       <Button variant="primary" className="btn-ctr-commit" isLoading={this.state.commitInProgress} isDisabled={this.state.commitInProgress} onClick={this.handleCommit}>{_("Commit")}</Button>
                        <Button variant="link" className="btn-ctr-cancel-commit" onClick={this.props.onHide}>{_("Cancel")}</Button>
-                       {this.state.commitInProgress && <div className="spinner spinner-sm pull-right" />}
                    </>}
             >
                 {commitContent}

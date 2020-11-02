@@ -29,13 +29,13 @@ class ContainerCheckpointModal extends React.Component {
                    title={cockpit.format(_("Checkpoint container $0"), this.props.containerWillCheckpoint.Names)}
                    footer={<>
                        <Button variant="primary" isDisabled={this.props.checkpointInProgress}
+                               isLoading={this.props.checkpointInProgress}
                                onClick={() => this.props.handleCheckpointContainer(this.state)}>
                            {_("Checkpoint")}
                        </Button>
                        <Button variant="link" onClick={this.props.handleCheckpointContainerDeleteModal}>
                            {_("Cancel")}
                        </Button>
-                       {this.props.checkpointInProgress && <div className="spinner spinner-sm pull-right" />}
                    </>}
             >
                 <div className="ct-form">

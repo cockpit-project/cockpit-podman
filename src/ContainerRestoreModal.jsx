@@ -31,13 +31,13 @@ class ContainerRestoreModal extends React.Component {
                    title={cockpit.format(_("Restore container $0"), utils.truncate_id(this.props.containerWillCheckpoint.Id))}
                    footer={<>
                        <Button variant="primary" isDisabled={this.props.restoreInProgress}
+                               isLoading={this.props.restoreInProgress}
                                onClick={() => this.props.handleRestoreContainer(this.state)}>
                            {_("Restore")}
                        </Button>
                        <Button variant="link" onClick={this.props.handleRestoreContainerDeleteModal}>
                            {_("Cancel")}
                        </Button>
-                       {this.props.restoreInProgress && <div className="spinner spinner-sm pull-right" />}
                    </>}
             >
                 <div className="ct-form">
