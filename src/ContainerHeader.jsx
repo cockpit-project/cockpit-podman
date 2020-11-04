@@ -1,5 +1,6 @@
 import React from 'react';
 import cockpit from 'cockpit';
+import { TextInput } from '@patternfly/react-core';
 import * as Select from '../lib/cockpit-components-select.jsx';
 const _ = cockpit.gettext;
 
@@ -26,8 +27,8 @@ class ContainerHeader extends React.Component {
         }
     }
 
-    handleFilterTextChange() {
-        this.setState({ filterText: this.refs.filterTextInput.value }, this.filterChanged);
+    handleFilterTextChange(value) {
+        this.setState({ filterText: value }, this.filterChanged);
     }
 
     render() {
@@ -43,12 +44,10 @@ class ContainerHeader extends React.Component {
                         </Select.Select>
                     </>
                 }
-                <input type="text"
-                       id="containers-filter"
-                       ref="filterTextInput"
-                       className="form-control"
-                       placeholder={_("Type to filter…")}
-                       onChange={this.handleFilterTextChange} />
+                <TextInput id="containers-filter"
+                           className="form-control"
+                           placeholder={_("Type to filter…")}
+                           onChange={this.handleFilterTextChange} />
             </>
         );
     }

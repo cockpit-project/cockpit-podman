@@ -54,15 +54,6 @@ body {
     }
 }
 
-.containers-run-inline form .pficon-close,
-.containers-run-inline form .fa-plus {
-    height: 26px;
-    width: 26px;
-    padding: 4px;
-    float: right;
-    margin-left: 5px;
-}
-
 .containers-run-inline .form-inline {
     background: #f4f4f4;
     border-width: 0 1px 1px 1px;
@@ -139,10 +130,6 @@ body {
     padding-right: 3px;
 }
 
-.content-filter i.pficon-image {
-    top: 3px;
-}
-
 .content-filter i.fa {
     margin-top: 2px;
     font-size: 18px;
@@ -168,29 +155,6 @@ body {
     color: #888;
 }
 
-.form-group input[type="radio"]{
-    margin: 2px 0px 2px 10px;
-}
-
-/* Align the buttons on DynamicListForms to the right */
-.form-list-control {
-    --ct-form-columns: 1;
-    justify-items: end;
-
-    input {
-        max-width: 8em;
-    }
-}
-
-/* We need to be a little specific here to override without !important */
-.ct-form .ct-form .run-image-dialog-actions {
-    grid-template-columns: repeat(2, min-content);
-}
-
-.ct-form > [role=group] {
-    grid-template-columns: repeat(3, auto);
-}
-
 .run-image-dialog-actions .btn {
     padding: 0.25rem 0.75rem;
 }
@@ -206,11 +170,6 @@ body {
 
 .info-message {
     margin-top: 5px;
-}
-
-/* New implementation of FileAutoComplete has margin which breaks our UI a bit */
-.volume-form .form-group {
-    margin-bottom: 0px;
 }
 
 .pf-c-alert__description {
@@ -246,4 +205,45 @@ body {
 .heading-label {
     padding: 0 0.5em 0 1em;
     font-weight: 400;
+}
+
+ // PF4 does not yet support multiple form fields for the same label
+ // Use InputGroup component to achieve this - and just customize it with some extra spacing
+.ct-input-group-spacer-sm.pf-c-input-group {
+    // Add space between the input group elements
+    gap: var(--pf-global--spacer--sm);
+    // Allow input fields to wrap if needed
+    flex-wrap: wrap;
+    padding-bottom: var(--pf-global--spacer--sm);
+
+    // Limit width for select entries and inputs in the input groups otherwise they take up the whole space
+    > .pf-c-select, .pf-c-form-control {
+      max-width: 40%;
+    }
+
+    // Right align the buttons in the input groups - used for adding/removing entries
+    > button:first-of-type {
+      margin-left: auto;
+    }
+
+    > input.pf-c-select__toggle-typeahead {
+      min-width: min-content;
+    }
+
+    // Container port protocol selection does not need the full 40% width
+    > select.container-port-protocol {
+      max-width: 6rem;
+    }
+
+    > .btn-add, .btn-close {
+      max-width: 3rem;
+    }
+}
+
+input.pf-c-form-control[type=number] {
+  max-width: 20%;
+}
+
+.invisible {
+  visibility: hidden;
 }

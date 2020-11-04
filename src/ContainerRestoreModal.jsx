@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Checkbox, Modal } from '@patternfly/react-core';
+import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
@@ -41,19 +41,19 @@ class ContainerRestoreModal extends React.Component {
                        </Button>
                    </>}
             >
-                <div className="ct-form">
+                <Form isHorizontal>
                     <Checkbox label={_("Keep all temporary checkpoint files")} id="restore-dialog-keep" name="keep"
-                                  isChecked={this.state.keep} onChange={this.handleChange} />
+                              isChecked={this.state.keep} onChange={this.handleChange} />
                     <Checkbox label={_("Restore with established TCP connections")}
-                                  id="restore-dialog-tcpEstablished" name="tcpEstablished"
-                                  isChecked={this.state.tcpEstablished} onChange={this.handleChange} />
+                              id="restore-dialog-tcpEstablished" name="tcpEstablished"
+                              isChecked={this.state.tcpEstablished} onChange={this.handleChange} />
                     <Checkbox label={_("Ignore IP address if set statically")} id="restore-dialog-ignoreStaticIP"
-                                  name="ignoreStaticIP" isChecked={this.state.ignoreStaticIP}
-                                  onChange={this.handleChange} />
+                              name="ignoreStaticIP" isChecked={this.state.ignoreStaticIP}
+                              onChange={this.handleChange} />
                     <Checkbox label={_("Ignore MAC address if set statically")} id="restore-dialog-ignoreStaticMAC"
-                                  name="ignoreStaticMAC" isChecked={this.state.ignoreStaticMAC}
-                                  onChange={this.handleChange} />
-                </div>
+                              name="ignoreStaticMAC" isChecked={this.state.ignoreStaticMAC}
+                              onChange={this.handleChange} />
+                </Form>
             </Modal>
         );
     }

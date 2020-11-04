@@ -11,7 +11,7 @@
     }
 }
 
-.podman-search .modal-body {
+.podman-search .pf-c-modal-box__body {
     display: grid;
     grid-auto-flow: row;
     overflow: hidden;
@@ -30,8 +30,8 @@
     max-height: 75vh;
 }
 
-#search-image-dialog-waiting.spinner {
-    margin-top: calc(50% - 32px);
+#search-image-dialog-waiting.pf-c-spinner {
+    margin-top: 3rem;
 }
 
 .image-list-item {
@@ -115,15 +115,18 @@
     }
 }
 
-.ct-form .radio {
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
-
 .image-search-tag-form {
     margin-bottom: var(--pf-global--spacer--md);
 }
 
 .podman-search .pf-c-modal-box__footer {
     display: initial;
+}
+
+.podman-search .pf-c-data-list {
+    overflow-y: auto;
+}
+
+.podman-search .pf-l-flex .pf-c-form__group:nth-child(2) {
+    grid-template-columns: 2rem var(--pf-c-form--m-horizontal__group-control--md--GridColumnWidth)
 }

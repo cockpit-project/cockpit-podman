@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal } from '@patternfly/react-core';
+import { Button, Checkbox, Form, FormGroup, InputGroup, Modal, TextInput } from '@patternfly/react-core';
+import { CloseIcon, PlusIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
 import * as Select from '../lib/cockpit-components-select.jsx';
@@ -9,8 +10,6 @@ import { FileAutoComplete } from '../lib/cockpit-components-file-autocomplete.js
 import * as utils from './util.js';
 import * as client from './client.js';
 import cockpit from 'cockpit';
-
-import '../lib/form-layout.scss';
 
 const _ = cockpit.gettext;
 
@@ -32,25 +31,23 @@ const units = {
 const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <>
-            <div role='group' className='ct-form-split'>
-                <input className='form-control'
-                       id={id}
-                       type='number'
-                       step={1}
-                       min={1}
-                       max={65535}
-                       placeholder={_("Container port")}
-                       value={item.containerPort || ''}
-                       onChange={e => onChange(idx, 'containerPort', e.target.value)} />
-                <input className='form-control'
-                       type='number'
-                       step={1}
-                       min={1}
-                       max={65535}
-                       placeholder={_("Host port")}
-                       value={item.hostPort || ''}
-                       onChange={e => onChange(idx, 'hostPort', e.target.value)} />
-                <Select.Select className='form-control'
+            <InputGroup className='ct-input-group-spacer-sm'>
+                <TextInput id={id}
+                           type='number'
+                           step={1}
+                           min={1}
+                           max={65535}
+                           placeholder={_("Container port")}
+                           value={item.containerPort || ''}
+                           onChange={value => onChange(idx, 'containerPort', value)} />
+                <TextInput type='number'
+                           step={1}
+                           min={1}
+                           max={65535}
+                           placeholder={_("Host port")}
+                           value={item.hostPort || ''}
+                           onChange={value => onChange(idx, 'hostPort', value)} />
+                <Select.Select extraClass='pf-c-form-control container-port-protocol'
                                initial={item.protocol}
                                onChange={value => onChange(idx, 'protocol', value)}>
                     <Select.SelectEntry data='tcp' key='tcp'>
@@ -60,66 +57,72 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                         {_("UDP")}
                     </Select.SelectEntry>
                 </Select.Select>
-            </div>
-            <div role='group' className='ct-form-split run-image-dialog-actions'>
                 <Button variant='secondary'
                         className={"btn-close" + (idx === 0 && !item.hostPort && !item.containerPort ? ' invisible' : '')}
+                        isSmall
                         aria-label={_("Remove item")}
-                        onClick={() => removeitem(idx)}>
-                    <span className="pficon pficon-close" />
-                </Button>
-                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")}>
-                    <span className='fa fa-plus' />
-                </Button>
-            </div>
+                        icon={<CloseIcon />}
+                        onClick={() => removeitem(idx)} />
+                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")} icon={<PlusIcon />} />
+            </InputGroup>
         </>
     );
 
 const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <>
-            <div role='group' className='ct-form-split'>
-                <input className='form-control'
-                       id={id}
-                       type='text'
-                       placeholder={_("Key")}
-                       value={item.envKey || ''}
-                       onChange={e => onChange(idx, 'envKey', e.target.value)} />
-                <input className='form-control'
-                       type='text'
-                       placeholder={_("Value")}
-                       value={item.envValue || ''}
-                       onChange={e => onChange(idx, 'envValue', e.target.value)} />
-            </div>
-            <div role='group' className='ct-form-split run-image-dialog-actions'>
+            <InputGroup className="ct-input-group-spacer-sm">
+                <TextInput id={id}
+                           type='text'
+                           placeholder={_("Key")}
+                           value={item.envKey || ''}
+                           onChange={value => onChange(idx, 'envKey', value)} />
+                <TextInput type='text'
+                           placeholder={_("Value")}
+                           value={item.envValue || ''}
+                           onChange={value => onChange(idx, 'envValue', value)} />
                 <Button variant='secondary'
                         className={"btn-close" + (idx === 0 && !item.envKey && !item.envValue ? ' invisible' : '')}
+                        isSmall
                         aria-label={_("Remove item")}
-                        onClick={() => removeitem(idx)}>
-                    <span className="pficon pficon-close" />
-                </Button>
-                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")}>
-                    <span className='fa fa-plus' />
-                </Button>
-            </div>
+                        icon={<CloseIcon />}
+                        onClick={() => removeitem(idx)} />
+                <Button variant='secondary'
+                    className="btn-add"
+                    onClick={additem}
+                    icon={<PlusIcon />}
+                    aria-label={_("Add item")} />
+            </InputGroup>
         </>
     );
 
 const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
     (
         <>
-            <div role='group' className='ct-form-split'>
+            <InputGroup className='ct-input-group-spacer-sm'>
                 <FileAutoComplete id={id || ''}
                                   placeholder={_("Host path")}
                                   value={item.hostPath || ''}
                                   onChange={ value => onChange(idx, 'hostPath', value) } />
-                <input className='form-control ct-form-relax'
-                       type='text'
-                       placeholder={_("Container path")}
-                       value={item.containerPath || ''}
-                       onChange={e => onChange(idx, 'containerPath', e.target.value)} />
-                <div />
-                <Select.Select className='form-control'
+                <TextInput placeholder={_("Container path")}
+                           value={item.containerPath || ''}
+                           onChange={value => onChange(idx, 'containerPath', value)} />
+
+                <Button variant='secondary'
+                        className={"btn-close" + (idx === 0 && !item.containerPath && !item.hostPath ? ' invisible' : '')}
+                        aria-label={_("Remove item")}
+                        isSmall
+                        icon={<CloseIcon />}
+                        onClick={() => removeitem(idx)} />
+                <Button variant='secondary'
+                        className="btn-add"
+                        onClick={additem}
+                        isSmall
+                        icon={<PlusIcon />}
+                        aria-label={_("Add item")} />
+            </InputGroup>
+            <InputGroup className='ct-input-group-spacer-sm'>
+                <Select.Select extraClass='pf-c-form-control'
                                initial={item.mode}
                                onChange={value => onChange(idx, 'mode', value)}>
                     <Select.SelectEntry data='ro' key='ro'>
@@ -130,7 +133,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
                     </Select.SelectEntry>
                 </Select.Select>
                 { options && options.selinuxAvailable &&
-                    <Select.Select className='form-control'
+                    <Select.Select extraClass='pf-c-form-control'
                                    initial={item.mode}
                                    onChange={value => onChange(idx, 'selinux', value)}>
                         <Select.SelectEntry data='' key=''>
@@ -144,18 +147,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
                         </Select.SelectEntry>
                     </Select.Select>
                 }
-            </div>
-            <div role='group' className='ct-form-split run-image-dialog-actions'>
-                <Button variant='secondary'
-                        className={"btn-close" + (idx === 0 && !item.containerPath && !item.hostPath ? ' invisible' : '')}
-                        aria-label={_("Remove item")}
-                        onClick={() => removeitem(idx)}>
-                    <span className="pficon pficon-close" />
-                </Button>
-                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")}>
-                    <span className='fa fa-plus' />
-                </Button>
-            </div>
+            </InputGroup>
         </>
     );
 
@@ -204,7 +196,7 @@ class DynamicListForm extends React.Component {
                     dialogValues.list.map((item, idx) =>
                         (
 
-                            <div className={ (formclass || '') + ' ct-form form-list-control' } key={ item.key } data-key={ item.key }>
+                            <div className={formclass || ''} key={ item.key } data-key={ item.key }>
                                 {
                                     React.cloneElement(this.props.itemcomponent, {
                                         idx: idx, item: item, id: (idx === 0 && id) || undefined,
@@ -327,119 +319,100 @@ export class ImageRunModal extends React.Component {
         const dialogValues = this.state;
 
         const defaultBody = (
-            <div className='ct-form'>
-                <label className='control-label' htmlFor='run-image-dialog-image'>
-                    {_("Image")}
-                </label>
-                <div id='run-image-dialog-image'> { image.RepoTags ? image.RepoTags[0] : "" } </div>
+            <Form isHorizontal>
+                <FormGroup fieldId='run-image-dialog-image' label={_("Image")} hasNoPaddingTop>
+                    <div id='run-image-dialog-image'> { image.RepoTags ? image.RepoTags[0] : "" } </div>
+                </FormGroup>
 
-                <label className='control-label' htmlFor='run-image-dialog-name'>
-                    {_("Name")}
-                </label>
-                <input id='run-image-dialog-name'
-                    type='text'
-                    placeholder={_("Container name")}
-                    value={dialogValues.containerName}
-                    onChange={e => this.onValueChanged('containerName', e.target.value)}
-                    className='form-control' />
+                <FormGroup fieldId='run-image-dialog-name' label={_("Name")}>
+                    <TextInput id='run-image-dialog-name'
+                               placeholder={_("Container name")}
+                               value={dialogValues.containerName}
+                               onChange={value => this.onValueChanged('containerName', value)} />
+                </FormGroup>
 
-                <hr />
-                <label className='control-label' htmlFor='run-image-dialog-command'>
-                    {_("Command")}
-                </label>
-                <input id='run-image-dialog-command'
-                    type='text'
-                    placeholder={_("Command")}
-                    value={dialogValues.command || ''}
-                    onChange={e => this.onValueChanged('command', e.target.value)}
-                    className='form-control' />
+                <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
+                    <TextInput id='run-image-dialog-command'
+                               placeholder={_("Command")}
+                               value={dialogValues.command || ''}
+                               onChange={value => this.onValueChanged('command', value)} />
+                </FormGroup>
 
-                <label className='control-label' htmlFor='run-image-dialog-memory'>
-                    {_("Memory limit")}
-                </label>
-                <div role='group' className='form-inline' id="run-image-dialog-memory-limit">
-                    <div className="checkbox">
-                        <input id="run-image-dialog-memory-limit-checkbox" type="checkbox"
-                               checked={this.state.memoryConfigure}
-                               onChange={e => this.onValueChanged('memoryConfigure', e.target.checked)} />
-                    </div>
-                    <input className='form-control'
-                           type='number'
-                           value={dialogValues.memory}
-                           step={1}
-                           min={0}
-                           disabled={!this.state.memoryConfigure}
-                           onChange={e => this.onValueChanged('memory', e.target.value)} />
-                    <Select.Select id='memory-unit-select'
-                                   initial={this.state.memoryUnit}
-                                   enabled={this.state.memoryConfigure}
-                                   onChange={value => this.onValueChanged('memoryUnit', value)}>
-                        <Select.SelectEntry data={units.KiB.name} key={units.KiB.name}>
-                            {_("KiB")}
-                        </Select.SelectEntry>
-                        <Select.SelectEntry data={units.MiB.name} key={units.MiB.name}>
-                            {_("MiB")}
-                        </Select.SelectEntry>
-                        <Select.SelectEntry data={units.GiB.name} key={units.GiB.name}>
-                            {_("GiB")}
-                        </Select.SelectEntry>
-                    </Select.Select>
-                </div>
+                <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
+                    <InputGroup className="ct-input-group-spacer-sm" id="run-image-dialog-memory-limit">
+                        <Checkbox id="run-image-dialog-memory-limit-checkbox"
+                                  isChecked={this.state.memoryConfigure}
+                                  onChange={checked => this.onValueChanged('memoryConfigure', checked)} />
+                        <TextInput type='number'
+                                   value={dialogValues.memory}
+                                   step={1}
+                                   min={0}
+                                   isReadOnly={!this.state.memoryConfigure}
+                                   onChange={value => this.onValueChanged('memory', value)} />
+                        <Select.Select id='memory-unit-select'
+                                       initial={this.state.memoryUnit}
+                                       enabled={this.state.memoryConfigure}
+                                       onChange={value => this.onValueChanged('memoryUnit', value)}>
+                            <Select.SelectEntry data={units.KiB.name} key={units.KiB.name}>
+                                {_("KiB")}
+                            </Select.SelectEntry>
+                            <Select.SelectEntry data={units.MiB.name} key={units.MiB.name}>
+                                {_("MiB")}
+                            </Select.SelectEntry>
+                            <Select.SelectEntry data={units.GiB.name} key={units.GiB.name}>
+                                {_("GiB")}
+                            </Select.SelectEntry>
+                        </Select.Select>
+                    </InputGroup>
+                </FormGroup>
 
                 { this.state.image.isSystem &&
-                    <>
-                        <label className='control-label' htmlFor='run-image-cpu-priority'>
-                            {_("CPU shares")}
-                        </label>
-                        <div role='group' className='form-inline' id="run-image-dialog-cpu-priority">
-                            <div className="checkbox">
-                                <input id="run-image-dialog-cpu-priority-checkbox" type="checkbox"
-                                       checked={this.state.cpuSharesConfigure}
-                                       onChange={e => this.onValueChanged('cpuSharesConfigure', e.target.checked)} />
-                            </div>
-                            <input className='form-control'
-                                   type='number'
+                <FormGroup fieldId='run-image-cpu-priority' label={_("CPU shares")}>
+                    <InputGroup className="ct-input-group-spacer-sm" id="run-image-dialog-cpu-priority">
+                        <Checkbox id="run-image-dialog-cpu-priority-checkbox"
+                                  isChecked={this.state.cpuSharesConfigure}
+                                  onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
+                        <TextInput type='number'
                                    value={dialogValues.cpuShares}
                                    step={1}
                                    min={2}
-                                   disabled={!this.state.cpuSharesConfigure}
-                                   onChange={e => this.onValueChanged('cpuShares', e.target.value === "" ? "" : parseInt(e.target.value))} />
-                        </div>
-                    </>
-                }
+                                   isReadOnly={!this.state.cpuSharesConfigure}
+                                   onChange={value => this.onValueChanged('cpuShares', value === "" ? "" : parseInt(value))} />
+                    </InputGroup>
+                </FormGroup>}
 
-                <label className='control-label'> {_("With terminal")} </label>
-                <label className="checkbox-inline">
-                    <input id="run-image-dialog-tty" type="checkbox"
-                           checked={this.state.hasTTY}
-                           onChange={e => this.onValueChanged('hasTTY', e.target.checked)} />
-                </label>
+                <FormGroup fieldId="run=image-dialog-tty">
+                    <Checkbox id="run-image-dialog-tty"
+                              isChecked={this.state.hasTTY}
+                              label={_("With terminal")}
+                              onChange={checked => this.onValueChanged('hasTTY', checked)} />
+                </FormGroup>
 
-                <hr />
-                <label className='control-label' htmlFor='run-image-dialog-publish'>{ _("Ports") }</label>
-                <DynamicListForm id='run-image-dialog-publish'
-                                 formclass='publish-port-form'
-                                 onChange={value => this.onValueChanged('publish', value)}
-                                 default={{ containerPort: null, hostPort: null, protocol: 'tcp' }}
-                                 itemcomponent={ <PublishPort />} />
+                <FormGroup fieldId='run-image-dialog-publish' label={_("Ports")}>
+                    <DynamicListForm id='run-image-dialog-publish'
+                                     formclass='publish-port-form'
+                                     onChange={value => this.onValueChanged('publish', value)}
+                                     default={{ containerPort: null, hostPort: null, protocol: 'tcp' }}
+                                     itemcomponent={ <PublishPort />} />
+                </FormGroup>
 
-                <hr />
-                <label className='control-label' htmlFor='run-image-dialog-env'>{ _("Volumes") }</label>
-                <DynamicListForm id='run-image-dialog-volume'
-                                 formclass='volume-form'
-                                 onChange={value => this.onValueChanged('volumes', value)}
-                                 default={{ containerPath: null, hostPath: null, mode: 'rw' }}
-                                 options={{ selinuxAvailable: this.props.selinuxAvailable }}
-                                 itemcomponent={ <Volume />} />
+                <FormGroup fieldId='run-image-dialog-env' label={_("Volumes")}>
+                    <DynamicListForm id='run-image-dialog-volume'
+                                     formclass='volume-form'
+                                     onChange={value => this.onValueChanged('volumes', value)}
+                                     default={{ containerPath: null, hostPath: null, mode: 'rw' }}
+                                     options={{ selinuxAvailable: this.props.selinuxAvailable }}
+                                     itemcomponent={ <Volume />} />
+                </FormGroup>
 
-                <hr />
-                <label className='control-label' htmlFor='run-image-dialog-env'>{ _("Environment") }</label>
-                <DynamicListForm id='run-image-dialog-env'
-                                 formclass='env-form'
-                                 onChange={value => this.onValueChanged('env', value)}
-                                 default={{ envKey: null, envValue: null }}
-                                 itemcomponent={ <EnvVar />} />
-            </div>
+                <FormGroup fieldId='run-image-dialog-env' label={_("Environment")}>
+                    <DynamicListForm id='run-image-dialog-env'
+                                     formclass='env-form'
+                                     onChange={value => this.onValueChanged('env', value)}
+                                     default={{ envKey: null, envValue: null }}
+                                     itemcomponent={ <EnvVar />} />
+                </FormGroup>
+            </Form>
         );
         return (
             <Modal isOpen

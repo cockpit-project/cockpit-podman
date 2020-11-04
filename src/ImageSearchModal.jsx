@@ -1,6 +1,9 @@
 import React from 'react';
-import { ListGroup, ListGroupItem } from 'patternfly-react';
-import { Button, InputGroup, Modal } from '@patternfly/react-core';
+import {
+    Bullseye, Button,
+    DataList, DataListItem, DataListItemRow, DataListCell, DataListItemCells,
+    Flex, Form, FormGroup, Modal, Radio, Spinner, TextInput
+} from '@patternfly/react-core';
 
 import * as Select from '../lib/cockpit-components-select.jsx';
 import { ErrorNotification } from './Notification.jsx';
@@ -8,7 +11,6 @@ import cockpit from 'cockpit';
 import rest from './rest.js';
 import * as client from './client.js';
 
-import '../lib/form-layout.scss';
 import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
@@ -43,8 +45,8 @@ export class ImageSearchModal extends React.Component {
             this.activeConnection.close();
     }
 
-    onToggleUser(ev) {
-        this.setState({ isSystem: ev.target.id === "system" });
+    onToggleUser(_, ev) {
+        this.setState({ isSystem: ev.currentTarget.value === "system" });
     }
 
     onDownloadClicked() {
@@ -55,7 +57,7 @@ export class ImageSearchModal extends React.Component {
     }
 
     onItemSelected(key) {
-        this.setState({ selected: key });
+        this.setState({ selected: key.split('-').slice(-1)[0] });
     }
 
     onSearchTriggered(forceSearch) {
@@ -123,40 +125,25 @@ export class ImageSearchModal extends React.Component {
     render() {
         const defaultBody = (
             <>
-                { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
-                    <form className="ct-form">
-                        <label className="control-label" htmlFor="as-user">{_("Owner")}</label>
-                        <fieldset id="as-user">
-                            <div className="radio">
-                                <label>
-                                    <input type="radio" value="system" id="system" onChange={this.onToggleUser} checked={this.state.isSystem} />
-                                    {_("system")}
-                                </label>
-                                <label>
-                                    <input type="radio" value="user" id="user" onChange={this.onToggleUser} checked={!this.state.isSystem} />
-                                    {this.props.user}
-                                </label>
-                            </div>
-                        </fieldset>
-                    </form>
-                }
-                <InputGroup>
-                    <div className="ct-form">
-                        <label htmlFor="search-image-dialog-name" className="control-label">{_("Search for")}</label>
-                        <input id='search-image-dialog-name'
-                            autoFocus
-                            className='form-control ct-form-split'
-                            type='text'
-                            placeholder={_("Search by name or description")}
-                            value={this.state.imageIdentifier}
-                            onKeyPress={this.onKeyPress}
-                            onChange={e => this.onValueChanged('imageIdentifier', e.target.value)} />
-                        <label htmlFor="registry-select" aria-label="Registry" className="control-label">{_("in")}</label>
-                        <div className="ct-form-split">
+                <Form isHorizontal>
+                    { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
+                    <FormGroup id="as-user" label={_("Owner")} isInline>
+                        <Radio name="user" value="system" id="system" onChange={this.onToggleUser} isChecked={this.state.isSystem} label={_("system")} />
+                        <Radio name="user" value="user" id="user" onChange={this.onToggleUser} isChecked={!this.state.isSystem} label={this.props.user} />
+                    </FormGroup>}
+                    <Flex spaceItems={{ default: 'inlineFlex', modifier: 'spaceItemsXl' }}>
+                        <FormGroup fieldId="search-image-dialog-name" label={_("Search for")}>
+                            <TextInput id='search-image-dialog-name'
+                                       autoFocus
+                                       type='text'
+                                       placeholder={_("Search by name or description")}
+                                       value={this.state.imageIdentifier}
+                                       onKeyPress={this.onKeyPress}
+                                       onChange={value => this.onValueChanged('imageIdentifier', value)} />
+                        </FormGroup>
+                        <FormGroup fieldId="registry-select" label={_("in")}>
                             <Select.Select id='registry-select'
                                 initial={this.state.registry}
-                                // Why isn't it taking on this class?!
-                                className='ct-form-split'
                                 onChange={value =>
                                     this.setState({ registry: value }, () => this.onSearchTriggered(false))
                                 }>
@@ -170,48 +157,58 @@ export class ImageSearchModal extends React.Component {
                                 })
                                 }
                             </Select.Select>
-                        </div>
-                    </div>
-                </InputGroup>
+                        </FormGroup>
+                    </Flex>
+                </Form>
 
-                {this.state.searchInProgress && <div id='search-image-dialog-waiting' className='spinner' />}
+                {this.state.searchInProgress && <Bullseye><Spinner id='search-image-dialog-waiting' /></Bullseye>}
 
                 {this.state.searchFinished && !this.state.imageIdentifier == '' && <>
                     {this.state.imageList.length == 0 && <div className="no-results"> {cockpit.format(_("No results for $0. Please retry another term."), this.state.imageIdentifier)} </div>}
-                    {this.state.imageList.length > 0 && <ListGroup>
+                    {this.state.imageList.length > 0 &&
+                    <DataList isCompact
+                              selectedDataListItemId={"image-list-item-" + this.state.selected}
+                              onSelectDataListItem={this.onItemSelected}>
                         {this.state.imageList.map((image, iter) => {
                             return (
-                                <ListGroupItem active={this.state.selected == iter} onClick={() => this.onItemSelected(iter)} key={iter}>
-                                    <span className='image-list-item'>
-                                        <label className='image-name control-label'>
-                                            { image.Name }
-                                        </label>
-                                        <span className='image-description'> { image.Description } </span>
-                                    </span>
-                                </ListGroupItem>
+                                <DataListItem id={"image-list-item-" + iter} key={iter}>
+                                    <DataListItemRow>
+                                        <DataListItemCells
+                                                  dataListCells={[
+                                                      <DataListCell key="primary content">
+                                                          <span className='image-name'>{image.Name}</span>
+                                                      </DataListCell>,
+                                                      <DataListCell key="secondary content">
+                                                          <span className='image-description'>{image.Description}</span>
+                                                      </DataListCell>
+                                                  ]}
+                                        />
+                                    </DataListItemRow>
+                                </DataListItem>
                             );
                         })}
-                    </ListGroup>}
+                    </DataList>}
                 </>}
             </>
         );
 
         return (
             <Modal isOpen className="podman-search"
-                   position="top" variant="medium"
+                   position="top" variant="large"
                    onClose={this.props.close}
                    title={_("Search for an image")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                       <div className="ct-form image-search-tag-form">
-                           <label className="control-label" htmlFor="image-search-tag">{_("Tag")}</label>
-                           <input className="form-control image-tag-entry"
-                                  id="image-search-tag"
-                                  type='text'
-                                  placeholder="latest"
-                                  value={this.state.imageTag || ''}
-                                  onChange={e => this.onValueChanged('imageTag', e.target.value)} />
-                       </div>
+                       <Form isHorizontal className="image-search-tag-form">
+                           <FormGroup fieldId="image-search-tag" label={_("Tag")}>
+                               <TextInput className="image-tag-entry"
+                                      id="image-search-tag"
+                                      type='text'
+                                      placeholder="latest"
+                                      value={this.state.imageTag || ''}
+                                      onChange={value => this.onValueChanged('imageTag', value)} />
+                           </FormGroup>
+                       </Form>
                        <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
                            {_("Download")}
                        </Button>

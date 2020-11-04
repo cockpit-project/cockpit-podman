@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@patternfly/react-core';
-import { PlusIcon } from '@patternfly/react-icons';
+import { PlayIcon, PlusIcon, TrashIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "../lib/cockpit-components-table.jsx";
@@ -114,18 +114,16 @@ class Images extends React.Component {
         const tabs = [];
 
         const runImage = (
-            <div>
-                <Button key={image.Id + "create"}
+            <Button key={image.Id + "create"}
                     variant='secondary'
                     onClick={ e => {
                         e.stopPropagation();
                         this.setState({ showRunImageModal: image });
                     } }
                     aria-label={_("Run image")}
-                    data-image={image.Id}>
-                    <span className="fa fa-play" />
-                </Button>
-            </div>
+                    isSmall
+                    icon={<PlayIcon />}
+                    data-image={image.Id} />
         );
 
         const columns = [
@@ -133,7 +131,7 @@ class Images extends React.Component {
             utils.localize_time(image.Created),
             cockpit.format_bytes(image.Size),
             image.isSystem ? _("system") : this.props.user,
-            runImage,
+            { title: runImage },
         ];
 
         tabs.push({
@@ -151,14 +149,12 @@ class Images extends React.Component {
         });
 
         const actions = [
-            <Button
-                variant="danger"
-                key={image.Id + "delete"}
-                className="btn-delete"
-                aria-label={_("Delete image")}
-                onClick={() => this.deleteImage(image)}>
-                <span className="pficon pficon-delete" />
-            </Button>
+            <Button variant="danger"
+                    key={image.Id + "delete"}
+                    className="btn-delete"
+                    aria-label={_("Delete image")}
+                    icon={<TrashIcon />}
+                    onClick={() => this.deleteImage(image)} />
         ];
         return {
             expandedContent: <ListingPanel

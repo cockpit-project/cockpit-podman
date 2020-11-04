@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Modal } from '@patternfly/react-core';
+import { Button, Checkbox, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -65,12 +65,13 @@ export class ImageDeleteModal extends React.Component {
                 { repoTags.length > 1 && <p>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</p> }
                 <p>
                     { repoTags.map(x => {
-                        return (<label key={x} className="checkbox">
-                            <input type="checkbox"
-                                       checked={checkedTags.indexOf(x) > -1}
-                                       onChange={e => this.onValueChanged(x, e.target.checked)} />
-                            {x}
-                        </label>);
+                        return (
+                            <Checkbox isChecked={checkedTags.indexOf(x) > -1}
+                                      aria-label={x}
+                                      key={x}
+                                      label={x}
+                                      onChange={checked => this.onValueChanged(x, checked)} />
+                        );
                     })}
                 </p>
                 { repoTags.length > 2 && <Button variant="link" onClick={this.pickAll}>{_("select all")}</Button> }
