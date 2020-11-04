@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Checkbox, Modal } from '@patternfly/react-core';
+import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -39,7 +39,7 @@ class ContainerCheckpointModal extends React.Component {
                        </Button>
                    </>}
             >
-                <div className="ct-form">
+                <Form isHorizontal>
                     <Checkbox label={_("Keep all temporary checkpoint files")} id="checkpoint-dialog-keep"
                                   name="keep" isChecked={this.state.keep} onChange={this.handleChange} />
                     <Checkbox label={_("Leave running after writing checkpoint to disk")}
@@ -51,7 +51,7 @@ class ContainerCheckpointModal extends React.Component {
                     <Checkbox label={_("Do not include root file-system changes when exporting")}
                                   id="checkpoint-dialog-ignoreRootFS" name="ignoreRootFS"
                                   isChecked={this.state.ignoreRootFS} onChange={this.handleChange} />
-                </div>
+                </Form>
             </Modal>
         );
     }

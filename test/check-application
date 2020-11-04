@@ -525,10 +525,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:4")
 
         b.click(busybox_sel + " + tr button.btn-delete")
-        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:latest') input"))
-        b.set_checked("label:contains('quay.io/libpod/busybox:1') input", True)
-        b.set_checked("label:contains('quay.io/libpod/busybox:3') input", True)
-        b.set_checked("label:contains('quay.io/libpod/busybox:latest') input", False)
+        self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:latest']"))
+        b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:1']", True)
+        b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:3']", True)
+        b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:latest']", False)
         b.click(".pf-c-modal-box #btn-img-delete")
         b.wait_not_present("pf-c-modal-box #btn-img-delete")
         b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:latest")
@@ -538,9 +538,9 @@ class TestApplication(testlib.MachineCase):
 
         b.click(busybox_sel + " + tr button.btn-delete")
         b.click("button:contains('select all')")
-        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:latest') input"))
-        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:2') input"))
-        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:4') input"))
+        self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:latest']"))
+        self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:2']"))
+        self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:4']"))
         b.click(".pf-c-modal-box #btn-img-delete")
         b.wait_not_present("pf-c-modal-box #btn-img-delete")
         b.click(".pf-c-modal-box #btn-img-deleteerror")
@@ -648,8 +648,8 @@ class TestApplication(testlib.MachineCase):
 
             def selectImageAndDownload(self):
                 # Select and download the self.imageName image
-                b.wait_present("div.list-group .image-list-item label:contains({0})".format(self.imageName))
-                b.click("div.list-group .image-list-item label:contains({0})".format(self.imageName))
+                b.wait_present(".pf-c-data-list .image-name:contains({0})".format(self.imageName))
+                b.click(".pf-c-data-list .image-name:contains({0})".format(self.imageName))
                 b.wait_present("div.pf-c-modal-box footer button:contains(Download):not([disabled])")
                 b.click("div.pf-c-modal-box footer button:contains(Download)")
 
@@ -679,10 +679,7 @@ class TestApplication(testlib.MachineCase):
                 return self
 
             def deleteImage(self, force=False, another=None):
-                if self.imageTag:
-                    imageTagSuffix =  ":" + self.imageTag
-                else:
-                    imageTagSuffix = ""
+                imageTagSuffix =  ":" + (self.imageTag or 'latest')
 
                 # Select the image row
 
@@ -695,9 +692,9 @@ class TestApplication(testlib.MachineCase):
                 b.wait_present(sel + ' + tr button.btn-delete')
                 b.click(sel +' + tr button.btn-delete')
 
-                b.set_checked("label:contains('localhost:5000/{0}{1}') input".format(self.imageName, imageTagSuffix), True)
+                b.set_checked(".pf-c-check__input[aria-label='localhost:5000/{0}{1}']".format(self.imageName, imageTagSuffix), True)
                 if another:
-                    b.set_checked("label:contains('{0}') input".format(another), True)
+                    b.set_checked(".pf-c-check__input[aria-label='{0}']".format(another), True)
 
                 # Confirm deletion in the delete dialog
                 b.click(".pf-c-modal-box #btn-img-delete")
@@ -721,12 +718,12 @@ class TestApplication(testlib.MachineCase):
         # HACK: Sometimes the value is not shown fully. FIXME
         b.set_input_text("#search-image-dialog-name", "my-busybox", value_check=False)
 
-        b.wait_present("div.list-group .image-list-item label:contains('localhost:5000/my-busybox')")
-        b.wait_present("div.list-group .image-list-item label:contains('localhost:6000/my-busybox')")
+        b.wait_present(".pf-c-data-list .image-name:contains('localhost:5000/my-busybox')")
+        b.wait_present(".pf-c-data-list .image-name:contains('localhost:6000/my-busybox')")
 
         b.set_val('#registry-select', "localhost:6000")
-        b.wait_not_present("div.list-group .image-list-item label:contains('localhost:5000/my-busybox')")
-        b.wait_present("div.list-group .image-list-item label:contains('localhost:6000/my-busybox')")
+        b.wait_not_present(".pf-c-data-list .image-name:contains('localhost:5000/my-busybox')")
+        b.wait_present(".pf-c-data-list .image-name:contains('localhost:6000/my-busybox')")
         b.click(".pf-c-modal-box button:contains('Cancel')")
         b.wait_not_present('div.pf-c-modal-box')
 
@@ -1104,14 +1101,14 @@ class TestApplication(testlib.MachineCase):
 
         # Check command in alpine
         b.wait_present('#containers-images tr:contains("alpine:latest")')
-        b.click('#containers-images tbody tr:contains("alpine:latest") td button .fa-play')
+        b.click('#containers-images tbody tr:contains("alpine:latest") td > button > .pf-m-start')
         b.wait_present('div.pf-c-modal-box header:contains("Run image")')
         b.wait_present("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
         b.wait_present('#containers-images tr:contains("busybox:latest")')
-        b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
+        b.click('#containers-images tbody tr:contains("busybox:latest") td > button > .pf-m-start')
         b.wait_present('div.pf-c-modal-box header:contains("Run image")')
 
         # Inspect and fill modal dialog
@@ -1128,16 +1125,16 @@ class TestApplication(testlib.MachineCase):
         if auth or self.cgroupsV2():
             b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
             b.wait_present("#run-image-dialog-memory-limit-checkbox:checked")
-            b.wait_present('.pf-c-modal-box__body label:contains("Memory limit") + div.form-inline > input[value="512"]')
-            b.set_input_text("#run-image-dialog-memory-limit input.form-control", "0.5")
+            b.wait_present('#run-image-dialog-memory-limit input[value="512"]')
+            b.set_input_text("#run-image-dialog-memory-limit input[type=number]", "0.5")
             b.set_val('#memory-unit-select', "GiB")
 
         # CPU shares work only with system containers
         if auth:
             b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
             b.wait_present("#run-image-dialog-cpu-priority-checkbox:checked")
-            b.wait_present('.pf-c-modal-box__body label:contains("CPU shares") + div.form-inline > input[value=""]')
-            b.set_input_text("#run-image-dialog-cpu-priority input.form-control", "512")
+            b.wait_present('#run-image-dialog-cpu-priority input[value=""]')
+            b.set_input_text("#run-image-dialog-cpu-priority input[type=number]", "512")
         else:
             b.wait_not_present("#run-image-dialog-cpu-priority-checkbox")
 
@@ -1164,17 +1161,17 @@ class TestApplication(testlib.MachineCase):
 
         # Configure env
         b.set_input_text('.env-form[data-key="0"] input:first-child', 'APPLE')
-        b.set_input_text('.env-form[data-key="0"] input:last-child', 'ORANGE')
+        b.set_input_text('.env-form[data-key="0"] input:nth-child(2)', 'ORANGE')
         b.click('.env-form[data-key="0"] .btn-add')
         b.set_input_text('.env-form[data-key="1"] input:first-child', 'PEAR')
-        b.set_input_text('.env-form[data-key="1"] input:last-child', 'BANANA')
+        b.set_input_text('.env-form[data-key="1"] input:nth-child(2)', 'BANANA')
         b.click('.env-form[data-key="1"] .btn-add')
         b.set_input_text('.env-form[data-key="2"] input:first-child', 'MELON')
-        b.set_input_text('.env-form[data-key="2"] input:last-child', 'GRAPE')
+        b.set_input_text('.env-form[data-key="2"] input:nth-child(2)', 'GRAPE')
         b.click('.env-form[data-key="2"] .btn-close')
         b.click('.env-form[data-key="1"] .btn-add')
         b.set_input_text('.env-form[data-key="3"] input:first-child', 'RHUBARB')
-        b.set_input_text('.env-form[data-key="3"] input:last-child', 'STRAWBERRY')
+        b.set_input_text('.env-form[data-key="3"] input:nth-child(2)', 'STRAWBERRY')
 
         # Configure volumes
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
@@ -1287,7 +1284,7 @@ class TestApplication(testlib.MachineCase):
         # Create another instance without port publishing
         b.wait_present('#containers-images tr:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
-        b.click('#containers-images tbody tr:contains("busybox:latest") td button .fa-play')
+        b.click('#containers-images tbody tr:contains("busybox:latest") td > button > .pf-m-start')
         b.wait_present('div.pf-c-modal-box header:contains("Run image")')
 
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")

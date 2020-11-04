@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from "react-dom";
 import { Button, Badge, Card, CardBody, CardHeader, CardTitle, CardActions } from '@patternfly/react-core';
+import { TrashIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "../lib/cockpit-components-table.jsx";
@@ -179,9 +180,8 @@ class Containers extends React.Component {
                 variant="danger"
                 className="btn-delete"
                 aria-label={_("Delete image")}
-                onClick={(event) => this.deleteContainer(container, event)}>
-                <span className="pficon pficon-delete" />
-            </Button>,
+                icon={<TrashIcon />}
+                onClick={(event) => this.deleteContainer(container, event)} />,
             <Button
                 key={container.Id + "commit"}
                 variant="secondary"

@@ -1,13 +1,11 @@
 import React from 'react';
-import { FormGroup, FormControl } from 'patternfly-react';
-import { Button, Modal } from '@patternfly/react-core';
+import { Button, Checkbox, Form, FormGroup, Modal, Radio, TextInput } from '@patternfly/react-core';
+import { CloseIcon, PlusIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
 
 import * as utils from './util.js';
 import * as client from './client.js';
 import { ErrorNotification } from './Notification.jsx';
-
-import '../lib/form-layout.scss';
 
 const _ = cockpit.gettext;
 
@@ -36,11 +34,10 @@ class ContainerCommitModal extends React.Component {
         this.handleRemoveOnBuild = this.handleRemoveOnBuild.bind(this);
     }
 
-    handleOnBuildsInputChange(idx, evt) {
+    handleOnBuildsInputChange(idx, value) {
         const newOnbuilds = this.state.onbuild.map((bud, sidx) => {
             if (idx !== sidx) return bud;
-            bud = evt.target.value;
-            return bud;
+            return value;
         });
 
         this.setState({ onbuild: newOnbuilds });
@@ -54,12 +51,9 @@ class ContainerCommitModal extends React.Component {
         this.setState({ onbuild: this.state.onbuild.filter((bud, sidx) => idx !== sidx) });
     }
 
-    handleInputChange(event) {
-        const target = event.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
-        const name = target.name;
+    handleInputChange(targetName, value) {
         this.setState({
-            [name]: value
+            [targetName]: value
         });
     }
 
@@ -114,8 +108,7 @@ class ContainerCommitModal extends React.Component {
                 });
     }
 
-    handleFormatChange(event) {
-        const selectItem = event.target.value;
+    handleFormatChange(selectItem) {
         this.setState({
             selectedFormat: selectItem,
             format: selectItem,
@@ -128,91 +121,85 @@ class ContainerCommitModal extends React.Component {
             this.state.onbuild.map((bud, idx) => (
                 <div key={"onbuildvar" + idx} id="select-claimed-onbuildvars" className="form-inline containers-run-onbuildvarclaim containers-run-inline">
                     <FormGroup className="form-inline">
-                        <input type="text" name="onbuildvar_key" onChange={(evt) => this.handleOnBuildsInputChange(idx, evt)} />
+                        <TextInput value={this.state.onbuildvar_key} onChange={value => this.handleOnBuildsInputChange(idx, value)} />
                         <Button variant="secondary" isDisabled={idx === 0}
                                 aria-label={_("Remove on build variable")}
-                                onClick={() => this.handleRemoveOnBuild(idx)}>
-                            <span className="pficon pficon-close" />
-                        </Button>
+                                icon={<CloseIcon />}
+                                isSmall
+                                onClick={() => this.handleRemoveOnBuild(idx)} />
                         <Button variant="secondary" onClick={this.handleAddOnBuild}
-                                aria-label={_("Add on build variable")}>
-                            <span className="fa fa-plus" />
-                        </Button>
+                                icon={<PlusIcon />}
+                                isSmall
+                                aria-label={_("Add on build variable")} />
                     </FormGroup>
                 </div>
             ));
         const commitContent =
-            <div className="ct-form">
-                <label className="control-label" htmlFor="commit-dialog-container-name">
-                    {_("Container name")}
-                </label>
-                <span id="commit-dialog-container-name">
-                    {this.props.container.Names}
-                </span>
+            <Form isHorizontal>
+                <FormGroup fieldId="commit-dialog-container-name" label={_("Container name")} hasNoPaddingTop>
+                    <span id="commit-dialog-container-name">
+                        {this.props.container.Names}
+                    </span>
+                </FormGroup>
 
-                <label className="control-label" htmlFor="commit-dialog-format">
-                    {_("Format")}
-                </label>
+                <FormGroup fieldId="commit-dialog-format" label={_("Format")} isInline>
+                    <Radio id="format-oci" value="oci"
+                           name="format"
+                           label="oci"
+                           isChecked={this.state.selectedFormat === 'oci'}
+                           onChange={format => this.handleFormatChange(format)} />
+                    <Radio id="format-docker" value="docker"
+                           name="format"
+                           label="docker"
+                           isChecked={this.state.selectedFormat === 'docker'}
+                           onChange={format => this.handleFormatChange(format)} />
+                </FormGroup>
 
-                <fieldset className='form-inline'>
-                    <div className='radio'>
-                        <label htmlFor="format-oci">
-                            <input type="radio" id="format-oci" value="oci"
-                                   checked={this.state.selectedFormat === 'oci'}
-                                   onChange={(event) => this.handleFormatChange(event)} />
-                            oci
-                        </label>
-                        <label htmlFor="format-docker">
-                            <input type="radio" id="format-docker" value="docker"
-                                   checked={this.state.selectedFormat === 'docker'}
-                                   onChange={(event) => this.handleFormatChange(event)} />
-                            docker
-                        </label>
-                    </div>
-                </fieldset>
+                <FormGroup fieldId="commit-dialog-image-name" label={_("Image name")}>
+                    <TextInput id="commit-dialog-image-name"
+                               value={this.state.imageName}
+                               onChange={value => this.handleInputChange("imageName", value)} />
+                </FormGroup>
 
-                <label className="control-label" htmlFor="commit-dialog-image-name">
-                    {_("Image name")}
-                </label>
-                <FormControl name="imageName" id="commit-dialog-image-name" type="text" onChange={this.handleInputChange} />
+                <FormGroup fieldId="commit-dialog-image-tag" label={_("Tag")}>
+                    <TextInput id="commit-dialog-image-tag"
+                               value={this.state.tag}
+                               onChange={value => this.handleInputChange("tag", value)} />
+                </FormGroup>
 
-                <label className="control-label" htmlFor="commit-dialog-image-tag">
-                    {_("Tag")}
-                </label>
-                <FormControl name="tag" id="commit-dialog-image-tag" type="text" onChange={this.handleInputChange} />
+                <FormGroup fieldId="commit-dialog-author" label={_("Author")}>
+                    <TextInput id="commit-dialog-author"
+                               value={this.state.author}
+                               onChange={value => this.handleInputChange("author", value)} />
+                </FormGroup>
 
-                <label className="control-label" htmlFor="commit-dialog-author">
-                    {_("Author")}
-                </label>
-                <FormControl name="author" id="commit-dialog-author" type="text" onChange={this.handleInputChange} />
+                <FormGroup fieldId="commit-dialog-message" label={_("Message")}>
+                    <TextInput id="commit-dialog-message"
+                               value={this.state.message}
+                               onChange={value => this.handleInputChange("message", value)} />
+                </FormGroup>
 
-                <label className="control-label" htmlFor="commit-dialog-message">
-                    {_("Message")}
-                </label>
-                <FormControl name="message" id="commit-dialog-message" type="text" onChange={this.handleInputChange} />
+                <FormGroup fieldId="commit-dialog-command" label={_("Command")}>
+                    <TextInput id="commit-dialog-command"
+                               value={this.state.command}
+                               onChange={value => this.handleInputChange("command", value)} />
+                </FormGroup>
 
-                <label className="control-label" htmlFor="commit-dialog-command">
-                    {_("Command")}
-                </label>
-                <FormControl name="command" id="commit-dialog-command" type="text" onChange={this.handleInputChange} />
+                <FormGroup fieldId="commit-dialog-pause">
+                    <Checkbox id="commit-dialog-pause"
+                              isChecked={this.state.pause}
+                              onChange={value => this.handleInputChange("pause", value)}
+                              label={_("Pause the container")} />
+                </FormGroup>
 
-                <label className="control-label" htmlFor="commit-dialog-pause">
-                    {_("Pause")}
-                </label>
-                <label className="checkbox-inline">
-                    <input name="pause" id="commit-dialog-pause" type="checkbox" defaultChecked onChange={this.handleInputChange} />
-                    {_("Pause the container")}
-                </label>
-
-                <label className="control-label" htmlFor="commit-dialog-setonbuild">
-                    {_("On build")}
-                </label>
-                <label id="commit-dialog-setonbuild-label" className="checkbox-inline">
-                    <input name="setonbuild" id="commit-dialog-setonbuild" type="checkbox" disabled={this.state.onbuildDisabled} onChange={this.handleInputChange} />
-                    {_("Set container on build variables")}
-                </label>
-                {this.state.setonbuild && onbuilds}
-            </div>;
+                <FormGroup fieldId="commit-dialog-setonbuild">
+                    <Checkbox id="commit-dialog-setonbuild" isDisabled={this.state.onbuildDisabled}
+                              isChecked={this.state.setonbuild}
+                              onChange={value => this.handleInputChange("setonbuild", value)}
+                              label={_("Set container on build variables")} />
+                    {this.state.setonbuild && onbuilds}
+                </FormGroup>
+            </Form>;
 
         return (
             <Modal isOpen

@@ -21,7 +21,8 @@ import React from 'react';
 import { ToastNotificationList } from 'patternfly-react';
 import {
     Page, PageSection, PageSectionVariants, Card, Gallery,
-    Alert, AlertActionLink, AlertActionCloseButton, Button, Title,
+    Alert, AlertActionLink, AlertActionCloseButton,
+    Button, Checkbox, Title,
     EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
@@ -574,15 +575,9 @@ class Application extends React.Component {
                     <Title headingLevel="h2" size="lg">
                         { _("Podman service is not active") }
                     </Title>
-                    <div className="checkbox">
-                        <label>
-                            <input type="checkbox"
-                                   checked={this.state.enableService}
-                                   onChange={ e => this.setState({ enableService: e.target.checked }) } />
-                            {_("Automatically start podman on boot")}
-                        </label>
-                    </div>
-
+                    <Checkbox isChecked={this.state.enableService}
+                             label={_("Automatically start podman on boot")}
+                             onChange={ checked => this.setState({ enableService: checked }) } />
                     <Button onClick={this.startService}>
                         {_("Start podman")}
                     </Button>
