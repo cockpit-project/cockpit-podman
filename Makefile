@@ -7,7 +7,7 @@ TEST_OS = fedora-32
 endif
 export TEST_OS
 TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz
-RPMFILE=$(shell rpmspec -D"VERSION $(VERSION)" -q cockpit-podman.spec.in).rpm
+RPMFILE=$(shell rpmspec -D"VERSION $(VERSION)" -q `ls cockpit-podman.spec.in cockpit-podman.spec 2>/dev/null | head -n1`).rpm
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check if/when npm install ran
 NODE_MODULES_TEST=package-lock.json
