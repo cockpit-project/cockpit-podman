@@ -182,12 +182,8 @@ class TestApplication(testlib.MachineCase):
         # Drop privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        try:
-            b.click(".pf-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
-            b.wait_not_present(".pf-c-modal-box:contains('Switch to limited access')")
-        except testlib.Error:
-            b.click(".modal-dialog:contains('Switch to limited access') button:contains('Limit access')")
-            b.wait_not_present(".modal-dialog:contains('Switch to limited access')")
+        b.click(".pf-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
+        b.wait_not_present(".pf-c-modal-box:contains('Switch to limited access')")
         b.wait_text("#super-user-indicator", "Limited access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
@@ -213,17 +209,10 @@ class TestApplication(testlib.MachineCase):
         # Gain privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        try:
-            b.wait_in_text(".pf-c-modal-box:contains('Administrative access')", "Please authenticate")
-            b.set_input_text(".pf-c-modal-box:contains('Administrative access') input", "foobar")
-            b.click(".pf-c-modal-box button:contains('Authenticate')")
-            b.wait_not_present(".pf-c-modal-box:contains('Administrative access')")
-        except testlib.Error:
-            b.wait_in_text(".modal-dialog:contains('Administrative access')", "Please authenticate")
-            b.set_input_text(".modal-dialog:contains('Administrative access') input", "foobar")
-            b.click(".modal-dialog button:contains('Authenticate')")
-            b.wait_not_present(".modal-dialog:contains('Administrative access')")
-
+        b.wait_in_text(".pf-c-modal-box:contains('Administrative access')", "Please authenticate")
+        b.set_input_text(".pf-c-modal-box:contains('Administrative access') input", "foobar")
+        b.click(".pf-c-modal-box button:contains('Authenticate')")
+        b.wait_not_present(".pf-c-modal-box:contains('Administrative access')")
         b.wait_text("#super-user-indicator", "Administrative access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
@@ -259,12 +248,8 @@ class TestApplication(testlib.MachineCase):
 
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        try:
-            b.click(".pf-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
-            b.wait_not_present(".pf-c-modal-box:contains('Switch to limited access')")
-        except testlib.Error:
-            b.click(".modal-dialog:contains('Switch to limited access') button:contains('Limit access')")
-            b.wait_not_present(".modal-dialog:contains('Switch to limited access')")
+        b.click(".pf-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
+        b.wait_not_present(".pf-c-modal-box:contains('Switch to limited access')")
         b.wait_text("#super-user-indicator", "Limited access")
         b.switch_to_frame("cockpit1:localhost/podman")
 

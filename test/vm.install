@@ -5,7 +5,10 @@ set -eu
 # for Debian based images, build and install debs; for RPM based ones, the locally built rpm gets installed separately
 if [ -d /var/tmp/debian ]; then
     apt-get update
-    eatmydata apt-get install ${APT_INSTALL_OPTIONS:-} -y cockpit-ws cockpit-system podman
+    if grep -q 'VERSION_ID="20.10"' /etc/os-release; then
+        BACKPORTS="-t groovy-backports"
+    fi
+    eatmydata apt-get install ${BACKPORTS:-} ${APT_INSTALL_OPTIONS:-} -y cockpit-ws cockpit-system podman
 
     # HACK: podman dependencies prefer crun, but config defaults to runc: https://bugs.debian.org/971253
     eatmydata apt-get install -y runc
