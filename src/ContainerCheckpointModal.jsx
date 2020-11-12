@@ -24,8 +24,8 @@ class ContainerCheckpointModal extends React.Component {
     render() {
         return (
             <Modal isOpen={this.props.selectContainerCheckpointModal}
+                   showClose={false}
                    position="top" variant="medium"
-                   onClose={this.props.handleCheckpointContainerDeleteModal}
                    title={cockpit.format(_("Checkpoint container $0"), this.props.containerWillCheckpoint.Names)}
                    footer={<>
                        <Button variant="primary" isDisabled={this.props.checkpointInProgress}
@@ -33,7 +33,8 @@ class ContainerCheckpointModal extends React.Component {
                                onClick={() => this.props.handleCheckpointContainer(this.state)}>
                            {_("Checkpoint")}
                        </Button>
-                       <Button variant="link" onClick={this.props.handleCheckpointContainerDeleteModal}>
+                       <Button variant="link" isDisabled={this.props.checkpointInProgress}
+                               onClick={this.props.handleCheckpointContainerDeleteModal}>
                            {_("Cancel")}
                        </Button>
                    </>}

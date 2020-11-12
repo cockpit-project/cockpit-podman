@@ -9,8 +9,8 @@ const ContainerRemoveErrorModal = (props) => {
     const [inProgress, setInProgress] = useState(false);
     return (
         <Modal key={name} isOpen={props.setContainerRemoveErrorModal}
+               showClose={false}
                position="top" variant="medium"
-               onClose={props.handleCancelRemoveError}
                title={cockpit.format(_("Please confirm forced deletion of $0"), name)}
                footer={<>
                    <Button variant="danger" isDisabled={inProgress} isLoading={inProgress} className="btn-ctr-forcedelete"
@@ -18,7 +18,7 @@ const ContainerRemoveErrorModal = (props) => {
                    >
                        {_("Force delete")}
                    </Button>
-                   <Button variant="link" onClick={props.handleCancelRemoveError}>{_("Cancel")}</Button>
+                   <Button variant="link" isDisabled={inProgress} onClick={props.handleCancelRemoveError}>{_("Cancel")}</Button>
                </>}
         >
             {_("Container is currently running.")}

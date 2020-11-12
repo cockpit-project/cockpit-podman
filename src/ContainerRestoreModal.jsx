@@ -26,8 +26,8 @@ class ContainerRestoreModal extends React.Component {
     render() {
         return (
             <Modal isOpen={this.props.selectContainerRestoreModal}
+                   showClose={false}
                    position="top" variant="medium"
-                   onClose={this.props.handleRestoreContainerDeleteModal}
                    title={cockpit.format(_("Restore container $0"), utils.truncate_id(this.props.containerWillCheckpoint.Id))}
                    footer={<>
                        <Button variant="primary" isDisabled={this.props.restoreInProgress}
@@ -35,7 +35,8 @@ class ContainerRestoreModal extends React.Component {
                                onClick={() => this.props.handleRestoreContainer(this.state)}>
                            {_("Restore")}
                        </Button>
-                       <Button variant="link" onClick={this.props.handleRestoreContainerDeleteModal}>
+                       <Button variant="link" isDisabled={this.props.restoreInProgress}
+                               onClick={this.props.handleRestoreContainerDeleteModal}>
                            {_("Cancel")}
                        </Button>
                    </>}
