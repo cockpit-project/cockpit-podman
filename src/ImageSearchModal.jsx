@@ -87,7 +87,7 @@ export class ImageSearchModal extends React.Component {
         };
         this.activeConnection.call(options)
                 .then(reply => {
-                    if (this._isMounted)
+                    if (reply && this._isMounted)
                         this.setState({ imageList: JSON.parse(reply) || [], searchInProgress: false, searchFinished: true, dialogError: "" });
                 })
                 .catch(ex => {
