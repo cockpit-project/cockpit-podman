@@ -19,7 +19,7 @@
 
 import React from 'react';
 import {
-    Page, PageSection, PageSectionVariants, Card, Gallery,
+    Page, PageSection, PageSectionVariants, Gallery,
     Alert, AlertActionLink, AlertActionCloseButton, AlertGroup,
     Button, Checkbox, Title,
     EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions
@@ -682,12 +682,8 @@ class Application extends React.Component {
                 <PageSection>
                     <Gallery hasGutter>
                         { this.state.showStartService ? startService : null }
-                        <Card id="containers-containers" className="containers-containers">
-                            {containerList}
-                        </Card>
-                        <Card id="containers-images" key="images" className="containers-images">
-                            {imageList}
-                        </Card>
+                        {containerList}
+                        {imageList}
                     </Gallery>
                 </PageSection>
             </Page>

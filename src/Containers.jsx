@@ -1,6 +1,10 @@
 import React from 'react';
 import ReactDOM from "react-dom";
-import { Button, Badge, Card, CardBody, CardHeader, CardTitle, CardActions } from '@patternfly/react-core';
+import {
+    Button, Badge,
+    Card, CardBody, CardHeader, CardTitle, CardActions,
+    Text, TextVariants
+} from '@patternfly/react-core';
 import { TrashIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
@@ -442,71 +446,72 @@ class Containers extends React.Component {
             </>;
 
         return (
-            (this.props.containers === null || this.props.pods === null)
-                ? <ListingTable caption={_("Containers")}
-                                variant='compact'
-                                emptyCaption={emptyCaption}
-                                columns={columnTitles}
-                                actions={filterRunning}
-                                rows={[]} />
-                : <>
-                    <header className='ct-table-header'>
-                        <h3 className='ct-table-heading'> {_("Containers")} </h3>
-                        <div className='ct-table-actions'> {filterRunning} </div>
-                    </header>
-                    {Object.keys(partitionedContainers)
-                            .sort((a, b) => {
-                                if (a == "no-pod") return -1;
-                                else if (b == "no-pod") return 1;
+            <Card id="containers-containers" className="containers-containers">
+                <CardHeader>
+                    <CardTitle><Text component={TextVariants.h2}>{_("Containers")}</Text></CardTitle>
+                    <CardActions>{filterRunning}</CardActions>
+                </CardHeader>
+                <CardBody className="contains-list">
+                    {(this.props.containers === null || this.props.pods === null)
+                        ? <ListingTable variant='compact'
+                                        aria-label={_("Containers")}
+                                        emptyCaption={emptyCaption}
+                                        columns={columnTitles}
+                                        rows={[]} />
+                        : Object.keys(partitionedContainers)
+                                .sort((a, b) => {
+                                    if (a == "no-pod") return -1;
+                                    else if (b == "no-pod") return 1;
 
-                                // User pods are in front of system ones
-                                if (this.props.pods[a].isSystem !== this.props.pods[b].isSystem)
-                                    return this.props.pods[a].isSystem ? 1 : -1;
-                                return this.props.pods[a].Name > this.props.pods[b].Name ? 1 : -1;
-                            })
-                            .map(section => {
-                                const tableProps = {};
-                                const rows = partitionedContainers[section].map(container => {
-                                    return this.renderRow(this.props.containersStats, container,
-                                                          this.props.containersDetails[container.Id + container.isSystem.toString()]);
-                                });
-                                let caption;
-                                if (section !== 'no-pod') {
-                                    tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
-                                    caption = this.props.pods[section].Name;
-                                } else {
-                                    tableProps['aria-label'] = _("Containers");
-                                }
-                                return (
-                                    <Card key={'table-' + section}
+                                    // User pods are in front of system ones
+                                    if (this.props.pods[a].isSystem !== this.props.pods[b].isSystem)
+                                        return this.props.pods[a].isSystem ? 1 : -1;
+                                    return this.props.pods[a].Name > this.props.pods[b].Name ? 1 : -1;
+                                })
+                                .map(section => {
+                                    const tableProps = {};
+                                    const rows = partitionedContainers[section].map(container => {
+                                        return this.renderRow(this.props.containersStats, container,
+                                                              this.props.containersDetails[container.Id + container.isSystem.toString()]);
+                                    });
+                                    let caption;
+                                    if (section !== 'no-pod') {
+                                        tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
+                                        caption = this.props.pods[section].Name;
+                                    } else {
+                                        tableProps['aria-label'] = _("Containers");
+                                    }
+                                    return (
+                                        <Card key={'table-' + section}
                                          id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                          className={"container-section" + (section != "no-pod" ? " pod-card" : "")}>
-                                        {caption && <CardHeader>
-                                            <CardTitle>
-                                                <span className='pod-name'>{caption}</span>
-                                                <span>{_("pod group")}</span>
-                                            </CardTitle>
-                                            <CardActions className='panel-actions'>
-                                                <Badge isRead>{_(this.props.pods[section].Status)}</Badge>
-                                                <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
-                                            </CardActions>
-                                        </CardHeader>}
-                                        <CardBody>
-                                            <ListingTable variant='compact'
+                                            {caption && <CardHeader>
+                                                <CardTitle>
+                                                    <span className='pod-name'>{caption}</span>
+                                                    <span>{_("pod group")}</span>
+                                                </CardTitle>
+                                                <CardActions className='panel-actions'>
+                                                    <Badge isRead>{_(this.props.pods[section].Status)}</Badge>
+                                                    <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
+                                                </CardActions>
+                                            </CardHeader>}
+                                            <CardBody>
+                                                <ListingTable variant='compact'
                                                           emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
                                                           columns={columnTitles}
                                                           rows={rows}
                                                           {...tableProps} />
-                                        </CardBody>
-                                    </Card>
-                                );
-                            })}
-                    {containerDeleteModal}
-                    {containerCheckpointModal}
-                    {containerRestoreModal}
-                    {containerRemoveErrorModal}
-                    {this.state.showCommitModal && containerCommitModal}
-                </>
+                                            </CardBody>
+                                        </Card>
+                                    );
+                                })}
+                </CardBody>
+                {containerDeleteModal}
+                {containerCheckpointModal}
+                {containerRestoreModal}
+                {containerRemoveErrorModal}
+                {this.state.showCommitModal && containerCommitModal}
+            </Card>
         );
     }
 }
