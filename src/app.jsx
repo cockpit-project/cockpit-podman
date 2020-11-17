@@ -18,10 +18,9 @@
  */
 
 import React from 'react';
-import { ToastNotificationList } from 'patternfly-react';
 import {
     Page, PageSection, PageSectionVariants, Card, Gallery,
-    Alert, AlertActionLink, AlertActionCloseButton,
+    Alert, AlertActionLink, AlertActionCloseButton, AlertGroup,
     Button, Checkbox, Title,
     EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions
 } from '@patternfly/react-core';
@@ -656,18 +655,17 @@ class Application extends React.Component {
             />;
 
         const notificationList = (
-            <section className='toast-notification-wrapper'>
-                <ToastNotificationList>
-                    {this.state.notifications.map((notification, index) => {
-                        return (
-                            <Alert key={index} title={notification.error} variant={notification.type}
-                                   actionClose={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
-                                {notification.errorDetail}
-                            </Alert>
-                        );
-                    })}
-                </ToastNotificationList>
-            </section>
+            <AlertGroup isToast>
+                {this.state.notifications.map((notification, index) => {
+                    return (
+                        <Alert key={index} title={notification.error} variant={notification.type}
+                               isLiveRegion
+                               actionClose={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
+                            {notification.errorDetail}
+                        </Alert>
+                    );
+                })}
+            </AlertGroup>
         );
 
         return (
