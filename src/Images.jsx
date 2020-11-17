@@ -1,5 +1,9 @@
 import React from 'react';
-import { Button } from '@patternfly/react-core';
+import {
+    Button,
+    Card, CardBody, CardHeader, CardTitle, CardActions,
+    Text, TextVariants
+} from '@patternfly/react-core';
 import { PlayIcon, PlusIcon, TrashIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
@@ -244,15 +248,19 @@ class Images extends React.Component {
             />;
 
         return (
-            <>
-                <ListingTable caption={_("Images")}
-                    variant='compact'
-                    emptyCaption={emptyCaption}
-                    columns={columnTitles}
-                    rows={imageRows}
-                    actions={getNewImageAction}
-                />
-                {toggleIntermediate}
+            <Card id="containers-images" key="images" className="containers-images">
+                <CardHeader>
+                    <CardTitle><Text component={TextVariants.h2}>{_("Images")}</Text></CardTitle>
+                    <CardActions>{getNewImageAction}</CardActions>
+                </CardHeader>
+                <CardBody className="contains-list">
+                    <ListingTable aria-label={_("Images")}
+                                  variant='compact'
+                                  emptyCaption={emptyCaption}
+                                  columns={columnTitles}
+                                  rows={imageRows} />
+                    {toggleIntermediate}
+                </CardBody>
                 {imageRemoveErrorModal}
                 {this.state.selectImageDeleteModal &&
                 <ImageDeleteModal
@@ -273,7 +281,7 @@ class Images extends React.Component {
                     userServiceAvailable={this.props.userServiceAvailable}
                     systemServiceAvailable={this.props.systemServiceAvailable} /> }
                 {this.state.imageDownloadInProgress && <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>}
-            </>
+            </Card>
         );
     }
 }

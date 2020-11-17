@@ -25,9 +25,9 @@ registries = ['localhost:5000', 'localhost:6000']
 """
 
 def checkImage(browser, name, owner):
-    browser.wait_present("#containers-images > table")
+    browser.wait_present("#containers-images table")
     browser.wait_js_func("""(function (first, last) {
-        let items = ph_select("#containers-images > table tbody");
+        let items = ph_select("#containers-images table tbody");
         for (i = 0; i < items.length; i++)
             if (items[i].innerText.trim().startsWith(first) && items[i].innerText.trim().endsWith(last))
                 return true;
@@ -199,7 +199,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("#containers-containers-owner")
 
         # Also user selection in image download should not be visible
-        b.click("header button:contains(Get new image)")
+        b.click("button:contains(Get new image)")
         b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
         b.wait_present("div.pf-c-modal-box footer button:contains(Download):disabled")
         b.wait_not_present("#as-user")
@@ -232,7 +232,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#containers-containers-owner")
 
         # Also user selection in image download should be visible
-        b.click("header button:contains(Get new image)")
+        b.click("button:contains(Get new image)")
         b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
         b.wait_present("div.pf-c-modal-box footer button:contains(Download):disabled")
         b.wait_present("#as-user")
@@ -629,7 +629,7 @@ class TestApplication(testlib.MachineCase):
 
             def openDialog(self):
                 # Open get new image modal
-                b.click("header button:contains(Get new image)")
+                b.click("button:contains(Get new image)")
                 b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
                 b.wait_present("div.pf-c-modal-box footer button:contains(Download):disabled")
 
@@ -713,7 +713,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#app")
 
         # Test registries
-        b.click("header button:contains(Get new image)")
+        b.click("button:contains(Get new image)")
         b.wait_present('div.pf-c-modal-box header:contains("Search for an image")')
         # HACK: Sometimes the value is not shown fully. FIXME
         b.set_input_text("#search-image-dialog-name", "my-busybox", value_check=False)

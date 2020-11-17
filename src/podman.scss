@@ -1,8 +1,10 @@
+@import '../lib/ct-card.scss';
+
 #app .pf-l-gallery {
     --pf-l-gallery--GridTemplateColumns: 1fr;
 }
 #app .pf-c-card.containers-containers, #app .pf-c-card.containers-images {
-    padding: 1rem;
+    @extend .ct-card;
 }
 
 // Stretch body to fill the page
