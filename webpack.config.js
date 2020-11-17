@@ -130,7 +130,7 @@ module.exports = {
             },
             /* HACK: remove unwanted fonts from PatternFly's css */
             {
-                test: /patternfly-cockpit.scss$/,
+                test: /patternfly-4-cockpit.scss$/,
                 use: [
                     extract.loader,
                     {
@@ -144,10 +144,6 @@ module.exports = {
                         loader: 'string-replace-loader',
                         options: {
                             multiple: [
-                                {
-                                    search: /src:url[(]"patternfly-icons-fake-path\/glyphicons-halflings-regular[^}]*/g,
-                                    replace: 'font-display:block; src:url("../base1/fonts/glyphicons.woff") format("woff");',
-                                },
                                 {
                                     search: /src:url[(]"patternfly-fonts-fake-path\/PatternFlyIcons[^}]*/g,
                                     replace: 'src:url("../base1/fonts/patternfly.woff") format("woff");',
@@ -171,13 +167,6 @@ module.exports = {
                         loader: 'sass-loader',
                         options: {
                             sassOptions: {
-                                includePaths: [
-                                    // Teach webpack to resolve these references in order to build PF3 scss
-                                    path.resolve(nodedir),
-                                    path.resolve(nodedir, 'font-awesome-sass', 'assets', 'stylesheets'),
-                                    path.resolve(nodedir, 'patternfly', 'dist', 'sass'),
-                                    path.resolve(nodedir, 'bootstrap-sass', 'assets', 'stylesheets'),
-                                ],
                                 outputStyle: 'compressed',
                             },
                             sourceMap: true,
@@ -187,7 +176,7 @@ module.exports = {
             },
             {
                 test: /\.s?css$/,
-                exclude: /patternfly-cockpit.scss/,
+                exclude: /patternfly-4-cockpit.scss/,
                 use: [
                     extract.loader,
                     {
@@ -208,13 +197,12 @@ module.exports = {
                     },
                     {
                         loader: 'sass-resources-loader',
-                            // Make PF3 and PF4 variables globably accessible to be used by the components scss
+                            // Make PF4 variables globably accessible to be used by the components scss
                             options: {
                                 resources: [
                                     path.resolve(libdir, './_global-variables.scss'),
                                     path.resolve(nodedir, './@patternfly/patternfly/base/patternfly-themes.scss'),
                                     path.resolve(nodedir, './@patternfly/patternfly/base/patternfly-variables.scs'),
-                                    path.resolve(nodedir, './patternfly/dist/sass/patternfly/_variables.scss')
                                 ],
                             },
                     },
