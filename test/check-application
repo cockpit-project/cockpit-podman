@@ -172,8 +172,8 @@ class TestApplication(testlib.MachineCase):
         self.execute(False, "podman pod create --infra=false --name pod_user")
         self.execute(True, "podman pod create --infra=false --name pod_system")
 
-        checkImage(b, "docker.io/library/registry:2", "system")
-        checkImage(b, "docker.io/library/registry:2", "admin")
+        checkImage(b, "quay.io/cockpit/registry:2", "system")
+        checkImage(b, "quay.io/cockpit/registry:2", "admin")
         b.wait_present("#containers-containers .pod-name:contains('pod_user')")
         b.wait_present("#containers-containers .pod-name:contains('pod_system')")
         b.wait_present("#containers-containers .container-name:contains('a')")
@@ -197,7 +197,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#containers-containers .pod-name:contains('pod_user')")
         b.wait_present("#containers-containers .container-name:contains('b')")
         # Checking images is harder but if there would be more than one this would fail
-        b.wait_present("#containers-images:contains('docker.io/library/registry:2')")
+        b.wait_present("#containers-images:contains('quay.io/cockpit/registry:2')")
 
         # Owner select should disappear
         b.wait_not_present("#containers-containers-owner")
@@ -232,8 +232,8 @@ class TestApplication(testlib.MachineCase):
         b.click("#overview div.pf-c-alert .pf-c-alert__action > button:contains(Start)")
         b.wait_not_present("#overview div.pf-c-alert .pf-c-alert__title")
 
-        checkImage(b, "docker.io/library/registry:2", "system")
-        checkImage(b, "docker.io/library/registry:2", "admin")
+        checkImage(b, "quay.io/cockpit/registry:2", "system")
+        checkImage(b, "quay.io/cockpit/registry:2", "admin")
         b.wait_present("#containers-containers .pod-name:contains('pod_user')")
         b.wait_present("#containers-containers .pod-name:contains('pod_system')")
         b.wait_present("#containers-containers .container-name:contains('a')")
@@ -255,7 +255,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("#containers-containers .pod-name:contains('pod_user')")
         b.wait_not_present("#containers-containers .container-name:contains('b')")
         # Checking images is harder but if there would be more than one this would fail
-        b.wait_present("#containers-images:contains('docker.io/library/registry:2')")
+        b.wait_present("#containers-images:contains('quay.io/cockpit/registry:2')")
 
         b.switch_to_top()
         b.click("#super-user-indicator button")
@@ -271,7 +271,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#containers-containers .pod-name:contains('pod_user')")
         b.wait_present("#containers-containers .container-name:contains('b')")
         # Checking images is harder but if there would be more than one this would fail
-        b.wait_present("#containers-images:contains('docker.io/library/registry:2')")
+        b.wait_present("#containers-images:contains('quay.io/cockpit/registry:2')")
 
         # Test that when root is logged in we don't present "user" and "system"
         b.logout()
@@ -304,13 +304,13 @@ class TestApplication(testlib.MachineCase):
 
         # Check all containers
         if auth:
-            checkImage(b, "docker.io/library/busybox:latest", "system")
-            checkImage(b, "docker.io/library/alpine:latest", "system")
-            checkImage(b, "docker.io/library/registry:2", "system")
+            checkImage(b, "quay.io/libpod/busybox:latest", "system")
+            checkImage(b, "quay.io/libpod/alpine:latest", "system")
+            checkImage(b, "quay.io/cockpit/registry:2", "system")
 
-        checkImage(b, "docker.io/library/busybox:latest", "admin")
-        checkImage(b, "docker.io/library/alpine:latest", "admin")
-        checkImage(b, "docker.io/library/registry:2", "admin")
+        checkImage(b, "quay.io/libpod/busybox:latest", "admin")
+        checkImage(b, "quay.io/libpod/alpine:latest", "admin")
+        checkImage(b, "quay.io/cockpit/registry:2", "admin")
 
         # Check order of images
         text = b.text("#containers-images table")
@@ -321,7 +321,7 @@ class TestApplication(testlib.MachineCase):
         else:
             self.assertNotIn("system", text)
         # images are sorted alphabetically
-        self.assertRegex(text, ".*alpine.*busybox.*registry:2.*")
+        self.assertRegex(text, ".*cockpit/registry.*libpod/alpine.*libpod/busybox")
 
         # prepare image ids - much easier to pick a specific container
         images = {}
@@ -331,7 +331,7 @@ class TestApplication(testlib.MachineCase):
             images["{0}:{1}".format(items[0], items[1])] = items[2].split(":")[-1]
 
         # show image listing toggle
-        busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/busybox:latest"], auth).lower()
+        busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/busybox:latest"], auth).lower()
         b.wait_present(busybox_sel)
         b.click(busybox_sel + " td.pf-c-table__toggle button")
         b.wait_visible(busybox_sel + " + tr button.btn-delete")
@@ -526,36 +526,36 @@ class TestApplication(testlib.MachineCase):
 
         # delete image busybox that hasn't been used
         # First try to just untag and then remove with more tags
-        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:1")
-        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:2")
-        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:3")
-        self.execute(auth, "podman tag docker.io/library/busybox:latest docker.io/library/busybox:4")
+        self.execute(auth, "podman tag quay.io/libpod/busybox:latest quay.io/libpod/busybox:1")
+        self.execute(auth, "podman tag quay.io/libpod/busybox:latest quay.io/libpod/busybox:2")
+        self.execute(auth, "podman tag quay.io/libpod/busybox:latest quay.io/libpod/busybox:3")
+        self.execute(auth, "podman tag quay.io/libpod/busybox:latest quay.io/libpod/busybox:4")
 
         b.wait_present(busybox_sel)
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
-        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:1")
-        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:2")
-        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:3")
-        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:4")
+        b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:1")
+        b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:2")
+        b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:3")
+        b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:4")
 
         b.click(busybox_sel + " + tr button.btn-delete")
-        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:latest') input"))
-        b.set_checked("label:contains('docker.io/library/busybox:1') input", True)
-        b.set_checked("label:contains('docker.io/library/busybox:3') input", True)
-        b.set_checked("label:contains('docker.io/library/busybox:latest') input", False)
+        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:latest') input"))
+        b.set_checked("label:contains('quay.io/libpod/busybox:1') input", True)
+        b.set_checked("label:contains('quay.io/libpod/busybox:3') input", True)
+        b.set_checked("label:contains('quay.io/libpod/busybox:latest') input", False)
         b.click(".pf-c-modal-box #btn-img-delete")
         b.wait_not_present("pf-c-modal-box #btn-img-delete")
-        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:latest")
-        b.wait_in_text(busybox_sel + " + tr", "docker.io/library/busybox:2")
-        b.wait_not_in_text(busybox_sel + " + tr", "docker.io/library/busybox:1")
-        b.wait_not_in_text(busybox_sel + " + tr", "docker.io/library/busybox:3")
+        b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:latest")
+        b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:2")
+        b.wait_not_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:1")
+        b.wait_not_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:3")
 
         b.click(busybox_sel + " + tr button.btn-delete")
         b.click("button:contains('select all')")
-        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:latest') input"))
-        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:2') input"))
-        self.assertTrue(b.get_checked("label:contains('docker.io/library/busybox:4') input"))
+        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:latest') input"))
+        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:2') input"))
+        self.assertTrue(b.get_checked("label:contains('quay.io/libpod/busybox:4') input"))
         b.click(".pf-c-modal-box #btn-img-delete")
         b.wait_not_present("pf-c-modal-box #btn-img-delete")
         b.click(".pf-c-modal-box #btn-img-deleteerror")
@@ -578,7 +578,7 @@ class TestApplication(testlib.MachineCase):
 
 
         # delete image alpine that has been used by a container
-        alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/alpine:latest"], auth).lower()
+        alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
         b.wait_present(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
         b.click(alpine_sel + " + tr button.btn-delete")
@@ -606,7 +606,7 @@ class TestApplication(testlib.MachineCase):
         # Test intermediate images
         b.wait_not_present(".listing-action")
         tmpdir = self.execute(auth, "mktemp -d").strip()
-        self.execute(auth, "echo 'FROM docker.io/library/registry:2\nRUN ls' > {0}/Dockerfile".format(tmpdir))
+        self.execute(auth, "echo 'FROM quay.io/cockpit/registry:2\nRUN ls' > {0}/Dockerfile".format(tmpdir))
         self.execute(auth, "podman build {0}".format(tmpdir))
 
         b.wait_not_in_text("#containers-images", "<none>:<none>")
@@ -630,10 +630,10 @@ class TestApplication(testlib.MachineCase):
             # Add local insecure registry into registries conf
             self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop podman.service".format(REGISTRIES_CONF))
             # Push busybox image to the local registries
-            self.execute(True, "podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
-            self.execute(True, "podman tag busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
+            self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+            self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
-            self.execute(True, "podman rmi -f busybox localhost:5000/my-busybox localhost:6000/my-busybox")
+            self.execute(True, "podman rmi -f quay.io/libpod/busybox localhost:5000/my-busybox localhost:6000/my-busybox")
 
         class DownloadImageDialog:
             def __init__(self, imageName, imageTag=None, user="system"):
@@ -756,7 +756,7 @@ class TestApplication(testlib.MachineCase):
               .fillDialog() \
               .selectImageAndDownload() \
               .expectDownloadSuccess()
-        dialog1.deleteImage(True, another="docker.io/library/busybox:latest")
+        dialog1.deleteImage(True, another="quay.io/libpod/busybox:latest")
 
         dialog0.deleteImage()
 

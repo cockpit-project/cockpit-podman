@@ -52,9 +52,9 @@ fi
 
 # grab a few images to play with; tests run offline, so they cannot download images
 podman rmi --all
-podman pull docker.io/busybox
-podman pull docker.io/alpine
-podman pull docker.io/registry:2
+podman pull quay.io/libpod/busybox
+podman pull quay.io/libpod/alpine
+podman pull quay.io/cockpit/registry:2
 
 # create admin user for testing
 if ! getent passwd admin >/dev/null 2>&1; then
@@ -73,9 +73,9 @@ loginctl enable-linger $(id -u admin)
 sudo -i -u admin bash << EOF
 systemctl --user disable --now systemd-tmpfiles-clean.timer
 podman rmi --all
-podman pull docker.io/busybox
-podman pull docker.io/alpine
-podman pull docker.io/registry:2
+podman pull quay.io/libpod/busybox
+podman pull quay.io/libpod/alpine
+podman pull quay.io/cockpit/registry:2
 EOF
 loginctl disable-linger $(id -u admin)
 
