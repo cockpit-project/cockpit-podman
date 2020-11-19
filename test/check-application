@@ -93,13 +93,13 @@ class TestApplication(testlib.MachineCase):
 
         # Check all containers
         if auth:
-            checkImage(b, "docker.io/library/busybox:latest", "system")
-            checkImage(b, "docker.io/library/alpine:latest", "system")
-            checkImage(b, "docker.io/library/registry:2", "system")
+            checkImage(b, "quay.io/libpod/busybox:latest", "system")
+            checkImage(b, "quay.io/libpod/alpine:latest", "system")
+            checkImage(b, "quay.io/cockpit/registry:2", "system")
 
-        checkImage(b, "docker.io/library/busybox:latest", "admin")
-        checkImage(b, "docker.io/library/alpine:latest", "admin")
-        checkImage(b, "docker.io/library/registry:2", "admin")
+        checkImage(b, "quay.io/libpod/busybox:latest", "admin")
+        checkImage(b, "quay.io/libpod/alpine:latest", "admin")
+        checkImage(b, "quay.io/cockpit/registry:2", "admin")
 
         # Check order of images
         text = b.text("#containers-images table")
@@ -110,7 +110,7 @@ class TestApplication(testlib.MachineCase):
         else:
             self.assertNotIn("system", text)
         # images are sorted alphabetically
-        self.assertRegex(text, ".*alpine.*busybox.*registry:2.*")
+        self.assertRegex(text, ".*cockpit/registry.*libpod/alpine.*libpod/busybox")
 
         # prepare image ids - much easier to pick a specific container
         images = {}
@@ -120,7 +120,7 @@ class TestApplication(testlib.MachineCase):
             images["{0}:{1}".format(items[0], items[1])] = items[2].split(":")[1]
 
         # show image listing toggle
-        busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/busybox:latest"], auth).lower()
+        busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/busybox:latest"], auth).lower()
         b.wait_present(busybox_sel)
         b.click(busybox_sel + " td.listing-ct-toggle")
         b.wait_present(busybox_sel + " + tr button.btn-delete")
@@ -302,7 +302,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-images", busybox_sel)
 
         # delete image alpine that has been used by a container
-        alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["docker.io/library/alpine:latest"], auth).lower()
+        alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
         b.wait_present(alpine_sel)
         b.click(alpine_sel + " td.listing-ct-toggle")
         b.click(alpine_sel + " + tr button.btn-delete")
@@ -337,10 +337,10 @@ class TestApplication(testlib.MachineCase):
             # Add local insecure registry into resgitries conf
             self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop io.podman.service".format(REGISTRIES_CONF))
             # Push busybox image to the local registry
-            self.execute(True, "podman tag busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+            self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
-            self.execute(True, "podman rmi -f busybox")
-            self.execute(False, "podman rmi -f busybox")
+            self.execute(True, "podman rmi -f quay.io/libpod/busybox")
+            self.execute(False, "podman rmi -f quay.io/libpod/busybox")
 
         class DownloadImageDialog:
             def __init__(self, imageName, imageTag=None, user="system"):

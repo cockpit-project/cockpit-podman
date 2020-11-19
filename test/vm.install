@@ -18,16 +18,16 @@ if type firewall-cmd >/dev/null 2>&1; then
 fi
 
 # grab a few images to play with; tests run offline, so they cannot download images
-podman pull docker.io/busybox
-podman pull docker.io/alpine
-podman pull docker.io/registry:2
+podman pull quay.io/libpod/busybox
+podman pull quay.io/libpod/alpine
+podman pull quay.io/cockpit/registry:2
 
 # pull images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
 sudo -i -u admin bash << EOF
-podman pull docker.io/busybox
-podman pull docker.io/alpine
-podman pull docker.io/registry:2
+podman pull quay.io/libpod/busybox
+podman pull quay.io/libpod/alpine
+podman pull quay.io/cockpit/registry:2
 EOF
 loginctl disable-linger $(id -u admin)
 
