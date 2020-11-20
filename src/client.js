@@ -126,7 +126,7 @@ export function commitContainer(system, commitData, host) {
     });
 }
 
-export async function migrateContainer(system, id, args, targetHost, callbacks, host) {
+export async function migrateContainer(system, id, targetId, args, targetHost, callbacks, host) {
     if (!system) {
         throw new Error(`${id}: migrating non-system container unsupported`);
     }
@@ -143,7 +143,7 @@ export async function migrateContainer(system, id, args, targetHost, callbacks, 
     }, callbacks);
 
     // Make sure Podman system service is present and active on target host
-    const systemd = cockpit.dbus("org.freedesktop.systemd1", { bus: "system" });
+    const systemd = cockpit.dbus("org.freedesktop.systemd1", { bus: "system", host: targetHost });
     await systemd.wait();
     const podmanSocketPath = await systemd.call("/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager",
                                                 "GetUnit", ["podman.socket"]);
@@ -201,7 +201,7 @@ export async function migrateContainer(system, id, args, targetHost, callbacks, 
                 const imageReadChannel = cockpit.channel({
                     payload: "fsread1",
                     path: imageFile,
-                    max_read_size: 107374182400,
+                    max_read_size: parseInt(imageFileSize),
                     redirect: imageLoadChannel.id,
                     binary: true,
                     host: targetHost
@@ -248,12 +248,12 @@ export async function migrateContainer(system, id, args, targetHost, callbacks, 
     let containerCreated = false;
     try {
         callbacks.containerInspect();
-        await inspectContainer(system, containerInfo.Name, targetHost);
+        await inspectContainer(system, targetId, targetHost);
     } catch (error) {
         if (error.status === 404) {
             callbacks.containerCreate();
             const dummyConfig = {
-                name: containerInfo.Name,
+                name: targetId,
                 image: containerInfo.Image,
                 terminal: true,
                 command: containerInfo.Args
@@ -283,7 +283,21 @@ export async function migrateContainer(system, id, args, targetHost, callbacks, 
         ignoreStaticIP: args.ignoreStaticIP,
         ignoreStaticMAC: args.ignoreStaticMAC
     };
-    await exportContainer(system, id, checkpointArgs, host, containerSaveChannel.id);
+
+    try {
+        await exportContainer(system, id, checkpointArgs, host, containerSaveChannel.id);
+    } catch {
+        // The error gets written into the checkpoint file (because of the redirect).
+        // In order for it to be correctly reported, it has to be read from the file.
+        containerSaveChannel.control({ command: "done" });
+        await new Promise(resolve => containerSaveChannel.addEventListener("close", resolve));
+
+        const errorFile = cockpit.file(containerFile, { host: targetHost });
+        const error = await errorFile.read();
+        errorFile.close();
+        throw new Error(error);
+    }
+
     containerSaveChannel.control({ command: "done" });
     await new Promise(resolve => containerSaveChannel.addEventListener("close", resolve));
 
@@ -298,7 +312,7 @@ export async function migrateContainer(system, id, args, targetHost, callbacks, 
             payload: "http-stream2",
             unix: "/run/podman/podman.sock",
             method: "POST",
-            path: VERSION + `libpod/containers/${containerInfo.Name}/restore?import=true&keep=${args.keep}&` +
+            path: VERSION + `libpod/containers/${targetId}/restore?import=true&keep=${args.keep}&` +
                 `tcpEstablished=${args.tcpEstablished}&leaveRunning=${args.leaveRunning}&` +
                 `ignoreRootFS=${args.ignoreRootFS}`,
             binary: true,
@@ -317,7 +331,7 @@ export async function migrateContainer(system, id, args, targetHost, callbacks, 
         const containerReadChannel = cockpit.channel({
             payload: "fsread1",
             path: containerFile,
-            max_read_size: 107374182400,
+            max_read_size: parseInt(containerFileSize),
             redirect: containerImportChannel.id,
             binary: true,
             host: targetHost
@@ -340,7 +354,7 @@ export async function migrateContainer(system, id, args, targetHost, callbacks, 
         );
     } catch (e) {
         if (containerCreated)
-            await delContainer(system, containerInfo.Name, true, targetHost);
+            await delContainer(system, targetId, true, targetHost);
         throw e;
     } finally {
         await cockpit.script(`rm "${containerFile}"`, { host: targetHost });

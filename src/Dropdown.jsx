@@ -23,7 +23,7 @@ export const DropDown = ({ actions, isKebab }) => {
             onSelect={() => setIsOpen(!isOpen)}
             id={actions[0].label + "-dropdown"}
             toggle={
-                isKebab ? <KebabToggle onToggle={open => setIsOpen(open)} splitButtonVariant="action" />
+                isKebab ? <KebabToggle onToggle={open => setIsOpen(open)} />
                     : <DropdownToggle
                           splitButtonItems={[
                               <DropdownToggleAction key="default-action" onClick={actions[0].onActivate}>

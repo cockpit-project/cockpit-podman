@@ -104,8 +104,8 @@ class Containers extends React.Component {
         });
     }
 
-    migrateContainer(container) {
-        this.state.remoteHosts = utils.getRemoteHosts();
+    async migrateContainer(container) {
+        this.state.remoteHosts = await utils.getRemoteHosts();
 
         this.setState({
             containerWillMigrate: container,
@@ -311,7 +311,7 @@ class Containers extends React.Component {
                 });
     }
 
-    handleMigrateContainer(args, targetHost) {
+    handleMigrateContainer(args, targetHost, targetContainer) {
         const container = this.state.containerWillMigrate;
         this.setState({ migrateInProgress: true });
 
@@ -335,7 +335,7 @@ class Containers extends React.Component {
             containerImport: () => this.setState({ migrationStateLabel: _("Importing container...") })
         };
 
-        client.migrateContainer(container.isSystem, container.Id, newArgs, targetHost, callbacks)
+        client.migrateContainer(container.isSystem, container.Id, targetContainer, newArgs, targetHost, callbacks)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to migrate container $0"), container.Names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message ? ex.message : JSON.stringify(ex) });

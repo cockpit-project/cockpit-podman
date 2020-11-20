@@ -1,4 +1,5 @@
 import cockpit from 'cockpit';
+import { machines } from '../lib/machines';
 
 const moment = require('moment');
 const _ = cockpit.gettext;
@@ -176,34 +177,18 @@ export function compare_versions(a, b) {
 /*
  * Gets a dictionary of remote hosts with hosts as keys and addresses as values.
  */
-export function getRemoteHosts() {
+export async function getRemoteHosts() {
+    const machines_inst = machines.instance();
+    await new Promise(function(resolve) { machines_inst.onready = () => resolve() });
+
     const result = {};
+    for (const item of machines_inst.list) {
+        if (item.state !== "connected")
+            continue;
 
-    // The Cockpit host may be the SSH address, while the connected host in v2-machines.json is never that
-    const currentAddress = cockpit.transport.host;
-    const currentHost = currentAddress.includes("@") ? currentAddress.split("@")[1] : currentAddress;
-
-    const hosts = JSON.parse(cockpit.sessionStorage.getItem("v2-machines.json"));
-
-    // Get connected (i.e. usable) hosts from the overlay
-    for (const host in hosts.overlay) {
-        if (Object.hasOwnProperty.call(hosts.overlay, [host]) && hosts.overlay[host].state === "connected" &&
-            host !== currentHost) {
-            result[host] = host;
+        if (item.connection_string !== cockpit.transport.host) {
+            result[item.address] = item.connection_string;
         }
-    }
-
-    // Look for SSH addresses in the overlay
-    for (const address in hosts.overlay) {
-        if (!address.includes("@"))
-            continue;
-
-        const host = address.split("@")[1];
-        if (result[host] === undefined)
-            continue;
-
-        // Replace host with address
-        result[host] = address;
     }
 
     return result;
