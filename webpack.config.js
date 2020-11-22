@@ -3,53 +3,22 @@ const copy = require("copy-webpack-plugin");
 const extract = require("mini-css-extract-plugin");
 const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const fs = require("fs");
 const webpack = require("webpack");
 const CompressionPlugin = require("compression-webpack-plugin");
 
-/* These can be overridden, typically from the Makefile.am */
-const srcdir = (process.env.SRCDIR || __dirname) + path.sep + "src";
-const builddir = (process.env.SRCDIR || __dirname);
-const section = process.env.ONLYDIR || null;
 const nodedir = path.resolve((process.env.SRCDIR || __dirname), "node_modules");
 const libdir = (process.env.SRCDIR || __dirname) + path.sep + "lib";
 /* A standard nodejs and webpack pattern */
 var production = process.env.NODE_ENV === 'production';
 
-var info = {
-    files: [
-        "index.html",
-        "manifest.json",
-    ],
-};
+// Non-JS files which are copied verbatim to dist/
+const copy_files = [
+    "./src/index.html",
+    "./src/manifest.json",
+];
 
-/*
- * Note that we're avoiding the use of path.join as webpack and nodejs
- * want relative paths that start with ./ explicitly.
- *
- * In addition we mimic the VPATH style functionality of GNU Makefile
- * where we first check builddir, and then srcdir.
- */
-
-function vpath(/* ... */) {
-    var filename = Array.prototype.join.call(arguments, path.sep);
-    var expanded = builddir + path.sep + filename;
-    if (fs.existsSync(expanded))
-        return expanded;
-    expanded = srcdir + path.sep + filename;
-    return expanded;
-}
-
-/* Qualify all the paths in files listed */
-var files = [];
-info.files.forEach(function(value) {
-    if (!section || value.indexOf(section) === 0)
-        files.push({ from: vpath("src", value), to: value });
-});
-info.files = files;
-
-var plugins = [
-    new copy({ patterns: info.files }),
+const plugins = [
+    new copy({ patterns: copy_files }),
     new extract({filename: "[name].css"})
 ];
 
