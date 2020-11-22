@@ -68,14 +68,11 @@ mkdir -p /root/.ssh
 curl https://raw.githubusercontent.com/cockpit-project/bots/master/machine/identity.pub  >> /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 
-# pull images for user podman tests; podman insists on user session
+# copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
-sudo -i -u admin bash << EOF
-podman rmi --all
-podman pull quay.io/libpod/busybox
-podman pull quay.io/libpod/alpine
-podman pull quay.io/cockpit/registry:2
-EOF
+for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
+    podman save  $img | sudo -i -u admin podman load
+done
 loginctl disable-linger $(id -u admin)
 
 # HACK: See https://github.com/cockpit-project/cockpit/issues/14133
