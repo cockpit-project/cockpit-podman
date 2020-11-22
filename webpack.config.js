@@ -17,11 +17,6 @@ const libdir = (process.env.SRCDIR || __dirname) + path.sep + "lib";
 var production = process.env.NODE_ENV === 'production';
 
 var info = {
-    entries: {
-        "index": [
-            "./index.js"
-        ]
-    },
     files: [
         "index.html",
         "manifest.json",
@@ -44,21 +39,6 @@ function vpath(/* ... */) {
     expanded = srcdir + path.sep + filename;
     return expanded;
 }
-
-/* Qualify all the paths in entries */
-Object.keys(info.entries).forEach(function(key) {
-    if (section && key.indexOf(section) !== 0) {
-        delete info.entries[key];
-        return;
-    }
-
-    info.entries[key] = info.entries[key].map(function(value) {
-        if (value.indexOf("/") === -1)
-            return value;
-        else
-            return vpath(value);
-    });
-});
 
 /* Qualify all the paths in files listed */
 var files = [];
@@ -84,12 +64,14 @@ if (production) {
 
 module.exports = {
     mode: production ? 'production' : 'development',
-    entry: info.entries,
     resolve: {
         alias: { 'font-awesome': path.resolve(nodedir, 'font-awesome-sass/assets/stylesheets') },
     },
     watchOptions: {
         ignored: /node_modules/,
+    },
+    entry: {
+        index: "./src/index.js",
     },
     // cockpit.js gets included via <script>, everything else should be bundled
     externals: { "cockpit": "cockpit" },
