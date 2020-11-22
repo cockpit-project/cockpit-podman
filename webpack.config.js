@@ -25,7 +25,7 @@ const plugins = [
 /* Only minimize when in production mode */
 if (production) {
     plugins.unshift(new CompressionPlugin({
-        test: /\.(js|html)$/,
+        test: /\.(js|html|css)$/,
         deleteOriginalAssets: true
     }));
 }
