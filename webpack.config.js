@@ -26,7 +26,6 @@ const plugins = [
 if (production) {
     plugins.unshift(new CompressionPlugin({
         test: /\.(js|html)$/,
-        minRatio: 0.9,
         deleteOriginalAssets: true
     }));
 }
