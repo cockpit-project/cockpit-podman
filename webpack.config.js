@@ -9,7 +9,7 @@ const CompressionPlugin = require("compression-webpack-plugin");
 const nodedir = path.resolve((process.env.SRCDIR || __dirname), "node_modules");
 const libdir = (process.env.SRCDIR || __dirname) + path.sep + "lib";
 /* A standard nodejs and webpack pattern */
-var production = process.env.NODE_ENV === 'production';
+const production = process.env.NODE_ENV === 'production';
 
 // Non-JS files which are copied verbatim to dist/
 const copy_files = [
