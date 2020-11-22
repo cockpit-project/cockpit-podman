@@ -7,10 +7,6 @@ const fs = require("fs");
 const webpack = require("webpack");
 const CompressionPlugin = require("compression-webpack-plugin");
 
-var externals = {
-    "cockpit": "cockpit",
-};
-
 /* These can be overridden, typically from the Makefile.am */
 const srcdir = (process.env.SRCDIR || __dirname) + path.sep + "src";
 const builddir = (process.env.SRCDIR || __dirname);
@@ -95,7 +91,8 @@ module.exports = {
     watchOptions: {
         ignored: /node_modules/,
     },
-    externals: externals,
+    // cockpit.js gets included via <script>, everything else should be bundled
+    externals: { "cockpit": "cockpit" },
     devtool: "source-map",
     stats: "errors-warnings",
 
