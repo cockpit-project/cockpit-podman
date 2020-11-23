@@ -155,11 +155,11 @@ class ContainerMigrateModal extends React.Component {
                                         this.state.targetContainerLoading
                                             ? <SelectOption value={this.targetContainerLoading} key="_placeholder2"
                                                             isPlaceholder />
-                                            : <></>,
+                                            : <React.Fragment key="null" />,
                                         this.state.targetContainerError
                                             ? <SelectOption value={this.targetContainerError} key="_placeholder3"
                                                             isPlaceholder />
-                                            : <></>
+                                            : <React.Fragment key="null2" />
                                     ])
                         }
                     </Select>

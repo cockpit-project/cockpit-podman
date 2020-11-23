@@ -244,7 +244,7 @@ class Containers extends React.Component {
             if (container.isSystem)
                 kebabMenuActions.push({ label: _("Migrate"), onActivate: () => this.migrateContainer(container) });
             if (kebabMenuActions.length !== 0)
-                actions.push(<DropDown isKebab actions={kebabMenuActions} />);
+                actions.push(<DropDown key={_(container.Id) + "kebab"} isKebab actions={kebabMenuActions} />);
         }
 
         return {
