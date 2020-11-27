@@ -32,6 +32,13 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <>
             <InputGroup className='ct-input-group-spacer-sm'>
+                <TextInput type='number'
+                           step={1}
+                           min={1}
+                           max={65535}
+                           placeholder={_("Host port (optional)")}
+                           value={item.hostPort || ''}
+                           onChange={value => onChange(idx, 'hostPort', value)} />
                 <TextInput id={id}
                            type='number'
                            step={1}
@@ -40,13 +47,6 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                            placeholder={_("Container port")}
                            value={item.containerPort || ''}
                            onChange={value => onChange(idx, 'containerPort', value)} />
-                <TextInput type='number'
-                           step={1}
-                           min={1}
-                           max={65535}
-                           placeholder={_("Host port")}
-                           value={item.hostPort || ''}
-                           onChange={value => onChange(idx, 'hostPort', value)} />
                 <Select.Select extraClass='pf-c-form-control container-port-protocol'
                                initial={item.protocol}
                                onChange={value => onChange(idx, 'protocol', value)}>
@@ -264,8 +264,13 @@ export class ImageRunModal extends React.Component {
         createConfig.terminal = this.state.hasTTY;
         if (this.state.publish.length > 0)
             createConfig.portmappings = this.state.publish
-                    .filter(port => port.hostPort && port.containerPort)
-                    .map(port => { return { host_port: parseInt(port.hostPort), container_port: parseInt(port.containerPort), protocol: port.protocol } });
+                    .filter(port => port.containerPort)
+                    .map(port => {
+                        const pm = { container_port: parseInt(port.containerPort), protocol: port.protocol };
+                        if (port.hostPort !== null)
+                            pm.host_port = parseInt(port.hostPort);
+                        return pm;
+                    });
         if (this.state.env.length > 0) {
             const ports = {};
             this.state.env.forEach(item => { ports[item.envKey] = item.envValue });
