@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-    Bullseye, Button,
-    DataList, DataListItem, DataListItemRow, DataListCell, DataListItemCells,
-    Flex, Form, FormGroup, Modal, Radio, Spinner, TextInput
+    Button, DataList, DataListItem, DataListItemRow, DataListCell, DataListItemCells,
+    Flex, Form, FormGroup, Modal, Radio, TextInput
 } from '@patternfly/react-core';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import * as Select from '../lib/cockpit-components-select.jsx';
+import { EmptyStatePanel } from "../lib/cockpit-components-empty-state.jsx";
 import { ErrorNotification } from './Notification.jsx';
 import cockpit from 'cockpit';
 import rest from './rest.js';
@@ -161,10 +162,15 @@ export class ImageSearchModal extends React.Component {
                     </Flex>
                 </Form>
 
-                {this.state.searchInProgress && <Bullseye><Spinner id='search-image-dialog-waiting' /></Bullseye>}
+                {this.state.searchInProgress && <EmptyStatePanel loading title={_("Searching...")} /> }
 
-                {this.state.searchFinished && !this.state.imageIdentifier == '' && <>
-                    {this.state.imageList.length == 0 && <div className="no-results"> {cockpit.format(_("No results for $0. Please retry another term."), this.state.imageIdentifier)} </div>}
+                {((!this.state.searchInProgress && !this.state.searchFinished) || this.state.imageIdentifier == "") && <EmptyStatePanel title={_("No images found")} paragraph={_("Please start typing to look for images.")} /> }
+
+                {this.state.searchFinished && this.state.imageIdentifier !== '' && <>
+                    {this.state.imageList.length == 0 && <EmptyStatePanel icon={ExclamationCircleIcon}
+                                                                          title={cockpit.format(_("No results for $0"), this.state.imageIdentifier)}
+                                                                          paragraph={_("Please retry another term.")}
+                    />}
                     {this.state.imageList.length > 0 &&
                     <DataList isCompact
                               selectedDataListItemId={"image-list-item-" + this.state.selected}
