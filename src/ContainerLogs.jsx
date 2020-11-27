@@ -20,10 +20,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Terminal } from "xterm";
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import rest from './rest.js';
 import * as client from './client.js';
+import { EmptyStatePanel } from "../lib/cockpit-components-empty-state.jsx";
 
 import "./ContainerTerminal.css";
 
@@ -146,12 +148,7 @@ class ContainerLogs extends React.Component {
     render() {
         let element = <div className="container-logs" ref="logs" />;
         if (this.state.errorMessage)
-            element = (<div ref="logs" className="empty-state">
-                <span className="empty-message">
-                    { this.state.errorMessage }
-                </span>
-            </div>
-            );
+            element = <EmptyStatePanel icon={ExclamationCircleIcon} title={this.state.errorMessage} />;
 
         return element;
     }
