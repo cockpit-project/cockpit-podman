@@ -21,7 +21,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import cockpit from 'cockpit';
 import { Terminal } from "xterm";
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { ErrorNotification } from './Notification.jsx';
 
 import * as client from './client.js';
 import { EmptyStatePanel } from "../lib/cockpit-components-empty-state.jsx";
@@ -102,7 +102,7 @@ class ContainerTerminal extends React.Component {
         var cols = Math.floor((width - padding) / realWidth);
         this.state.term.resize(cols, 24);
         client.resizeContainersTTY(this.props.system, this.state.sessionId, this.props.tty, cols, 24)
-                .catch(console.log);
+                .catch(e => this.setState({ errorMessage: e.message }));
         this.setState({ cols: cols });
     }
 
@@ -110,11 +110,8 @@ class ContainerTerminal extends React.Component {
         if (this.state.channel)
             return;
 
-        if (this.props.containerStatus !== "running") {
-            const message = _("Container is not running");
-            this.setState({ errorMessage: message });
+        if (this.props.containerStatus !== "running")
             return;
-        }
 
         if (this.props.tty)
             this.connectToTty();
@@ -196,7 +193,7 @@ class ContainerTerminal extends React.Component {
                     const buffer = this.setUpBuffer(channel);
                     this.setState({ channel: channel, errorMessage: "", buffer: buffer, sessionId: r.Id }, () => this.resize(this.props.width));
                 })
-                .catch(console.log);
+                .catch(e => this.setState({ errorMessage: e.message }));
     }
 
     connectToTty() {
@@ -247,10 +244,14 @@ class ContainerTerminal extends React.Component {
 
     render() {
         let element = <div className="container-terminal" ref="terminal" />;
-        if (this.state.errorMessage)
-            element = <EmptyStatePanel icon={ExclamationCircleIcon} title={this.state.errorMessage} />;
 
-        return element;
+        if (this.props.containerStatus !== "running" && !this.state.opened)
+            element = <EmptyStatePanel title={_("Container is not running")} />;
+
+        return <>
+            {this.state.errorMessage && <ErrorNotification errorMessage={_("Error occured while connecting console")} errorDetail={this.state.errorMessage} onDismiss={() => this.setState({ errorMessage: "" })} />}
+            {element}
+        </>;
     }
 }
 
