@@ -31,15 +31,16 @@ const units = {
 const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <>
-            <InputGroup className='ct-input-group-spacer-sm'>
-                <TextInput type='number'
+            <InputGroup className='ct-input-group-spacer-sm' id={id}>
+                <TextInput aria-label={_("Host port (optional)")}
+                           type='number'
                            step={1}
                            min={1}
                            max={65535}
                            placeholder={_("Host port (optional)")}
                            value={item.hostPort || ''}
                            onChange={value => onChange(idx, 'hostPort', value)} />
-                <TextInput id={id}
+                <TextInput aria-label={_("Container port")}
                            type='number'
                            step={1}
                            min={1}
@@ -71,13 +72,14 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
 const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <>
-            <InputGroup className="ct-input-group-spacer-sm">
-                <TextInput id={id}
+            <InputGroup className="ct-input-group-spacer-sm" id={id}>
+                <TextInput aria-label={_("Key")}
                            type='text'
                            placeholder={_("Key")}
                            value={item.envKey || ''}
                            onChange={value => onChange(idx, 'envKey', value)} />
-                <TextInput type='text'
+                <TextInput aria-label={_("Value")}
+                           type='text'
                            placeholder={_("Value")}
                            value={item.envValue || ''}
                            onChange={value => onChange(idx, 'envValue', value)} />
@@ -99,12 +101,13 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem }) =>
 const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
     (
         <>
-            <InputGroup className='ct-input-group-spacer-sm'>
-                <FileAutoComplete id={id || ''}
+            <InputGroup className='ct-input-group-spacer-sm' id={id || ''}>
+                <FileAutoComplete aria-label={_("Host path")}
                                   placeholder={_("Host path")}
                                   value={item.hostPath || ''}
                                   onChange={ value => onChange(idx, 'hostPath', value) } />
-                <TextInput placeholder={_("Container path")}
+                <TextInput aria-label={_("Container path")}
+                           placeholder={_("Container path")}
                            value={item.containerPath || ''}
                            onChange={value => onChange(idx, 'containerPath', value)} />
 
@@ -350,6 +353,7 @@ export class ImageRunModal extends React.Component {
                                   onChange={checked => this.onValueChanged('memoryConfigure', checked)} />
                         <TextInput type='number'
                                    value={dialogValues.memory}
+                                   id="run-image-dialog-memory"
                                    step={1}
                                    min={0}
                                    isReadOnly={!this.state.memoryConfigure}
@@ -378,6 +382,7 @@ export class ImageRunModal extends React.Component {
                                   isChecked={this.state.cpuSharesConfigure}
                                   onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
                         <TextInput type='number'
+                                   id="run-image-cpu-priority"
                                    value={dialogValues.cpuShares}
                                    step={1}
                                    min={2}
