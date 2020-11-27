@@ -1348,7 +1348,7 @@ class TestApplication(testlib.MachineCase):
         self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
         b.click('#containers-containers tr:contains("busybox-without-publish") .pf-c-table__toggle button')
         b.click(".pf-m-expanded a:contains('Console')")
-        b.wait_text(".pf-m-expanded span.empty-message", "Container is not running")
+        b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
 
         b.click('#containers-images tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click("#containers-images tbody tr:contains('busybox:latest') a:contains('Used by')")
