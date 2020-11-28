@@ -89,7 +89,11 @@ class ContainerTerminal extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (!this.state.channel && this.props.containerStatus === "running" && prevProps.containerStatus !== "running")
+        // Connect channel when there is none and either container started or tty was resolved
+        // tty is being read as part of containerDetails and it is asynchronous so we need to wait for it
+        if (!this.state.channel && (
+            (this.props.containerStatus === "running" && prevProps.containerStatus !== "running") ||
+            (this.props.tty !== undefined && prevProps.tty === undefined)))
             this.connectChannel();
         if (prevProps.width !== this.props.width) {
             this.resize(this.props.width);
@@ -111,6 +115,9 @@ class ContainerTerminal extends React.Component {
             return;
 
         if (this.props.containerStatus !== "running")
+            return;
+
+        if (this.props.tty === undefined)
             return;
 
         if (this.props.tty)
@@ -260,7 +267,7 @@ ContainerTerminal.propTypes = {
     containerStatus: PropTypes.string.isRequired,
     width: PropTypes.number.isRequired,
     system: PropTypes.bool.isRequired,
-    tty: PropTypes.bool.isRequired,
+    tty: PropTypes.bool,
 };
 
 export default ContainerTerminal;
