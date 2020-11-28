@@ -162,7 +162,7 @@ class Containers extends React.Component {
             { title: <Badge isRead>{_(container.State)}</Badge> }, // States are defined in util.js
         ];
 
-        const tty = containerDetail ? containerDetail.Config.Tty : false;
+        const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
 
         const tabs = [{
             name: _("Details"),
