@@ -1145,18 +1145,22 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
 
         # Configure published ports
-        b.set_input_text('.publish-port-form[data-key="0"] input:first-child', '6000')
-        b.set_input_text('.publish-port-form[data-key="0"] input:nth-child(2)', '5000')
+        b.set_input_text('.publish-port-form[data-key="0"] input:nth-child(2)', '6000')
+        b.set_input_text('.publish-port-form[data-key="0"] input:nth-child(3)', '5000')
         b.click('.publish-port-form[data-key="0"] .btn-add')
-        b.set_input_text('.publish-port-form[data-key="1"] input:first-child', '6001')
-        b.set_input_text('.publish-port-form[data-key="1"] input:nth-child(2)', '5001')
+        b.set_input_text('.publish-port-form[data-key="1"] input:first-child', '127.0.0.1')
+        b.set_input_text('.publish-port-form[data-key="1"] input:nth-child(2)', '6001')
+        b.set_input_text('.publish-port-form[data-key="1"] input:nth-child(3)', '5001')
         b.set_val('.publish-port-form[data-key="1"] select', "udp")
         b.click('.publish-port-form[data-key="1"] .btn-add')
         b.set_input_text('.publish-port-form[data-key="2"] input:first-child', '7001')
         b.set_input_text('.publish-port-form[data-key="2"] input:nth-child(2)', '7001')
         b.click('.publish-port-form[data-key="2"] .btn-close')
         b.click('.publish-port-form[data-key="1"] .btn-add')
-        b.set_input_text('.publish-port-form[data-key="3"] input:nth-child(2)', '8001')
+        b.set_input_text('.publish-port-form[data-key="3"] input:nth-child(3)', '8001')
+        b.click('.publish-port-form[data-key="3"] .btn-add')
+        b.set_input_text('.publish-port-form[data-key="4"] input:first-child', '127.0.0.2')
+        b.set_input_text('.publish-port-form[data-key="4"] input:nth-child(3)', '9001')
 
         # Configure env
         b.set_input_text('.env-form[data-key="0"] input:first-child', 'APPLE')
@@ -1227,17 +1231,19 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
 
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6000 \u2192 5000/tcp')
-        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6001 \u2192 5001/udp')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '127.0.0.1:6001 \u2192 5001/udp')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '127.0.0.2:')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', ' \u2192 8001/tcp')
-        b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:7001 \u2192 7001/tcp')
+        b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '7001/tcp')
         ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
 
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Created") + dd', 'Today at')
 
         self.assertIn('5000/tcp:[{ 6000}]', ports)
-        self.assertIn('5001/udp:[{ 6001}]', ports)
+        self.assertIn('5001/udp:[{127.0.0.1 6001}]', ports)
         self.assertIn('8001/tcp:[{ ', ports)
-        self.assertNotIn('7001/tcp:[{ 7001}]', ports)
+        self.assertIn('9001/tcp:[{127.0.0.2 ', ports)
+        self.assertNotIn('7001/tcp', ports)
 
         env = self.execute(auth, "podman exec busybox-with-tty env")
         self.assertIn('APPLE=ORANGE', env)

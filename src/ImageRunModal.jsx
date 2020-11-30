@@ -32,6 +32,11 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
     (
         <>
             <InputGroup className='ct-input-group-spacer-sm' id={id}>
+                <TextInput aria-label={_("IP (optional)")}
+                           type='text'
+                           placeholder={_("IP (optional)")}
+                           value={item.IP || ''}
+                           onChange={value => onChange(idx, 'IP', value)} />
                 <TextInput aria-label={_("Host port (optional)")}
                            type='number'
                            step={1}
@@ -59,7 +64,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                     </Select.SelectEntry>
                 </Select.Select>
                 <Button variant='secondary'
-                        className={"btn-close" + (idx === 0 && !item.hostPort && !item.containerPort ? ' invisible' : '')}
+                        className={"btn-close" + (idx === 0 && !item.IP && !item.hostPort && !item.containerPort ? ' invisible' : '')}
                         isSmall
                         aria-label={_("Remove item")}
                         icon={<CloseIcon />}
@@ -272,6 +277,8 @@ export class ImageRunModal extends React.Component {
                         const pm = { container_port: parseInt(port.containerPort), protocol: port.protocol };
                         if (port.hostPort !== null)
                             pm.host_port = parseInt(port.hostPort);
+                        if (port.IP !== null)
+                            pm.host_ip = port.IP;
                         return pm;
                     });
         if (this.state.env.length > 0) {
@@ -402,7 +409,7 @@ export class ImageRunModal extends React.Component {
                     <DynamicListForm id='run-image-dialog-publish'
                                      formclass='publish-port-form'
                                      onChange={value => this.onValueChanged('publish', value)}
-                                     default={{ containerPort: null, hostPort: null, protocol: 'tcp' }}
+                                     default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                                      itemcomponent={ <PublishPort />} />
                 </FormGroup>
 
