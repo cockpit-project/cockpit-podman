@@ -179,11 +179,16 @@ class TestApplication(testlib.MachineCase):
         b.wait_present("#containers-containers .container-name:contains('a')")
         b.wait_present("#containers-containers .container-name:contains('b')")
 
+        if self.system_before(231): # Changed in #14740
+            modal_sel = ".modal-dialog"
+        else:
+            modal_sel = ".pf-c-modal-box"
+
         # Drop privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        b.click(".pf-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
-        b.wait_not_present(".pf-c-modal-box:contains('Switch to limited access')")
+        b.click("%s:contains('Switch to limited access') button:contains('Limit access')" % modal_sel)
+        b.wait_not_present("%s:contains('Switch to limited access')" % modal_sel)
         b.wait_text("#super-user-indicator", "Limited access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
@@ -209,10 +214,10 @@ class TestApplication(testlib.MachineCase):
         # Gain privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        b.wait_in_text(".pf-c-modal-box:contains('Administrative access')", "Please authenticate")
-        b.set_input_text(".pf-c-modal-box:contains('Administrative access') input", "foobar")
-        b.click(".pf-c-modal-box button:contains('Authenticate')")
-        b.wait_not_present(".pf-c-modal-box:contains('Administrative access')")
+        b.wait_in_text("%s:contains('Administrative access')" % modal_sel, "Please authenticate")
+        b.set_input_text("%s:contains('Administrative access') input" % modal_sel, "foobar")
+        b.click("%s button:contains('Authenticate')" % modal_sel)
+        b.wait_not_present("%s:contains('Administrative access')" % modal_sel)
         b.wait_text("#super-user-indicator", "Administrative access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
@@ -248,8 +253,8 @@ class TestApplication(testlib.MachineCase):
 
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        b.click(".pf-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
-        b.wait_not_present(".pf-c-modal-box:contains('Switch to limited access')")
+        b.click("%s:contains('Switch to limited access') button:contains('Limit access')" % modal_sel)
+        b.wait_not_present("%s:contains('Switch to limited access')" % modal_sel)
         b.wait_text("#super-user-indicator", "Limited access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
