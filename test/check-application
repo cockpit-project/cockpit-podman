@@ -865,7 +865,8 @@ class TestApplication(testlib.MachineCase):
 
         # Set machine to cgroup1 and reboot; Debian uses hybrid mode and does not have grubby
         if not m.image.startswith("debian") and not m.image.startswith("ubuntu"):
-            self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"; reboot')
+            self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"')
+            self.machine.spawn("sleep 0.1 && reboot", "reboot")
             m.wait_reboot()
 
         self.login_and_go("/podman", superuser=True)
