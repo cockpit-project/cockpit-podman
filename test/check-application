@@ -69,7 +69,7 @@ class TestApplication(testlib.MachineCase):
         # But disable it globally so that "systemctl --user disable" does what we expect
         self.machine.execute("systemctl --global disable podman.socket")
 
-        self.addCleanup(self.machine.execute, "killall -9 podman")
+        self.addCleanup(self.machine.execute, "killall -9 podman || true")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
@@ -938,9 +938,13 @@ class TestApplication(testlib.MachineCase):
 
     @testlib.nondestructive
     def testCheckpointRestoreSystemCrun(self):
-        # With crun (CgroupsV2) checkpoint doesn't work yet
         b = self.browser
         m = self.machine
+
+        if not self.cgroupsV2() and self.has_criu:
+            return
+
+        # With crun (CgroupsV2) or without criu checkpoints don't work yet
 
         self.login_and_go("/podman", superuser=True)
         b.wait_present("#app")
