@@ -161,7 +161,12 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
         if (error.status === 404) {
             // Image not found - try to copy it to the target host
             callbacks.imageExport();
-            const imageFile = (await cockpit.script("mktemp -p /var/tmp", { host: targetHost })).slice(0, -1);
+            let imageFile;
+            try {
+                imageFile = (await cockpit.script("mktemp -p /var/tmp", { host: targetHost })).slice(0, -1);
+            } catch {
+                throw new Error("Failed to create temporary file for image transfer");
+            }
             const imageSaveChannel = cockpit.channel({
                 payload: "fsreplace1",
                 path: imageFile,
@@ -179,7 +184,12 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
                 let imageLoadChannelData = null;
                 let imageLoadChannelResponse = null;
 
-                const imageFileSize = await cockpit.script(`stat --printf="%s" "${imageFile}"`, { host: targetHost });
+                let imageFileSize;
+                try {
+                    imageFileSize = await cockpit.script(`stat --printf="%s" "${imageFile}"`, { host: targetHost });
+                } catch {
+                    throw new Error("Failed to get exported image size");
+                }
                 const imageLoadChannel = cockpit.channel({
                     payload: "http-stream2",
                     unix: "/run/podman/podman.sock",
@@ -225,7 +235,11 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
                     })
                 );
             } finally {
-                await cockpit.script(`rm "${imageFile}"`, { host: targetHost });
+                try {
+                    await cockpit.script(`rm "${imageFile}"`, { host: targetHost });
+                } catch {
+                    console.warn("Failed to remove image file");
+                }
             }
 
             // Inspect the old image and try to tag the new one to match it
@@ -267,7 +281,12 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
 
     // Checkpoint the selected container
     callbacks.containerExport();
-    const containerFile = (await cockpit.script("mktemp -p /var/tmp", { host: targetHost })).slice(0, -1);
+    let containerFile;
+    try {
+        containerFile = (await cockpit.script("mktemp -p /var/tmp", { host: targetHost })).slice(0, -1);
+    } catch {
+        throw new Error("Failed to create temporary file for container migration");
+    }
     const containerSaveChannel = cockpit.channel({
         payload: "fsreplace1",
         path: containerFile,
@@ -306,7 +325,12 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
     try {
         let containerImportChannelData = null;
         let containerImportChannelResponse = null;
-        const containerFileSize = await cockpit.script(`stat --printf="%s" "${containerFile}"`, { host: targetHost });
+        let containerFileSize;
+        try {
+            containerFileSize = await cockpit.script(`stat --printf="%s" "${containerFile}"`, { host: targetHost });
+        } catch {
+            throw new Error("Failed to get exported container size");
+        }
 
         const containerImportChannel = cockpit.channel({
             payload: "http-stream2",
@@ -357,7 +381,11 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
             await delContainer(system, targetId, true, targetHost);
         throw e;
     } finally {
-        await cockpit.script(`rm "${containerFile}"`, { host: targetHost });
+        try {
+            await cockpit.script(`rm "${containerFile}"`, { host: targetHost });
+        } catch {
+            console.warn("Failed to remove container file");
+        }
     }
 }
 
