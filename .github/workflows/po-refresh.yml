@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up dependencies
-        run: sudo apt-get install -y --no-install-recommends npm make gettext
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends npm make gettext
 
       - name: Set up configuration and secrets
         run: |
