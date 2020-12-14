@@ -459,7 +459,7 @@ class TestApplication(testlib.MachineCase):
             b.set_input_text("#commit-dialog-command", image_command)
             b.click(".pf-c-modal-box footer .btn-ctr-commit")
             b.wait_not_present(".pf-c-modal-box")
-            b.wait_present('#containers-images tr:contains("{0}:{1}")'.format(image_name, image_tag))
+            b.wait_present('#containers-images td[data-label="Name"]:contains("{0}:{1}")'.format(image_name, image_tag))
             checkImage(b, "localhost/{0}:{1}".format(image_name, image_tag), owner)
             # open the listing toggle of testimg and check the commit paramerters
             toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.pf-c-table__toggle button'.format(image_name, image_tag)
@@ -675,7 +675,7 @@ class TestApplication(testlib.MachineCase):
                 # Confirm that the modal dialog is not open anymore
                 b.wait_not_present('div.pf-c-modal-box')
                 # Confirm that the image got downloaded
-                b.wait_present('#containers-images tr:contains("{0}")'.format(self.imageName))
+                b.wait_present('#containers-images td[data-label="Name"]:contains("{0}")'.format(self.imageName))
                 checkImage(b, "localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest"), "system" if self.user == "system" else "admin")
 
                 # Find out this image ID
@@ -1110,14 +1110,14 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text("#containers-images", "alpine:latest")
 
         # Check command in alpine
-        b.wait_present('#containers-images tr:contains("alpine:latest")')
+        b.wait_present('#containers-images td[data-label="Name"]:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") td > button > .pf-m-start')
         b.wait_present('div.pf-c-modal-box header:contains("Run image")')
         b.wait_present("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
-        b.wait_present('#containers-images tr:contains("busybox:latest")')
+        b.wait_present('#containers-images td[data-label="Name"]:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") td > button > .pf-m-start')
         b.wait_present('div.pf-c-modal-box header:contains("Run image")')
 
@@ -1297,7 +1297,7 @@ class TestApplication(testlib.MachineCase):
         b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
 
         # Create another instance without port publishing
-        b.wait_present('#containers-images tr:contains("busybox:latest")')
+        b.wait_present('#containers-images td[data-label="Name"]:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click('#containers-images tbody tr:contains("busybox:latest") td > button > .pf-m-start')
         b.wait_present('div.pf-c-modal-box header:contains("Run image")')
