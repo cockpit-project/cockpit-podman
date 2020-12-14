@@ -2,6 +2,7 @@ import React from 'react';
 import {
     Button,
     Checkbox,
+    Form,
     FormGroup,
     Modal,
     Radio,
@@ -10,7 +11,7 @@ import {
     TextInput,
     ValidatedOptions
 } from '@patternfly/react-core';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon, InfoCircleIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
 import * as client from './client.js';
 
@@ -55,6 +56,14 @@ class ContainerMigrateModal extends React.Component {
         this.isTargetContainerDisabled = this.isTargetContainerDisabled.bind(this);
         this.isMigrateButtonDisabled = this.isMigrateButtonDisabled.bind(this);
         this.getContainerName = this.getContainerName.bind(this);
+        this.updateTargetContainer = this.updateTargetContainer.bind(this);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.remoteHosts !== prevProps.remoteHosts) {
+            // On remote host list change, update target container element
+            this.updateTargetContainer();
+        }
     }
 
     handleChange(checked, event) {
@@ -76,50 +85,7 @@ class ContainerMigrateModal extends React.Component {
 
     handleTargetHostSelect(event, targetHost) {
         this.setState({ targetHost, targetHostOpen: false });
-
-        if (targetHost !== this.strings.targetHostPlaceholder) {
-            // Update target container list based on the host
-            this.setState({
-                targetContainerPlaceholder: this.strings.targetContainerLoadingPlaceholder,
-                targetContainerList: []
-            });
-            const modal = this;
-            client.getContainers(true, undefined, targetHost)
-                    .then(function (containers) {
-                        const newContainerList = [];
-                        for (const container of containers)
-                            newContainerList.push(container.Names[0]);
-                        modal.setState({
-                            targetHostValidated: ValidatedOptions.default,
-                            targetContainerPlaceholder: modal.strings.targetContainerDefaultPlaceholder,
-                            targetContainer: modal.strings.targetContainerPlaceholder,
-                            targetContainerList: newContainerList
-                        });
-
-                        // Update target container name field
-                        modal.handleTargetContainerNameChange(modal.state.targetContainerName);
-                    })
-                    .catch(function(error) {
-                        console.warn(`Couldn't connect to remote host: ${JSON.stringify(error)}`);
-                        modal.setState({
-                            targetHostValidated: ValidatedOptions.error,
-                            targetContainerPlaceholder: modal.strings.targetContainerErrorPlaceholder,
-                            targetContainer: modal.strings.targetContainerError,
-                            targetContainerList: []
-                        });
-                    });
-        } else {
-            this.setState({
-                targetHostValidated: ValidatedOptions.default,
-                targetContainer: this.strings.targetContainerDefaultPlaceholder,
-                targetContainerList: [],
-                targetContainerLoading: false,
-                targetContainerError: false
-            });
-
-            // Update target container name field
-            this.handleTargetContainerNameChange(this.state.targetContainerName);
-        }
+        this.updateTargetContainer();
     }
 
     handleTargetContainerNameChange(targetContainerName) {
@@ -151,7 +117,8 @@ class ContainerMigrateModal extends React.Component {
     }
 
     isTargetContainerDisabled() {
-        return this.state.targetHost === this.strings.targetHostPlaceholder || this.state.targetContainerLoading;
+        return this.state.targetHost === this.strings.targetHostPlaceholder || this.state.targetContainerLoading ||
+               this.props.migrateInProgress;
     }
 
     isMigrateButtonDisabled() {
@@ -172,6 +139,71 @@ class ContainerMigrateModal extends React.Component {
         return this.state.targetContainer;
     }
 
+    updateTargetContainer() {
+        let targetHost;
+
+        if (Object.keys(this.props.remoteHosts).length === 1) {
+            // Pre-select host if there is only one
+            targetHost = Object.values(this.props.remoteHosts)[0];
+        } else if (Object.keys(this.props.remoteHosts).length === 0 &&
+                   this.state.targetHost !== this.strings.targetHostPlaceholder) {
+            // There is no host - select the placeholder
+            // Note: while the Select component automatically defaults to the placeholder in cases when an invalid
+            // (i.e. removed) host is selected, this is not reflected in the modal state, therefore it has to be handled
+            // explicitly here.
+            targetHost = this.strings.targetHostPlaceholder;
+        } else {
+            targetHost = this.state.targetHost;
+        }
+
+        if (targetHost !== this.strings.targetHostPlaceholder) {
+            // Update target container list based on the host
+            this.setState({
+                targetHost,
+                targetContainerPlaceholder: this.strings.targetContainerLoadingPlaceholder,
+                targetContainerList: []
+            });
+            const modal = this;
+            client.getContainers(true, undefined, targetHost)
+                    .then(function (containers) {
+                        const newContainerList = [];
+                        for (const container of containers)
+                            newContainerList.push(container.Names[0]);
+                        modal.setState({
+                            targetHostValidated: ValidatedOptions.default,
+                            targetContainerPlaceholder: modal.strings.targetContainerDefaultPlaceholder,
+                            targetContainer: newContainerList.length === 1 ? newContainerList[0]
+                                : modal.strings.targetContainerPlaceholder,
+                            targetContainerList: newContainerList
+                        });
+
+                        // Update target container name field
+                        modal.handleTargetContainerNameChange(modal.state.targetContainerName);
+                    })
+                    .catch(function(error) {
+                        console.warn(`Couldn't connect to remote host: ${JSON.stringify(error)}`);
+                        modal.setState({
+                            targetHostValidated: ValidatedOptions.error,
+                            targetContainerPlaceholder: modal.strings.targetContainerErrorPlaceholder,
+                            targetContainer: modal.strings.targetContainerError,
+                            targetContainerList: []
+                        });
+                    });
+        } else {
+            this.setState({
+                targetHost,
+                targetHostValidated: ValidatedOptions.default,
+                targetContainer: this.strings.targetContainerDefaultPlaceholder,
+                targetContainerList: [],
+                targetContainerLoading: false,
+                targetContainerError: false
+            });
+
+            // Update target container name field
+            this.handleTargetContainerNameChange(this.state.targetContainerName);
+        }
+    }
+
     render() {
         return (
             <Modal isOpen={this.props.selectContainerMigrateModal}
@@ -181,6 +213,7 @@ class ContainerMigrateModal extends React.Component {
                    title={_(`Migrate container ${this.props.containerWillMigrate.Names} to another host`)}
                    footer={<>
                        <Button variant="primary" isDisabled={this.isMigrateButtonDisabled()}
+                               isLoading={this.props.migrateInProgress}
                                onClick={() => this.props.handleMigrateContainer(this.state, this.state.targetHost,
                                                                                 this.getContainerName())}>
                            {_("Migrate")}
@@ -192,88 +225,88 @@ class ContainerMigrateModal extends React.Component {
                        <label className="migration-progress">
                            {this.props.migrationStateLabel}
                        </label>
-                       {this.props.migrateInProgress && <div className="spinner spinner-sm pull-right" />}
                    </>}
             >
-                <div className="ct-form">
-                    <label className="control-label" htmlFor="migrate-dialog-action">
-                        {_("Action")}
-                    </label>
-                    <div id="migrate-dialog-action">
-                        <Radio id="migrate-dialog-action-new-container"
+                <Form isHorizontal>
+                    <FormGroup id="migrate-dialog-action" label={_("Action")} isInline>
+                        <Radio id="migrate-dialog-action-new-container" isDisabled={this.props.migrateInProgress}
                                isChecked={this.state.action === "new-container"} name="action"
                                onChange={this.handleActionSelect} label={_("Create new container")} />
-                        <Radio id="migrate-dialog-action-existing-container"
+                        <Radio id="migrate-dialog-action-existing-container" isDisabled={this.props.migrateInProgress}
                                isChecked={this.state.action === "existing-container"} name="action"
                                onChange={this.handleActionSelect} label={_("Restore into existing container")} />
-                    </div>
+                    </FormGroup>
 
-                    <label className="control-label" htmlFor="migrate-dialog-target-host-form-group">
-                        {_("Target host")}
-                    </label>
                     <FormGroup id="migrate-dialog-target-host-form-group" validated={this.state.targetHostValidated}
+                               label={_("Target host")}
+                               helperText={_("Add destination hosts using the host selector")}
+                               helperTextIcon={<InfoCircleIcon />}
                                helperTextInvalid={this.strings.targetHostInaccessible}
                                helperTextInvalidIcon={<ExclamationCircleIcon />}>
                         <Select id="migrate-dialog-target-host" isOpen={this.state.targetHostOpen}
+                                isDisabled={this.props.migrateInProgress}
+                                placeholderText={this.strings.targetHostPlaceholder}
                                 selections={this.state.targetHost}
                                 onToggle={targetHostOpen => this.setState({ targetHostOpen })}
                                 onSelect={this.handleTargetHostSelect}>
                             {
                                 Object.keys(this.props.remoteHosts).map(host =>
                                     <SelectOption value={this.props.remoteHosts[host]} key={host} />)
-                                        .concat([<SelectOption value={this.strings.targetHostPlaceholder}
-                                                               key="_placeholder" isPlaceholder />])
                             }
                         </Select>
                     </FormGroup>
 
-                    <label className="control-label" htmlFor="migrate-dialog-target-container">
-                        {_("Target container")}
-                    </label>
-                    {this.state.action === "new-container"
-                        ? <FormGroup id="migrate-dialog-target-container"
-                                     validated={this.state.targetContainerNameValidated}
-                                     helperTextInvalid={this.state.targetContainerNameError}
-                                     helperTextInvalidIcon={<ExclamationCircleIcon />}>
-                            <TextInput id="migrate-container-target-name" text={this.state.targetContainerName}
-                                       onChange={this.handleTargetContainerNameChange}
-                                       validated={this.state.targetContainerNameValidated} />
-                        </FormGroup> : <Select id="migrate-dialog-target-container" isOpen={this.state.targetContainerOpen}
-                                  typeAheadAriaLabel={this.state.targetContainerPlaceholder}
-                                  placeholderText={this.state.targetContainerPlaceholder}
-                                  selections={this.state.targetContainer} isDisabled={this.isTargetContainerDisabled()}
-                                  onToggle={targetContainerOpen => this.setState({ targetContainerOpen })}
-                                  onSelect={this.handleTargetContainerSelect}>
-                            {
-                                this.state.targetContainerList.map(container => <SelectOption value={container}
-                                                                                              key={container} />)
-                            }
-                        </Select>}
+                    <FormGroup id="migrate-dialog-target" label={_("Target container")}
+                               validated={this.state.action === "new-container"
+                                   ? this.state.targetContainerNameValidated
+                                   : ValidatedOptions.default}
+                               helperTextInvalid={this.state.targetContainerNameError}
+                               helperTextInvalidIcon={<ExclamationCircleIcon />}>
+                        {this.state.action === "new-container"
+                            ? <TextInput id="migrate-container-target-name" value={this.state.targetContainerName}
+                                           onChange={this.handleTargetContainerNameChange}
+                                           validated={this.state.targetContainerNameValidated} />
+                            : <Select id="migrate-dialog-target-container"
+                                                   isOpen={this.state.targetContainerOpen}
+                                                   placeholderText={this.state.targetContainerPlaceholder}
+                                                   selections={this.state.targetContainer}
+                                                   isDisabled={this.isTargetContainerDisabled()}
+                                                   onToggle={targetContainerOpen =>
+                                                       this.setState({ targetContainerOpen })}
+                                                   onSelect={this.handleTargetContainerSelect}>
+                                {
+                                    this.state.targetContainerList.map(container => <SelectOption value={container}
+                                                                                                  key={container} />)
+                                }
+                            </Select>}
+                    </FormGroup>
 
-                    <label className="control-label" htmlFor="migrate-dialog-keep">
-                        {_("Options")}
-                    </label>
-                    <div id="migrate-dialog-options">
+                    <FormGroup id="migrate-dialog-options" label={_("Options")}>
                         <Checkbox id="migrate-dialog-keep" name="keep" isChecked={this.state.keep}
                                   label={_("Keep all temporary checkpoint files")}
-                                  onChange={this.handleChange} />
+                                  isDisabled={this.props.migrateInProgress} onChange={this.handleChange} />
                         <Checkbox id="migrate-dialog-leaveRunning" name="leaveRunning"
                                   label={_("Leave running after migration")}
-                                  isChecked={this.state.leaveRunning} onChange={this.handleChange} />
+                                  isChecked={this.state.leaveRunning} isDisabled={this.props.migrateInProgress}
+                                  onChange={this.handleChange} />
                         <Checkbox id="migrate-dialog-tcpEstablished" name="tcpEstablished"
                                   label={_("Preserve established TCP connections")}
-                                  isChecked={this.state.tcpEstablished} onChange={this.handleChange} />
+                                  isChecked={this.state.tcpEstablished} isDisabled={this.props.migrateInProgress}
+                                  onChange={this.handleChange} />
                         <Checkbox id="migrate-dialog-ignoreRootFS" name="ignoreRootFS"
                                   label={_("Do not migrate root file-system changes")}
-                                  isChecked={this.state.ignoreRootFS} onChange={this.handleChange} />
+                                  isChecked={this.state.ignoreRootFS} isDisabled={this.props.migrateInProgress}
+                                  onChange={this.handleChange} />
                         <Checkbox id="migrate-dialog-ignoreStaticIP" name="ignoreStaticIP"
                                   label={_("Ignore IP address if set statically")}
-                                  isChecked={this.state.ignoreStaticIP} onChange={this.handleChange} />
+                                  isChecked={this.state.ignoreStaticIP} isDisabled={this.props.migrateInProgress}
+                                  onChange={this.handleChange} />
                         <Checkbox id="migrate-dialog-ignoreStaticMAC" name="ignoreStaticMAC"
                                   label={_("Ignore MAC address if set statically")}
-                                  isChecked={this.state.ignoreStaticMAC} onChange={this.handleChange} />
-                    </div>
-                </div>
+                                  isChecked={this.state.ignoreStaticMAC} isDisabled={this.props.migrateInProgress}
+                                  onChange={this.handleChange} />
+                    </FormGroup>
+                </Form>
             </Modal>
         );
     }

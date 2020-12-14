@@ -152,13 +152,27 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
     if (podmanSocket.ActiveState !== "active")
         throw new Error("Podman system service not active on target host");
 
-    // Make sure the image the container uses is present on the target host
+    // Check if the specified target container exists
+    let targetContainerExists;
+    try {
+        callbacks.containerInspect();
+        await inspectContainer(system, targetId, targetHost);
+        targetContainerExists = true;
+    } catch (error) {
+        if (error.status === 404) {
+            targetContainerExists = false;
+        } else {
+            throw error;
+        }
+    }
+
+    // Make sure the image the container uses is present on the target host if creating a new container
     const containerInfo = await inspectContainer(system, id, host);
     try {
         callbacks.imageInspect();
         await inspectImage(system, containerInfo.Image, targetHost);
     } catch (error) {
-        if (error.status === 404) {
+        if (error.status === 404 && !targetContainerExists) {
             // Image not found - try to copy it to the target host
             callbacks.imageExport();
             let imageFile;
@@ -174,9 +188,22 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
                 host: targetHost
             });
             await imageSaveChannel.wait();
-            await exportImage(system, containerInfo.Image, { format: "docker-archive", compress: true }, host,
-                              imageSaveChannel.id);
-            imageSaveChannel.control({ command: "done" });
+            try {
+                await exportImage(system, containerInfo.Image, { format: "docker-archive", compress: true }, host,
+                                  imageSaveChannel.id);
+                imageSaveChannel.control({ command: "done" });
+            } catch {
+                // The error gets written into the image file (because of the redirect).
+                // In order for it to be correctly reported, it has to be read from the file.
+                imageSaveChannel.control({ command: "done" });
+                await new Promise(resolve => imageSaveChannel.addEventListener("close", resolve));
+
+                const errorFile = cockpit.file(imageFile, { host: targetHost });
+                const error = await errorFile.read();
+                errorFile.close();
+                throw new Error(error);
+            }
+
             await new Promise(resolve => imageSaveChannel.addEventListener("close", resolve));
 
             callbacks.imageImport();
@@ -216,13 +243,14 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
                     binary: true,
                     host: targetHost
                 });
-                await imageReadChannel.wait();
-                await new Promise(resolve =>
+                await new Promise((resolve, reject) => {
+                    imageReadChannel.wait()
+                            .catch(reject);
                     imageReadChannel.addEventListener("control", function (e, options) {
                         if (options.command === "done")
                             resolve();
-                    })
-                );
+                    });
+                });
                 imageLoadChannel.control({ command: "done" });
                 await new Promise((resolve, reject) =>
                     imageLoadChannel.addEventListener("close", function (e, options) {
@@ -254,29 +282,20 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
                     // Ignore
                 }
             }
-        } else {
+        } else if (!targetContainerExists) {
             throw error;
         }
     }
 
-    let containerCreated = false;
-    try {
-        callbacks.containerInspect();
-        await inspectContainer(system, targetId, targetHost);
-    } catch (error) {
-        if (error.status === 404) {
-            callbacks.containerCreate();
-            const dummyConfig = {
-                name: targetId,
-                image: containerInfo.Image,
-                terminal: true,
-                command: containerInfo.Args
-            };
-            await createContainer(system, dummyConfig, targetHost);
-            containerCreated = true;
-        } else {
-            throw error;
-        }
+    if (!targetContainerExists) {
+        callbacks.containerCreate();
+        const dummyConfig = {
+            name: targetId,
+            image: containerInfo.Image,
+            terminal: true,
+            command: containerInfo.Args
+        };
+        await createContainer(system, dummyConfig, targetHost);
     }
 
     // Checkpoint the selected container
@@ -360,11 +379,14 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
             binary: true,
             host: targetHost
         });
-        await containerReadChannel.wait();
-        await new Promise(resolve => containerReadChannel.addEventListener("control", function (e, options) {
-            if (options.command === "done")
-                resolve();
-        }));
+        await new Promise((resolve, reject) => {
+            containerReadChannel.wait()
+                    .catch(reject);
+            containerReadChannel.addEventListener("control", function (e, options) {
+                if (options.command === "done")
+                    resolve();
+            });
+        });
         containerImportChannel.control({ command: "done" });
         await new Promise((resolve, reject) =>
             containerImportChannel.addEventListener("close", function (e, options) {
@@ -377,7 +399,7 @@ export async function migrateContainer(system, id, targetId, args, targetHost, c
             })
         );
     } catch (e) {
-        if (containerCreated)
+        if (!targetContainerExists)
             await delContainer(system, targetId, true, targetHost);
         throw e;
     } finally {
