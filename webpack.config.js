@@ -191,6 +191,7 @@ module.exports = {
                         options: {
                             sourceMap: true,
                             sassOptions: {
+                                includePaths: [ path.resolve(nodedir) ],
                                 outputStyle: 'compressed',
                             }
                         }

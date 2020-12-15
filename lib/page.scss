@@ -1,5 +1,7 @@
+@import "./_global-variables.scss";
+@import "@patternfly/patternfly/base/patternfly-themes.scss";
 @import "./patternfly/patternfly-4-overrides.scss";
-@import "../node_modules/@patternfly/patternfly/components/Page/page.scss";
+@import "@patternfly/patternfly/components/Page/page.scss";
 
 a {
     cursor: pointer;
@@ -155,10 +157,14 @@ a.disabled:hover {
 
 .dialog-wait-ct {
     margin-top: 3px;
+    /* Right align footer idle messages after the buttons */
+    margin-left: auto;
 }
 
 .dialog-wait-ct .spinner {
     display: inline-block;
+    /* Add spacing betweem possible messages and the spinner */
+    margin-left: var(--pf-global--spacer--md);
 }
 
 .dialog-wait-ct span {
@@ -174,7 +180,7 @@ a.disabled:hover {
 }
 
 /* HACK: https://github.com/patternfly/patternfly/issues/255 */
-input[type=number] {
+input[type=number]:not(.pf-c-form-control) {
   padding: 0 0 0 5px;
 }
 
