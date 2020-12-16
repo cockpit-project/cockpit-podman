@@ -165,6 +165,10 @@ $(VM_IMAGE): $(VM_DEP) bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
 	bots/image-customize -v $(VM_PACKAGE) -s $(CURDIR)/test/vm.install $(TEST_OS)
 	$(RAWHIDE)
+	# HACK: systemd kills the services after 90s
+	# See https://github.com/containers/podman/issues/8751
+	bots/image-customize -r "sed -i 's/Type=notify/Type=exec/' /usr/lib/systemd/system/podman.service" -r "sed -i 's/Type=notify/Type=exec/' /usr/lib/systemd/user/podman.service" $(TEST_OS)
+
 
 # convenience target for the above
 vm: $(VM_IMAGE)
