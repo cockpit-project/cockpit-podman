@@ -105,7 +105,7 @@ class Images extends React.Component {
 
     handleForceRemoveImage() {
         const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
-        client.delImage(this.state.imageWillDelete.isSystem, id, true)
+        return client.delImage(this.state.imageWillDelete.isSystem, id, true)
                 .then(reply => {
                     this.setState({
                         setImageRemoveErrorModal: false
