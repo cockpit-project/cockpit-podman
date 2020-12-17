@@ -1,11 +1,10 @@
 import React from 'react';
 import {
     Button, DataList, DataListItem, DataListItemRow, DataListCell, DataListItemCells,
-    Flex, Form, FormGroup, Modal, Radio, TextInput
+    Flex, Form, FormGroup, FormSelect, FormSelectOption, Modal, Radio, TextInput
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
-import * as Select from '../lib/cockpit-components-select.jsx';
 import { EmptyStatePanel } from "../lib/cockpit-components-empty-state.jsx";
 import { ErrorNotification } from './Notification.jsx';
 import cockpit from 'cockpit';
@@ -143,21 +142,14 @@ export class ImageSearchModal extends React.Component {
                                        onChange={value => this.onValueChanged('imageIdentifier', value)} />
                         </FormGroup>
                         <FormGroup fieldId="registry-select" label={_("in")}>
-                            <Select.Select id='registry-select'
-                                initial={this.state.registry}
+                            <FormSelect id='registry-select'
+                                value={this.state.registry}
                                 onChange={value =>
                                     this.setState({ registry: value }, () => this.onSearchTriggered(false))
                                 }>
-                                <Select.SelectEntry data="" key="all">
-                                    {_("All registries")}
-                                </Select.SelectEntry>
-                                {(this.props.registries.search || []).map(r => {
-                                    return <Select.SelectEntry data={r} key={r}>
-                                        {r}
-                                    </Select.SelectEntry>;
-                                })
-                                }
-                            </Select.Select>
+                                <FormSelectOption value="" key="all" label={_("All registries")} />
+                                {(this.props.registries.search || []).map(r => <FormSelectOption value={r} key={r} label={r} />)}
+                            </FormSelect>
                         </FormGroup>
                     </Flex>
                 </Form>

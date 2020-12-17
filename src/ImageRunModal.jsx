@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Checkbox, Form, FormGroup, InputGroup, Modal, TextInput } from '@patternfly/react-core';
+import {
+    Button, Checkbox, Form, FormGroup, FormSelect, FormSelectOption,
+    InputGroup, Modal, TextInput
+} from '@patternfly/react-core';
 import { CloseIcon, PlusIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
-import * as Select from '../lib/cockpit-components-select.jsx';
 import { ErrorNotification } from './Notification.jsx';
 import { FileAutoComplete } from '../lib/cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
@@ -53,16 +55,12 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                            placeholder={_("Container port")}
                            value={item.containerPort || ''}
                            onChange={value => onChange(idx, 'containerPort', value)} />
-                <Select.Select extraClass='pf-c-form-control container-port-protocol'
-                               initial={item.protocol}
+                <FormSelect className='pf-c-form-control container-port-protocol'
+                               value={item.protocol}
                                onChange={value => onChange(idx, 'protocol', value)}>
-                    <Select.SelectEntry data='tcp' key='tcp'>
-                        {_("TCP")}
-                    </Select.SelectEntry>
-                    <Select.SelectEntry data='udp' key='udp'>
-                        {_("UDP")}
-                    </Select.SelectEntry>
-                </Select.Select>
+                    <FormSelectOption value='tcp' key='tcp' label={_("TCP")} />
+                    <FormSelectOption value='udp' key='udp' label={_("UDP")} />
+                </FormSelect>
                 <Button variant='secondary'
                         className={"btn-close" + (idx === 0 && !item.IP && !item.hostPort && !item.containerPort ? ' invisible' : '')}
                         isSmall
@@ -130,30 +128,20 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
                         aria-label={_("Add item")} />
             </InputGroup>
             <InputGroup className='ct-input-group-spacer-sm'>
-                <Select.Select extraClass='pf-c-form-control'
-                               initial={item.mode}
+                <FormSelect className='pf-c-form-control'
+                               value={item.mode}
                                onChange={value => onChange(idx, 'mode', value)}>
-                    <Select.SelectEntry data='ro' key='ro'>
-                        {_("ReadOnly")}
-                    </Select.SelectEntry>
-                    <Select.SelectEntry data='rw' key='rw'>
-                        {_("ReadWrite")}
-                    </Select.SelectEntry>
-                </Select.Select>
+                    <FormSelectOption value='ro' key='ro' label={_("ReadOnly")} />
+                    <FormSelectOption value='rw' key='rw' label={_("ReadWrite")} />
+                </FormSelect>
                 { options && options.selinuxAvailable &&
-                    <Select.Select extraClass='pf-c-form-control'
-                                   initial={item.mode}
+                    <FormSelect className='pf-c-form-control'
+                                   value={item.mode}
                                    onChange={value => onChange(idx, 'selinux', value)}>
-                        <Select.SelectEntry data='' key=''>
-                            {_("No SELinux label")}
-                        </Select.SelectEntry>
-                        <Select.SelectEntry data='z' key='z'>
-                            {_("Shared")}
-                        </Select.SelectEntry>
-                        <Select.SelectEntry data='Z' key='Z'>
-                            {_("Private")}
-                        </Select.SelectEntry>
-                    </Select.Select>
+                        <FormSelectOption value='' key='' label={_("No SELinux label")} />
+                        <FormSelectOption value='z' key='z' label={_("Shared")} />
+                        <FormSelectOption value='Z' key='Z' label={_("Private")} />
+                    </FormSelect>
                 }
             </InputGroup>
         </>
@@ -365,20 +353,14 @@ export class ImageRunModal extends React.Component {
                                    min={0}
                                    isReadOnly={!this.state.memoryConfigure}
                                    onChange={value => this.onValueChanged('memory', value)} />
-                        <Select.Select id='memory-unit-select'
-                                       initial={this.state.memoryUnit}
-                                       enabled={this.state.memoryConfigure}
+                        <FormSelect id='memory-unit-select'
+                                       value={this.state.memoryUnit}
+                                       isDisabled={!this.state.memoryConfigure}
                                        onChange={value => this.onValueChanged('memoryUnit', value)}>
-                            <Select.SelectEntry data={units.KiB.name} key={units.KiB.name}>
-                                {_("KiB")}
-                            </Select.SelectEntry>
-                            <Select.SelectEntry data={units.MiB.name} key={units.MiB.name}>
-                                {_("MiB")}
-                            </Select.SelectEntry>
-                            <Select.SelectEntry data={units.GiB.name} key={units.GiB.name}>
-                                {_("GiB")}
-                            </Select.SelectEntry>
-                        </Select.Select>
+                            <FormSelectOption value={units.KiB.name} key={units.KiB.name} label={_("KiB")} />
+                            <FormSelectOption value={units.MiB.name} key={units.MiB.name} label={_("MiB")} />
+                            <FormSelectOption value={units.GiB.name} key={units.GiB.name} label={_("GiB")} />
+                        </FormSelect>
                     </InputGroup>
                 </FormGroup>
 

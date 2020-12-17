@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import {
     Button, Badge,
     Card, CardBody, CardHeader, CardTitle, CardActions,
-    Text, TextVariants
+    Text, TextVariants, FormSelect, FormSelectOption,
 } from '@patternfly/react-core';
 import { TrashIcon } from '@patternfly/react-icons';
 
@@ -14,7 +14,6 @@ import ContainerDetails from './ContainerDetails.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
 import { DropDown } from './Dropdown.jsx';
-import * as Select from '../lib/cockpit-components-select.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
 import ContainerRestoreModal from './ContainerRestoreModal.jsx';
@@ -439,10 +438,10 @@ class Containers extends React.Component {
         const filterRunning =
             <>
                 <label className="heading-label" htmlFor="containers-containers-filter">{_("Show")}</label>
-                <Select.Select id="containers-containers-filter" initial={this.state.filter} onChange={this.handleFilterChange}>
-                    <Select.SelectEntry data='running'>{_("Only running")}</Select.SelectEntry>
-                    <Select.SelectEntry data='all'>{_("All")}</Select.SelectEntry>
-                </Select.Select>
+                <FormSelect id="containers-containers-filter" value={this.state.filter} onChange={this.handleFilterChange}>
+                    <FormSelectOption value='running' label={_("Only running")} />
+                    <FormSelectOption value='all' label={_("All")} />
+                </FormSelect>
             </>;
 
         return (

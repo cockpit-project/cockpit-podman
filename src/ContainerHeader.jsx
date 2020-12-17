@@ -1,7 +1,6 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import { TextInput } from '@patternfly/react-core';
-import * as Select from '../lib/cockpit-components-select.jsx';
+import { TextInput, FormSelect, FormSelectOption } from '@patternfly/react-core';
 const _ = cockpit.gettext;
 
 class ContainerHeader extends React.Component {
@@ -37,11 +36,11 @@ class ContainerHeader extends React.Component {
                 { this.props.twoOwners &&
                     <>
                         <label className="heading-label" htmlFor="containers-containers-owner">{_("Owner")}</label>
-                        <Select.Select id="containers-containers-owner" initial={this.state.owner} onChange={this.handleOwnerChange}>
-                            <Select.SelectEntry data='user'>{this.props.user}</Select.SelectEntry>
-                            <Select.SelectEntry data='system'>{_("System")}</Select.SelectEntry>
-                            <Select.SelectEntry data='all'>{_("All")}</Select.SelectEntry>
-                        </Select.Select>
+                        <FormSelect id="containers-containers-owner" value={this.state.owner} onChange={this.handleOwnerChange}>
+                            <FormSelectOption value='user' label={this.props.user} />
+                            <FormSelectOption value='system' label={_("System")} />
+                            <FormSelectOption value='all' label={_("All")} />
+                        </FormSelect>
                     </>
                 }
                 <TextInput id="containers-filter"
