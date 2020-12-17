@@ -14,7 +14,7 @@ import ImageUsedBy from './ImageUsedBy.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import { ImageDeleteModal } from './ImageDeleteModal.jsx';
-import ImageRemoveErrorModal from './ImageRemoveErrorModal.jsx';
+import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
 
@@ -253,11 +253,11 @@ class Images extends React.Component {
                     {toggleIntermediate}
                 </CardBody>
                 {this.state.setImageRemoveErrorModal &&
-                    <ImageRemoveErrorModal
-                            handleCancelImageRemoveError={this.handleCancelImageRemoveError}
-                            handleForceRemoveImage={this.handleForceRemoveImage}
-                            imageWillDelete={this.state.imageWillDelete}
-                            imageRemoveErrorMsg={this.imageRemoveErrorMsg} /> }
+                    <ForceRemoveModal
+                            name={this.state.imageWillDelete.RepoTags[0]}
+                            handleCancel={this.handleCancelImageRemoveError}
+                            handleForceRemove={this.handleForceRemoveImage}
+                            reason={this.imageRemoveErrorMsg} /> }
                 {this.state.selectImageDeleteModal &&
                 <ImageDeleteModal
                     imageWillDelete={this.state.imageWillDelete}

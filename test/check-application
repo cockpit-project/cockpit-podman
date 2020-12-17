@@ -423,26 +423,26 @@ class TestApplication(testlib.MachineCase):
         # delete running container busybox using force delete
         if auth:
             b.click('#containers-containers tbody tr:contains("swamped-crate-system") + tr button.btn-delete')
-            self.confirm_modal("btn-ctr-forcedelete")
+            self.confirm_modal("Force delete")
             b.wait_not_in_text("#containers-containers", "swamped-crate-system")
 
         self.filter_containers("all")
 
         b.click('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
-        self.confirm_modal("btn-ctr-forcedelete")
+        self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-containers", "swamped-crate-user")
 
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh-user")')
         b.click('#containers-containers tbody tr:contains("test-sh-user") td.pf-c-table__toggle button')
         b.click('#containers-containers tbody tr:contains("test-sh-user") + tr button.btn-delete')
-        self.confirm_modal("btn-ctr-delete")
+        self.confirm_modal("Delete")
         b.wait_not_in_text("#containers-containers", "test-sh-user")
 
         if auth:
             b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh-system")')
             b.click('#containers-containers tbody tr:contains("test-sh-system") td.pf-c-table__toggle button')
             b.click('#containers-containers tbody tr:contains("test-sh-system") + tr button.btn-delete')
-            self.confirm_modal("btn-ctr-delete")
+            self.confirm_modal("Delete")
             b.wait_not_in_text("#containers-containers", "test-sh-system")
 
         def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
@@ -451,7 +451,7 @@ class TestApplication(testlib.MachineCase):
             b.click('#containers-containers tbody tr:contains({0}) td.pf-c-table__toggle button'.format(container_name))
             # open commit modal and close it using cancel
             b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
-            self.confirm_modal("btn-ctr-cancel-commit")
+            self.confirm_modal("Cancel")
             # open commit modal and create an image
             b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
             b.wait_visible(".pf-c-modal-box")
@@ -537,8 +537,7 @@ class TestApplication(testlib.MachineCase):
         b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:1']", True)
         b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:3']", True)
         b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:latest']", False)
-        b.click(".pf-c-modal-box #btn-img-delete")
-        b.wait_not_present("pf-c-modal-box #btn-img-delete")
+        self.confirm_modal("Delete")
         b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:latest")
         b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:2")
         b.wait_not_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:1")
@@ -549,10 +548,8 @@ class TestApplication(testlib.MachineCase):
         self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:latest']"))
         self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:2']"))
         self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:4']"))
-        b.click(".pf-c-modal-box #btn-img-delete")
-        b.wait_not_present("pf-c-modal-box #btn-img-delete")
-        b.click(".pf-c-modal-box #btn-img-deleteerror")
-        b.wait_not_present("pf-c-modal-box #btn-img-deleteerror")
+        self.confirm_modal("Delete")
+        self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-images", busybox_sel)
 
         # Check that we correctly show networking information
@@ -575,10 +572,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
         b.click(alpine_sel + " + tr button.btn-delete")
-        b.click(".pf-c-modal-box #btn-img-delete")
-        b.wait_not_present("pf-c-modal-box #btn-img-delete")
-        b.click(".pf-c-modal-box #btn-img-deleteerror")
-        b.wait_not_present("pf-c-modal-box #btn-img-deleteerror")
+        self.confirm_modal("Delete")
+        self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-images", alpine_sel)
 
         b.wait_collected_text("#containers-containers .container-name", "")
@@ -709,7 +704,7 @@ class TestApplication(testlib.MachineCase):
 
                 if force:
                     # Confirm force delete
-                    b.click(".pf-c-modal-box #btn-img-deleteerror")
+                    b.click(".pf-c-modal-box button:contains('Force delete')")
 
                 b.wait_not_present(sel)
 
@@ -1415,11 +1410,11 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         b.set_val("#containers-containers-filter", value)
 
-    def confirm_modal(self, key_type):
-        """Wait for the pop up window and click the button with className as key_type"""
+    def confirm_modal(self, text):
+        """Wait for the pop up window and click the button with text"""
         b = self.browser
-        b.click(".pf-c-modal-box footer .%s" % key_type)
-        b.wait_not_present(".pf-c-modal-box footer .%s" % key_type)
+        b.click(".pf-c-modal-box footer button:contains(%s)" % text)
+        b.wait_not_present(".pf-c-modal-box footer button:contains(%s)" % text)
 
 if __name__ == '__main__':
     testlib.test_main()
