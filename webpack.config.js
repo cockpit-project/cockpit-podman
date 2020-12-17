@@ -81,14 +81,6 @@ module.exports = {
                         options: {
                             multiple: [
                                 {
-                                    search: /src:url[(]"patternfly-fonts-fake-path\/PatternFlyIcons[^}]*/g,
-                                    replace: 'src:url("../base1/fonts/patternfly.woff") format("woff");',
-                                },
-                                {
-                                    search: /src:url[(]"patternfly-fonts-fake-path\/fontawesome[^}]*/,
-                                    replace: 'font-display:block; src:url("../base1/fonts/fontawesome.woff?v=4.2.0") format("woff");',
-                                },
-                                {
                                     search: /src:url\("patternfly-icons-fake-path\/pficon[^}]*/g,
                                     replace: 'src:url("../base1/fonts/patternfly.woff") format("woff");',
                                 },
