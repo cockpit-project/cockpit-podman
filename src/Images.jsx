@@ -238,15 +238,6 @@ class Images extends React.Component {
             </span>;
         }
 
-        const imageRemoveErrorModal =
-            <ImageRemoveErrorModal
-                    setImageRemoveErrorModal={this.state.setImageRemoveErrorModal}
-                    handleCancelImageRemoveError={this.handleCancelImageRemoveError}
-                    handleForceRemoveImage={this.handleForceRemoveImage}
-                    imageWillDelete={this.state.imageWillDelete}
-                    imageRemoveErrorMsg={this.imageRemoveErrorMsg}
-            />;
-
         return (
             <Card id="containers-images" key="images" className="containers-images">
                 <CardHeader>
@@ -261,7 +252,12 @@ class Images extends React.Component {
                                   rows={imageRows} />
                     {toggleIntermediate}
                 </CardBody>
-                {imageRemoveErrorModal}
+                {this.state.setImageRemoveErrorModal &&
+                    <ImageRemoveErrorModal
+                            handleCancelImageRemoveError={this.handleCancelImageRemoveError}
+                            handleForceRemoveImage={this.handleForceRemoveImage}
+                            imageWillDelete={this.state.imageWillDelete}
+                            imageRemoveErrorMsg={this.imageRemoveErrorMsg} /> }
                 {this.state.selectImageDeleteModal &&
                 <ImageDeleteModal
                     imageWillDelete={this.state.imageWillDelete}
