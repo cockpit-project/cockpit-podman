@@ -30,6 +30,26 @@ if (production) {
     }));
 }
 
+/* keep this in sync with cockpit.git */
+const babel_loader = {
+    loader: "babel-loader",
+    options: {
+        presets: [
+            ["@babel/env", {
+                "targets": {
+                    "chrome": "57",
+                    "firefox": "52",
+                    "safari": "10.3",
+                    "edge": "16",
+                    "opera": "44"
+                },
+                "useBuiltIns": "usage",
+            }],
+            "@babel/preset-react"
+        ]
+    }
+}
+
 module.exports = {
     mode: production ? 'production' : 'development',
     resolve: {
@@ -57,12 +77,12 @@ module.exports = {
                 enforce: 'pre',
                 exclude: /node_modules/,
                 loader: 'eslint-loader',
-                test: /\.(jsx|js)$/
+                test: /\.(js|jsx)$/
             },
             {
                 exclude: /node_modules/,
-                loader: 'babel-loader',
-                test: /\.(jsx|js)$/
+                use: babel_loader,
+                test: /\.(js|jsx)$/
             },
             /* HACK: remove unwanted fonts from PatternFly's css */
             {
