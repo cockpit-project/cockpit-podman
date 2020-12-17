@@ -8,7 +8,7 @@ const ImageRemoveErrorModal = (props) => {
     const [inProgress, setInProgress] = useState(false);
     const repoTag = props.imageWillDelete.RepoTags ? _(props.imageWillDelete.RepoTags[0]) : "";
     return (
-        <Modal isOpen={props.setImageRemoveErrorModal}
+        <Modal isOpen
                showClose={false}
                position="top" variant="medium"
                onClose={props.handleCancelImageRemoveError}
