@@ -334,12 +334,12 @@ class TestApplication(testlib.MachineCase):
 
         if auth:
             # Run two containers as system (first exits immediately)
-            self.execute(auth, "podman run -d --name test-sh-system alpine sh")
-            self.execute(auth, "podman run -d --name swamped-crate-system busybox sleep 1000")
+            self.execute(auth, "podman run -d --name test-sh-system alpine:latest sh")
+            self.execute(auth, "podman run -d --name swamped-crate-system busybox:latest sleep 1000")
 
         # Run two containers as admin (first exits immediately)
-        self.execute(False, "podman run -d --name test-sh-user alpine sh")
-        self.execute(False, "podman run -d --name swamped-crate-user busybox sleep 1000")
+        self.execute(False, "podman run -d --name test-sh-user alpine:latest sh")
+        self.execute(False, "podman run -d --name swamped-crate-user busybox:latest sleep 1000")
 
         # Test owner filtering
         if auth:
@@ -786,7 +786,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # run a container
-        self.execute(auth, "podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
+        self.execute(auth, "podman run -dit --name swamped-crate busybox:latest sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         b.wait_visible("#containers-containers")
@@ -874,7 +874,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # Run a container
-        self.execute(True, "podman run -dit --name swamped-crate busybox sh; podman stop swamped-crate")
+        self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
 
@@ -951,7 +951,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # Run a container
-        self.execute(True, "podman run -dit --name swamped-crate busybox sh")
+        self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
 
