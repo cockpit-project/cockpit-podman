@@ -1103,14 +1103,16 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/podman", superuser=auth)
-
+        # Just drop user images so we can use simpler selectors
         if auth:
-            # Just drop user containers so we can user simpler selectors
             self.execute(False, "podman rmi alpine busybox registry:2")
+
+        self.login_and_go("/podman", superuser=auth)
 
         b.wait_in_text("#containers-images", "busybox:latest")
         b.wait_in_text("#containers-images", "alpine:latest")
+        if auth:
+            b.wait_not_in_text("#containers-images", "admin")
 
         # Check command in alpine
         b.wait_visible('#containers-images td[data-label="Name"]:contains("alpine:latest")')
