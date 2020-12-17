@@ -17,7 +17,7 @@ import { DropDown } from './Dropdown.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
 import ContainerRestoreModal from './ContainerRestoreModal.jsx';
-import ContainerRemoveErrorModal from './ContainerRemoveErrorModal.jsx';
+import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
@@ -420,13 +420,13 @@ class Containers extends React.Component {
                 containerWillCheckpoint={this.state.containerWillRestore}
                 restoreInProgress={this.state.restoreInProgress}
             />;
-        const containerRemoveErrorModal =
-            <ContainerRemoveErrorModal
-                setContainerRemoveErrorModal={this.state.setContainerRemoveErrorModal}
-                handleCancelRemoveError={this.handleCancelRemoveError}
-                handleForceRemoveContainer={this.handleForceRemoveContainer}
-                containerWillDelete={this.state.containerWillDelete}
-                containerRemoveErrorMsg={this.containerRemoveErrorMsg}
+        let containerRemoveErrorModal = null;
+        if (this.state.setContainerRemoveErrorModal)
+            containerRemoveErrorModal = <ForceRemoveModal
+                name={this.state.containerWillDelete.Names}
+                handleCancel={this.handleCancelRemoveError}
+                handleForceRemove={this.handleForceRemoveContainer}
+                reason={_("Container is currently running.")}
             />;
 
         const containerCommitModal =
