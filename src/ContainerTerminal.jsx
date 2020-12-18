@@ -101,9 +101,9 @@ class ContainerTerminal extends React.Component {
     }
 
     resize(width) {
-        var padding = 11 + 5 + 50;
-        var realWidth = this.state.term._core._renderService.dimensions.actualCellWidth;
-        var cols = Math.floor((width - padding) / realWidth);
+        const padding = 11 + 5 + 50;
+        const realWidth = this.state.term._core._renderService.dimensions.actualCellWidth;
+        const cols = Math.floor((width - padding) / realWidth);
         this.state.term.resize(cols, 24);
         client.resizeContainersTTY(this.props.system, this.state.sessionId, this.props.tty, cols, 24)
                 .catch(e => this.setState({ errorMessage: e.message }));
@@ -234,7 +234,7 @@ class ContainerTerminal extends React.Component {
     }
 
     onChannelClose(event, options) {
-        var term = this.state.term;
+        const term = this.state.term;
         term.write('\x1b[31m disconnected \x1b[m\r\n');
         this.disconnectChannel();
         this.setState({ channel: null });
