@@ -134,7 +134,6 @@ export class ImageSearchModal extends React.Component {
                     <Flex spaceItems={{ default: 'inlineFlex', modifier: 'spaceItemsXl' }}>
                         <FormGroup fieldId="search-image-dialog-name" label={_("Search for")}>
                             <TextInput id='search-image-dialog-name'
-                                       autoFocus
                                        type='text'
                                        placeholder={_("Search by name or description")}
                                        value={this.state.imageIdentifier}
