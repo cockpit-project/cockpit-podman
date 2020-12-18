@@ -73,9 +73,9 @@ class ContainerLogs extends React.Component {
     }
 
     resize(width) {
-        var padding = 11 + 5 + 50;
-        var realWidth = this.state.view._core._renderService.dimensions.actualCellWidth;
-        var cols = Math.floor((width - padding) / realWidth);
+        const padding = 11 + 5 + 50;
+        const realWidth = this.state.view._core._renderService.dimensions.actualCellWidth;
+        const cols = Math.floor((width - padding) / realWidth);
         this.state.view.resize(cols, 24);
     }
 

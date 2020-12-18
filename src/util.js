@@ -29,9 +29,9 @@ export function format_memory_and_limit(usage, limit) {
 
     usage = usage / 1073741824; // 1024^3
     limit = limit / 1073741824;
-    var mtext = "";
-    var units = 1024;
-    var parts;
+    let mtext = "";
+    let units = 1024;
+    let parts;
     if (limit) {
         parts = cockpit.format_bytes(limit, units, true);
         mtext = " / " + parts.join(" ");
@@ -70,9 +70,6 @@ export function getCommitArr(arr, cmd) {
  * contains whitespace or the other quote character.  A backslash can
  * be used to protect any character.  Quotes can appear in the middle
  * of a word.
- *
- * This comes from cockpit-project/cockpit docker package. Changes should be
- * made there and then backported here.
  */
 
 export function quote_cmdline(words) {
@@ -83,9 +80,9 @@ export function quote_cmdline(words) {
     }
 
     function quote(word) {
-        var text = "";
-        var quote_char = "";
-        var i;
+        let text = "";
+        let quote_char = "";
+        let i;
         for (i = 0; i < word.length; i++) {
             if (word[i] == '\\' || word[i] == quote_char)
                 text += '\\';
@@ -105,8 +102,8 @@ export function quote_cmdline(words) {
 }
 
 export function unquote_cmdline(text) {
-    var words = [];
-    var next;
+    const words = [];
+    let next;
 
     function is_whitespace(c) {
         return c == ' ';
@@ -118,8 +115,8 @@ export function unquote_cmdline(text) {
     }
 
     function parse_word() {
-        var word = "";
-        var quote_char = null;
+        let word = "";
+        let quote_char = null;
 
         while (next < text.length) {
             if (text[next] == '\\') {

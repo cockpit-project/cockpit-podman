@@ -177,7 +177,7 @@ class Containers extends React.Component {
             data: { containerId: container.Id, containerStatus: container.State, width:this.state.width, system:container.isSystem, tty: tty }
         }];
 
-        var actions = [
+        const actions = [
             <Button
                 key={container.Id + "delete"}
                 variant="danger"
