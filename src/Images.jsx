@@ -99,7 +99,10 @@ class Images extends React.Component {
                         if (tags.length > 0)
                             this.handleRemoveImage(tags, all);
                     })
-                    .catch(console.log);
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to remove image $0"), tag);
+                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    });
         }
     }
 
@@ -111,7 +114,10 @@ class Images extends React.Component {
                         setImageRemoveErrorModal: false
                     });
                 })
-                .catch(ex => console.error("Failed to do RemoveImageForce call:", JSON.stringify(ex)));
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to force remove image $0"), this.state.imageWillDelete.RepoTags[0]);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
     }
 
     renderRow(image) {
