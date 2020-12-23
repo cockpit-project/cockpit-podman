@@ -260,3 +260,11 @@ export function pullImage(system, reference) {
                 .catch(reject);
     });
 }
+
+export function getNetworks(system) {
+    return new Promise((resolve, reject) => {
+        podmanCall("libpod/networks/json", "GET", {}, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}

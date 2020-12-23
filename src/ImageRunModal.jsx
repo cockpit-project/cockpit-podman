@@ -147,6 +147,32 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
         </>
     );
 
+const CniNetwork = ({ id, item, onChange, idx, removeitem, additem, options: { cniNetworks } }) =>
+    (
+        <>
+            <InputGroup className='ct-input-group-spacer-sm' id={id}>
+                <FormSelect id={'podman-run-modal-cninetwork-select-' + id}
+                               className='pf-c-form-control'
+                               value={item.cniName}
+                               onChange={value => onChange(idx, 'cniName', value)}>
+                    <FormSelectOption value="" key="" label="" />
+                    {
+                        cniNetworks.map((cniName) => (
+                            <FormSelectOption value={cniName} key={cniName} label={cniName} />
+                        ))
+                    }
+                </FormSelect>
+                <Button variant='secondary'
+                        className={"btn-close" + (idx === 0 && !item.cniName ? ' invisible' : '')}
+                        isSmall
+                        aria-label={_("Remove item")}
+                        icon={<CloseIcon />}
+                        onClick={() => removeitem(idx)} />
+                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")} icon={<PlusIcon />} />
+            </InputGroup>
+        </>
+    );
+
 class DynamicListForm extends React.Component {
     constructor(props) {
         super(props);
@@ -232,10 +258,36 @@ export class ImageRunModal extends React.Component {
             memoryUnit: 'MiB',
             validationFailed: {},
             volumes: [],
+            nsMode: props.image.isSystem ? 'bridge' : 'slirp4netns',
+            useCniNetworks: [],
+            cniNetworks: [],
+            slirp4netnsVersion: null,
+            cniNetworksLoaded: false,
+            slirp4netnsLoaded: false,
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onRunClicked = this.onRunClicked.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
+    }
+
+    componentDidMount() {
+        const { image: { isSystem } } = this.state;
+        client.getInfo(isSystem).then(({ host: { slirp4netns: { version } } }) => {
+            if (version) {
+                this.setState({
+                    slirp4netnsVersion: version,
+                });
+            }
+            this.setState({
+                slirp4netnsLoaded: true,
+            });
+        });
+        client.getNetworks(isSystem).then((networks) => {
+            this.setState({
+                cniNetworks: (networks || []).map(({ Name }) => Name),
+                cniNetworksLoaded: true,
+            });
+        });
     }
 
     getCreateConfig() {
@@ -258,6 +310,17 @@ export class ImageRunModal extends React.Component {
             createConfig.resource_limits = resourceLimit;
         }
         createConfig.terminal = this.state.hasTTY;
+        createConfig.netns = {
+            nsmode: this.state.nsMode,
+        };
+        if (this.state.nsMode === 'bridge' && this.state.useCniNetworks.length > 0) {
+            const cnis = this.state.useCniNetworks
+                    .filter(({ cniName }) => cniName)
+                    .map(({ cniName }) => cniName);
+            if (cnis.length > 0) {
+                createConfig.cni_networks = cnis;
+            }
+        }
         if (this.state.publish.length > 0)
             createConfig.portmappings = this.state.publish
                     .filter(port => port.containerPort)
@@ -320,6 +383,37 @@ export class ImageRunModal extends React.Component {
     render() {
         const { image } = this.props;
         const dialogValues = this.state;
+
+        const networkNsMode = (
+            <FormSelect id='run-image-dialog-nsmode'
+                       value={this.state.nsMode}
+                       onChange={value => this.onValueChanged('nsMode', value)}>
+                {
+                    (this.state.image.isSystem
+                        ? ['bridge', 'none', 'host']
+                        : ['none']).map((nsmode) =>
+                        (
+                            <FormSelectOption value={nsmode} key={nsmode} label={nsmode} />
+                        )
+                    )
+                }
+                {
+                    this.state.slirp4netnsVersion
+                        ? (
+                            <FormSelectOption value="slirp4netns" key="slirp4netns" label="slirp4netns" />
+                        )
+                        : null
+                }
+            </FormSelect>
+        );
+        const cniSelector = (
+            <DynamicListForm id='run-image-dialog-cni'
+                             formclass='cni-form'
+                             onChange={value => this.onValueChanged('useCniNetworks', value)}
+                             default={{ cniName: '' }}
+                             options={{ cniNetworks: this.state.cniNetworks }}
+                             itemcomponent={ <CniNetwork />} />
+        );
 
         const defaultBody = (
             <Form isHorizontal>
@@ -385,6 +479,22 @@ export class ImageRunModal extends React.Component {
                               isChecked={this.state.hasTTY}
                               label={_("With terminal")}
                               onChange={checked => this.onValueChanged('hasTTY', checked)} />
+                </FormGroup>
+
+                <FormGroup fieldId='run-image-dialog-nsmode' label={_("Network Namespace Mode")}>
+                    {
+                        !this.state.slirp4netnsLoaded
+                            ? <div id='run-image-dialog-nsmode'> { _("Loading...")} </div>
+                            : networkNsMode
+                    }
+                </FormGroup>
+
+                <FormGroup fieldId='run-image-dialog-cni' label={_("CNI Networks")} className={this.state.nsMode !== 'bridge' ? 'hidden' : ''}>
+                    {
+                        !this.state.cniNetworksLoaded
+                            ? <div id='run-image-dialog-cni'> { _("Loading...")} </div>
+                            : cniSelector
+                    }
                 </FormGroup>
 
                 <FormGroup fieldId='run-image-dialog-publish' label={_("Ports")}>
