@@ -26,25 +26,17 @@ all: $(WEBPACK_TEST)
 
 LINGUAS=$(basename $(notdir $(wildcard po/*.po)))
 
-po/POTFILES.js.in:
-	mkdir -p $(dir $@)
-	find src/ -name '*.js' -o -name '*.jsx' > $@
-
-po/$(PACKAGE_NAME).js.pot: po/POTFILES.js.in
+po/$(PACKAGE_NAME).js.pot:
 	xgettext --default-domain=cockpit --output=$@ --language=C --keyword= \
 		--keyword=_:1,1t --keyword=_:1c,2,1t --keyword=C_:1c,2 \
 		--keyword=N_ --keyword=NC_:1c,2 \
 		--keyword=gettext:1,1t --keyword=gettext:1c,2,2t \
 		--keyword=ngettext:1,2,3t --keyword=ngettext:1c,2,3,4t \
 		--keyword=gettextCatalog.getString:1,3c --keyword=gettextCatalog.getPlural:2,3,4c \
-		--from-code=UTF-8 --files-from=$^
+		--from-code=UTF-8 $$(find src/ -name '*.js' -o -name '*.jsx')
 
-po/POTFILES.html.in:
-	mkdir -p $(dir $@)
-	find src -name '*.html' > $@
-
-po/$(PACKAGE_NAME).html.pot: po/POTFILES.html.in $(NODE_MODULES_TEST)
-	po/html2po -f $^ -o $@
+po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST)
+	po/html2po -o $@ $$(find src -name '*.html')
 
 po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST)
 	po/manifest2po src/manifest.json -o $@
