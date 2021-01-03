@@ -857,7 +857,45 @@ class TestApplication(testlib.MachineCase):
         b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)", "")
         b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)", "")
 
-    def testCheckpointRestoreSystem(self):
+    @testlib.nondestructive
+    def testCheckpointRestoreCGroupsV2(self):
+        b = self.browser
+        m = self.machine
+
+        if not self.cgroupsV2():
+            return;
+
+        # Only Fedora works with CGroupsV2
+        if m.image in ["fedora-32", "fedora-33"]:
+            return self._testCheckpointRestore()
+
+        # On other systems just check that we get expected error messages
+
+        self.login_and_go("/podman", superuser=True)
+        b.wait_visible("#app")
+        self.filter_containers('all')
+
+        # Run a container
+        self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh")
+        b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
+        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
+
+        # Checkpoint the container
+        b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Stop) + button')
+        b.click('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
+        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
+        testlib.sit()
+        b.click('.pf-c-modal-box button:contains(Checkpoint)')
+        b.wait_not_present('.modal_dialog')
+
+        if self.has_criu:
+            b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
+        else:
+            b.wait_in_text(".pf-c-alert.pf-m-danger", "Checkpoint/Restore requires at least CRIU")
+
+    def testCheckpointRestoreCGroupsV1(self):
         b = self.browser
         m = self.machine
 
@@ -866,6 +904,12 @@ class TestApplication(testlib.MachineCase):
             self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"')
             self.machine.spawn("sleep 0.1 && reboot", "reboot")
             m.wait_reboot()
+
+        self._testCheckpointRestore()
+
+    def _testCheckpointRestore(self):
+        b = self.browser
+        m = self.machine
 
         self.login_and_go("/podman", superuser=True)
         b.wait_visible("#app")
@@ -933,38 +977,6 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tr:contains("busybox:latest") + tr #Start-dropdown ul li:has(a:contains(Restore))')
         b.click('.pf-c-modal-box button:contains(Restore)')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') == 'running')
-
-    @testlib.nondestructive
-    def testCheckpointRestoreSystemCrun(self):
-        b = self.browser
-        m = self.machine
-
-        if not self.cgroupsV2() and self.has_criu:
-            return
-
-        # With crun (CgroupsV2) or without criu checkpoints don't work yet
-
-        self.login_and_go("/podman", superuser=True)
-        b.wait_visible("#app")
-        self.filter_containers('all')
-
-        # Run a container
-        self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh")
-        b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
-
-        # Checkpoint the container
-        b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Stop) + button')
-        b.click('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
-        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
-        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
-        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
-        b.click('.pf-c-modal-box button:contains(Checkpoint)')
-        b.wait_not_present('.modal_dialog')
-        if self.has_criu:
-            b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
-        else:
-            b.wait_in_text(".pf-c-alert.pf-m-danger", "Checkpoint/Restore requires at least CRIU")
 
     @testlib.nondestructive
     def testNotRunning(self):
