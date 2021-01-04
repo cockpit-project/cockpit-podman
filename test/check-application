@@ -676,6 +676,9 @@ class TestApplication(testlib.MachineCase):
                 b.wait_visible('#containers-images td[data-label="Name"]:contains("{0}")'.format(self.imageName))
                 checkImage(b, "localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest"), "system" if self.user == "system" else "admin")
 
+                # Confirm that no error has happened
+                b.wait_not_present('h4.pf-c-alert__title:contains("Failed to download image")')
+
                 # Find out this image ID
                 self.imageSha = execute(self.user == "system", "podman inspect --format '{{{{.Id}}}}' localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest")).strip()
 
