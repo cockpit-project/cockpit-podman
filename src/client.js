@@ -256,7 +256,18 @@ export function pullImage(system, reference) {
             reference: reference,
         };
         podmanCall("libpod/images/pull", "POST", options, system)
-                .then(reply => resolve(JSON.parse(reply)))
+                .then(r => {
+                    // Need to check the last response if it contains error
+                    const responses = r.trim().split("\n");
+                    const response = JSON.parse(responses[responses.length - 1]);
+                    if (response.error) {
+                        response.message = response.error;
+                        reject(response);
+                    } else if (response.cause) // present for 400 and 500 errors
+                        reject(response);
+                    else
+                        resolve();
+                })
                 .catch(reject);
     });
 }
