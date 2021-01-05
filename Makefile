@@ -50,11 +50,6 @@ update-po: po/$(PACKAGE_NAME).pot
 		msgmerge --output-file=po/$$lang.po po/$$lang.po $<; \
 	done
 
-dist/po.%.js: po/%.po $(NODE_MODULES_TEST)
-	mkdir -p $(dir $@)
-	po/po2json -m po/po.empty.js -o $@.js.tmp $<
-	mv $@.js.tmp $@
-
 $(WEBLATE_REPO):
 	git clone --depth=1 -b $(WEBLATE_REPO_BRANCH) $(WEBLATE_REPO_URL) $(WEBLATE_REPO)
 
@@ -76,7 +71,7 @@ download-po: $(WEBLATE_REPO)
 %.spec: %.spec.in
 	sed -e 's/%{VERSION}/$(VERSION)/g' $< > $@
 
-$(WEBPACK_TEST): $(NODE_MODULES_TEST) lib/patternfly/_fonts.scss $(shell find src/ -type f) package.json webpack.config.js $(patsubst %,dist/po.%.js,$(LINGUAS))
+$(WEBPACK_TEST): $(NODE_MODULES_TEST) lib/patternfly/_fonts.scss $(shell find src/ -type f) package.json webpack.config.js
 	NODE_ENV=$(NODE_ENV) npm run build
 
 watch:
