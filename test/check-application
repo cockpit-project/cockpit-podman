@@ -968,9 +968,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present('.modal_dialog')
 
         # Stop the container
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox:latest")')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop) + button')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force stop)')
+        m.execute("podman stop swamped-crate")
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
 
         # Restore the container
