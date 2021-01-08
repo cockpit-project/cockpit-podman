@@ -93,6 +93,7 @@ devel-install: $(WEBPACK_TEST)
 	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
 dist-gzip: $(TARFILE)
+	echo `pwd`/$(TARFILE)
 
 # when building a distribution tarball, call webpack with a 'production' environment
 # we don't ship node_modules for license and compactness reasons; we ship a
@@ -103,7 +104,7 @@ $(TARFILE): $(WEBPACK_TEST) $(RPM_NAME).spec
 	mv node_modules node_modules.release
 	touch -r package.json $(NODE_MODULES_TEST)
 	touch dist/*
-	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
+	tar czf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
 		--exclude $(RPM_NAME).spec.in \
 		$$(git ls-files) lib/patternfly/*.scss package-lock.json $(RPM_NAME).spec dist/
 	mv node_modules.release node_modules
