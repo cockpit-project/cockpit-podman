@@ -9,3 +9,9 @@ actions:
   # https://github.com/packit/sandcastle/pull/92
   # https://medium.com/the-node-js-collection/node-js-memory-management-in-container-environments-7eb8409a74e8
   create-archive: make NODE_OPTIONS=--max-old-space-size=500 dist-gzip
+jobs:
+  - job: tests
+    trigger: pull_request
+    metadata:
+      targets:
+      - fedora-all
