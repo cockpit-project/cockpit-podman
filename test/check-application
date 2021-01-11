@@ -5,6 +5,7 @@
 
 import os
 import sys
+import time
 from distutils.version import StrictVersion
 import unittest
 
@@ -15,6 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
 
 import testlib
 from machine_core import ssh_connection
+from machine_core.constants import TEST_OS_DEFAULT
 
 REGISTRIES_CONF="""
 [registries.search]
@@ -33,6 +35,14 @@ def checkImage(browser, name, owner):
                 return true;
         return false;
         })""", name, owner)
+
+
+def switch_to_cgroups_v2(machine):
+    # Set machine to cgroup1 and reboot; Debian uses hybrid mode and does not have grubby
+    if not machine.image.startswith("debian") and not machine.image.startswith("ubuntu"):
+        machine.execute('grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"; reboot')
+        machine.wait_reboot()
+
 
 class TestApplication(testlib.MachineCase):
 
@@ -903,9 +913,7 @@ class TestApplication(testlib.MachineCase):
 
         # Set machine to cgroup1 and reboot; Debian uses hybrid mode and does not have grubby
         if not m.image.startswith("debian") and not m.image.startswith("ubuntu"):
-            self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"')
-            self.machine.spawn("sleep 0.1 && reboot", "reboot")
-            m.wait_reboot()
+            switch_to_cgroups_v2(m)
 
         self._testCheckpointRestore()
 
@@ -1426,6 +1434,542 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         b.click(".pf-c-modal-box footer button:contains(%s)" % text)
         b.wait_not_present(".pf-c-modal-box footer button:contains(%s)" % text)
+
+
+class TestContainerMigration(testlib.MachineCase):
+    provision = {
+        "machine1": {"address": "10.111.113.1/20"},
+        "machine2": {"address": "10.111.113.2/20"},
+    }
+
+    def start_machine_troubleshoot(self, new=False, known_host=False, password=None):
+        b = self.browser
+        b.wait_visible("#machine-troubleshoot")
+        b.click('#machine-troubleshoot')
+        b.wait_popup('troubleshoot-dialog')
+        if new:
+            b.click('#troubleshoot-dialog .modal-footer button:contains(Add)')
+            if not known_host:
+                b.wait_in_text('#troubleshoot-dialog', "Fingerprint")
+                b.click('#troubleshoot-dialog .modal-footer button:contains(Connect)')
+        if password:
+            b.wait_in_text('#troubleshoot-dialog', "Unable to log in")
+            b.set_val('#login-custom-password', password)
+            b.click('#troubleshoot-dialog .modal-footer button:contains(Log in)')
+
+    def add_machine(self, address, known_host=False, password="foobar"):
+        b = self.browser
+        b.switch_to_top()
+        b.go("/@%s" % address)
+        self.start_machine_troubleshoot(new=True, known_host=known_host, password=password)
+        b.wait_popdown('troubleshoot-dialog')
+        b.enter_page("/system", host=address)
+
+    def remove_machine(self, address):
+        b = self.browser
+        b.switch_to_top()
+        b.click(".ct-switcher .ct-nav-toggle")
+        b.click(".view-hosts button:contains(Edit hosts)")
+        b.click(".view-hosts a:contains({}) + div button.pf-m-danger".format(address))
+
+    def setup_ssh_auth(self):
+        self.machine.execute("d=/home/admin/.ssh; mkdir -p $d; chown admin:admin $d; chmod 700 $d")
+        self.machine.execute("test -f /home/admin/.ssh/id_rsa || ssh-keygen -f /home/admin/.ssh/id_rsa -t rsa -N ''")
+        self.machine.execute("chown admin:admin /home/admin/.ssh/id_rsa*")
+        pubkey = self.machine.execute("cat /home/admin/.ssh/id_rsa.pub")
+
+        for m in self.machines:
+            self.machines[m].execute("d=/home/admin/.ssh; mkdir -p $d; chown admin:admin $d; chmod 700 $d")
+            self.machines[m].write("/home/admin/.ssh/authorized_keys", pubkey)
+            self.machines[m].execute("chown admin:admin /home/admin/.ssh/authorized_keys")
+
+    def setUp(self):
+        super().setUp()
+        self.machine.execute("hostnamectl set-hostname machine1")
+        self.machine2 = self.machines['machine2']
+        self.machine2.execute("hostnamectl set-hostname machine2")
+
+        # Disable preloading on all machines ("machine1" is done in testlib.py)
+        # Preloading on machines with debug build can overload the browser and cause slowness and browser crashes
+        # In these tests we actually switch between machines in quick succession which can make things even worse
+        if self.machine.image == TEST_OS_DEFAULT:
+            self.machines["machine2"].write("/usr/share/cockpit/packagekit/override.json", '{ "preload": [ ] }')
+            self.machines["machine2"].write("/usr/share/cockpit/systemd/override.json", '{ "preload": [ ] }')
+
+        self.setup_ssh_auth()
+
+        for m in self.machines:
+            self.machine = self.machines[m]
+
+            self.machine.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
+
+            # backup/restore pristine podman state, so that tests can run on existing testbeds
+            self.restore_dir("/var/lib/containers", reboot_safe=True)
+
+            self.addCleanup(self.machine.execute, "systemctl stop podman.service")
+
+            # HACK: sometimes podman leaks mounts
+            self.addCleanup(self.machine.execute, "podman rm --force --all && "
+                                                  "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
+        self.machine = self.machines["machine1"]
+
+        self.has_criu = self.machine.image not in ["debian-testing", "ubuntu-stable"]
+        self.has_selinux = self.machine.image not in ["debian-testing", "ubuntu-stable"]
+
+    def enable_administrative_access(self, machine, password="foobar"):
+        b = self.browser
+        b.go("/@{}".format(machine))
+        b.click("button:contains(Turn on administrative access)")
+        b.set_input_text("#pf-modal-part-2 form input", password)
+        b.click("button:contains(Authenticate)")
+        b.wait_not_present("button:contains(Authenticate)")
+
+    def start_podman_service(self, machine):
+        b = self.browser
+        b.go("/@{}/podman".format(machine))
+        b.enter_page("/podman", machine)
+        b.click("button:contains(Start podman)")
+        b.wait_present("#app")
+
+    def open_migrate_dialog(self, container, container_open=False):
+        b = self.browser
+        b.wait_present("#containers-containers tr:contains({})".format(container))
+        if not container_open:
+            b.click("#containers-containers tr:contains({}) .pf-c-table__toggle-icon".format(container))
+        b.click("#containers-containers tr:contains({}) + tr #Migrate-dropdown button".format(container))
+        b.click("#containers-containers tr:contains({}) + tr #Migrate-dropdown .pf-c-dropdown__menu-item:contains(Migrate)".format(container))
+
+    def select_new_container_action(self):
+        b = self.browser
+        b.click("#migrate-dialog-action-new-container")
+
+    def select_existing_container_action(self):
+        b = self.browser
+        b.click("#migrate-dialog-action-existing-container")
+
+    def select_target_host(self, machine):
+        b = self.browser
+        b.wait_present(".pf-c-modal-box .pf-c-select .pf-c-select__toggle")
+        b.click("#migrate-dialog-target-host-form-group .pf-c-select__toggle")
+        b.click("#migrate-dialog-target-host-form-group .pf-c-select__menu .pf-c-select__menu-item:contains({})".format(machine))
+
+    def select_target_container(self, container):
+        b = self.browser
+        b.wait_present(".pf-c-modal-box .pf-c-select .pf-c-select__toggle")
+        b.click("#migrate-dialog-target .pf-c-select__toggle")
+        b.click("#migrate-dialog-target .pf-c-select__menu .pf-c-select__menu-item:contains({})".format(container))
+
+    def wait_target_container_present(self, container):
+        b = self.browser
+        b.click("#migrate-dialog-target .pf-c-select__toggle")
+        b.wait_present("#migrate-dialog-target .pf-c-select__menu-item:contains({})".format(container))
+        b.click("#migrate-dialog-target .pf-c-select__toggle")
+
+    def set_new_target_container_name(self, container):
+        b = self.browser
+        b.set_input_text("#migrate-container-target-name", container)
+
+    def set_migrate_options(self, keep=False, leave_running=False, preserve_tcp=False, ignore_root_changes=False,
+                            ignore_ip=False, ignore_mac=False):
+        b = self.browser
+        b.set_checked("#migrate-dialog-keep", keep)
+        b.set_checked("#migrate-dialog-leaveRunning", leave_running)
+        b.set_checked("#migrate-dialog-tcpEstablished", preserve_tcp)
+        b.set_checked("#migrate-dialog-ignoreRootFS", ignore_root_changes)
+        b.set_checked("#migrate-dialog-ignoreStaticIP", ignore_ip)
+        b.set_checked("#migrate-dialog-ignoreStaticMAC", ignore_mac)
+
+    def wait_for_migration_state(self, state):
+        b = self.browser
+        b.wait_present("label.migration-progress:contains({})".format(state))
+
+    def testMigrateIntoNewContainer(self):
+        """
+        Tests migration into a newly created container, along with copying the underlying image
+        """
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        for m in [m1, m2]:
+            switch_to_cgroups_v2(m)
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m1.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m1.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Remove image on second machine for testing its copying during the migration
+        m2.execute("podman rmi busybox:latest")
+
+        # Open the migration dialog
+        self.open_migrate_dialog("swamped-crate")
+
+        # Select the second machine
+        self.select_target_host("10.111.113.2")
+
+        # Name the target container and set options
+        self.select_new_container_action()
+        self.set_new_target_container_name("swamped-crate-2")
+        self.set_migrate_options()
+
+        # Migrate the container
+        b.click("button:contains(Migrate)")
+        b.wait_not_present("button:contains(Migrate)")
+
+        # Check if container present and running on other host
+        m2.execute("podman ps | grep -e swamped-crate-2")
+
+    def testMigrateIntoExistingContainer(self):
+        """
+        Tests migration into an existing container, along with checking the container state
+        """
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        for m in [m1, m2]:
+            switch_to_cgroups_v2(m)
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container with a process that will block on writing into a pipe
+        m1.execute("podman run -dit --name swamped-crate alpine sh")
+        m1.execute("podman exec swamped-crate mkfifo /tmp/fifo")
+        m1.execute("podman exec -d swamped-crate sh -c 'echo hello > /tmp/fifo'")
+        b.wait(lambda: m1.execute("podman ps | grep -e swamped-crate"))
+
+        # Run a container on the other host and stop it
+        m2.execute("podman run -dit --name swamped-crate alpine sh")
+        b.wait(lambda: m2.execute("podman ps --all | grep -e swamped-crate"))
+        m2.execute("podman stop swamped-crate")
+
+        # Open the migration dialog
+        self.open_migrate_dialog("swamped-crate")
+
+        # Select the second machine
+        self.select_target_host("10.111.113.2")
+
+        # Select the target container and set options
+        self.select_existing_container_action()
+        self.select_target_container("swamped-crate")
+        self.set_migrate_options(preserve_tcp=True)
+
+        # Migrate the container
+        b.click("button:contains(Migrate)")
+        b.wait_not_present("button:contains(Migrate)")
+
+        # Check if container present and running on other host
+        m2.execute("podman ps | grep -e swamped-crate")
+
+        # Read from the pipe created above and check the content
+        m2.execute("podman exec -d swamped-crate sh -c '[ \"$(</tmp/fifo)\" = \"hello\"'")
+
+    def testMigrateFromRemoteHost(self):
+        """
+        Tests container migration from the second machine to the first.
+        """
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        for m in [m1, m2]:
+            switch_to_cgroups_v2(m)
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        b.go("/@10.111.113.2/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m2.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m2.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Open the migration dialog
+        self.open_migrate_dialog("swamped-crate")
+
+        # Select the second machine
+        # Note: the first machine is rather confusingly referred to as "localhost" here
+        self.select_target_host("localhost")
+
+        # Name the target container and set options
+        self.select_new_container_action()
+        self.set_new_target_container_name("swamped-crate-2")
+        self.set_migrate_options()
+
+        # Migrate the container
+        b.click("button:contains(Migrate)")
+        b.wait_not_present("button:contains(Migrate)")
+
+        # Check if container present and running on other host
+        m1.execute("podman ps | grep -e swamped-crate-2")
+
+    def testMigrateDialogSelectTargetContainerLimitedAccess(self):
+        """
+        Tests migration with limited (i.e. non-root) access to the other machine.
+        This should result in a meaningful error message.
+        """
+        b = self.browser
+        m1 = self.machine
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m1.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m1.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Open the migration dialog
+        self.open_migrate_dialog("swamped-crate")
+
+        # Show the container list
+        self.select_existing_container_action()
+
+        # Select the second machine
+        self.select_target_host("10.111.113.2")
+
+        # Cockpit doesn't have administrative access to the second machine - check error messages
+        b.wait_present(".pf-m-error:contains(Connection failed)")
+        b.wait_present(".pf-c-select__toggle:contains(Error loading container list)")
+        b.wait_present(".pf-c-modal-box button:contains(Migrate):disabled")
+
+    def testMigrateUsingCrun(self):
+        """
+        Tests migration into a newly created container using the crun runtime.
+        This should result in a meaningful error message.
+        """
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m1.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m1.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Open the migration dialog
+        self.open_migrate_dialog("swamped-crate")
+
+        # Select the second machine
+        self.select_target_host("10.111.113.2")
+
+        # Name the target container and set options
+        self.set_new_target_container_name("swamped-crate-2")
+        self.set_migrate_options()
+
+        # Migrate the container
+        b.click("button:contains(Migrate)")
+        b.wait_not_present("button:contains(Migrate)")
+
+        # Check if the error was correctly displayed
+        b.wait_present(":contains(Configured runtime does not support checkpoint/restore)")
+
+    def testMigrateDialogHostRefresh(self):
+        """Tests refreshing of the remote host list when re-opening the migration dialog"""
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        self.login_and_go(None, superuser=True)
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m1.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m1.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Open the migration dialog, check if the target host placeholder is present, and close it
+        self.open_migrate_dialog("swamped-crate")
+        b.wait_present(".pf-c-modal-box :contains(Choose target host...)")
+        b.click("button:contains(Cancel)")
+
+        # Add the remote host to Cockpit
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        # Open the migration dialog again and check if the host list is present and container name checking is enabled
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        self.open_migrate_dialog("swamped-crate", container_open=True)
+        b.wait_present("#migrate-dialog-target-host-form-group :contains(10.111.113.2)")
+        b.wait_present(".pf-m-error:contains(Container name can't be empty)")
+        b.click("button:contains(Cancel)")
+
+        # Remove the remote host from Cockpit
+        self.remove_machine("machine2")
+        time.sleep(5)
+
+        # Open the migration dialog again and check if the placeholder is back
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        self.open_migrate_dialog("swamped-crate", container_open=True)
+        b.wait_present(".pf-c-modal-box :contains(Choose target host...)")
+        b.click("button:contains(Cancel)")
+
+    def testMigrateDialogSwitchActionPreservesTargetContainer(self):
+        """
+        Tests if changing the action from create new container to use existing container preserves the target container
+        (both the text field container and the selection in the select element).
+        """
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m1.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m1.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Create a test container to migrate to (and another one to test the select value preservation)
+        for name in ["target-test", "target-test-2"]:
+            m2.execute("podman run -dit --name {} busybox sh".format(name))
+            b.wait(lambda: m2.execute("podman ps --all | grep -e {}".format(name)))
+            m2.execute("podman stop {}".format(name))
+
+        # Open the migration dialog and fill out container name
+        self.open_migrate_dialog("swamped-crate")
+        self.set_new_target_container_name("target-test-3")
+
+        # Switch action to existing container and select the second container on the target host
+        self.select_existing_container_action()
+        self.select_target_container("target-test-2")
+
+        # Switch back and check if the container name was preserved
+        self.select_new_container_action()
+        b.wait_val(".pf-c-modal-box #migrate-container-target-name", "target-test-3")
+
+        # Switch to existing container once again and check the selection
+        self.select_existing_container_action()
+        b.wait_present(".pf-c-modal-box :contains(target-test-2)")
+
+    def testMigrateContainerListUpdate(self):
+        """
+        Tests if closing and opening the window refreshes the container list. Also tests if container preselection
+        works correctly.
+        """
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m1.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m1.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Run a container on the other host
+        m2.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m2.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Open the migration modal and check if swamped-crate is preselected.
+        self.open_migrate_dialog("swamped-crate")
+        self.select_existing_container_action()
+        b.wait_present(".pf-c-modal-box #migrate-dialog-target :contains(swamped-crate)")
+
+        # swamped-crate should also be invalid for a new container
+        self.select_new_container_action()
+        self.set_new_target_container_name("swamped-crate")
+        b.wait_present(".pf-c-modal-box #migrate-dialog-target .pf-m-error:contains(Container with that name already exists)")
+        b.wait_present(".pf-c-modal-box button:contains(Migrate):disabled")
+
+        # Remove container on other host
+        m2.execute("podman rm -f swamped-crate")
+
+        # Re-open migration modal and check if the container list is updated (i.e. placeholder visible in the select)
+        b.click("button:contains(Cancel)")
+        self.open_migrate_dialog("swamped-crate", container_open=True)
+        self.select_existing_container_action()
+        b.wait_present(".pf-c-modal-box #migrate-dialog-target :contains(Choose container...)")
+
+        # swamped-care should now be a valid name
+        self.select_new_container_action()
+        b.wait_present(".pf-c-modal-box #migrate-container-target-name")
+        b.wait_not_present(".pf-c-modal-box #migrate-dialog-target .pf-m-error")
+
+    def testMigratePodmanServiceNotRunning(self):
+        """
+        Tests attempting to migrate container onto a host with the Podman service stopped.
+        This should result in a specific error message being displayed.
+        """
+        b = self.browser
+        m1 = self.machine
+        m2 = self.machine2
+
+        self.login_and_go(None, superuser=True)
+        self.add_machine("10.111.113.2", password=None)
+        self.enable_administrative_access("10.111.113.2")
+        self.start_podman_service("10.111.113.2")
+
+        b.go("/podman")
+        b.enter_page("/podman")
+        b.wait_present("#app")
+
+        # Run a container
+        m1.execute("podman run -dit --name swamped-crate busybox sh")
+        b.wait(lambda: m1.execute("podman ps --all | grep -e swamped-crate"))
+
+        # Stop Podman service on second machine
+        m2.execute("systemctl stop podman.service podman.socket")
+
+        # Open the migration modal and check if a connection error is displayed when "existing container" action is
+        # selected
+        self.open_migrate_dialog("swamped-crate")
+        self.select_existing_container_action()
+        b.wait_present(".pf-m-error:contains(Connection failed)")
+        b.wait_present(".pf-c-select__toggle:contains(Error loading container list)")
+        b.wait_present(".pf-c-modal-box button:contains(Migrate):disabled")
 
 if __name__ == '__main__':
     testlib.test_main()
