@@ -5,4 +5,6 @@ upstream_package_name: cockpit-podman
 downstream_package_name: cockpit-podman
 actions:
   post-upstream-clone: make cockpit-podman.spec
-  create-archive: make dist-gzip
+  create-archive:
+    - "make dist-gzip"
+    - "sh -c 'find . -name \"*tar.gz\"'"
