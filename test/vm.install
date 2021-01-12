@@ -10,8 +10,14 @@ if [ -d /var/tmp/debian ]; then
     fi
     eatmydata apt-get install ${BACKPORTS:-} ${APT_INSTALL_OPTIONS:-} -y cockpit-ws cockpit-system podman
 
-    # HACK: podman dependencies prefer crun, but config defaults to runc: https://bugs.debian.org/971253
-    eatmydata apt-get install -y runc
+    # HACK: starting podman.service complains about missing crun: https://bugs.debian.org/961016
+    # use crun for Debian, but Ubuntu so far still has runc
+    OS_RELEASE=$(grep '^NAME' /etc/os-release | awk -F'=' '{print $2}')
+    if [ $OS_RELEASE != "Ubuntu" ]; then
+        eatmydata apt-get install -y runc
+    else
+        eatmydata apt-get install -y crun
+    fi
 
     # build source package
     cd /var/tmp
