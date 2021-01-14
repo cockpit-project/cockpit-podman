@@ -81,7 +81,7 @@ class TestApplication(testlib.MachineCase):
         self.has_selinux = self.machine.image not in ["debian-testing", "ubuntu-stable"]
 
     def cgroupsV2(self):
-        return self.machine.image not in ["debian-testing", "ubuntu-stable", "rhel-8-3", "rhel-8-4"]
+        return self.machine.image not in ["ubuntu-stable", "rhel-8-3", "rhel-8-4"]
 
     def execute(self, system, cmd):
         if system:
