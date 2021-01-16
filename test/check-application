@@ -24,6 +24,8 @@ registries = ['localhost:5000', 'localhost:6000']
 registries = ['localhost:5000', 'localhost:6000']
 """
 
+NOT_RUNNING = ["exited", "stopped"]
+
 def checkImage(browser, name, owner):
     browser.wait_visible("#containers-images table")
     browser.wait_js_func("""(function (first, last) {
@@ -134,22 +136,22 @@ class TestApplication(testlib.MachineCase):
         containerId = self.machine.execute("podman run -d --pod pod-1 --name test-pod-1-system alpine sleep 100").strip()
         self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
         self.machine.execute("podman pod stop pod-1")
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId  }])
         self.filter_containers("running")
         self.waitPodRow("pod-1", False)
 
         self.filter_containers("all")
         b.set_input_text('#containers-filter', 'pod-1')
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId  }])
         b.set_input_text('#containers-filter', 'test-pod-1-system')
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId  }])
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId  }])
 
         # Check Pod Actions
         self.performPodAction("pod-1", "system", "Start")
         self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
 
         self.performPodAction("pod-1", "system", "Stop")
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "exited", "id": containerId }])
+        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId }])
 
         self.machine.execute("podman pod start pod-1")
         self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
@@ -399,10 +401,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers")
         if auth:
             self.waitContainer(system_containers["test-sh-system"], True, name='test-sh-system', image='alpine:latest',
-                    cmd='sh', state='exited')
+                    cmd='sh', state=NOT_RUNNING)
 
         self.waitContainer(user_containers["test-sh-user"], False, name='test-sh-user', image='alpine:latest',
-                cmd='sh', state='exited')
+                cmd='sh', state=NOT_RUNNING)
 
         b.click('#containers-containers tbody tr:contains("swamped-crate-user") td.pf-c-table__toggle button')
         b.wait_visible('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
@@ -594,7 +596,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_collected_text("#containers-containers .container-name", "bac")
             self.execute(False, "podman run -d --name doremi registry:2 sh")
             b.wait_collected_text("#containers-containers .container-name", "bdoremiac")
-            b.wait_in_text("#containers-containers tbody tr:contains('doremi') > td:nth-child(6)", "exited")
+            b.wait(lambda: b.text('#containers-containers tr:contains(doremi) td:nth-of-type(6)') in NOT_RUNNING)
         else:
             b.wait_collected_text("#containers-containers .container-name", "abc")
 
@@ -864,7 +866,7 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force stop)')
 
         self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh')
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
         b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)", "")
         b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)", "")
 
@@ -949,7 +951,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present(".pf-c-modal-box")
 
         if self.has_criu:
-            b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
+            b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
         else:
             # expect proper error message
             b.wait_in_text(".pf-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
@@ -977,7 +979,7 @@ class TestApplication(testlib.MachineCase):
 
         # Stop the container
         m.execute("podman stop swamped-crate")
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
 
         # Restore the container
         b.click('#containers-containers tr:contains(swamped-crate) + tr button:contains(Start) + button')
@@ -1359,13 +1361,13 @@ class TestApplication(testlib.MachineCase):
         b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
-        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state='exited')
+        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
         self.waitContainer(sha, auth, state='running')
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
         b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
-        self.waitContainer(sha, auth, state='exited')
+        self.waitContainer(sha, auth, state=NOT_RUNNING)
         b.click('#containers-containers tr:contains("busybox-without-publish")')
 
         b.set_input_text('#containers-filter', 'tty')
@@ -1382,7 +1384,7 @@ class TestApplication(testlib.MachineCase):
         self.check_images(["busybox:latest", "alpine:latest", "registry:2"], [])
 
         b.set_val("#containers-containers-filter", "all")
-        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state='exited')
+        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
         b.click('#containers-containers tr:contains("busybox-without-publish") .pf-c-table__toggle button')
         b.click(".pf-m-expanded a:contains('Console')")
         b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
