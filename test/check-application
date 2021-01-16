@@ -99,7 +99,8 @@ class TestApplication(testlib.MachineCase):
     def waitPodContainer(self, podName, containerList):
         if len(containerList):
             for container in containerList:
-                self.check_container(container["id"], True, [container["name"], container["image"], container["command"], container["state"]], podName)
+                self.waitContainer(container["id"], True, name=container["name"], image=container["image"],
+                    cmd=container["command"], state=container["state"], pod=podName)
         else:
             if self.browser.val("#containers-containers-filter") == "all":
                 self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No containers in this pod ")
@@ -381,10 +382,12 @@ class TestApplication(testlib.MachineCase):
         # running busybox shown
         if auth:
             b.wait_visible("#containers-containers .container-name:contains('swamped-crate-system')")
-            self.check_container(system_containers["swamped-crate-system"], True, ['swamped-crate-system', 'busybox:latest', 'sleep 1000', 'running'])
+            self.waitContainer(system_containers["swamped-crate-system"], True, name='swamped-crate-system',
+                    image='busybox:latest', cmd="sleep 1000", state='running')
 
         b.wait_visible("#containers-containers .container-name:contains('swamped-crate-user')")
-        self.check_container(user_containers["swamped-crate-user"], False, ['swamped-crate-user', 'busybox:latest', 'sleep 1000', 'running'])
+        self.waitContainer(user_containers["swamped-crate-user"], False, name='swamped-crate-user',
+                image='busybox:latest', cmd="sleep 1000", state='running')
 
         # exited alpine not shown
         b.wait_not_in_text("#containers-containers", "alpine:latest")
@@ -395,9 +398,11 @@ class TestApplication(testlib.MachineCase):
         # exited alpine under everything list
         b.wait_visible("#containers-containers")
         if auth:
-            self.check_container(system_containers["test-sh-system"], True, ['test-sh-system', 'alpine:latest', 'sh', 'exited'])
+            self.waitContainer(system_containers["test-sh-system"], True, name='test-sh-system', image='alpine:latest',
+                    cmd='sh', state='exited')
 
-        self.check_container(user_containers["test-sh-user"], False, ['test-sh-user', 'alpine:latest', 'sh', 'exited'])
+        self.waitContainer(user_containers["test-sh-user"], False, name='test-sh-user', image='alpine:latest',
+                cmd='sh', state='exited')
 
         b.click('#containers-containers tbody tr:contains("swamped-crate-user") td.pf-c-table__toggle button')
         b.wait_visible('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
@@ -415,8 +420,10 @@ class TestApplication(testlib.MachineCase):
         # show running container
         self.filter_containers('running')
         if auth:
-            self.check_container(system_containers["swamped-crate-system"], True, ['swamped-crate-system', 'busybox:latest', 'sleep 1000', 'running'])
-        self.check_container(user_containers["swamped-crate-user"], False, ['swamped-crate-user', 'busybox:latest', 'sleep 1000', 'running'])
+            self.waitContainer(system_containers["swamped-crate-system"], True, name='swamped-crate-system',
+                    image='busybox:latest', cmd="sleep 1000", state='running')
+        self.waitContainer(user_containers["swamped-crate-user"], False, name='swamped-crate-user',
+                image='busybox:latest', cmd="sleep 1000", state='running')
         # check exited alpine not in running list
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
@@ -805,7 +812,8 @@ class TestApplication(testlib.MachineCase):
         container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
 
         with b.wait_timeout(5):
-            self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh', 'running', "system" if auth else "admin"])
+            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh',
+                    state='running', owner="system" if auth else "admin")
         # Check we show usage
         b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)") != "")
         cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
@@ -841,7 +849,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
 
         with b.wait_timeout(5):
-            self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh', 'running'])
+            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh', state='running')
 
         self.filter_containers('all')
         b.wait_visible("#containers-containers")
@@ -855,7 +863,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
         b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force stop)')
 
-        self.check_container(container_sha, auth, ['swamped-crate', 'busybox:latest', 'sh'])
+        self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in ['stopped', 'exited'])
         b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)", "")
         b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)", "")
@@ -1235,7 +1243,9 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("div.pf-c-modal-box")
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox:latest")')
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
-        self.check_container(sha, auth, ['busybox-with-tty', 'busybox:latest', 'sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"', 'running', "system" if auth else "admin"])
+        self.waitContainer(sha, auth, name='busybox-with-tty', image='busybox:latest',
+                           cmd='sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"',
+                           state='running', owner="system" if auth else "admin")
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
@@ -1349,13 +1359,13 @@ class TestApplication(testlib.MachineCase):
         b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
-        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state='exited')
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
-        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'running'])
+        self.waitContainer(sha, auth, state='running')
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
         b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
-        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+        self.waitContainer(sha, auth, state='exited')
         b.click('#containers-containers tr:contains("busybox-without-publish")')
 
         b.set_input_text('#containers-filter', 'tty')
@@ -1372,7 +1382,7 @@ class TestApplication(testlib.MachineCase):
         self.check_images(["busybox:latest", "alpine:latest", "registry:2"], [])
 
         b.set_val("#containers-containers-filter", "all")
-        self.check_container(sha, auth, ['busybox-without-publish', 'busybox:latest', '/bin/sh', 'exited'])
+        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state='exited')
         b.click('#containers-containers tr:contains("busybox-without-publish") .pf-c-table__toggle button')
         b.click(".pf-m-expanded a:contains('Console')")
         b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
@@ -1409,12 +1419,25 @@ class TestApplication(testlib.MachineCase):
     def check_images(self, present, not_present):
         self.check_content("images", present, not_present)
 
-    def check_container(self, row_id, auth, expected_strings, pod="no-pod"):
-        """Check the container with row_name has the expected_string shown in the row"""
+    def waitContainer(self, row_id, auth, name="", image="", cmd="", owner="", state=[], pod="no-pod"):
+        """Check the container with row_name has the expected values
+            "image" can be substring, "state" might be string or array of possible states, other are
+            checked for exact match.
+        """
         sel = "#containers-containers #table-" + pod + " tbody tr[data-row-id={0}{1}]".format(row_id, auth).lower()
         b = self.browser
-        for str in expected_strings:
-            b.wait_in_text(sel, str)
+        if name:
+            b.wait_text(sel + " .container-name", name)
+        if image:
+            b.wait_in_text(sel + " .container-block small:nth-child(2)", image)
+        if cmd:
+            b.wait_text(sel + " .container-block small:last-child", cmd)
+        if owner:
+            b.wait_text(sel + " td[data-label=Owner]", owner)
+        if state:
+            if not isinstance(state, list):
+                state = [state]
+            b.wait(lambda: b.text(sel + " td[data-label=State]") in state)
 
     def filter_containers(self, value):
         """Use dropdown menu in the header to filter containers"""
