@@ -24,7 +24,7 @@ import { Terminal } from "xterm";
 import { ErrorNotification } from './Notification.jsx';
 
 import * as client from './client.js';
-import { EmptyStatePanel } from "../lib/cockpit-components-empty-state.jsx";
+import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 
 import "./ContainerTerminal.css";
 

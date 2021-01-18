@@ -8,7 +8,7 @@ import { CloseIcon, PlusIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
 import { ErrorNotification } from './Notification.jsx';
-import { FileAutoComplete } from '../lib/cockpit-components-file-autocomplete.jsx';
+import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import cockpit from 'cockpit';

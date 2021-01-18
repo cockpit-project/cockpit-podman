@@ -1,7 +1,7 @@
 import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
-import { ListingTable } from "../lib/cockpit-components-table.jsx";
+import { ListingTable } from "cockpit-components-table.jsx";
 
 const _ = cockpit.gettext;
 

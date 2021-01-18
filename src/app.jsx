@@ -27,7 +27,7 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
-import { superuser } from "../lib/superuser";
+import { superuser } from "superuser";
 import moment from "moment";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';

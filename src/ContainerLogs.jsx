@@ -25,7 +25,7 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
 import rest from './rest.js';
 import * as client from './client.js';
-import { EmptyStatePanel } from "../lib/cockpit-components-empty-state.jsx";
+import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 
 import "./ContainerTerminal.css";
 

@@ -5,7 +5,7 @@ import {
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
-import { EmptyStatePanel } from "../lib/cockpit-components-empty-state.jsx";
+import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 import { ErrorNotification } from './Notification.jsx';
 import cockpit from 'cockpit';
 import rest from './rest.js';
