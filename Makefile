@@ -93,7 +93,7 @@ devel-install: $(WEBPACK_TEST)
 	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
 dist-gzip: $(TARFILE)
-	echo `pwd`/$(TARFILE)
+	@ls -1 $(TARFILE)
 
 # when building a distribution tarball, call webpack with a 'production' environment
 # we don't ship node_modules for license and compactness reasons; we ship a
