@@ -70,6 +70,7 @@ try {
 module.exports = {
     mode: production ? 'production' : 'development',
     resolve: {
+        modules: [ nodedir, path.resolve(__dirname, 'lib') ],
         alias: { 'font-awesome': path.resolve(nodedir, 'font-awesome-sass/assets/stylesheets') },
     },
     resolveLoader: {

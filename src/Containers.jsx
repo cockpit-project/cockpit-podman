@@ -8,8 +8,8 @@ import {
 import { TrashIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
-import { ListingTable } from "../lib/cockpit-components-table.jsx";
-import { ListingPanel } from '../lib/cockpit-components-listing-panel.jsx';
+import { ListingTable } from "cockpit-components-table.jsx";
+import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
