@@ -73,9 +73,6 @@ class TestApplication(testlib.MachineCase):
 
         self.addCleanup(self.machine.execute, "killall -9 podman || true")
 
-        # HACK: https://github.com/containers/podman/issues/8762
-        self.admin_s.execute("timeout 5 curl --unix-socket $XDG_RUNTIME_DIR/podman/podman.sock http://d/v1.24/libpod/info || true")
-
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
