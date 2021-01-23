@@ -11,10 +11,10 @@ TEST_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.join(TEST_DIR, "common"))
 sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
 
-import testlib
-from machine_core import ssh_connection
+from machine_core import ssh_connection  # noqa
+import testlib  # noqa
 
-REGISTRIES_CONF="""
+REGISTRIES_CONF = """
 [registries.search]
 registries = ['localhost:5000', 'localhost:6000']
 
@@ -23,6 +23,7 @@ registries = ['localhost:5000', 'localhost:6000']
 """
 
 NOT_RUNNING = ["exited", "stopped"]
+
 
 def checkImage(browser, name, owner):
     browser.wait_visible("#containers-images table")
@@ -33,6 +34,7 @@ def checkImage(browser, name, owner):
                 return true;
         return false;
         })""", name, owner)
+
 
 class TestApplication(testlib.MachineCase):
 
@@ -47,7 +49,7 @@ class TestApplication(testlib.MachineCase):
 
         # HACK: sometimes podman leaks mounts
         self.addCleanup(self.machine.execute, "podman rm --force --all && "
-            "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
+                        "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
 
         # Create admin session
         self.machine.execute("""
@@ -95,12 +97,11 @@ class TestApplication(testlib.MachineCase):
         else:
             self.browser.wait_not_present("#table-" + podName)
 
-
     def waitPodContainer(self, podName, containerList):
         if len(containerList):
             for container in containerList:
                 self.waitContainer(container["id"], True, name=container["name"], image=container["image"],
-                    cmd=container["command"], state=container["state"], pod=podName)
+                                   cmd=container["command"], state=container["state"], pod=podName)
         else:
             if self.browser.val("#containers-containers-filter") == "all":
                 self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No containers in this pod ")
@@ -132,27 +133,27 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod-1", [])
 
         containerId = self.machine.execute("podman run -d --pod pod-1 --name test-pod-1-system alpine sleep 100").strip()
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId}])
         self.machine.execute("podman pod stop pod-1")
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId  }])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
         self.filter_containers("running")
         self.waitPodRow("pod-1", False)
 
         self.filter_containers("all")
         b.set_input_text('#containers-filter', 'pod-1')
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId  }])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
         b.set_input_text('#containers-filter', 'test-pod-1-system')
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId  }])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
 
         # Check Pod Actions
         self.performPodAction("pod-1", "system", "Start")
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId}])
 
         self.performPodAction("pod-1", "system", "Stop")
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId }])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
 
         self.machine.execute("podman pod start pod-1")
-        self.waitPodContainer("pod-1", [{ "name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId }])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId}])
 
         old_pid = m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system")
         self.performPodAction("pod-1", "system", "Restart")
@@ -183,7 +184,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers .container-name:contains('a')")
         b.wait_visible("#containers-containers .container-name:contains('b')")
 
-        if self.system_before(231): # Changed in #14740
+        if self.system_before(231):  # Changed in #14740
             modal_sel = ".modal-dialog"
         else:
             modal_sel = ".pf-c-modal-box"
@@ -364,7 +365,7 @@ class TestApplication(testlib.MachineCase):
             b.set_val("#containers-containers-owner", "all")
             b.wait_js_func("ph_count_check", "#containers-images tbody", 6)
             b.wait_js_func("ph_count_check", "#containers-containers tbody", 2)
-        else: # No 'owner' selector when not privileged
+        else:  # No 'owner' selector when not privileged
             b.wait_not_present("#containers-containers-owner")
 
         user_containers = {}
@@ -382,11 +383,11 @@ class TestApplication(testlib.MachineCase):
         if auth:
             b.wait_visible("#containers-containers .container-name:contains('swamped-crate-system')")
             self.waitContainer(system_containers["swamped-crate-system"], True, name='swamped-crate-system',
-                    image='busybox:latest', cmd="sleep 1000", state='running')
+                               image='busybox:latest', cmd="sleep 1000", state='running')
 
         b.wait_visible("#containers-containers .container-name:contains('swamped-crate-user')")
         self.waitContainer(user_containers["swamped-crate-user"], False, name='swamped-crate-user',
-                image='busybox:latest', cmd="sleep 1000", state='running')
+                           image='busybox:latest', cmd="sleep 1000", state='running')
 
         # exited alpine not shown
         b.wait_not_in_text("#containers-containers", "alpine:latest")
@@ -398,10 +399,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers")
         if auth:
             self.waitContainer(system_containers["test-sh-system"], True, name='test-sh-system', image='alpine:latest',
-                    cmd='sh', state=NOT_RUNNING)
+                               cmd='sh', state=NOT_RUNNING)
 
         self.waitContainer(user_containers["test-sh-user"], False, name='test-sh-user', image='alpine:latest',
-                cmd='sh', state=NOT_RUNNING)
+                           cmd='sh', state=NOT_RUNNING)
 
         b.click('#containers-containers tbody tr:contains("swamped-crate-user") td.pf-c-table__toggle button')
         b.wait_visible('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
@@ -420,9 +421,9 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('running')
         if auth:
             self.waitContainer(system_containers["swamped-crate-system"], True, name='swamped-crate-system',
-                    image='busybox:latest', cmd="sleep 1000", state='running')
+                               image='busybox:latest', cmd="sleep 1000", state='running')
         self.waitContainer(user_containers["swamped-crate-user"], False, name='swamped-crate-user',
-                image='busybox:latest', cmd="sleep 1000", state='running')
+                           image='busybox:latest', cmd="sleep 1000", state='running')
         # check exited alpine not in running list
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
@@ -572,7 +573,6 @@ class TestApplication(testlib.MachineCase):
             b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPPrefixLen}}' net_check").strip())
             b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
 
-
         # delete image alpine that has been used by a container
         alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
         b.wait_visible(alpine_sel)
@@ -690,7 +690,7 @@ class TestApplication(testlib.MachineCase):
                 return self
 
             def deleteImage(self, force=False, another=None):
-                imageTagSuffix =  ":" + (self.imageTag or 'latest')
+                imageTagSuffix = ":" + (self.imageTag or 'latest')
 
                 # Select the image row
 
@@ -701,7 +701,7 @@ class TestApplication(testlib.MachineCase):
 
                 # Click the delete icon on the image row
                 b.wait_visible(sel + ' + tr button.btn-delete')
-                b.click(sel +' + tr button.btn-delete')
+                b.click(sel + ' + tr button.btn-delete')
 
                 b.set_checked(".pf-c-check__input[aria-label='localhost:5000/{0}{1}']".format(self.imageName, imageTagSuffix), True)
                 if another:
@@ -740,15 +740,15 @@ class TestApplication(testlib.MachineCase):
 
         dialog0 = DownloadImageDialog('my-busybox', user="system")
         dialog0.openDialog() \
-              .fillDialog() \
-              .selectImageAndDownload() \
-              .expectDownloadSuccess()
+            .fillDialog() \
+            .selectImageAndDownload() \
+            .expectDownloadSuccess()
 
         dialog1 = DownloadImageDialog('my-busybox', user="user")
         dialog1.openDialog() \
-              .fillDialog() \
-              .selectImageAndDownload() \
-              .expectDownloadSuccess()
+            .fillDialog() \
+            .selectImageAndDownload() \
+            .expectDownloadSuccess()
         dialog1.deleteImage(True, another="quay.io/libpod/busybox:latest")
 
         dialog0.deleteImage()
@@ -810,7 +810,7 @@ class TestApplication(testlib.MachineCase):
 
         with b.wait_timeout(5):
             self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh',
-                    state='running', owner="system" if auth else "admin")
+                               state='running', owner="system" if auth else "admin")
         # Check we show usage
         b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)") != "")
         cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
@@ -871,7 +871,7 @@ class TestApplication(testlib.MachineCase):
         m = self.machine
 
         if not self.cgroupsV2():
-            return;
+            return
 
         # Only Fedora works with CGroupsV2
         if m.image.startswith('fedora'):
@@ -1288,7 +1288,7 @@ class TestApplication(testlib.MachineCase):
             # rw was set to :Z so it should change, but not be shared
             rw_label_new = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
             self.assertNotEqual(rw_label, rw_label_new)
-            self.assertRegex(rw_label_new, "container_file_t:s0:c\d*,c\d*$")
+            self.assertRegex(rw_label_new, r"container_file_t:s0:c\d*,c\d*$")
 
             # ro was set to :z to it should change and be shared
             ro_label_new = m.execute("ls -dZ {0}".format(rodir)).split(" ")[0]
@@ -1444,6 +1444,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         b.click(".pf-c-modal-box footer button:contains(%s)" % text)
         b.wait_not_present(".pf-c-modal-box footer button:contains(%s)" % text)
+
 
 if __name__ == '__main__':
     testlib.test_main()
