@@ -5,8 +5,6 @@
 
 import os
 import sys
-from distutils.version import StrictVersion
-import unittest
 
 # import Cockpit's machinery for test VMs and its browser test API
 TEST_DIR = os.path.dirname(__file__)
@@ -287,7 +285,6 @@ class TestApplication(testlib.MachineCase):
 
     def _testBasic(self, auth):
         b = self.browser
-        m = self.machine
 
         if not auth:
             self.allow_authorize_journal_messages()
@@ -617,7 +614,6 @@ class TestApplication(testlib.MachineCase):
     @testlib.nondestructive
     def testDownloadImage(self):
         b = self.browser
-        m = self.machine
         execute = self.execute
 
         def prepare():
@@ -785,7 +781,6 @@ class TestApplication(testlib.MachineCase):
 
     def _testLifecycleOperations(self, auth):
         b = self.browser
-        m = self.machine
 
         if not auth:
             self.allow_authorize_journal_messages()
@@ -908,7 +903,6 @@ class TestApplication(testlib.MachineCase):
             b.wait_in_text(".pf-c-alert.pf-m-danger", "Checkpoint/Restore requires at least CRIU")
 
     def testCheckpointRestoreCGroupsV1(self):
-        b = self.browser
         m = self.machine
 
         # Set machine to cgroup1 and reboot; Debian uses hybrid mode and does not have grubby
@@ -990,7 +984,6 @@ class TestApplication(testlib.MachineCase):
     @testlib.nondestructive
     def testNotRunning(self):
         b = self.browser
-        m = self.machine
 
         def disable_system():
             self.execute(True, "systemctl disable --now podman.socket")
