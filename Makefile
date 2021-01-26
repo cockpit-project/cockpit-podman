@@ -20,6 +20,8 @@ WEBLATE_REPO=tmp/weblate-repo
 WEBLATE_REPO_URL=https://github.com/cockpit-project/cockpit-podman-weblate.git
 WEBLATE_REPO_BRANCH=master
 
+PYEXEFILES=$(shell git grep -lI '^#!.*python')
+
 all: $(WEBPACK_TEST)
 
 #
@@ -163,6 +165,11 @@ $(VM_IMAGE): $(VM_DEP) bots
 # convenience target for the above
 vm: $(VM_IMAGE)
 	echo $(VM_IMAGE)
+
+# run static code checks for python code
+codecheck:
+	python3 -m pyflakes $(PYEXEFILES)
+	python3 -m pycodestyle --max-line-length=195 $(PYEXEFILES) # TODO: Fix long lines
 
 # run the browser integration tests; skip check for SELinux denials
 check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common
