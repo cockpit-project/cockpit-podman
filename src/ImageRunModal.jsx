@@ -136,7 +136,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
                 </FormSelect>
                 { options && options.selinuxAvailable &&
                     <FormSelect className='pf-c-form-control'
-                                   value={item.mode}
+                                   value={item.selinux}
                                    onChange={value => onChange(idx, 'selinux', value)}>
                         <FormSelectOption value='' key='' label={_("No SELinux label")} />
                         <FormSelectOption value='z' key='z' label={_("Shared")} />
