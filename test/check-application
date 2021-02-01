@@ -1093,6 +1093,19 @@ class TestApplication(testlib.MachineCase):
         is_active_user("active")
         is_enabled_user("enabled")
         is_enabled_system("disabled")
+        b.logout()
+
+        # no Troubleshoot action without cockpit-system package
+        disable_system()
+        disable_user()
+        self.restore_file("/usr/share/cockpit/systemd/manifest.json")
+        self.machine.execute("rm /usr/share/cockpit/systemd/manifest.json")
+        self.login_and_go("/podman")
+        b.wait_visible("#app .pf-c-empty-state button.pf-m-primary")
+        self.assertFalse(b.is_present("#app .pf-c-empty-state button.pf-m-link"))
+        # starting still works
+        b.click("#app .pf-c-empty-state button.pf-m-primary")
+        b.wait_visible("#containers-containers")
 
         self.allow_restart_journal_messages()
         self.allow_authorize_journal_messages()

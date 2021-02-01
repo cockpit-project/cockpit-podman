@@ -580,11 +580,13 @@ class Application extends React.Component {
                     <Button onClick={this.startService}>
                         {_("Start podman")}
                     </Button>
-                    <EmptyStateSecondaryActions>
-                        <Button variant="link" onClick={this.goToServicePage}>
-                            {_("Troubleshoot")}
-                        </Button>
-                    </EmptyStateSecondaryActions>
+                    { cockpit.manifests.system &&
+                        <EmptyStateSecondaryActions>
+                            <Button variant="link" onClick={this.goToServicePage}>
+                                {_("Troubleshoot")}
+                            </Button>
+                        </EmptyStateSecondaryActions>
+                    }
                 </EmptyState>);
         }
 
