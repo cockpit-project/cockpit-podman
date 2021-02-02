@@ -33,3 +33,18 @@
 .ct-table-empty td {
     padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md) var(--pf-global--spacer--lg);
 }
+
+// Fix label color and alignment in the table cell
+.container-state {
+  // Unless there is a modifier (ex: pf-m-green for running), drop the color
+  &:not([class*=pf-m-]) {
+    --pf-c-label--BackgroundColor: transparent;
+    padding-right: 0;
+    // Compensate for padding
+    position: relative;
+    // Using margin to remove the extra padded space,
+    // instead of keeping the space and moving contents w/ just left/top
+    margin-left: calc(-1 * var(--pf-c-label--PaddingLeft));
+    margin-top: calc(-1 * var(--pf-c-label--PaddingTop));
+  }
+}
