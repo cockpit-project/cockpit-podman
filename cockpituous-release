@@ -17,7 +17,7 @@ job release-srpm -V
 # Authenticate for pushing into Fedora dist-git (works in Cockpituous release container)
 cat ~/.fedora-password | kinit cockpit@FEDORAPROJECT.ORG
 # Do fedora builds for the tag, using tarball
-job release-koji main
+job release-koji rawhide
 job release-koji f32
 job release-koji f33
 job release-bodhi F32
