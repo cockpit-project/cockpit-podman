@@ -46,9 +46,11 @@ export function streamEvents(system, callback) {
 
 export function getInfo(system) {
     return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("timeout")), 5000);
         podmanCall("libpod/info", "GET", {}, system)
                 .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
+                .catch(reject)
+                .finally(() => clearTimeout(timeout));
     });
 }
 
