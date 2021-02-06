@@ -198,7 +198,7 @@ class Application extends React.Component {
                         }
                     }
                 })
-                .catch(e => console.log(e));
+                .catch(console.log);
     }
 
     updateImagesAfterEvent(system) {
@@ -287,7 +287,7 @@ class Application extends React.Component {
                         }
                     }
                 })
-                .catch(e => console.log(e));
+                .catch(console.log);
     }
 
     updateImageAfterEvent(id, system) {
