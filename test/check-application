@@ -91,6 +91,35 @@ class TestApplication(testlib.MachineCase):
         else:
             return self.admin_s.execute(cmd)
 
+    def login(self, system=True):
+        # HACK: The first rootless call often gets stuck or fails
+        # In such case we have alert banner to start the service (or just empty state)
+        # A real user would just hit the button so lets do the same as this is always getting
+        # back to us and we waste too much time reporting to podman with mixed results.
+        # Examples:
+        #     https://github.com/containers/podman/issues/8762
+        #     https://github.com/containers/podman/issues/9251
+        #     https://github.com/containers/podman/issues/6660
+
+        b = self.browser
+
+        self.login_and_go("/podman", superuser=system)
+        b.wait_visible("#app")
+
+        with self.browser.wait_timeout(30):
+            try:
+                b.wait_visible("#containers-containers")
+                b.wait_not_in_text("#containers-containers", "Loading")
+                b.wait_not_present("#overview div.pf-c-alert")
+            except testlib.Error:
+                if system:
+                    b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "User Podman service is also available")
+                    b.click("#overview div.pf-c-alert .pf-c-alert__action > button:contains(Start)")
+                    b.wait_not_present("#overview div.pf-c-alert")
+                else:
+                    b.click("#app .pf-c-empty-state button.pf-m-primary")
+                    b.wait_not_present("#app .pf-c-empty-state")
+
     def waitPodRow(self, podName, present=False):
         if present:
             self.browser.wait_visible("#table-" + podName)
@@ -120,8 +149,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/podman")
-        b.wait_visible("#app")
+        self.login()
 
         self.browser.wait_in_text("#containers-containers .ct-table-empty", "No running containers")
 
@@ -291,10 +319,7 @@ class TestApplication(testlib.MachineCase):
             self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
-        self.login_and_go("/podman", superuser=auth)
-        b.wait_visible("#app")
-
-        b.wait_visible(".content-filter input")
+        self.login(auth)
 
         # Check all containers
         if auth:
@@ -720,8 +745,7 @@ class TestApplication(testlib.MachineCase):
 
         prepare()
 
-        self.login_and_go("/podman", superuser=True)
-        b.wait_visible("#app")
+        self.login()
 
         # Test registries
         b.click("button:contains(Get new image)")
@@ -786,8 +810,7 @@ class TestApplication(testlib.MachineCase):
             self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
-        self.login_and_go("/podman", superuser=auth)
-        b.wait_visible("#app")
+        self.login()
         self.filter_containers('all')
 
         # run a container
@@ -879,8 +902,7 @@ class TestApplication(testlib.MachineCase):
 
         # On other systems just check that we get expected error messages
 
-        self.login_and_go("/podman", superuser=True)
-        b.wait_visible("#app")
+        self.login()
         self.filter_containers('all')
 
         # Run a container
@@ -917,8 +939,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        self.login_and_go("/podman", superuser=True)
-        b.wait_visible("#app")
+        self.login()
         self.filter_containers('all')
 
         # Run a container
@@ -1129,7 +1150,7 @@ class TestApplication(testlib.MachineCase):
         if auth:
             self.execute(False, "podman rmi alpine busybox registry:2")
 
-        self.login_and_go("/podman", superuser=auth)
+        self.login(auth)
 
         b.wait_in_text("#containers-images", "busybox:latest")
         b.wait_in_text("#containers-images", "alpine:latest")
