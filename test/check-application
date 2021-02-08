@@ -1043,7 +1043,7 @@ class TestApplication(testlib.MachineCase):
         b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         b.wait_visible("#containers-containers")
-        b.wait_not_present("#overview > div.pf-c-alert.pf-m-info")
+        b.wait_not_present("#overview div.pf-c-alert.pf-m-info")
 
         is_active_system("active")
         is_active_user("active")
@@ -1082,7 +1082,7 @@ class TestApplication(testlib.MachineCase):
         self.login_and_go("/podman")
         b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "User Podman service is also available")
         b.click("#overview div.pf-c-alert .pf-c-alert__action > button:contains(Start)")
-        b.wait_not_present("#overview > div.pf-c-alert")
+        b.wait_not_present("#overview div.pf-c-alert")
         is_active_system("active")
         is_active_user("active")
         is_enabled_user("enabled")
