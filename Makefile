@@ -187,7 +187,7 @@ bots:
 # when you start a new project, use the latest release, and update it from time to time
 test/common:
 	flock Makefile sh -ec '\
-	    git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 234; \
+	    git fetch --depth=1 https://github.com/cockpit-project/cockpit.git 237; \
 	    git checkout --force FETCH_HEAD -- test/common; \
 	    git reset test/common'
 
