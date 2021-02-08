@@ -1093,17 +1093,8 @@ class TestApplication(testlib.MachineCase):
         disable_system()
         self.login_and_go("/podman", superuser=False)
         b.click("#app .pf-c-empty-state button.pf-m-primary")
-
-        # HACK: https://github.com/containers/libpod/issues/6660
-        # Try to click on the button bunch of times due to the aforementioned bug
-        with b.wait_timeout(8):
-            for _ in range(5):
-                try:
-                    b.wait_visible("#containers-containers")
-                    b.wait_not_present("#overview div.pf-c-alert")
-                    break
-                except testlib.Error:
-                    b.click("#app .pf-c-empty-state button.pf-m-primary")
+        b.wait_visible("#containers-containers")
+        b.wait_not_present("#overview div.pf-c-alert")
 
         is_active_system("inactive")
         is_active_user("active")
@@ -1334,10 +1325,6 @@ class TestApplication(testlib.MachineCase):
 
         b.click("a:contains('Console')")
         b.wait(lambda: get_int(b.text(".container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
-
-        # HACK: Stop this container because of https://github.com/containers/libpod/issues/3454
-        b.click('#containers-containers tbody tr:contains("busybox-with-tty") + tr button:contains(Stop) + button')
-        b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
 
         # Create another instance without port publishing
         b.wait_visible('#containers-images td[data-label="Name"]:contains("busybox:latest")')
