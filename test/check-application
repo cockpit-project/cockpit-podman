@@ -313,7 +313,6 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
 
         if not auth:
-            self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
         self.login(auth)
@@ -804,7 +803,6 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
 
         if not auth:
-            self.allow_authorize_journal_messages()
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
         self.login()
@@ -1126,7 +1124,6 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers")
 
         self.allow_restart_journal_messages()
-        self.allow_authorize_journal_messages()
         self.allow_journal_messages(".*podman/podman.sock/.*: couldn't connect:.*")
         self.allow_journal_messages(".*podman/podman.sock/.*/events.*: received truncated HTTP response.*")
 
@@ -1136,7 +1133,6 @@ class TestApplication(testlib.MachineCase):
 
     @testlib.nondestructive
     def testRunImageUser(self):
-        self.allow_authorize_journal_messages()
         self._testRunImage(False)
 
     def _testRunImage(self, auth):

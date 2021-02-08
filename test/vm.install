@@ -84,9 +84,6 @@ for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry
 done
 loginctl disable-linger $(id -u admin)
 
-# HACK: See https://github.com/cockpit-project/cockpit/issues/14133
-mkdir -p /usr/share/cockpit/packagekit
-
 # 15minutes after boot tmp files are removed and podman stores some tmp lock files
 systemctl disable --now systemd-tmpfiles-clean.timer
 systemctl --global disable systemd-tmpfiles-clean.timer
