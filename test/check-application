@@ -80,7 +80,7 @@ class TestApplication(testlib.MachineCase):
         self.has_selinux = self.machine.image not in ["debian-testing", "ubuntu-stable"]
 
     def cgroupsV2(self):
-        return self.machine.image not in ["ubuntu-stable", "rhel-8-3", "rhel-8-4"]
+        return self.machine.image not in ["ubuntu-stable", "rhel-8-4"]
 
     def execute(self, system, cmd):
         if system:
@@ -520,10 +520,10 @@ class TestApplication(testlib.MachineCase):
             container_commit("test-sh2", image_command=r'sh -c "while echo \"Hello World\"; do sleep 1; done "')
             self.execute(True, "podman rm -f test-sh2; podman rmi testimg:testtag")
 
-        # HACK - this does not work, see https://github.com/containers/libpod/issues/3970
-        # self.execute(False, "podman run -d --name test-sh3 alpine sleep 1000")
-        # container_commit("test-sh3", owner="admin")
-        # self.execute(False, "podman rm -f test-sh3; podman rmi testimg:testtag")
+        if self.cgroupsV2():
+            self.execute(False, "podman run -d --name test-sh3 alpine sleep 1000")
+            container_commit("test-sh3", owner="admin")
+            self.execute(False, "podman rm -f test-sh3; podman rmi testimg:testtag")
 
         self.execute(auth, "podman run -d --name test-sh4 alpine sh")
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh4")')
