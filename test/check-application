@@ -917,7 +917,7 @@ class TestApplication(testlib.MachineCase):
         if self.has_criu:
             b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
         else:
-            b.wait_in_text(".pf-c-alert.pf-m-danger", "Checkpoint/Restore requires at least CRIU")
+            b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
 
     def testCheckpointRestoreCGroupsV1(self):
         m = self.machine
@@ -965,7 +965,7 @@ class TestApplication(testlib.MachineCase):
         else:
             # expect proper error message
             b.wait_in_text(".pf-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
-            b.wait_in_text(".pf-c-alert.pf-m-danger", "Checkpoint/Restore requires at least CRIU")
+            b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
             return
 
         # Restore the container
