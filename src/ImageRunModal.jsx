@@ -195,7 +195,7 @@ class DynamicListForm extends React.Component {
                             <div className={formclass || ''} key={ item.key } data-key={ item.key }>
                                 {
                                     React.cloneElement(this.props.itemcomponent, {
-                                        idx: idx, item: item, id: (idx === 0 && id) || undefined,
+                                        idx: idx, item: item, id: id + "-" + idx,
                                         onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
                                     })
                                 }
