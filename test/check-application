@@ -115,7 +115,7 @@ class TestApplication(testlib.MachineCase):
                     b.wait_not_present("#overview div.pf-c-alert")
                 else:
                     b.click("#app .pf-c-empty-state button.pf-m-primary")
-                    b.wait_not_present("#app .pf-c-empty-state")
+                    b.wait_not_present("#app .pf-c-empty-state button")
 
     def waitPodRow(self, podName, present=False):
         if present:
