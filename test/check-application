@@ -1229,7 +1229,7 @@ class TestApplication(testlib.MachineCase):
         else:
             b.wait_not_present('.volume-form[data-key="0"] select:nth-of-type(2)')
 
-        b.set_input_text('.volume-form[data-key="0"] .pf-m-typeahead input', rodir)
+        b.set_file_autocomplete_val("#run-image-dialog-volume-0", rodir)
         b.key_press(["\r"])
         b.set_input_text('.volume-form[data-key="0"] > div > input', '/tmp/ro')
         ro_label = m.execute("ls -dZ {0}".format(rodir)).split(" ")[0]
@@ -1245,7 +1245,7 @@ class TestApplication(testlib.MachineCase):
         else:
             b.wait_not_present('.volume-form[data-key="0"] select:nth-of-type(2)')
 
-        b.set_input_text('.volume-form[data-key="2"] .pf-m-typeahead input', rwdir)
+        b.set_file_autocomplete_val("#run-image-dialog-volume-1", rwdir)
         b.key_press(["\r"])
         b.set_input_text('.volume-form[data-key="2"] > div > input', '/tmp/rw')
         b.set_input_text('.volume-form[data-key="2"] .pf-m-typeahead input', rwdir)
