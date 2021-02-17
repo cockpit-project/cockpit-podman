@@ -4,6 +4,7 @@ import {
     Button, Badge,
     Card, CardBody, CardHeader, CardTitle, CardActions,
     Text, TextVariants, FormSelect, FormSelectOption,
+    Toolbar, ToolbarContent, ToolbarItem,
 } from '@patternfly/react-core';
 import { TrashIcon } from '@patternfly/react-icons';
 
@@ -233,8 +234,10 @@ class Containers extends React.Component {
             </ScrollableAnchor>,
             columns: columns,
             initiallyExpanded: document.location.hash.substr(1) === container.Id,
-            rowId: container.Id + container.isSystem.toString(),
-            props: { key :container.Id + container.isSystem.toString() },
+            props: {
+                key :container.Id + container.isSystem.toString(),
+                "data-row-id": container.Id + container.isSystem.toString(),
+            },
         };
     }
 
@@ -436,13 +439,19 @@ class Containers extends React.Component {
                 version={this.props.version}
             />;
         const filterRunning =
-            <>
-                <label className="heading-label" htmlFor="containers-containers-filter">{_("Show")}</label>
-                <FormSelect id="containers-containers-filter" value={this.state.filter} onChange={this.handleFilterChange}>
-                    <FormSelectOption value='running' label={_("Only running")} />
-                    <FormSelectOption value='all' label={_("All")} />
-                </FormSelect>
-            </>;
+            <Toolbar>
+                <ToolbarContent>
+                    <ToolbarItem variant="label" htmlFor="containers-containers-filter">
+                        {_("Show")}
+                    </ToolbarItem>
+                    <ToolbarItem>
+                        <FormSelect id="containers-containers-filter" value={this.state.filter} onChange={this.handleFilterChange}>
+                            <FormSelectOption value='running' label={_("Only running")} />
+                            <FormSelectOption value='all' label={_("All")} />
+                        </FormSelect>
+                    </ToolbarItem>
+                </ToolbarContent>
+            </Toolbar>;
 
         return (
             <Card id="containers-containers" className="containers-containers">
