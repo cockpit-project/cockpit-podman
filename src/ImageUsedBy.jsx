@@ -23,11 +23,11 @@ const renderRow = (containerStats, container) => {
     ];
     return {
         columns: columns,
-        rowId: "usedby-" + container.Id,
         props: {
             key: "usedby-" + container.Id,
             running: isRunning,
             containerId: container.Id,
+            "data-row-id": "usedby-" + container.Id,
         }
     };
 };

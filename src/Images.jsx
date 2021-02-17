@@ -172,8 +172,10 @@ class Images extends React.Component {
                                 listingActions={actions}
                                 tabRenderers={tabs} />,
             columns: columns,
-            rowId: image.Id + image.isSystem.toString(),
-            props: { key :image.Id + image.isSystem.toString() },
+            props: {
+                key :image.Id + image.isSystem.toString(),
+                "data-row-id": image.Id + image.isSystem.toString(),
+            },
         };
     }
 
