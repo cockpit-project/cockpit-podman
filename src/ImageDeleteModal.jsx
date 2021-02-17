@@ -68,6 +68,7 @@ export class ImageDeleteModal extends React.Component {
                         { repoTags.map(x => {
                             return (
                                 <Checkbox isChecked={checkedTags.indexOf(x) > -1}
+                                          id={"delete-" + x}
                                           aria-label={x}
                                           key={x}
                                           label={x}

@@ -575,8 +575,9 @@ class Application extends React.Component {
                         { _("Podman service is not active") }
                     </Title>
                     <Checkbox isChecked={this.state.enableService}
-                             label={_("Automatically start podman on boot")}
-                             onChange={ checked => this.setState({ enableService: checked }) } />
+                              id="enable"
+                              label={_("Automatically start podman on boot")}
+                              onChange={ checked => this.setState({ enableService: checked }) } />
                     <Button onClick={this.startService}>
                         {_("Start podman")}
                     </Button>
