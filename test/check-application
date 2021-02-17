@@ -130,9 +130,9 @@ class TestApplication(testlib.MachineCase):
                                    cmd=container["command"], state=container["state"], pod=podName)
         else:
             if self.browser.val("#containers-containers-filter") == "all":
-                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No containers in this pod ")
+                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No containers in this pod")
             else:
-                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No running containers in this pod ")
+                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No running containers in this pod")
 
     def performPodAction(self, podName, podOwner, action):
         b = self.browser
