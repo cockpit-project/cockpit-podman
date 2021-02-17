@@ -65,8 +65,9 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                            value={item.containerPort || ''}
                            onChange={value => onChange(idx, 'containerPort', value)} />
                 <FormSelect className='pf-c-form-control container-port-protocol'
-                               value={item.protocol}
-                               onChange={value => onChange(idx, 'protocol', value)}>
+                            aria-label={_("Protocol")}
+                            value={item.protocol}
+                            onChange={value => onChange(idx, 'protocol', value)}>
                     <FormSelectOption value='tcp' key='tcp' label={_("TCP")} />
                     <FormSelectOption value='udp' key='udp' label={_("UDP")} />
                 </FormSelect>
@@ -131,15 +132,17 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem, options }) =>
             </InputGroup>
             <InputGroup className='ct-input-group-spacer-sm'>
                 <FormSelect className='pf-c-form-control'
-                               value={item.mode}
-                               onChange={value => onChange(idx, 'mode', value)}>
+                            aria-label={_("Mode")}
+                            value={item.mode}
+                            onChange={value => onChange(idx, 'mode', value)}>
                     <FormSelectOption value='ro' key='ro' label={_("ReadOnly")} />
                     <FormSelectOption value='rw' key='rw' label={_("ReadWrite")} />
                 </FormSelect>
                 { options && options.selinuxAvailable &&
                     <FormSelect className='pf-c-form-control'
-                                   value={item.selinux}
-                                   onChange={value => onChange(idx, 'selinux', value)}>
+                                aria-label={_("SELinux label")}
+                                value={item.selinux}
+                                onChange={value => onChange(idx, 'selinux', value)}>
                         <FormSelectOption value='' key='' label={_("No SELinux label")} />
                         <FormSelectOption value='z' key='z' label={_("Shared")} />
                         <FormSelectOption value='Z' key='Z' label={_("Private")} />
@@ -356,9 +359,10 @@ export class ImageRunModal extends React.Component {
                                    isReadOnly={!this.state.memoryConfigure}
                                    onChange={value => this.onValueChanged('memory', value)} />
                         <FormSelect id='memory-unit-select'
-                                       value={this.state.memoryUnit}
-                                       isDisabled={!this.state.memoryConfigure}
-                                       onChange={value => this.onValueChanged('memoryUnit', value)}>
+                                    aria-label={_("Memory unit")}
+                                    value={this.state.memoryUnit}
+                                    isDisabled={!this.state.memoryConfigure}
+                                    onChange={value => this.onValueChanged('memoryUnit', value)}>
                             <FormSelectOption value={units.KiB.name} key={units.KiB.name} label={_("KiB")} />
                             <FormSelectOption value={units.MiB.name} key={units.MiB.name} label={_("MiB")} />
                             <FormSelectOption value={units.GiB.name} key={units.GiB.name} label={_("GiB")} />
