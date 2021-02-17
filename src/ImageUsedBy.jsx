@@ -51,6 +51,7 @@ const ImageUsedBy = (props) => {
 
     return (
         <ListingTable
+            aria-label={_("Used by")}
             onRowClick={(_, x) => {
                 const loc = document.location.toString().split('#')[0];
                 document.location = loc + '#' + x.props.containerId;
