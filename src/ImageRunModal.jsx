@@ -47,6 +47,15 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                            placeholder={_("Host port (optional)")}
                            value={item.hostPort || ''}
                            onChange={value => onChange(idx, 'hostPort', value)} />
+                <Button variant='secondary'
+                        className={"btn-close" + (idx === 0 && !item.IP && !item.hostPort && !item.containerPort ? ' invisible' : '')}
+                        isSmall
+                        aria-label={_("Remove item")}
+                        icon={<CloseIcon />}
+                        onClick={() => removeitem(idx)} />
+                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")} icon={<PlusIcon />} />
+            </InputGroup>
+            <InputGroup className='ct-input-group-spacer-sm'>
                 <TextInput aria-label={_("Container port")}
                            type='number'
                            step={1}
@@ -61,13 +70,6 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, additem }) =>
                     <FormSelectOption value='tcp' key='tcp' label={_("TCP")} />
                     <FormSelectOption value='udp' key='udp' label={_("UDP")} />
                 </FormSelect>
-                <Button variant='secondary'
-                        className={"btn-close" + (idx === 0 && !item.IP && !item.hostPort && !item.containerPort ? ' invisible' : '')}
-                        isSmall
-                        aria-label={_("Remove item")}
-                        icon={<CloseIcon />}
-                        onClick={() => removeitem(idx)} />
-                <Button variant='secondary' className="btn-add" onClick={additem} aria-label={_("Add item")} icon={<PlusIcon />} />
             </InputGroup>
         </>
     );
