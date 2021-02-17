@@ -219,7 +219,7 @@ body {
     padding-bottom: var(--pf-global--spacer--sm);
 
     // Limit width for select entries and inputs in the input groups otherwise they take up the whole space
-    > .pf-c-select, .pf-c-form-control {
+    > .pf-c-select, .pf-c-form-control:not(.pf-c-select__toggle-typeahead) {
       max-width: 40%;
     }
 
