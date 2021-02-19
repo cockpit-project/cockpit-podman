@@ -19,8 +19,7 @@ fi
 
 export TEST_AUDIT_NO_SELINUX=1
 
-# FIXME: Internal Server Error: statfs /tmp/bin: no such file or directory
-EXCLUDES="--exclude TestApplication.testRunImageUser"
+EXCLUDES=""
 
 RC=0
 test/common/run-tests --nondestructive --machine 127.0.0.1:22 --browser 127.0.0.1:9090 $EXCLUDES || RC=$?
