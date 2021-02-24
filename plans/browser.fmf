@@ -1,4 +1,6 @@
 summary: Run browser integration tests on the host
+discover:
+    how: fmf
 prepare:
     how: install
     package:
@@ -11,4 +13,4 @@ prepare:
     - npm
     - python3
 execute:
-    script: plans/browser.sh
+    how: tmt
