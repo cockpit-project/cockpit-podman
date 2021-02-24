@@ -6,7 +6,7 @@ if [ -d source ]; then
     # path for standard-test-source
     SOURCE="$(pwd)/source"
 else
-    SOURCE="$(realpath $TESTS/..)"
+    SOURCE="$(realpath $TESTS/../..)"
 fi
 LOGS="$(pwd)/logs"
 mkdir -p "$LOGS"
