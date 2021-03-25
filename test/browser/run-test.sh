@@ -12,10 +12,6 @@ npm install chrome-remote-interface sizzle
 
 . /etc/os-release
 export TEST_OS="${ID}-${VERSION_ID/./-}"
-# HACK: upstream does not yet know about rawhide
-if [ "$TEST_OS" = "fedora-34" ]; then
-    export TEST_OS=fedora-33
-fi
 
 export TEST_AUDIT_NO_SELINUX=1
 
