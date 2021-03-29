@@ -103,7 +103,7 @@ dist-gzip: $(TARFILE)
 # we don't ship node_modules for license and compactness reasons; we ship a
 # pre-built dist/ (so it's not necessary) and ship packge-lock.json (so that
 # node_modules/ can be reconstructed if necessary)
-$(TARFILE): NODE_ENV=production
+$(TARFILE): export NODE_ENV=production
 $(TARFILE): $(WEBPACK_TEST) $(RPM_NAME).spec
 	mv node_modules node_modules.release
 	touch -r package.json $(NODE_MODULES_TEST)
