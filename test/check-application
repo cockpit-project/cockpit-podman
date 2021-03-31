@@ -78,7 +78,7 @@ class TestApplication(testlib.MachineCase):
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
         self.has_criu = m.image not in ["debian-testing", "ubuntu-stable"]
-        self.has_selinux = m.image not in ["debian-testing", "ubuntu-stable"]
+        self.has_selinux = "debian" not in m.image and "ubuntu" not in m.image
         self.has_cgroupsV2 = m.image not in ["ubuntu-stable"] and not m.image.startswith('rhel-8')
 
     def execute(self, system, cmd):
