@@ -885,13 +885,11 @@ class TestApplication(testlib.MachineCase):
     @testlib.nondestructive
     def testCheckpointRestoreCGroupsV2(self):
         b = self.browser
-        m = self.machine
 
         if not self.has_cgroupsV2:
             return
 
-        # Only Fedora works with CGroupsV2
-        if m.image.startswith('fedora'):
+        if self.has_criu:
             return self._testCheckpointRestore()
 
         # On other systems just check that we get expected error messages
@@ -913,10 +911,7 @@ class TestApplication(testlib.MachineCase):
         b.click('.pf-c-modal-box button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
 
-        if self.has_criu:
-            b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'does not support checkpoint/restore')
-        else:
-            b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
+        b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
 
     def testCheckpointRestoreCGroupsV1(self):
         m = self.machine
