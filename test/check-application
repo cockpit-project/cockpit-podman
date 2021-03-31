@@ -915,7 +915,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present('.modal_dialog')
 
         if self.has_criu:
-            b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'Configured runtime does not support checkpoint/restore')
+            b.wait_in_text('.pf-c-alert.pf-m-danger .pf-c-alert__description', 'does not support checkpoint/restore')
         else:
             b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
 
