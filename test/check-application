@@ -78,9 +78,7 @@ class TestApplication(testlib.MachineCase):
 
         self.has_criu = self.machine.image not in ["debian-testing", "ubuntu-stable"]
         self.has_selinux = self.machine.image not in ["debian-testing", "ubuntu-stable"]
-
-    def cgroupsV2(self):
-        return self.machine.image != 'ubuntu-stable' and not self.machine.image.startswith('rhel-8')
+        self.has_cgroupsV2 = self.machine.image not in ["ubuntu-stable"] and not self.machine.image.startswith('rhel-8')
 
     def execute(self, system, cmd):
         if system:
@@ -519,7 +517,7 @@ class TestApplication(testlib.MachineCase):
             container_commit("test-sh2", image_command=r'sh -c "while echo \"Hello World\"; do sleep 1; done "')
             self.execute(True, "podman rm -f test-sh2; podman rmi testimg:testtag")
 
-        if self.cgroupsV2():
+        if self.has_cgroupsV2:
             self.execute(False, "podman run -d --name test-sh3 alpine sleep 1000")
             container_commit("test-sh3", owner="admin")
             self.execute(False, "podman rm -f test-sh3; podman rmi testimg:testtag")
@@ -833,7 +831,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)") != "")
         cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
         memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)")
-        if auth or self.cgroupsV2():
+        if auth or self.has_cgroupsV2:
             self.assertIn('%', cpu)
             num = cpu[:-1]
             self.assertTrue(num.replace('.', '', 1).isdigit())
@@ -888,7 +886,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         m = self.machine
 
-        if not self.cgroupsV2():
+        if not self.has_cgroupsV2:
             return
 
         # Only Fedora works with CGroupsV2
@@ -1164,7 +1162,7 @@ class TestApplication(testlib.MachineCase):
 
         # Check memory configuration
         # Only works with CGroupsV2
-        if auth or self.cgroupsV2():
+        if auth or self.has_cgroupsV2:
             b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
             b.wait_visible("#run-image-dialog-memory-limit-checkbox:checked")
             b.wait_visible('#run-image-dialog-memory-limit input[value="512"]')
@@ -1262,7 +1260,7 @@ class TestApplication(testlib.MachineCase):
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
-        if auth or self.cgroupsV2():
+        if auth or self.has_cgroupsV2:
             memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
             self.assertEqual(memory, '536870912')
 
@@ -1350,7 +1348,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_text('#containers-containers tr:contains("busybox-without-publish") + tr dt:contains("Ports") + dd', "")
 
         # Rootless only works with CGroupsV2
-        if auth or self.cgroupsV2():
+        if auth or self.has_cgroupsV2:
             cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish").strip()
             # podman ≥ 1.8 translates 0 default into actual value
             self.assertIn(cpuShares, ['0', '1024'])
