@@ -40,28 +40,29 @@ class TestApplication(testlib.MachineCase):
 
     def setUp(self):
         super().setUp()
-        self.machine.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
+        m = self.machine
+        m.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
 
         # backup/restore pristine podman state, so that tests can run on existing testbeds
         self.restore_dir("/var/lib/containers", reboot_safe=True)
 
-        self.addCleanup(self.machine.execute, "systemctl stop podman.service")
+        self.addCleanup(m.execute, "systemctl stop podman.service")
 
         # HACK: sometimes podman leaks mounts
-        self.addCleanup(self.machine.execute, "podman rm --force --all && "
+        self.addCleanup(m.execute, "podman rm --force --all && "
                         "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
 
         # Create admin session
-        self.machine.execute("""
+        m.execute("""
             mkdir /home/admin/.ssh
             cp /root/.ssh/* /home/admin/.ssh
             chown -R admin:admin /home/admin/.ssh
             chmod -R go-wx /home/admin/.ssh
             """)
         self.admin_s = ssh_connection.SSHConnection(user="admin",
-                                                    address=self.machine.ssh_address,
-                                                    ssh_port=self.machine.ssh_port,
-                                                    identity_file=self.machine.identity_file)
+                                                    address=m.ssh_address,
+                                                    ssh_port=m.ssh_port,
+                                                    identity_file=m.identity_file)
 
         # Enable user service as well
         self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
@@ -69,16 +70,16 @@ class TestApplication(testlib.MachineCase):
         self.addCleanup(self.admin_s.execute, "podman rm --force --all; systemctl --user stop podman.service podman.socket")
 
         # But disable it globally so that "systemctl --user disable" does what we expect
-        self.machine.execute("systemctl --global disable podman.socket")
+        m.execute("systemctl --global disable podman.socket")
 
-        self.addCleanup(self.machine.execute, "killall -9 podman || true")
+        self.addCleanup(m.execute, "killall -9 podman || true")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
-        self.has_criu = self.machine.image not in ["debian-testing", "ubuntu-stable"]
-        self.has_selinux = self.machine.image not in ["debian-testing", "ubuntu-stable"]
-        self.has_cgroupsV2 = self.machine.image not in ["ubuntu-stable"] and not self.machine.image.startswith('rhel-8')
+        self.has_criu = m.image not in ["debian-testing", "ubuntu-stable"]
+        self.has_selinux = m.image not in ["debian-testing", "ubuntu-stable"]
+        self.has_cgroupsV2 = m.image not in ["ubuntu-stable"] and not m.image.startswith('rhel-8')
 
     def execute(self, system, cmd):
         if system:
