@@ -6,6 +6,7 @@ const extract = require("mini-css-extract-plugin");
 const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const CompressionPlugin = require("compression-webpack-plugin");
+const ESLintPlugin = require('eslint-webpack-plugin');
 const CockpitPoPlugin = require("./src/lib/cockpit-po-plugin");
 
 const webpack = require("webpack");
@@ -24,6 +25,7 @@ const copy_files = [
 const plugins = [
     new copy({ patterns: copy_files }),
     new extract({filename: "[name].css"}),
+    new ESLintPlugin({ extensions: ["js", "jsx"] }),
     new CockpitPoPlugin(),
 ];
 
@@ -74,12 +76,6 @@ module.exports = {
 
     module: {
         rules: [
-            {
-                enforce: 'pre',
-                exclude: /node_modules/,
-                loader: 'eslint-loader',
-                test: /\.(js|jsx)$/
-            },
             {
                 exclude: /node_modules/,
                 use: "babel-loader",
