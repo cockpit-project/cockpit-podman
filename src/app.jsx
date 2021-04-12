@@ -49,6 +49,7 @@ class Application extends React.Component {
             userImagesLoaded: false,
             systemImagesLoaded: false,
             containers: null,
+            containersFilter: "running",
             containersStats: {},
             containersDetails: {},
             userContainersLoaded: null,
@@ -635,6 +636,7 @@ class Application extends React.Component {
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
+                showAll={ () => this.setState({ containersFilter: "all" }) }
                 user={this.state.currentUser}
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
@@ -649,6 +651,8 @@ class Application extends React.Component {
                 pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
                 containersStats={this.state.containersStats}
                 containersDetails={this.state.containersDetails}
+                filter={this.state.containersFilter}
+                handleFilterChange={ value => this.setState({ containersFilter: value }) }
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
                 user={this.state.currentUser}

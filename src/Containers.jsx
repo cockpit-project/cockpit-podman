@@ -43,7 +43,6 @@ class Containers extends React.Component {
             checkpointInProgress: false,
             restoreInProgress: false,
             width: 0,
-            filter: "running",
         };
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
@@ -59,7 +58,6 @@ class Containers extends React.Component {
         this.handleRestoreContainer = this.handleRestoreContainer.bind(this);
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
-        this.handleFilterChange = this.handleFilterChange.bind(this);
 
         window.addEventListener('resize', this.onWindowResize);
     }
@@ -70,10 +68,6 @@ class Containers extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowResize);
-    }
-
-    handleFilterChange (value) {
-        this.setState({ filter: value });
     }
 
     deleteContainer(container, event) {
@@ -339,11 +333,11 @@ class Containers extends React.Component {
             emptyCaption = _("Loading...");
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No containers that match the current filter");
-        else if (this.state.filter == "running")
+        else if (this.props.filter == "running")
             emptyCaption = _("No running containers");
 
         if (this.props.containers !== null && this.props.pods !== null) {
-            filtered = Object.keys(this.props.containers).filter(id => !(this.state.filter == "running") || this.props.containers[id].State == "running");
+            filtered = Object.keys(this.props.containers).filter(id => !(this.props.filter == "running") || this.props.containers[id].State == "running");
 
             if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
                 filtered = filtered.filter(id => {
@@ -387,7 +381,7 @@ class Containers extends React.Component {
                 const lcf = this.props.textFilter.toLowerCase();
                 if (section != "no-pod") {
                     const pod = this.props.pods[section];
-                    if ((this.state.filter == "running" && pod.Status != "Running") ||
+                    if ((this.props.filter == "running" && pod.Status != "Running") ||
                         // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
                         (!partitionedContainers[section].length && pod.Name.toLowerCase().indexOf(lcf) < 0) ||
                         ((this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") &&
@@ -445,7 +439,7 @@ class Containers extends React.Component {
                         {_("Show")}
                     </ToolbarItem>
                     <ToolbarItem>
-                        <FormSelect id="containers-containers-filter" value={this.state.filter} onChange={this.handleFilterChange}>
+                        <FormSelect id="containers-containers-filter" value={this.props.filter} onChange={this.props.handleFilterChange}>
                             <FormSelectOption value='running' label={_("Only running")} />
                             <FormSelectOption value='all' label={_("All")} />
                         </FormSelect>
