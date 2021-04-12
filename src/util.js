@@ -159,12 +159,11 @@ export function compare_versions(a, b) {
         return str.split(".").map(function (s) { return s ? parseInt(s, 10) : 0 });
     }
 
-    var a_ints = to_ints(a);
-    var b_ints = to_ints(b);
-    var len = Math.min(a_ints.length, b_ints.length);
-    var i;
+    const a_ints = to_ints(a);
+    const b_ints = to_ints(b);
+    const len = Math.min(a_ints.length, b_ints.length);
 
-    for (i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         if (a_ints[i] == b_ints[i])
             continue;
         return a_ints[i] - b_ints[i];
