@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from "react-dom";
 import {
     Button, Badge,
     Card, CardBody, CardHeader, CardTitle, CardActions,
@@ -60,6 +59,8 @@ class Containers extends React.Component {
         this.handleCancelRemoveError = this.handleCancelRemoveError.bind(this);
         this.handleForceRemoveContainer = this.handleForceRemoveContainer.bind(this);
         this.handleFilterChange = this.handleFilterChange.bind(this);
+
+        this.cardRef = React.createRef();
 
         window.addEventListener('resize', this.onWindowResize);
     }
@@ -323,9 +324,7 @@ class Containers extends React.Component {
     }
 
     onWindowResize() {
-        this.setState({
-            width: ReactDOM.findDOMNode(this).clientWidth
-        });
+        this.setState({ width: this.cardRef.current.clientWidth });
     }
 
     render() {
@@ -453,7 +452,7 @@ class Containers extends React.Component {
                 </ToolbarContent>
             </Toolbar>;
 
-        return (
+        const card = (
             <Card id="containers-containers" className="containers-containers">
                 <CardHeader>
                     <CardTitle><Text component={TextVariants.h2}>{_("Containers")}</Text></CardTitle>
@@ -521,6 +520,8 @@ class Containers extends React.Component {
                 {this.state.showCommitModal && containerCommitModal}
             </Card>
         );
+
+        return <div ref={this.cardRef}>{card}</div>;
     }
 }
 
