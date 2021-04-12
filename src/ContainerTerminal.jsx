@@ -243,7 +243,7 @@ class ContainerTerminal extends React.Component {
 
     disconnectChannel() {
         if (this.state.buffer)
-            this.state.buffer.callback = null;
+            this.state.buffer.callback = null; // eslint-disable-line react/no-direct-mutation-state
         if (this.state.channel) {
             this.state.channel.removeEventListener('close', this.onChannelClose);
         }
