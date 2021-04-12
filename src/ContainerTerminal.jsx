@@ -62,6 +62,8 @@ class ContainerTerminal extends React.Component {
         this.execAndConnect = this.execAndConnect.bind(this);
         this.setUpBuffer = this.setUpBuffer.bind(this);
 
+        this.terminalRef = React.createRef();
+
         const term = new Terminal({
             cols: 80,
             rows: 24,
@@ -169,7 +171,7 @@ class ContainerTerminal extends React.Component {
 
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
-            this.state.term.open(this.refs.terminal);
+            this.state.term.open(this.terminalRef.current);
             this.setState({ opened: true });
 
             this.state.term.onData((data) => {
@@ -250,7 +252,7 @@ class ContainerTerminal extends React.Component {
     }
 
     render() {
-        let element = <div className="container-terminal" ref="terminal" />;
+        let element = <div className="container-terminal" ref={this.terminalRef} />;
 
         if (this.props.containerStatus !== "running" && !this.state.opened)
             element = <EmptyStatePanel title={_("Container is not running")} />;

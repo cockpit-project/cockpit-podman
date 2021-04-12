@@ -52,6 +52,8 @@ class ContainerLogs extends React.Component {
         this.view._core.cursorHidden = true;
         this.view.write(_("Loading logs..."));
 
+        this.logRef = React.createRef();
+
         this.state = {
             opened: false,
             loading: true,
@@ -91,7 +93,7 @@ class ContainerLogs extends React.Component {
 
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
-            this.view.open(this.refs.logs);
+            this.view.open(this.logRef.current);
             this.setState({ opened: true });
         }
         this.resize(this.props.width);
@@ -145,7 +147,7 @@ class ContainerLogs extends React.Component {
     }
 
     render() {
-        let element = <div className="container-logs" ref="logs" />;
+        let element = <div className="container-logs" ref={this.logRef} />;
         if (this.state.errorMessage)
             element = <EmptyStatePanel icon={ExclamationCircleIcon} title={this.state.errorMessage} />;
 
