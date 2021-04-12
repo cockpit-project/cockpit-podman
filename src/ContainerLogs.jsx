@@ -39,7 +39,7 @@ class ContainerLogs extends React.Component {
         this.onStreamMessage = this.onStreamMessage.bind(this);
         this.connectStream = this.connectStream.bind(this);
 
-        const view = new Terminal({
+        this.view = new Terminal({
             cols: 80,
             rows: 24,
             convertEol: true,
@@ -49,11 +49,10 @@ class ContainerLogs extends React.Component {
             fontFamily: 'Menlo, Monaco, Consolas, monospace',
             screenReaderMode: true
         });
-        view._core.cursorHidden = true;
-        view.write(_("Loading logs..."));
+        this.view._core.cursorHidden = true;
+        this.view.write(_("Loading logs..."));
 
         this.state = {
-            view: view,
             opened: false,
             loading: true,
             errorMessage: "",
@@ -74,16 +73,16 @@ class ContainerLogs extends React.Component {
 
     resize(width) {
         const padding = 11 + 5 + 50;
-        const realWidth = this.state.view._core._renderService.dimensions.actualCellWidth;
+        const realWidth = this.view._core._renderService.dimensions.actualCellWidth;
         const cols = Math.floor((width - padding) / realWidth);
-        this.state.view.resize(cols, 24);
+        this.view.resize(cols, 24);
     }
 
     componentWillUnmount() {
         this._ismounted = false;
         if (this.state.streamer)
             this.state.streamer.close();
-        this.state.view.dispose();
+        this.view.dispose();
     }
 
     connectStream() {
@@ -92,7 +91,7 @@ class ContainerLogs extends React.Component {
 
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
-            this.state.view.open(this.refs.logs);
+            this.view.open(this.refs.logs);
             this.setState({ opened: true });
         }
         this.resize(this.props.width);
@@ -126,13 +125,13 @@ class ContainerLogs extends React.Component {
     onStreamMessage(data) {
         if (data) {
             if (this.state.loading) {
-                this.state.view.reset();
-                this.state.view._core.cursorHidden = true;
+                this.view.reset();
+                this.view._core.cursorHidden = true;
                 this.setState({ loading: false });
             }
             // First 8 bytes encode information about stream and frame
             // See 'Stream format' on https://docs.docker.com/engine/api/v1.40/#operation/ContainerAttach
-            this.state.view.writeln(data.substring(8));
+            this.view.writeln(data.substring(8));
         }
     }
 
@@ -141,7 +140,7 @@ class ContainerLogs extends React.Component {
             this.setState({
                 streamer: null,
             });
-            this.state.view.write("Streaming disconnected");
+            this.view.write("Streaming disconnected");
         }
     }
 
