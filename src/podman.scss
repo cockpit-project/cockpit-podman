@@ -178,26 +178,6 @@ body {
     overflow-wrap: anywhere;
 }
 
-/* Place details definition list into a grid, with PF4-like style */
-.container-details,
-.image-details {
-    display: grid;
-    grid-template-columns: [label] auto [value] 1fr;
-    grid-gap: var(--pf-global--spacer--sm) var(--pf-global--spacer--lg);
-    align-items: baseline;
-    justify-content: left;
-
-    > dt {
-        grid-column: label;
-        font-size: var(--pf-global--FontSize--sm);
-    }
-
-    > dd {
-        grid-column: value;
-        font-size: var(--pf-global--FontSize--md);
-    }
-}
-
 .listing-action {
     width: 100%;
     display: flex;
