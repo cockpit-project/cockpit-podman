@@ -1390,10 +1390,20 @@ class TestApplication(testlib.MachineCase):
         b.click(".pf-m-expanded a:contains('Console')")
         b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
 
+        self.filter_containers("running")
+        b.wait_not_in_text("#containers-containers", "busybox-without-publish")
+
         b.click('#containers-images tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click("#containers-images tbody tr:contains('busybox:latest') a:contains('Used by')")
-        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-without-publish')")
-        b.wait_visible("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-with-tty')")
+        # running container, just scrolls up
+        b.mousedown("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-with-tty')")
+        # FIXME: scrolling does not actually work right now
+        # but should leave "Only running" alone
+        b.wait_val("#containers-containers-filter", "running")
+        # stopped container, switches to showing all containers
+        b.mousedown("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-without-publish')")
+        b.wait_val("#containers-containers-filter", "all")
+        b.wait_in_text("#containers-containers", "busybox-without-publish")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
         b.click("#containers-images tbody tr:contains('alpine:latest') a:contains('Used by')")
