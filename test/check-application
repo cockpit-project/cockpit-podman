@@ -1392,18 +1392,24 @@ class TestApplication(testlib.MachineCase):
 
         self.filter_containers("running")
         b.wait_not_in_text("#containers-containers", "busybox-without-publish")
+        id_with_tty = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
+        id_without_publish = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
 
         b.click('#containers-images tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click("#containers-images tbody tr:contains('busybox:latest') a:contains('Used by')")
-        # running container, just scrolls up
+        # running container, just selects it, but leaves "Only running" alone
         b.mousedown("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-with-tty')")
-        # FIXME: scrolling does not actually work right now
-        # but should leave "Only running" alone
+        b.wait_js_cond('window.location.hash === "#' + id_with_tty + '"')
         b.wait_val("#containers-containers-filter", "running")
+        # FIXME: expanding running container details does not actually work right now
+        # b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep infinity")
         # stopped container, switches to showing all containers
         b.mousedown("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-without-publish')")
+        b.wait_js_cond('window.location.hash === "#' + id_without_publish + '"')
         b.wait_val("#containers-containers-filter", "all")
         b.wait_in_text("#containers-containers", "busybox-without-publish")
+        # auto-expands container details
+        b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep 1000m")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
         b.click("#containers-images tbody tr:contains('alpine:latest') a:contains('Used by')")
