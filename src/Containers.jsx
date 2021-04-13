@@ -21,7 +21,6 @@ import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
-import ScrollableAnchor from 'react-scrollable-anchor';
 
 import './Containers.scss';
 import { PodActions } from './PodActions.jsx';
@@ -221,12 +220,12 @@ class Containers extends React.Component {
         }
 
         return {
-            expandedContent: <ScrollableAnchor id={container.Id} key={container.Id}>
+            expandedContent: <div id={container.Id}>
                 <ListingPanel
                                     colSpan='4'
                                     listingActions={actions}
                                     tabRenderers={tabs} />
-            </ScrollableAnchor>,
+            </div>,
             columns: columns,
             initiallyExpanded: document.location.hash.substr(1) === container.Id,
             props: {
