@@ -220,12 +220,9 @@ class Containers extends React.Component {
         }
 
         return {
-            expandedContent: <div id={container.Id}>
-                <ListingPanel
-                                    colSpan='4'
-                                    listingActions={actions}
-                                    tabRenderers={tabs} />
-            </div>,
+            expandedContent: <ListingPanel colSpan='4'
+                                           listingActions={actions}
+                                           tabRenderers={tabs} />,
             columns: columns,
             initiallyExpanded: document.location.hash.substr(1) === container.Id,
             props: {
