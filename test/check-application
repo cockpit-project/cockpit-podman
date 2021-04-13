@@ -495,7 +495,7 @@ class TestApplication(testlib.MachineCase):
             toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.pf-c-table__toggle button'.format(image_name, image_tag)
             b.click(toggle_sel)
             b.wait_visible('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
-            b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") dd:nth-child(8)'.format(image_name, image_tag), image_command)
+            b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") .pf-c-description-list__group:nth-child(4)'.format(image_name, image_tag), image_command)
             b.wait_visible('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_author))
             # close listing toggle again
             b.click(toggle_sel)

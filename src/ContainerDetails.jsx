@@ -2,6 +2,8 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
+import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup } from "@patternfly/react-core";
+
 const _ = cockpit.gettext;
 
 const render_container_state = (container) => {
@@ -24,28 +26,48 @@ const render_container_published_ports = (ports) => {
 };
 
 const ContainerDetails = ({ container, containerDetail }) => (
-    <dl className='container-details'>
-        <dt>{_("ID")}</dt>
-        <dd>{container.Id}</dd>
-        <dt>{_("Created")}</dt>
-        <dd>{utils.localize_time(container.Created)}</dd>
-        <dt>{_("Image")}</dt>
-        <dd>{container.Image}</dd>
-        <dt>{_("Command")}</dt>
-        <dd>{container.Command ? utils.quote_cmdline(container.Command) : ""}</dd>
-        <dt>{_("State")}</dt>
-        <dd>{render_container_state(container)}</dd>
-        <dt>{_("Ports")}</dt>
-        <dd>{render_container_published_ports(container.Ports)}</dd>
-        <dt>{_("IP address")}</dt>
-        <dd>{containerDetail ? containerDetail.NetworkSettings.IPAddress : ""}</dd>
-        <dt>{_("IP prefix length")}</dt>
-        <dd>{containerDetail ? containerDetail.NetworkSettings.IPPrefixLen : ""}</dd>
-        <dt>{_("Gateway")}</dt>
-        <dd>{containerDetail ? containerDetail.NetworkSettings.Gateway : ""}</dd>
-        <dt>{_("MAC address")}</dt>
-        <dd>{containerDetail ? containerDetail.NetworkSettings.MacAddress : ""}</dd>
-    </dl>
+    <DescriptionList isHorizontal className='container-details'>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
+            <DescriptionListDescription>{container.Id}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
+            <DescriptionListDescription>{utils.localize_time(container.Created)}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
+            <DescriptionListDescription>{container.Image}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
+            <DescriptionListDescription>{container.Command ? utils.quote_cmdline(container.Command) : ""}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("State")}</DescriptionListTerm>
+            <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
+            <DescriptionListDescription>{render_container_published_ports(container.Ports)}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
+            <DescriptionListDescription>{containerDetail ? containerDetail.NetworkSettings.IPAddress : ""}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("IP prefix length")}</DescriptionListTerm>
+            <DescriptionListDescription>{containerDetail ? containerDetail.NetworkSettings.IPPrefixLen : ""}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
+            <DescriptionListDescription>{containerDetail ? containerDetail.NetworkSettings.Gateway : ""}</DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+            <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
+            <DescriptionListDescription>{containerDetail ? containerDetail.NetworkSettings.MacAddress : ""}</DescriptionListDescription>
+        </DescriptionListGroup>
+    </DescriptionList>
 );
 
 export default ContainerDetails;

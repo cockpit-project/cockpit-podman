@@ -2,6 +2,7 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
+import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup } from "@patternfly/react-core";
 const _ = cockpit.gettext;
 
 const truncate_id = (id) => {
@@ -12,22 +13,36 @@ const ImageDetails = (props) => {
     const image = props.image;
 
     return (
-        <dl className='image-details'>
-            <dt>{_("ID")}</dt>
-            <dd title={image.Id}>{truncate_id(image.Id)}</dd>
-            <dt>{_("Tags")}</dt>
-            <dd>{image.RepoTags ? image.RepoTags.join(" ") : ""}</dd>
-            <dt>{_("Entrypoint")}</dt>
-            <dd>{image.Entrypoint ? image.Entrypoint.join(" ") : ""}</dd>
-            <dt>{_("Command")}</dt>
-            <dd>{image.Command ? utils.quote_cmdline(image.Command) : "" }</dd>
-            <dt>{_("Created")}</dt>
-            <dd>{utils.localize_time(image.Created)}</dd>
-            <dt>{_("Author")}</dt>
-            <dd>{image.Author}</dd>
-            <dt>{_("Ports")}</dt>
-            <dd>{image.Ports ? image.Ports.join(', ') : ""}</dd>
-        </dl>
+        <DescriptionList isHorizontal className='image-details'>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
+                <DescriptionListDescription title={image.Id}>{truncate_id(image.Id)}</DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("Tags")}</DescriptionListTerm>
+                <DescriptionListDescription>{image.RepoTags ? image.RepoTags.join(" ") : ""}</DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("Entrypoint")}</DescriptionListTerm>
+                <DescriptionListDescription>{image.Entrypoint ? image.Entrypoint.join(" ") : ""}</DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
+                <DescriptionListDescription>{image.Command ? utils.quote_cmdline(image.Command) : "" }</DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
+                <DescriptionListDescription>{utils.localize_time(image.Created)}</DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("Author")}</DescriptionListTerm>
+                <DescriptionListDescription>{image.Author}</DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
+                <DescriptionListDescription>{image.Ports ? image.Ports.join(', ') : ""}</DescriptionListDescription>
+            </DescriptionListGroup>
+        </DescriptionList>
     );
 };
 
