@@ -7,7 +7,6 @@ const _ = cockpit.gettext;
 
 const renderRow = (containerStats, container) => {
     const isRunning = container.State == "running";
-
     let proc = "";
     let mem = "";
     if (containerStats) {
@@ -25,8 +24,8 @@ const renderRow = (containerStats, container) => {
         columns: columns,
         props: {
             key: "usedby-" + container.Id,
-            running: isRunning,
-            containerId: container.Id,
+            "data-running": isRunning,
+            "data-containerId": container.Id,
             "data-row-id": "usedby-" + container.Id,
         }
     };
@@ -54,8 +53,8 @@ const ImageUsedBy = (props) => {
             aria-label={_("Used by")}
             onRowClick={(event, row) => {
                 const loc = document.location.toString().split('#')[0];
-                document.location = loc + '#' + row.props.containerId;
-                if (!row.props.running)
+                document.location = loc + '#' + row.props.['data-containerId'];
+                if (!row.props['data-running'])
                     props.showAll();
                 return false;
             }}
