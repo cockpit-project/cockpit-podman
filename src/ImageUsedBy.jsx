@@ -52,10 +52,10 @@ const ImageUsedBy = (props) => {
     return (
         <ListingTable
             aria-label={_("Used by")}
-            onRowClick={(_, x) => {
+            onRowClick={(event, row) => {
                 const loc = document.location.toString().split('#')[0];
-                document.location = loc + '#' + x.props.containerId;
-                if (!x.props.running)
+                document.location = loc + '#' + row.props.containerId;
+                if (!row.props.running)
                     props.showAll();
                 return false;
             }}
