@@ -1,6 +1,9 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import { TextInput, FormSelect, FormSelectOption } from '@patternfly/react-core';
+import {
+    FormSelect, FormSelectOption,
+    TextInput, Toolbar, ToolbarContent, ToolbarItem,
+} from '@patternfly/react-core';
 const _ = cockpit.gettext;
 
 class ContainerHeader extends React.Component {
@@ -32,22 +35,29 @@ class ContainerHeader extends React.Component {
 
     render() {
         return (
-            <>
-                { this.props.twoOwners &&
+            <Toolbar className="pf-m-page-insets">
+                <ToolbarContent>
+                    { this.props.twoOwners &&
                     <>
-                        <label className="heading-label" htmlFor="containers-containers-owner">{_("Owner")}</label>
-                        <FormSelect id="containers-containers-owner" value={this.state.owner} onChange={this.handleOwnerChange}>
-                            <FormSelectOption value='user' label={this.props.user} />
-                            <FormSelectOption value='system' label={_("System")} />
-                            <FormSelectOption value='all' label={_("All")} />
-                        </FormSelect>
+                        <ToolbarItem variant="label">
+                            {_("Owner")}
+                        </ToolbarItem>
+                        <ToolbarItem>
+                            <FormSelect id="containers-containers-owner" value={this.state.owner} onChange={this.handleOwnerChange}>
+                                <FormSelectOption value='user' label={this.props.user} />
+                                <FormSelectOption value='system' label={_("System")} />
+                                <FormSelectOption value='all' label={_("All")} />
+                            </FormSelect>
+                        </ToolbarItem>
                     </>
-                }
-                <TextInput id="containers-filter"
-                           className="form-control"
-                           placeholder={_("Type to filter…")}
-                           onChange={this.handleFilterTextChange} />
-            </>
+                    }
+                    <ToolbarItem>
+                        <TextInput id="containers-filter"
+                                   placeholder={_("Type to filter…")}
+                                   onChange={this.handleFilterTextChange} />
+                    </ToolbarItem>
+                </ToolbarContent>
+            </Toolbar>
         );
     }
 }

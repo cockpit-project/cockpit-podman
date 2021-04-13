@@ -678,7 +678,8 @@ class Application extends React.Component {
         return (
             <Page id="overview" key="overview">
                 {notificationList}
-                <PageSection className="content-filter" key="containerheader" variant={PageSectionVariants.light}>
+                <PageSection className="content-filter" padding={{ default: 'noPadding' }}
+                             variant={PageSectionVariants.light}>
                     <ContainerHeader
                         onFilterChanged={this.onFilterChanged}
                         onOwnerChanged={this.onOwnerChanged}
