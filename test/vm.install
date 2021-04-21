@@ -48,6 +48,10 @@ if [ -d /var/tmp/debian ]; then
     if systemctl is-enabled docker.service; then
         systemctl disable docker.service
     fi
+
+# install rpms
+elif [ -e /var/tmp/*.rpm ]; then
+    rpm -i --verbose /var/tmp/*.rpm
 fi
 
 systemctl enable cockpit.socket
