@@ -2,5 +2,10 @@ summary:
     Run all tests
 discover:
     how: fmf
+# HACK: ensure that critical components are up to date
+# https://github.com/psss/tmt/issues/682 and https://bugzilla.redhat.com/show_bug.cgi?id=1946975
+prepare:
+    how: shell
+    script: dnf install -y podman crun
 execute:
     how: tmt
