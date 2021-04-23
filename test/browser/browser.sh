@@ -25,11 +25,6 @@ fi
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
 dnf update -y podman crun
 
-# HACK: systemd kills the services after 90s
-# See https://github.com/containers/podman/issues/8751
-sed -i 's/Type=notify/Type=exec/' /usr/lib/systemd/system/podman.service
-sed -i 's/Type=notify/Type=exec/' /usr/lib/systemd/user/podman.service
-
 # create user account for logging in
 if ! id admin 2>/dev/null; then
     useradd -c Administrator -G wheel admin
