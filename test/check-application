@@ -129,9 +129,9 @@ class TestApplication(testlib.MachineCase):
                                    cmd=container["command"], state=container["state"], pod=podName)
         else:
             if self.browser.val("#containers-containers-filter") == "all":
-                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No containers in this pod")
+                self.browser.wait_in_text("#table-" + podName + " .pf-c-empty-state", "No containers in this pod")
             else:
-                self.browser.wait_in_text("#table-" + podName + " .ct-table-empty", "No running containers in this pod")
+                self.browser.wait_in_text("#table-" + podName + " .pf-c-empty-state", "No running containers in this pod")
 
     def performPodAction(self, podName, podOwner, action):
         b = self.browser
@@ -147,7 +147,7 @@ class TestApplication(testlib.MachineCase):
 
         self.login()
 
-        self.browser.wait_in_text("#containers-containers .ct-table-empty", "No running containers")
+        self.browser.wait_in_text("#containers-containers .pf-c-empty-state", "No running containers")
 
         # Run a pods as system
         self.machine.execute("podman pod create --infra=false --name pod-1")
@@ -1413,17 +1413,17 @@ class TestApplication(testlib.MachineCase):
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
         b.click("#containers-images tbody tr:contains('alpine:latest') a:contains('Used by')")
-        b.wait_visible("#containers-images tbody tr:contains('alpine:latest') + tr .pf-c-empty-state:contains('No containers are using this image')")
+        b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') + tr .pf-c-empty-state", 'No containers are using this image')
 
         b.set_input_text('#containers-filter', 'foobar')
-        b.wait_visible('#containers-containers tbody tr td:contains("No containers that match the current filter")')
-        b.wait_visible('#containers-images tbody tr td:contains("No images that match the current filter")')
+        b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')
+        b.wait_in_text('#containers-images .pf-c-empty-state', 'No images that match the current filter')
         b.set_input_text('#containers-filter', '')
         self.execute(auth, "podman rmi -af")
-        b.wait_visible('#containers-containers tbody tr td:contains("No containers")')
+        b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers')
         b.set_val("#containers-containers-filter", "running")
-        b.wait_visible('#containers-containers tbody tr td:contains("No running containers")')
-        b.wait_visible('#containers-images tbody tr td:contains("No images")')
+        b.wait_in_text('#containers-containers .pf-c-empty-state', 'No running containers')
+        b.wait_in_text('#containers-images .pf-c-empty-state', 'No images')
 
     def check_content(self, type, present, not_present):
         b = self.browser
