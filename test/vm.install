@@ -49,6 +49,9 @@ if [ -d /var/tmp/debian ]; then
         systemctl disable docker.service
     fi
 
+    # tuned is installed for testing cockpit; but it causes funny bugs, and we are not testing this here
+    systemctl disable tuned
+
 # install rpms
 elif [ -e /var/tmp/*.rpm ]; then
     rpm -i --verbose /var/tmp/*.rpm
