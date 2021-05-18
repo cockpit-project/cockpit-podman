@@ -213,6 +213,11 @@ class TestApplication(testlib.MachineCase):
         else:
             modal_sel = ".pf-c-modal-box"
 
+        if self.system_before(244):  # Changed in #15293
+            passwd_prompt = "Please authenticate"
+        else:
+            passwd_prompt = "Password for admin:"
+
         # Drop privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
@@ -243,10 +248,11 @@ class TestApplication(testlib.MachineCase):
         # Gain privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        b.wait_in_text("%s:contains('Administrative access')" % modal_sel, "Please authenticate")
-        b.set_input_text("%s:contains('Administrative access') input" % modal_sel, "foobar")
+        b.wait_in_text("%s:contains('dministrative access')" % modal_sel, passwd_prompt)
+        # Needs to match "Administrative" (before cockpit-244) and "administrative" (now)
+        b.set_input_text("%s:contains('dministrative access') input" % modal_sel, "foobar")
         b.click("%s button:contains('Authenticate')" % modal_sel)
-        b.wait_not_present("%s:contains('Administrative access')" % modal_sel)
+        b.wait_not_present("%s:contains('dministrative access')" % modal_sel)
         b.wait_text("#super-user-indicator", "Administrative access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
