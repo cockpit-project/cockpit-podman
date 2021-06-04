@@ -71,7 +71,18 @@ module.exports = {
 
     optimization: {
         minimize: production,
-        minimizer: [new TerserJSPlugin({}), new CssMinimizerPlugin()],
+        minimizer: [
+            new TerserJSPlugin({
+                extractComments: {
+                    condition: true,
+                    filename: `[file].LICENSE.txt?query=[query]&filebase=[base]`,
+                    banner(licenseFile) {
+                        return `License information can be found in ${licenseFile}`;
+                    },
+                },
+            }),
+            new CssMinimizerPlugin()
+        ],
     },
 
     module: {
