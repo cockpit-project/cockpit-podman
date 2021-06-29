@@ -663,6 +663,7 @@ class TestApplication(testlib.MachineCase):
 
             def openDialog(self):
                 # Open get new image modal
+                b.wait_visible('#containers-images[data-updating=false]')
                 b.click("button:contains(Get new image)")
                 b.wait_visible('div.pf-c-modal-box header:contains("Search for an image")')
                 b.wait_visible("div.pf-c-modal-box footer button:contains(Download):disabled")

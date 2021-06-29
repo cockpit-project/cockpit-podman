@@ -203,6 +203,7 @@ class Application extends React.Component {
     }
 
     updateImagesAfterEvent(system) {
+        this.setState({ updatingImages: true });
         client.getImages(system)
                 .then(reply => {
                     this.setState(prevState => {
@@ -219,12 +220,14 @@ class Application extends React.Component {
                         });
 
                         return {
+                            updatingImages: false,
                             images: copyImages,
                             [system ? "systemImagesLoaded" : "userImagesLoaded"]: true
                         };
                     });
                 })
                 .catch(ex => {
+                    this.setState({ updatingImages: false });
                     console.warn("Failed to do Update Images:", JSON.stringify(ex));
                 });
     }
@@ -642,6 +645,7 @@ class Application extends React.Component {
                 systemServiceAvailable={this.state.systemServiceAvailable}
                 registries={this.state.registries}
                 selinuxAvailable={this.state.selinuxAvailable}
+                updatingImages={this.state.updatingImages}
             />;
         const containerList =
             <Containers

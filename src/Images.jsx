@@ -247,7 +247,7 @@ class Images extends React.Component {
         }
 
         return (
-            <Card id="containers-images" key="images" className="containers-images">
+            <Card id="containers-images" key="images" className="containers-images" data-updating={this.props.updatingImages}>
                 <CardHeader>
                     <CardTitle><Text component={TextVariants.h2}>{_("Images")}</Text></CardTitle>
                     <CardActions>{getNewImageAction}</CardActions>
