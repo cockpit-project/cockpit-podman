@@ -3,10 +3,10 @@ import cockpit from 'cockpit';
 const moment = require('moment');
 const _ = cockpit.gettext;
 
-// https://github.com/containers/podman/blob/master/libpod/define/containerstate.go
+// https://github.com/containers/podman/blob/main/libpod/define/containerstate.go
 export const states = [_("configured"), _("created"), _("running"), _("stopped"), _("paused"), _("exited"), _("removing")];
 
-// https://github.com/containers/podman/blob/master/libpod/define/podstate.go
+// https://github.com/containers/podman/blob/main/libpod/define/podstate.go
 export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"), _("Exited"), _("Error")];
 
 export function truncate_id(id) {
