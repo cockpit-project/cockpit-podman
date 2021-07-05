@@ -46,7 +46,7 @@ export class PodActions extends React.Component {
         const { isOpen } = this.state;
         const pod = this.props.pod;
         const dropdownItems = [];
-        // Possible Pod Statuses can be found here https://github.com/containers/podman/blob/master/libpod/define/podstate.go
+        // Possible Pod Statuses can be found here https://github.com/containers/podman/blob/main/libpod/define/podstate.go
         if (pod.Status == "Running" || pod.Status == "Paused") {
             dropdownItems.push(
                 <DropdownItem key="action-stop"
