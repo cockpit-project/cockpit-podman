@@ -18,7 +18,7 @@ LIB_TEST=src/lib/cockpit-po-plugin.js
 
 WEBLATE_REPO=tmp/weblate-repo
 WEBLATE_REPO_URL=https://github.com/cockpit-project/cockpit-podman-weblate.git
-WEBLATE_REPO_BRANCH=master
+WEBLATE_REPO_BRANCH=main
 
 PYEXEFILES=$(shell git grep -lI '^#!.*python')
 
