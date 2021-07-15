@@ -25,6 +25,7 @@ const render_container_published_ports = (ports) => {
     return result;
 };
 
+// container.Created is an ISO datetime string, like 2021-07-11T14:17:00.350804119+02:00
 const ContainerDetails = ({ container, containerDetail }) => (
     <DescriptionList isHorizontal className='container-details'>
         <DescriptionListGroup>
@@ -33,7 +34,7 @@ const ContainerDetails = ({ container, containerDetail }) => (
         </DescriptionListGroup>
         <DescriptionListGroup>
             <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
-            <DescriptionListDescription>{utils.localize_time(container.Created)}</DescriptionListDescription>
+            <DescriptionListDescription>{utils.localize_time(Date.parse(container.Created) / 1000)}</DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>
             <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
