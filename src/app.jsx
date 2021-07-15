@@ -28,15 +28,12 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { superuser } from "superuser";
-import moment from "moment";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
 
 const _ = cockpit.gettext;
-
-moment.locale(cockpit.language);
 
 class Application extends React.Component {
     constructor(props) {

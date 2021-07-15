@@ -1,6 +1,7 @@
 import cockpit from 'cockpit';
 
-const moment = require('moment');
+import * as dfnlocales from 'date-fns/locale';
+import { formatRelative } from 'date-fns';
 const _ = cockpit.gettext;
 
 // https://github.com/containers/podman/blob/main/libpod/define/containerstate.go
@@ -17,7 +18,8 @@ export function truncate_id(id) {
 }
 
 export function localize_time(unix_timestamp) {
-    return moment(unix_timestamp * 1000).calendar();
+    const locale = (cockpit.language == "en") ? dfnlocales.enUS : dfnlocales[cockpit.language.replace('_', '')];
+    return formatRelative(unix_timestamp * 1000, Date.now(), { locale });
 }
 
 export function format_memory_and_limit(usage, limit) {

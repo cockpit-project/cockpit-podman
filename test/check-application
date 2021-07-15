@@ -632,7 +632,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
         b.wait_in_text("#containers-images", "<none>:<none>")
-        b.wait_in_text("#containers-images tbody:last-child td:nth-child(3)", "Today at")
+        b.wait_in_text("#containers-images tbody:last-child td:nth-child(3)", "today at")
 
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
@@ -1281,7 +1281,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '7001/tcp')
         ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
 
-        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Created") + dd', 'Today at')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Created") + dd', 'today at')
 
         self.assertIn('5000/tcp:[{ 6000}]', ports)
         self.assertIn('5001/udp:[{127.0.0.1 6001}]', ports)
