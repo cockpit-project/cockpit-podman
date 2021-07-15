@@ -16,11 +16,8 @@ export function truncate_id(id) {
     return id.substr(0, 12);
 }
 
-// On some places time is passed as timestamp and on some as string
-export function localize_time(time) {
-    if (Number.isInteger(time))
-        return moment(time * 1000).calendar();
-    return moment(time, "YYYY-MM-DDTHH:mm:ss.SZ").calendar();
+export function localize_time(unix_timestamp) {
+    return moment(unix_timestamp * 1000).calendar();
 }
 
 export function format_memory_and_limit(usage, limit) {
