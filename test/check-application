@@ -1322,7 +1322,7 @@ class TestApplication(testlib.MachineCase):
 
         b.click("a:contains('Logs')")
         b.wait_text(".container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
-        b.wait_text(".container-logs .xterm-accessibility-tree > div:nth-child(6)", "6")
+        b.wait_in_text(".container-logs .xterm-accessibility-tree", "6")
 
         b.click("a:contains('Console')")
         b.wait(lambda: get_int(b.text(".container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
