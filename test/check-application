@@ -110,7 +110,6 @@ class TestApplication(testlib.MachineCase):
                 b.wait_not_present("#overview div.pf-c-alert")
             except testlib.Error:
                 if system:
-                    b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "User Podman service is also available")
                     b.click("#overview div.pf-c-alert .pf-c-alert__action > button:contains(Start)")
                     b.wait_not_present("#overview div.pf-c-alert")
                 else:
