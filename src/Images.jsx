@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     Button,
-    Card, CardBody, CardHeader, CardTitle, CardActions,
+    Card, CardBody, CardHeader, CardTitle, CardActions, CardFooter,
     ExpandableSection,
     Text, TextVariants
 } from '@patternfly/react-core';
@@ -297,7 +297,9 @@ class Images extends React.Component {
                     registries={this.props.registries}
                     userServiceAvailable={this.props.userServiceAvailable}
                     systemServiceAvailable={this.props.systemServiceAvailable} /> }
-                {this.state.imageDownloadInProgress && <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>}
+                {this.state.imageDownloadInProgress && <CardFooter>
+                    <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>
+                </CardFooter>}
             </Card>
         );
     }
