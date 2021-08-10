@@ -2,6 +2,7 @@ import React from 'react';
 import {
     Button,
     Card, CardBody, CardHeader, CardTitle, CardActions,
+    ExpandableSection,
     Text, TextVariants
 } from '@patternfly/react-core';
 import { PlayIcon, PlusIcon, TrashIcon } from '@patternfly/react-icons';
@@ -31,6 +32,7 @@ class Images extends React.Component {
             setImageRemoveErrorModal: false,
             imageWillDelete: {},
             intermediateOpened: false,
+            isExpanded: false,
         };
 
         this.deleteImage = this.deleteImage.bind(this);
@@ -241,10 +243,20 @@ class Images extends React.Component {
         let toggleIntermediate = "";
         if (interm) {
             toggleIntermediate = <span className="listing-action">
-                <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened })}>
+                <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened, isExpanded: true })}>
                     {intermediateOpened ? _("Hide intermediate images") : _("Show intermediate images")}</Button>
             </span>;
         }
+        const cardBody = (
+            <>
+                <ListingTable aria-label={_("Images")}
+                              variant='compact'
+                              emptyCaption={emptyCaption}
+                              columns={columnTitles}
+                              rows={imageRows} />
+                {toggleIntermediate}
+            </>
+        );
 
         return (
             <Card id="containers-images" key="images" className="containers-images">
@@ -252,13 +264,14 @@ class Images extends React.Component {
                     <CardTitle><Text component={TextVariants.h2}>{_("Images")}</Text></CardTitle>
                     <CardActions>{getNewImageAction}</CardActions>
                 </CardHeader>
-                <CardBody className="contains-list">
-                    <ListingTable aria-label={_("Images")}
-                                  variant='compact'
-                                  emptyCaption={emptyCaption}
-                                  columns={columnTitles}
-                                  rows={imageRows} />
-                    {toggleIntermediate}
+                <CardBody>
+                    {filtered.length
+                        ? <ExpandableSection toggleText={this.state.isExpanded ? _("Hide images") : _("Show images")}
+                                             onToggle={() => this.setState({ isExpanded: !this.state.isExpanded })}
+                                             isExpanded={this.state.isExpanded}>
+                            {cardBody}
+                        </ExpandableSection>
+                        : cardBody}
                 </CardBody>
                 {this.state.setImageRemoveErrorModal &&
                     <ForceRemoveModal
