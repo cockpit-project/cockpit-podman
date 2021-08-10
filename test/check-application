@@ -26,6 +26,8 @@ NOT_RUNNING = ["exited", "stopped"]
 
 
 def checkImage(browser, name, owner):
+    if browser.attr("#containers-images button.pf-c-expandable-section__toggle", "aria-expanded") == 'false':
+        browser.click("#containers-images button.pf-c-expandable-section__toggle")
     browser.wait_visible("#containers-images table")
     browser.wait_js_func("""(function (first, last) {
         let items = ph_select("#containers-images table tbody");
@@ -704,7 +706,6 @@ class TestApplication(testlib.MachineCase):
                 # Confirm that the modal dialog is not open anymore
                 b.wait_not_present('div.pf-c-modal-box')
                 # Confirm that the image got downloaded
-                b.wait_visible('#containers-images td[data-label="Name"]:contains("{0}")'.format(self.imageName))
                 checkImage(b, "localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest"), "system" if self.user == "system" else "admin")
 
                 # Confirm that no error has happened
@@ -1135,6 +1136,8 @@ class TestApplication(testlib.MachineCase):
             self.execute(False, "podman rmi alpine busybox registry:2")
 
         self.login(auth)
+
+        b.click("#containers-images button.pf-c-expandable-section__toggle")
 
         b.wait_in_text("#containers-images", "busybox:latest")
         b.wait_in_text("#containers-images", "alpine:latest")
