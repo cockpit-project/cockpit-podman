@@ -3,6 +3,7 @@ import {
     Button,
     Card, CardBody, CardHeader, CardTitle, CardActions, CardFooter,
     Dropdown, DropdownItem,
+    Flex,
     ExpandableSection,
     KebabToggle,
     Text, TextVariants
@@ -68,7 +69,10 @@ class Images extends React.Component {
             utils.localize_time(image.Created),
             cockpit.format_bytes(image.Size),
             image.isSystem ? _("system") : this.props.user,
-            { title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable} /> },
+            {
+                title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable} />,
+                props: { className: 'pf-c-table__action' }
+            },
         ];
 
         tabs.push({
@@ -267,7 +271,7 @@ const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
     );
 
     return (
-        <>
+        <Flex flexWrap={{ default: 'nowrap' }}>
             {runImage}
             {extraActions}
             {showImageDeleteErrorModal &&
@@ -286,7 +290,7 @@ const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
                 close={() => setShowImageRunModal(false)}
                 selinuxAvailable={selinuxAvailable}
                 image={image} /> }
-        </>
+        </Flex>
     );
 };
 
