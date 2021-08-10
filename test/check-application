@@ -1146,14 +1146,14 @@ class TestApplication(testlib.MachineCase):
 
         # Check command in alpine
         b.wait_visible('#containers-images td[data-label="Name"]:contains("alpine:latest")')
-        b.click('#containers-images tbody tr:contains("alpine:latest") td > button > .pf-m-start')
+        b.click('#containers-images tbody tr:contains("alpine:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
         b.wait_visible("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
         b.wait_visible('#containers-images td[data-label="Name"]:contains("busybox:latest")')
-        b.click('#containers-images tbody tr:contains("busybox:latest") td > button > .pf-m-start')
+        b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
 
         # Inspect and fill modal dialog
@@ -1332,7 +1332,7 @@ class TestApplication(testlib.MachineCase):
         # Create another instance without port publishing
         b.wait_visible('#containers-images td[data-label="Name"]:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
-        b.click('#containers-images tbody tr:contains("busybox:latest") td > button > .pf-m-start')
+        b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
 
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
