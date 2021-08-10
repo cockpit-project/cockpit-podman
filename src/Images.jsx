@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Button,
     Card, CardBody, CardHeader, CardTitle, CardActions, CardFooter,
+    Dropdown, DropdownItem,
     ExpandableSection,
+    KebabToggle,
     Text, TextVariants
 } from '@patternfly/react-core';
-import { PlusIcon, TrashIcon } from '@patternfly/react-icons';
+import { PlusIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
@@ -28,27 +30,12 @@ class Images extends React.Component {
         super(props);
         this.state = {
             imageDetail: undefined,
-            selectImageDeleteModal: false,
-            setImageRemoveErrorModal: false,
-            imageWillDelete: {},
             intermediateOpened: false,
             isExpanded: false,
         };
 
-        this.deleteImage = this.deleteImage.bind(this);
         this.downloadImage = this.downloadImage.bind(this);
-        this.handleCancelImageDeleteModal = this.handleCancelImageDeleteModal.bind(this);
-        this.handleRemoveImage = this.handleRemoveImage.bind(this);
-        this.handleCancelImageRemoveError = this.handleCancelImageRemoveError.bind(this);
-        this.handleForceRemoveImage = this.handleForceRemoveImage.bind(this);
         this.renderRow = this.renderRow.bind(this);
-    }
-
-    deleteImage(image) {
-        this.setState((prevState) => ({
-            selectImageDeleteModal: !prevState.selectImageDeleteModal,
-            imageWillDelete: image,
-        }));
     }
 
     downloadImage(imageName, imageTag, system) {
@@ -73,78 +60,15 @@ class Images extends React.Component {
                 });
     }
 
-    handleCancelImageDeleteModal() {
-        this.setState((prevState) => ({
-            selectImageDeleteModal: !prevState.selectImageDeleteModal
-        }));
-    }
-
-    handleRemoveImage(tags, all) {
-        const image = this.state.imageWillDelete.Id;
-        this.setState({
-            selectImageDeleteModal: false,
-        });
-        if (all)
-            client.delImage(this.state.imageWillDelete.isSystem, image, false)
-                    .catch(ex => {
-                        this.imageRemoveErrorMsg = ex.message;
-                        this.setState({
-                            setImageRemoveErrorModal: true,
-                        });
-                    });
-        else {
-            // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
-            const tag = tags.shift();
-            const i = tag.lastIndexOf(":");
-            client.untagImage(this.state.imageWillDelete.isSystem, image, tag.substring(0, i), tag.substring(i + 1, tag.length))
-                    .then(() => {
-                        if (tags.length > 0)
-                            this.handleRemoveImage(tags, all);
-                    })
-                    .catch(ex => {
-                        const error = cockpit.format(_("Failed to remove image $0"), tag);
-                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    });
-        }
-    }
-
-    handleForceRemoveImage() {
-        const id = this.state.imageWillDelete ? this.state.imageWillDelete.Id : "";
-        return client.delImage(this.state.imageWillDelete.isSystem, id, true)
-                .then(reply => {
-                    this.setState({
-                        setImageRemoveErrorModal: false
-                    });
-                })
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to force remove image $0"), this.state.imageWillDelete.RepoTags[0]);
-                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                });
-    }
-
     renderRow(image) {
         const tabs = [];
-
-        const runImage = (
-            <Button key={image.Id + "create"}
-                    className="ct-container-create"
-                    variant='secondary'
-                    onClick={ e => {
-                        e.stopPropagation();
-                        this.setState({ showRunImageModal: image });
-                    } }
-                    isSmall
-                    data-image={image.Id}>
-                {_("Run image")}
-            </Button>
-        );
 
         const columns = [
             { title: image.RepoTags ? image.RepoTags[0] : "<none>:<none>", header: true },
             utils.localize_time(image.Created),
             cockpit.format_bytes(image.Size),
             image.isSystem ? _("system") : this.props.user,
-            { title: runImage },
+            { title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable} /> },
         ];
 
         tabs.push({
@@ -160,19 +84,9 @@ class Images extends React.Component {
                 showAll: this.props.showAll,
             }
         });
-
-        const actions = [
-            <Button variant="danger"
-                    key={image.Id + "delete"}
-                    className="btn-delete"
-                    aria-label={_("Delete image")}
-                    icon={<TrashIcon />}
-                    onClick={() => this.deleteImage(image)} />
-        ];
         return {
             expandedContent: <ListingPanel
                                 colSpan='4'
-                                listingActions={actions}
                                 tabRenderers={tabs} />,
             columns: columns,
             props: {
@@ -180,12 +94,6 @@ class Images extends React.Component {
                 "data-row-id": image.Id + image.isSystem.toString(),
             },
         };
-    }
-
-    handleCancelImageRemoveError() {
-        this.setState({
-            setImageRemoveErrorModal: false
-        });
     }
 
     render() {
@@ -274,22 +182,6 @@ class Images extends React.Component {
                         </ExpandableSection>
                         : cardBody}
                 </CardBody>
-                {this.state.setImageRemoveErrorModal &&
-                    <ForceRemoveModal
-                            name={this.state.imageWillDelete.RepoTags[0]}
-                            handleCancel={this.handleCancelImageRemoveError}
-                            handleForceRemove={this.handleForceRemoveImage}
-                            reason={this.imageRemoveErrorMsg} /> }
-                {this.state.selectImageDeleteModal &&
-                <ImageDeleteModal
-                    imageWillDelete={this.state.imageWillDelete}
-                    handleCancelImageDeleteModal={this.handleCancelImageDeleteModal}
-                    handleRemoveImage={this.handleRemoveImage} /> }
-                {this.state.showRunImageModal &&
-                <ImageRunModal
-                    close={() => this.setState({ showRunImageModal: undefined })}
-                    selinuxAvailable={this.props.selinuxAvailable}
-                    image={this.state.showRunImageModal} /> }
                 {this.state.showSearchImageModal &&
                 <ImageSearchModal
                     close={() => this.setState({ showSearchImageModal: false })}
@@ -305,5 +197,97 @@ class Images extends React.Component {
         );
     }
 }
+
+const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
+    const [showRunImageModal, setShowImageRunModal] = useState(false);
+    const [showImageDeleteModal, setShowImageDeleteModal] = useState(false);
+    const [showImageDeleteErrorModal, setShowImageDeleteErrorModal] = useState(false);
+    const [imageDeleteErrorMsg, setImageDeleteErrorMsg] = useState();
+    const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
+
+    const handleRemoveImage = (tags, all) => {
+        setShowImageDeleteModal(false);
+        if (all)
+            client.delImage(image.isSystem, image.Id, false)
+                    .catch(ex => {
+                        setImageDeleteErrorMsg(ex.message);
+                        setShowImageDeleteErrorModal(true);
+                    });
+        else {
+            // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
+            const tag = tags.shift();
+            const i = tag.lastIndexOf(":");
+            client.untagImage(image.isSystem, image.Id, tag.substring(0, i), tag.substring(i + 1, tag.length))
+                    .then(() => {
+                        if (tags.length > 0)
+                            handleRemoveImage(tags, all);
+                    })
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to remove image $0"), tag);
+                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    });
+        }
+    };
+
+    const handleForceRemoveImage = () => {
+        return client.delImage(image.isSystem, image.Id, true)
+                .then(reply => setShowImageDeleteErrorModal(false))
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to force remove image $0"), image.RepoTags[0]);
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
+    };
+
+    const runImage = (
+        <Button key={image.Id + "create"}
+                className="ct-container-create"
+                variant='secondary'
+                onClick={ e => {
+                    e.stopPropagation();
+                    setShowImageRunModal(true);
+                }}
+                isSmall
+                data-image={image.Id}>
+            {_("Run image")}
+        </Button>
+    );
+
+    const extraActions = (
+        <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} />}
+                  isOpen={isActionsKebabOpen}
+                  isPlain
+                  dropdownItems={[
+                      <DropdownItem key={image.Id + "delete"}
+                                    component="button"
+                                    className="pf-m-danger btn-delete"
+                                    onClick={() => setShowImageDeleteModal(true)}>
+                          {_("Delete")}
+                      </DropdownItem>
+                  ]} />
+    );
+
+    return (
+        <>
+            {runImage}
+            {extraActions}
+            {showImageDeleteErrorModal &&
+                <ForceRemoveModal
+                        name={image.RepoTags[0]}
+                        handleCancel={() => setShowImageDeleteErrorModal(false)}
+                        handleForceRemove={handleForceRemoveImage}
+                        reason={imageDeleteErrorMsg} /> }
+            {showImageDeleteModal &&
+            <ImageDeleteModal
+                imageWillDelete={image}
+                handleCancelImageDeleteModal={() => setShowImageDeleteModal(false)}
+                handleRemoveImage={handleRemoveImage} /> }
+            {showRunImageModal &&
+            <ImageRunModal
+                close={() => setShowImageRunModal(false)}
+                selinuxAvailable={selinuxAvailable}
+                image={image} /> }
+        </>
+    );
+};
 
 export default Images;

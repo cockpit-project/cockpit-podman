@@ -32,7 +32,7 @@ def checkImage(browser, name, owner):
     browser.wait_js_func("""(function (first, last) {
         let items = ph_select("#containers-images table tbody");
         for (i = 0; i < items.length; i++)
-            if (items[i].innerText.trim().startsWith(first) && items[i].innerText.trim().endsWith(last))
+            if (items[i].innerText.trim().startsWith(first) && items[i].innerText.trim().includes(last))
                 return true;
         return false;
         })""", name, owner)
@@ -356,7 +356,8 @@ class TestApplication(testlib.MachineCase):
         busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/busybox:latest"], auth).lower()
         b.wait_visible(busybox_sel)
         b.click(busybox_sel + " td.pf-c-table__toggle button")
-        b.wait_visible(busybox_sel + " + tr button.btn-delete")
+        b.click(busybox_sel + " .pf-c-dropdown__toggle")
+        b.wait_visible(busybox_sel + " button.btn-delete")
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child:contains('busybox:latest')", "Commandsh")
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
@@ -567,7 +568,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:3")
         b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:4")
 
-        b.click(busybox_sel + " + tr button.btn-delete")
+        b.click(busybox_sel + " .pf-c-dropdown__toggle")
+        b.click(busybox_sel + " button.btn-delete")
         self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:latest']"))
         b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:1']", True)
         b.set_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:3']", True)
@@ -578,7 +580,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:1")
         b.wait_not_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:3")
 
-        b.click(busybox_sel + " + tr button.btn-delete")
+        b.click(busybox_sel + " .pf-c-dropdown__toggle")
+        b.click(busybox_sel + " button.btn-delete")
         b.click("button:contains('select all')")
         self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:latest']"))
         self.assertTrue(b.get_checked(".pf-c-check__input[aria-label='quay.io/libpod/busybox:2']"))
@@ -605,7 +608,8 @@ class TestApplication(testlib.MachineCase):
         alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
-        b.click(alpine_sel + " + tr button.btn-delete")
+        b.click(alpine_sel + " .pf-c-dropdown__toggle")
+        b.click(alpine_sel + " button.btn-delete")
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-images", alpine_sel)
@@ -727,8 +731,8 @@ class TestApplication(testlib.MachineCase):
                 b.click(sel + " td.pf-c-table__toggle button")
 
                 # Click the delete icon on the image row
-                b.wait_visible(sel + ' + tr button.btn-delete')
-                b.click(sel + ' + tr button.btn-delete')
+                b.click(sel + " .pf-c-dropdown__toggle")
+                b.click(sel + ' button.btn-delete')
 
                 b.set_checked(".pf-c-check__input[aria-label='localhost:5000/{0}{1}']".format(self.imageName, imageTagSuffix), True)
                 if another:
