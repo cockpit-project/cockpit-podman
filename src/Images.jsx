@@ -5,7 +5,7 @@ import {
     ExpandableSection,
     Text, TextVariants
 } from '@patternfly/react-core';
-import { PlayIcon, PlusIcon, TrashIcon } from '@patternfly/react-icons';
+import { PlusIcon, TrashIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
@@ -127,15 +127,16 @@ class Images extends React.Component {
 
         const runImage = (
             <Button key={image.Id + "create"}
+                    className="ct-container-create"
                     variant='secondary'
                     onClick={ e => {
                         e.stopPropagation();
                         this.setState({ showRunImageModal: image });
                     } }
-                    aria-label={_("Run image")}
                     isSmall
-                    icon={<PlayIcon />}
-                    data-image={image.Id} />
+                    data-image={image.Id}>
+                {_("Run image")}
+            </Button>
         );
 
         const columns = [
