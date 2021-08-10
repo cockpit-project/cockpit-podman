@@ -14,7 +14,6 @@ import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
 import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
 import ImageDetails from './ImageDetails.jsx';
-import ImageUsedBy from './ImageUsedBy.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import { ImageDeleteModal } from './ImageDeleteModal.jsx';
@@ -78,12 +77,8 @@ class Images extends React.Component {
         tabs.push({
             name: _("Details"),
             renderer: ImageDetails,
-            data: { image: image }
-        });
-        tabs.push({
-            name: _("Used by"),
-            renderer: ImageUsedBy,
             data: {
+                image: image,
                 containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.Id + image.isSystem.toString()] : null,
                 showAll: this.props.showAll,
             }

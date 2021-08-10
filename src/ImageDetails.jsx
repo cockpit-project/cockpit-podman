@@ -3,17 +3,19 @@ import cockpit from 'cockpit';
 import * as utils from './util.js';
 
 import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup } from "@patternfly/react-core";
+
+import ImageUsedBy from './ImageUsedBy.jsx';
 const _ = cockpit.gettext;
 
 const truncate_id = (id) => {
     return id.substr(0, 12);
 };
 
-const ImageDetails = (props) => {
-    const image = props.image;
-
+const ImageDetails = ({ containers, image, showAll }) => {
     return (
-        <DescriptionList isHorizontal className='image-details'>
+        <DescriptionList isHorizontal className='image-details' columnModifier={{
+            default: '2Col'
+        }}>
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
                 <DescriptionListDescription title={image.Id}>{truncate_id(image.Id)}</DescriptionListDescription>
@@ -41,6 +43,10 @@ const ImageDetails = (props) => {
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
                 <DescriptionListDescription>{image.Ports ? image.Ports.join(', ') : ""}</DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>{_("Used by")}</DescriptionListTerm>
+                <DescriptionListDescription><ImageUsedBy containers={containers} showAll={showAll} /></DescriptionListDescription>
             </DescriptionListGroup>
         </DescriptionList>
     );
