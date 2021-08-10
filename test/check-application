@@ -1409,15 +1409,14 @@ class TestApplication(testlib.MachineCase):
         id_without_publish = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
 
         b.click('#containers-images tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
-        b.click("#containers-images tbody tr:contains('busybox:latest') a:contains('Used by')")
         # running container, just selects it, but leaves "Only running" alone
-        b.mousedown("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-with-tty')")
+        b.click("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-with-tty')")
         b.wait_js_cond('window.location.hash === "#' + id_with_tty + '"')
         b.wait_val("#containers-containers-filter", "running")
         # FIXME: expanding running container details does not actually work right now
         # b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep infinity")
         # stopped container, switches to showing all containers
-        b.mousedown("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body tbody tr:contains('busybox-without-publish')")
+        b.click("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-without-publish')")
         b.wait_js_cond('window.location.hash === "#' + id_without_publish + '"')
         b.wait_val("#containers-containers-filter", "all")
         b.wait_in_text("#containers-containers", "busybox-without-publish")
@@ -1425,8 +1424,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep 1000m")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
-        b.click("#containers-images tbody tr:contains('alpine:latest') a:contains('Used by')")
-        b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') + tr .pf-c-empty-state", 'No containers are using this image')
+        b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') + tr div.ct-listing-panel-body dt:contains('Used by') + dd", 'No containers are using this image')
 
         b.set_input_text('#containers-filter', 'foobar')
         b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')

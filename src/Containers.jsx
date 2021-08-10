@@ -482,7 +482,7 @@ class Containers extends React.Component {
                                         <Card key={'table-' + section}
                                          id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                          isPlain={section == "no-pod"}
-                                         className={"container-section"}>
+                                         className="container-section">
                                             {caption && <CardHeader>
                                                 <CardTitle>
                                                     <span className='pod-name'>{caption}</span>
