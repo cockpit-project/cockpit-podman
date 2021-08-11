@@ -97,3 +97,8 @@ input.pf-c-form-control[type=number] {
   background-color: var(--pf-global--info-color--100);
   color: white;
 }
+
+// Hide the header nav from the expandable rows - this should be better done with JS but the current cockpit-listing-panel implementation does not support this variant
+#containers-images .ct-listing-panel-head {
+    display: none;
+}
