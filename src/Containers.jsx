@@ -448,7 +448,7 @@ class Containers extends React.Component {
                     <CardTitle><Text component={TextVariants.h2}>{_("Containers")}</Text></CardTitle>
                     <CardActions>{filterRunning}</CardActions>
                 </CardHeader>
-                <CardBody className="contains-list">
+                <CardBody>
                     {(this.props.containers === null || this.props.pods === null)
                         ? <ListingTable variant='compact'
                                         aria-label={_("Containers")}
@@ -482,6 +482,7 @@ class Containers extends React.Component {
                                         <Card key={'table-' + section}
                                          id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                          isPlain={section == "no-pod"}
+                                         isFlat={section != "no-pod"}
                                          className="container-section">
                                             {caption && <CardHeader>
                                                 <CardTitle>
