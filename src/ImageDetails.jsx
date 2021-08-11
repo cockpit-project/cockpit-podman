@@ -33,10 +33,6 @@ const ImageDetails = ({ containers, image, showAll }) => {
                 <DescriptionListDescription>{image.Command ? utils.quote_cmdline(image.Command) : "" }</DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
-                <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
-                <DescriptionListDescription>{utils.localize_time(image.Created)}</DescriptionListDescription>
-            </DescriptionListGroup>
-            <DescriptionListGroup>
                 <DescriptionListTerm>{_("Author")}</DescriptionListTerm>
                 <DescriptionListDescription>{image.Author}</DescriptionListDescription>
             </DescriptionListGroup>
