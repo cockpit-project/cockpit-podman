@@ -153,7 +153,7 @@ class Containers extends React.Component {
             proc,
             mem,
             container.isSystem ? _("system") : this.props.user,
-            { title: <Badge isRead>{_(container.State)}</Badge> }, // States are defined in util.js
+            { title: <Badge isRead className={"ct-badge-container-" + container.State.toLowerCase()}>{_(container.State)}</Badge> }, // States are defined in util.js
         ];
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
