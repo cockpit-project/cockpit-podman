@@ -147,7 +147,26 @@ class Images extends React.Component {
 
         const imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
 
-        const interm = this.props.images && Object.keys(this.props.images).some(id => !this.props.images[id].RepoTags);
+        const interm = this.props.images && Object.keys(this.props.images).some(id => {
+            // Intermediate image does not have any tags
+            if (this.props.images[id].RepoTags && this.props.images[id].RepoTags.length > 0)
+                return false;
+
+            // Only filter by selected user
+            if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
+                if (this.props.ownerFilter === "system" && !this.props.images[id].isSystem)
+                    return false;
+                if (this.props.ownerFilter !== "system" && this.props.images[id].isSystem)
+                    return false;
+            }
+
+            // Any text filter hides all images
+            if (this.props.textFilter.length > 0)
+                return false;
+
+            return true;
+        });
+
         let toggleIntermediate = "";
         if (interm) {
             toggleIntermediate = <span className="listing-action">
