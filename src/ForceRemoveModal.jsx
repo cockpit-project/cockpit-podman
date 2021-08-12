@@ -14,7 +14,7 @@ const ForceRemoveModal = (props) => {
                title={cockpit.format(_("Please confirm forced deletion of $0"), props.name)}
                footer={<>
                    <Button variant="danger" isDisabled={inProgress} isLoading={inProgress}
-                           onClick={() => { setInProgress(true); props.handleForceRemove().finally(() => setInProgress(false)) }}
+                           onClick={() => { setInProgress(true); props.handleForceRemove().catch(() => setInProgress(false)) }}
                    >
                        {_("Force delete")}
                    </Button>

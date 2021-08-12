@@ -310,6 +310,7 @@ class Containers extends React.Component {
                 }, ex => {
                     const error = cockpit.format(_("Failed to force remove container $0"), this.state.containerWillDelete.Names);
                     this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    throw ex;
                 });
     }
 

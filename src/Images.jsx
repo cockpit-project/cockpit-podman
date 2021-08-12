@@ -253,6 +253,7 @@ const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to force remove image $0"), image.RepoTags[0]);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    throw ex;
                 });
     };
 
