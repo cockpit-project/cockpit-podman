@@ -149,7 +149,7 @@ endif
 
 ifeq ($(TEST_SCENARIO),rawhide)
 # needs to run as a separate command, as --run-command is executed before --script
-RAWHIDE=bots/image-customize -v --run-command 'dnf update -y --releasever=$$(. /etc/os-release; echo $$(( VERSION_ID + 1)) ) podman conmon crun containernetworking-plugins containers-common kernel' $(TEST_OS)
+RAWHIDE=bots/image-customize -v --run-command 'dnf update -y --releasever=rawhide podman conmon crun containernetworking-plugins containers-common kernel' $(TEST_OS)
 endif
 
 # build a VM with locally built rpm/dsc installed
