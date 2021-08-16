@@ -56,10 +56,12 @@ class TestApplication(testlib.MachineCase):
 
         # Create admin session
         m.execute("""
-            mkdir /home/admin/.ssh
-            cp /root/.ssh/* /home/admin/.ssh
-            chown -R admin:admin /home/admin/.ssh
-            chmod -R go-wx /home/admin/.ssh
+            if [ ! -d /home/admin/.ssh ]; then
+                mkdir /home/admin/.ssh
+                cp /root/.ssh/* /home/admin/.ssh
+                chown -R admin:admin /home/admin/.ssh
+                chmod -R go-wx /home/admin/.ssh
+            fi
             """)
         self.admin_s = ssh_connection.SSHConnection(user="admin",
                                                     address=m.ssh_address,
