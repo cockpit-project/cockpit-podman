@@ -500,7 +500,7 @@ class TestApplication(testlib.MachineCase):
             b.set_input_text("#commit-dialog-command", image_command)
             b.click(".pf-c-modal-box footer .btn-ctr-commit")
             b.wait_not_present(".pf-c-modal-box")
-            b.wait_visible('#containers-images td[data-label="Name"]:contains("{0}:{1}")'.format(image_name, image_tag))
+            b.wait_visible('#containers-images td[data-label="Image"]:contains("{0}:{1}")'.format(image_name, image_tag))
             checkImage(b, "localhost/{0}:{1}".format(image_name, image_tag), owner)
             # open the listing toggle of testimg and check the commit paramerters
             toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.pf-c-table__toggle button'.format(image_name, image_tag)
@@ -640,7 +640,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
         b.wait_in_text("#containers-images", "<none>:<none>")
-        b.wait_in_text("#containers-images tbody:last-child td:nth-child(3)", "today at")
+        b.wait_in_text("#containers-images tbody:last-child td:nth-child(4)", "today at")
 
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
@@ -1151,14 +1151,14 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_in_text("#containers-images", "admin")
 
         # Check command in alpine
-        b.wait_visible('#containers-images td[data-label="Name"]:contains("alpine:latest")')
+        b.wait_visible('#containers-images td[data-label="Image"]:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
         b.wait_visible("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
-        b.wait_visible('#containers-images td[data-label="Name"]:contains("busybox:latest")')
+        b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
 
@@ -1336,7 +1336,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: get_int(b.text(".container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
 
         # Create another instance without port publishing
-        b.wait_visible('#containers-images td[data-label="Name"]:contains("busybox:latest")')
+        b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
@@ -1426,7 +1426,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep 1000m")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
-        b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') + tr div.ct-listing-panel-body dt:contains('Used by') + dd", 'No containers are using this image')
+        b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') td[data-label='Used by']", 'unused')
 
         b.set_input_text('#containers-filter', 'foobar')
         b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')
