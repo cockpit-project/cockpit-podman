@@ -7,10 +7,6 @@ import { DescriptionList, DescriptionListTerm, DescriptionListDescription, Descr
 import ImageUsedBy from './ImageUsedBy.jsx';
 const _ = cockpit.gettext;
 
-const truncate_id = (id) => {
-    return id.substr(0, 12);
-};
-
 const ImageDetails = ({ containers, image, showAll }) => {
     return (
         <DescriptionList isHorizontal className='image-details' columnModifier={{
@@ -18,7 +14,7 @@ const ImageDetails = ({ containers, image, showAll }) => {
         }}>
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
-                <DescriptionListDescription title={image.Id}>{truncate_id(image.Id)}</DescriptionListDescription>
+                <DescriptionListDescription title={image.Id}>{utils.truncate_id(image.Id)}</DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("Tags")}</DescriptionListTerm>
