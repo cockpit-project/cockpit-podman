@@ -360,7 +360,7 @@ class TestApplication(testlib.MachineCase):
         b.click(busybox_sel + " td.pf-c-table__toggle button")
         b.click(busybox_sel + " .pf-c-dropdown__toggle")
         b.wait_visible(busybox_sel + " button.btn-delete")
-        b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child:contains('busybox:latest')", "Commandsh")
+        b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Commandsh")
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
         # make sure no running containers shown
@@ -505,9 +505,7 @@ class TestApplication(testlib.MachineCase):
             # open the listing toggle of testimg and check the commit paramerters
             toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.pf-c-table__toggle button'.format(image_name, image_tag)
             b.click(toggle_sel)
-            b.wait_visible('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains("localhost/{0}:{1}"))'.format(image_name, image_tag))
-            b.wait_in_text('#containers-images tbody tr:contains("{0}:{1}") .pf-c-description-list__group:nth-child(4)'.format(image_name, image_tag), image_command)
-            b.wait_visible('#containers-images tbody tr:contains("{0}:{1}"):has(dd:contains({2}))'.format(image_name, image_tag, image_author))
+            b.wait_in_text("#containers-images tbody tr.pf-c-table__expandable-row.pf-m-expanded dl:first-child", image_command)
             # close listing toggle again
             b.click(toggle_sel)
 
@@ -562,7 +560,6 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, "podman tag quay.io/libpod/busybox:latest quay.io/libpod/busybox:3")
         self.execute(auth, "podman tag quay.io/libpod/busybox:latest quay.io/libpod/busybox:4")
 
-        b.wait_visible(busybox_sel)
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
         b.wait_in_text(busybox_sel + " + tr", "quay.io/libpod/busybox:1")
