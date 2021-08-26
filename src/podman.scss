@@ -8,6 +8,13 @@
     @extend .ct-card;
 }
 
+// Decrease padding for the image/container toggle button list
+#containers-images, #containers-containers {
+    .pf-c-table.pf-m-compact .pf-c-table__toggle {
+        padding-left: 0px;
+    }
+}
+
 .container-block {
     display: flex;
     flex-direction: column;

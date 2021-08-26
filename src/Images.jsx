@@ -60,14 +60,31 @@ class Images extends React.Component {
                 });
     }
 
+    getUsedByText(image) {
+        const { imageContainerList } = this.props;
+        if (imageContainerList === null) {
+            return { title: _("unused"), count: 0 };
+        }
+        const containers = imageContainerList[image.Id + image.isSystem.toString()];
+        if (containers !== undefined) {
+            const title = cockpit.format(cockpit.ngettext("$0 container", "$0 containers", containers.length), containers.length);
+            return { title, count: containers.length };
+        } else {
+            return { title: _("unused"), count: 0 };
+        }
+    }
+
     renderRow(image) {
         const tabs = [];
+        const { title: usedByText, count: usedByCount } = this.getUsedByText(image);
 
         const columns = [
             { title: image.RepoTags ? image.RepoTags[0] : "<none>:<none>", header: true },
+            { title: image.isSystem ? _("system") : <div><span className="images-grey-text">{_("user:")} </span>{this.props.user}</div> },
             utils.localize_time(image.Created),
-            cockpit.format_bytes(image.Size),
-            image.isSystem ? _("system") : this.props.user,
+            utils.truncate_id(image.Id),
+            cockpit.format_bytes(image.Size, 1000),
+            { title: <span className={usedByCount === 0 ? "images-grey-text" : ""}>{usedByText}</span> },
             {
                 title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable} />,
                 props: { className: 'pf-c-table__action' }
@@ -85,7 +102,7 @@ class Images extends React.Component {
         });
         return {
             expandedContent: <ListingPanel
-                                colSpan='4'
+                                colSpan='8'
                                 tabRenderers={tabs} />,
             columns: columns,
             props: {
@@ -96,7 +113,7 @@ class Images extends React.Component {
     }
 
     render() {
-        const columnTitles = [_("Name"), _("Created"), _("Size"), _("Owner"), ''];
+        const columnTitles = [_("Image"), _("Owner"), _("Created"), _("ID"), _("Disk space"), _("Used by"), ''];
         let emptyCaption = _("No images");
         if (this.props.images === null)
             emptyCaption = "Loading...";
