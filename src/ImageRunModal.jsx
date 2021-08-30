@@ -237,9 +237,10 @@ export class ImageRunModal extends React.Component {
             memoryUnit: 'MiB',
             validationFailed: {},
             volumes: [],
+            runImage: true,
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
-        this.onRunClicked = this.onRunClicked.bind(this);
+        this.onCreateClicked = this.onCreateClicked.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
     }
 
@@ -296,19 +297,24 @@ export class ImageRunModal extends React.Component {
         return createConfig;
     }
 
-    onRunClicked() {
+    onCreateClicked() {
         const createConfig = this.getCreateConfig();
+        const { runImage } = this.state;
 
         client.createContainer(this.state.image.isSystem, createConfig)
                 .then(reply => {
-                    client.postContainer(this.state.image.isSystem, "start", reply.Id, {})
-                            .then(() => this.props.close())
-                            .catch(ex => {
-                                this.setState({
-                                    dialogError: _("Container failed to be started"),
-                                    dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
+                    if (runImage) {
+                        client.postContainer(this.state.image.isSystem, "start", reply.Id, {})
+                                .then(() => this.props.close())
+                                .catch(ex => {
+                                    this.setState({
+                                        dialogError: _("Container failed to be started"),
+                                        dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
+                                    });
                                 });
-                            });
+                    } else {
+                        this.props.close();
+                    }
                 })
                 .catch(ex => {
                     this.setState({
@@ -417,17 +423,20 @@ export class ImageRunModal extends React.Component {
                                      default={{ envKey: null, envValue: null }}
                                      itemcomponent={ <EnvVar />} />
                 </FormGroup>
+                <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Start after creation")} hasNoPaddingTop>
+                    <Checkbox isChecked={this.state.runImage} id="start-after-creation" onChange={value => this.onValueChanged('runImage', value)} />
+                </FormGroup>
             </Form>
         );
         return (
             <Modal isOpen
                    position="top" variant="medium"
                    onClose={this.props.close}
-                   title={_("Run image")}
+                   title={_("Create container")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                       <Button variant='primary' onClick={this.onRunClicked}>
-                           {_("Run")}
+                       <Button variant='primary' onClick={this.onCreateClicked}>
+                           {_("Create")}
                        </Button>
                        <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
                            {_("Cancel")}
