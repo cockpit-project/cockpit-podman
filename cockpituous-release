@@ -18,10 +18,10 @@ job release-srpm -V
 cat ~/.fedora-password | kinit cockpit@FEDORAPROJECT.ORG
 # Do fedora builds for the tag, using tarball
 job release-koji rawhide
-job release-koji f33
 job release-koji f34
-job release-bodhi F33
+job release-koji f35
 job release-bodhi F34
+job release-bodhi F35
 
 # These are likely the first of your release targets; but run them after Fedora uploads,
 # so that failures there will fail the release early, before publishing on GitHub
