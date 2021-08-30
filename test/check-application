@@ -1150,14 +1150,14 @@ class TestApplication(testlib.MachineCase):
         # Check command in alpine
         b.wait_visible('#containers-images td[data-label="Image"]:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") .ct-container-create')
-        b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
+        b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
         b.wait_visible("#run-image-dialog-command[value='/bin/sh']")
         b.click(".btn-cancel")
 
         # Open run image dialog
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
-        b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
+        b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
 
         # Inspect and fill modal dialog
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
@@ -1258,7 +1258,7 @@ class TestApplication(testlib.MachineCase):
         b.key_press(["\r"])
         rw_label = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
 
-        b.click('.pf-c-modal-box__footer button:contains("Run")')
+        b.click('.pf-c-modal-box__footer button:contains("Create")')
         b.wait_not_present("div.pf-c-modal-box")
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox:latest")')
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
@@ -1336,7 +1336,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
         b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
-        b.wait_visible('div.pf-c-modal-box header:contains("Run image")')
+        b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
 
         b.wait_in_text("#run-image-dialog-image", "busybox:latest")
         b.set_input_text("#run-image-dialog-name", "busybox-without-publish")
@@ -1347,7 +1347,7 @@ class TestApplication(testlib.MachineCase):
         # Run without tty, console should be able to `exec`
         b.set_checked("#run-image-dialog-tty", False)
 
-        b.click('.pf-c-modal-box__footer button:contains("Run")')
+        b.click('.pf-c-modal-box__footer button:contains("Create")')
         b.wait_not_present("div.pf-c-modal-box")
 
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox-without-publish")')
@@ -1424,6 +1424,24 @@ class TestApplication(testlib.MachineCase):
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
         b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') td[data-label='Used by']", 'unused')
+
+        # Create a container without starting it
+        container_name = "busybox-not-started"
+        b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
+        b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
+        b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
+
+        b.wait_in_text("#run-image-dialog-image", "busybox:latest")
+        b.set_input_text("#run-image-dialog-name", container_name)
+
+        # Uncheck start container after creation
+        b.click("#start-after-creation")
+        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.wait_not_present("div.pf-c-modal-box")
+
+        b.wait_val("#containers-containers-filter", "all")
+        sha = self.execute(auth, "podman inspect --format '{{.Id}}' " + container_name).strip()
+        self.waitContainer(sha, auth, name=container_name, image='busybox:latest', state='configured')
 
         b.set_input_text('#containers-filter', 'foobar')
         b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')

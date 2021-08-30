@@ -205,7 +205,7 @@ class Images extends React.Component {
         return (
             <Card id="containers-images" key="images" className="containers-images">
                 <CardHeader>
-                    <CardTitle><Text component={TextVariants.h2}>{_("Images")}</Text></CardTitle>
+                    <CardTitle><Text component={TextVariants.h3}>{_("Images")}</Text></CardTitle>
                     <CardActions>{getNewImageAction}</CardActions>
                 </CardHeader>
                 <CardBody>
@@ -284,7 +284,7 @@ const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
                 }}
                 isSmall
                 data-image={image.Id}>
-            {_("Run image")}
+            {_("Create container")}
         </Button>
     );
 
