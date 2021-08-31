@@ -74,6 +74,36 @@ class Images extends React.Component {
         }
     }
 
+    calculateStats = () => {
+        const { images, imageContainerList } = this.props;
+        const imageStats = {
+            imagesTotal: 0,
+            imagesSize: 0,
+            unusedTotal: 0,
+            unusedSize: 0,
+        };
+
+        if (imageContainerList === null) {
+            return imageStats;
+        }
+
+        if (images !== null) {
+            Object.keys(images).forEach(id => {
+                const image = images[id];
+                imageStats.imagesTotal += 1;
+                imageStats.imagesSize += image.Size;
+
+                const usedBy = imageContainerList[image.Id + image.isSystem.toString()];
+                if (usedBy === undefined) {
+                    imageStats.unusedTotal += 1;
+                    imageStats.unusedSize += image.Size;
+                }
+            });
+        }
+
+        return imageStats;
+    }
+
     renderRow(image) {
         const tabs = [];
         const { title: usedByText, count: usedByCount } = this.getUsedByText(image);
@@ -202,10 +232,29 @@ class Images extends React.Component {
             </>
         );
 
+        const imageStats = this.calculateStats();
+        const imageTitleStats = (
+            <>
+                <Text component={TextVariants.h5}>
+                    {cockpit.format(cockpit.ngettext("$0 image total, $1", "$0 images total, $1", imageStats.imagesTotal), imageStats.imagesTotal, cockpit.format_bytes(imageStats.imagesSize, 1000))}
+                </Text>
+                {imageStats.unusedTotal !== 0 &&
+                <Text component={TextVariants.h5}>
+                    {cockpit.format(cockpit.ngettext("$0 unused image, $1", "$0 unused images, $1", imageStats.unusedTotal), imageStats.unusedTotal, cockpit.format_bytes(imageStats.unusedSize, 1000))}
+                </Text>
+                }
+            </>
+        );
+
         return (
             <Card id="containers-images" key="images" className="containers-images">
                 <CardHeader>
-                    <CardTitle><Text component={TextVariants.h3}>{_("Images")}</Text></CardTitle>
+                    <CardTitle>
+                        <Flex>
+                            <Text className="images-title" component={TextVariants.h3}>{_("Images")}</Text>
+                            {imageTitleStats}
+                        </Flex>
+                    </CardTitle>
                     <CardActions>{getNewImageAction}</CardActions>
                 </CardHeader>
                 <CardBody>
