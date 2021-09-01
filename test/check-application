@@ -242,7 +242,9 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("#containers-containers-owner")
 
         # Also user selection in image download should not be visible
-        b.click("button:contains(Get new image)")
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Download new image)")
+
         b.wait_visible('div.pf-c-modal-box header:contains("Search for an image")')
         b.wait_visible("div.pf-c-modal-box footer button:contains(Download):disabled")
         b.wait_not_present("#as-user")
@@ -276,7 +278,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers-owner")
 
         # Also user selection in image download should be visible
-        b.click("button:contains(Get new image)")
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Download new image)")
         b.wait_visible('div.pf-c-modal-box header:contains("Search for an image")')
         b.wait_visible("div.pf-c-modal-box footer button:contains(Download):disabled")
         b.wait_visible("#as-user")
@@ -668,7 +671,8 @@ class TestApplication(testlib.MachineCase):
 
             def openDialog(self):
                 # Open get new image modal
-                b.click("button:contains(Get new image)")
+                b.click("#image-actions-dropdown")
+                b.click("button:contains(Download new image)")
                 b.wait_visible('div.pf-c-modal-box header:contains("Search for an image")')
                 b.wait_visible("div.pf-c-modal-box footer button:contains(Download):disabled")
 
@@ -753,7 +757,8 @@ class TestApplication(testlib.MachineCase):
         self.login()
 
         # Test registries
-        b.click("button:contains(Get new image)")
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Download new image)")
         b.wait_visible('div.pf-c-modal-box header:contains("Search for an image")')
         # HACK: Sometimes the value is not shown fully. FIXME
         b.set_input_text("#search-image-dialog-name", "my-busybox", value_check=False)

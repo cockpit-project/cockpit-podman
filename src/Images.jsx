@@ -8,7 +8,6 @@ import {
     KebabToggle,
     Text, TextVariants
 } from '@patternfly/react-core';
-import { PlusIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
@@ -57,6 +56,10 @@ class Images extends React.Component {
                     this.setState({ imageDownloadInProgress: undefined });
                     this.props.onAddNotification({ type: 'danger', error, errorDetail });
                 });
+    }
+
+    onOpenNewImagesDialog = () => {
+        this.setState({ showSearchImageModal: true });
     }
 
     getUsedByText(image) {
@@ -148,14 +151,6 @@ class Images extends React.Component {
             emptyCaption = "Loading...";
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No images that match the current filter");
-        const getNewImageAction = [
-            <Button variant="secondary" key="get-new-image-action"
-                    onClick={() => this.setState({ showSearchImageModal: true })}
-                    className="pull-right"
-                    icon={<PlusIcon />}>
-                {_("Get new image")}
-            </Button>
-        ];
 
         const intermediateOpened = this.state.intermediateOpened;
 
@@ -254,7 +249,7 @@ class Images extends React.Component {
                             {imageTitleStats}
                         </Flex>
                     </CardTitle>
-                    <CardActions>{getNewImageAction}</CardActions>
+                    <CardActions><ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog} /></CardActions>
                 </CardHeader>
                 <CardBody>
                     {filtered.length
@@ -280,6 +275,24 @@ class Images extends React.Component {
         );
     }
 }
+
+const ImageOverActions = ({ handleDownloadNewImage }) => {
+    const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
+
+    return (
+        <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} id="image-actions-dropdown" />}
+                  isOpen={isActionsKebabOpen}
+                  isPlain
+                  position="right"
+                  dropdownItems={[
+                      <DropdownItem key="download-new-image"
+                                    component="button"
+                                    onClick={handleDownloadNewImage}>
+                          {_("Download new image")}
+                      </DropdownItem>,
+                  ]} />
+    );
+};
 
 const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
     const [showRunImageModal, setShowImageRunModal] = useState(false);
