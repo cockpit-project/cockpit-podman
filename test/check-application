@@ -86,6 +86,11 @@ class TestApplication(testlib.MachineCase):
         self.has_selinux = "debian" not in m.image and "ubuntu" not in m.image
         self.has_cgroupsV2 = m.image not in ["ubuntu-stable"] and not m.image.startswith('rhel-8')
 
+    def performContainerAction(self, container, cmd):
+        b = self.browser
+        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__toggle")
+        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__menu li:contains({cmd})")
+
     def execute(self, system, cmd):
         if system:
             return self.machine.execute(cmd)
@@ -438,12 +443,12 @@ class TestApplication(testlib.MachineCase):
         self.waitContainer(user_containers["test-sh-user"], False, name='test-sh-user', image='alpine:latest',
                            cmd='sh', state=NOT_RUNNING)
 
-        b.click('#containers-containers tbody tr:contains("swamped-crate-user") td.pf-c-table__toggle button')
-        b.wait_visible('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
+        self.performContainerAction("swamped-crate-user", "Delete")
+        self.confirm_modal("Cancel")
 
         if auth:
-            b.click('#containers-containers tbody tr:contains("swamped-crate-system") td.pf-c-table__toggle button')
-            b.wait_visible('#containers-containers tbody tr:contains("swamped-crate-system") + tr button.btn-delete')
+            self.performContainerAction("swamped-crate-system", "Delete")
+            self.confirm_modal("Cancel")
 
         # Checked order of containers
         if auth:
@@ -463,26 +468,24 @@ class TestApplication(testlib.MachineCase):
 
         # delete running container busybox using force delete
         if auth:
-            b.click('#containers-containers tbody tr:contains("swamped-crate-system") + tr button.btn-delete')
+            self.performContainerAction("swamped-crate-system", "Delete")
             self.confirm_modal("Force delete")
             b.wait_not_in_text("#containers-containers", "swamped-crate-system")
 
         self.filter_containers("all")
 
-        b.click('#containers-containers tbody tr:contains("swamped-crate-user") + tr button.btn-delete')
+        self.performContainerAction("swamped-crate-user", "Delete")
         self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-containers", "swamped-crate-user")
 
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh-user")')
-        b.click('#containers-containers tbody tr:contains("test-sh-user") td.pf-c-table__toggle button')
-        b.click('#containers-containers tbody tr:contains("test-sh-user") + tr button.btn-delete')
+        self.performContainerAction("test-sh-user", "Delete")
         self.confirm_modal("Delete")
         b.wait_not_in_text("#containers-containers", "test-sh-user")
 
         if auth:
             b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh-system")')
-            b.click('#containers-containers tbody tr:contains("test-sh-system") td.pf-c-table__toggle button')
-            b.click('#containers-containers tbody tr:contains("test-sh-system") + tr button.btn-delete')
+            self.performContainerAction("test-sh-system", "Delete")
             self.confirm_modal("Delete")
             b.wait_not_in_text("#containers-containers", "test-sh-system")
 
@@ -491,10 +494,10 @@ class TestApplication(testlib.MachineCase):
             b.wait_visible('#containers-containers td[data-label="Container"]:contains({0})'.format(container_name))
             b.click('#containers-containers tbody tr:contains({0}) td.pf-c-table__toggle button'.format(container_name))
             # open commit modal and close it using cancel
-            b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
+            self.performContainerAction(container_name, "Commit")
             self.confirm_modal("Cancel")
             # open commit modal and create an image
-            b.click('#containers-containers tbody tr:contains({0}) + tr button.btn-commit'.format(container_name))
+            self.performContainerAction(container_name, "Commit")
             b.wait_visible(".pf-c-modal-box")
             # set commit parameters
             b.set_input_text("#commit-dialog-image-name", image_name)
@@ -537,9 +540,8 @@ class TestApplication(testlib.MachineCase):
 
         self.execute(auth, "podman run -d --name test-sh4 alpine sh")
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh4")')
-        b.click('#containers-containers tbody tr:contains("test-sh4") td.pf-c-table__toggle button')
         # open commit modal and check error modal
-        b.click('#containers-containers tbody tr:contains("test-sh4") + tr button.btn-commit')
+        self.performContainerAction("test-sh4", "Commit")
         # check required field error
         b.click(".pf-c-modal-box footer .btn-ctr-commit")
         b.wait_visible('.pf-c-modal-box:contains("Image name is required")')
@@ -827,15 +829,16 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_visible("#containers-containers")
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("swamped-crate")')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
+        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-c-dropdown__toggle")
 
         if not auth:
             # Checkpoint/restore is not supported on user containers yet - the related buttons should not be shown
-            # Check that the restore option is not present (i.e. start is a regular button)
-            b.wait_visible('#containers-containers tbody tr:contains("busybox:latest") + tr button.pf-c-button:contains(Start)')
+            # Check that the restore option is not present
+            b.wait_not_present("#containers-containers tbody tr:contains('swamped-crate') .pf-c-dropdown__menu li:contains(Restore)")
+        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-c-dropdown__toggle")
 
         # Start the container
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Start)')
+        self.performContainerAction("busybox:latest", "Start")
 
         container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
 
@@ -872,8 +875,7 @@ class TestApplication(testlib.MachineCase):
 
         # Restart the container
         old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate")
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Restart) + button')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force restart)')
+        self.performContainerAction("busybox:latest", "Force restart")
         b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
 
         with b.wait_timeout(5):
@@ -882,14 +884,14 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
         b.wait_visible("#containers-containers")
 
-        # Stop the container
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox:latest")')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr button:contains(Stop) + button')
         if not auth:
             # Check that the checkpoint option is not present for rootless
-            b.wait_visible('#containers-containers tr:contains("busybox:latest") + tr a:contains("Force stop")')
-            b.wait_not_present('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") + tr ul.pf-c-dropdown__menu li a:contains(Force stop)')
+            b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
+            b.wait_not_present("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__menu li:contains(Checkpoint)")
+            b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
+        # Stop the container
+        self.performContainerAction("busybox:latest", "Force stop")
 
         self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
@@ -914,11 +916,9 @@ class TestApplication(testlib.MachineCase):
         # Run a container
         self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
 
         # Checkpoint the container
-        b.click('#containers-containers tr:contains("busybox:latest") + tr button:contains(Stop) + button')
-        b.click('#containers-containers tr:contains("busybox:latest") + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
+        self.performContainerAction("busybox:latest", "Checkpoint")
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
@@ -951,15 +951,16 @@ class TestApplication(testlib.MachineCase):
         b.click('#containers-containers tbody tr:contains(swamped-crate) td.pf-c-table__toggle button')
 
         # Check that the restore option is not present (i.e. start is a regular button)
-        b.wait_visible('#containers-containers tbody tr:contains(swamped-crate) + tr button.pf-c-button:contains(Start)')
+        b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
+        b.wait_not_present("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__menu li:contains(Restore)")
+        b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
 
         # Start the container
-        b.click('#containers-containers tbody tr:contains(swamped-crate) + tr button:contains(Start)')
+        self.performContainerAction("swamped-crate", "Start")
         b.wait_in_text('#containers-containers tr:contains(swamped-crate)', 'running')
 
         # Checkpoint the container
-        b.click('#containers-containers tr:contains(swamped-crate) + tr button:contains(Stop) + button')
-        b.click('#containers-containers tr:contains(swamped-crate) + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
+        self.performContainerAction("swamped-crate", "Checkpoint")
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
@@ -978,8 +979,7 @@ class TestApplication(testlib.MachineCase):
 
         # Restore the container
         b.wait_visible('#containers-containers td[data-label="Container"]:contains(swamped-crate)')
-        b.click('#containers-containers tr:contains(swamped-crate) + tr button:contains(Start) + button')
-        b.click('#containers-containers tr:contains(swamped-crate) + tr #Start-dropdown ul li:has(a:contains(Restore))')
+        self.performContainerAction("swamped-crate", "Restore")
         b.set_checked('.pf-c-modal-box input#restore-dialog-keep', True)
         b.set_checked('.pf-c-modal-box input#restore-dialog-tcpEstablished', True)
         b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticIP', True)
@@ -989,8 +989,7 @@ class TestApplication(testlib.MachineCase):
 
         # Checkpoint the container without stopping
         b.wait_visible('#containers-containers td[data-label="Container"]:contains(swamped-crate)')
-        b.click('#containers-containers tr:contains(swamped-crate) + tr button:contains(Stop) + button')
-        b.click('#containers-containers tr:contains(swamped-crate) + tr #Stop-dropdown ul li:has(a:contains(Checkpoint))')
+        self.performContainerAction("swamped-crate", "Checkpoint")
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-leaveRunning', True)
         b.click('.pf-c-modal-box button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
@@ -1000,8 +999,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
 
         # Restore the container
-        b.click('#containers-containers tr:contains(swamped-crate) + tr button:contains(Start) + button')
-        b.click('#containers-containers tr:contains(swamped-crate) + tr #Start-dropdown ul li:has(a:contains(Restore))')
+        self.performContainerAction("swamped-crate", "Restore")
         b.click('.pf-c-modal-box button:contains(Restore)')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') == 'running')
 
@@ -1373,16 +1371,14 @@ class TestApplication(testlib.MachineCase):
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
-        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
-        b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
+        self.performContainerAction("busybox-without-publish", "Stop")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
         self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
-        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Start)')
+        self.performContainerAction("busybox-without-publish", "Start")
         self.waitContainer(sha, auth, state='running')
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.click('#containers-containers tbody tr:contains("busybox-without-publish") + tr button:contains(Stop) + button')
-        b.click("div.pf-c-dropdown.pf-m-expanded ul li:nth-child(1) a")
+        self.performContainerAction("busybox-without-publish", "Stop")
         self.waitContainer(sha, auth, state=NOT_RUNNING)
         b.click('#containers-containers tr:contains("busybox-without-publish")')
 
