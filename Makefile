@@ -7,6 +7,7 @@ TEST_OS = fedora-34
 endif
 export TEST_OS
 TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz
+NODE_CACHE=cockpit-$(PACKAGE_NAME)-node-$(VERSION).tar.xz
 RPMFILE=$(shell rpmspec -D"VERSION $(VERSION)" -q `ls cockpit-podman.spec.in cockpit-podman.spec 2>/dev/null | head -n1`).rpm
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check if/when npm install ran
@@ -111,6 +112,11 @@ $(TARFILE): $(WEBPACK_TEST) $(RPM_NAME).spec
 		--exclude $(RPM_NAME).spec.in --exclude node_modules \
 		$$(git ls-files) $(LIB_TEST) src/lib/ package-lock.json $(RPM_NAME).spec dist/
 
+$(NODE_CACHE): $(NODE_MODULES_TEST)
+	tar --xz -cf $@ node_modules
+
+node-cache: $(NODE_CACHE)
+
 srpm: $(TARFILE) $(RPM_NAME).spec
 	rpmbuild -bs \
 	  --define "_sourcedir `pwd`" \
@@ -200,4 +206,4 @@ $(NODE_MODULES_TEST): package.json
 	env -u NODE_ENV npm install
 	env -u NODE_ENV npm prune
 
-.PHONY: all clean install devel-install dist-gzip srpm rpm check vm update-po
+.PHONY: all clean install devel-install dist-gzip node-cache srpm rpm check vm update-po
