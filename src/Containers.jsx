@@ -217,14 +217,12 @@ const ContainerActions = ({ container, onAddNotification, version }) => {
 
     const containerDeleteModal =
         <ContainerDeleteModal
-            selectContainerDeleteModal={deleteModal}
             containerWillDelete={container}
             handleCancelContainerDeleteModal={() => setDeleteModal(false)}
             handleRemoveContainer={handleRemoveContainer}
         />;
     const containerCheckpointModal =
         <ContainerCheckpointModal
-            selectContainerCheckpointModal={checkpointModal}
             handleCheckpointContainer={handleCheckpointContainer}
             handleCheckpointContainerDeleteModal={() => setCheckpointModal(false)}
             containerWillCheckpoint={container}
@@ -232,15 +230,13 @@ const ContainerActions = ({ container, onAddNotification, version }) => {
         />;
     const containerRestoreModal =
         <ContainerRestoreModal
-            selectContainerRestoreModal={restoreModal}
             handleRestoreContainer={handleRestoreContainer}
             handleRestoreContainerDeleteModal={() => setRestoreModal(false)}
             containerWillCheckpoint={container}
             restoreInProgress={restoreInProgress}
         />;
-    let containerRemoveErrorModal = null;
-    if (removeErrorModal)
-        containerRemoveErrorModal = <ForceRemoveModal
+    const containerRemoveErrorModal =
+        <ForceRemoveModal
             name={container.Names}
             handleCancel={() => setRemoveErrorModal(false)}
             handleForceRemove={handleForceRemoveContainer}
@@ -257,10 +253,10 @@ const ContainerActions = ({ container, onAddNotification, version }) => {
     return (
         <>
             {kebab}
-            {containerDeleteModal}
-            {containerCheckpointModal}
-            {containerRestoreModal}
-            {containerRemoveErrorModal}
+            {deleteModal && containerDeleteModal}
+            {checkpointModal && containerCheckpointModal}
+            {restoreModal && containerRestoreModal}
+            {removeErrorModal && containerRemoveErrorModal}
             {commitModal && containerCommitModal}
         </>
     );

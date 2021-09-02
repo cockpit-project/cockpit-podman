@@ -23,7 +23,7 @@ class ContainerCheckpointModal extends React.Component {
 
     render() {
         return (
-            <Modal isOpen={this.props.selectContainerCheckpointModal}
+            <Modal isOpen
                    showClose={false}
                    position="top" variant="medium"
                    title={cockpit.format(_("Checkpoint container $0"), this.props.containerWillCheckpoint.Names)}

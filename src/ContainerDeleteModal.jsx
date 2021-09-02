@@ -6,7 +6,7 @@ const _ = cockpit.gettext;
 
 const ContainerDeleteModal = (props) => {
     return (
-        <Modal isOpen={props.selectContainerDeleteModal}
+        <Modal isOpen
                position="top" variant="medium"
                onClose={props.handleCancelContainerDeleteModal}
                title={cockpit.format(_("Please confirm deletion of $0"), props.containerWillDelete.Names)}
