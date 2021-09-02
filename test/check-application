@@ -843,9 +843,9 @@ class TestApplication(testlib.MachineCase):
             self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh',
                                state='running', owner="system" if auth else "admin")
         # Check we show usage
-        b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)") != "")
-        cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
-        memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)")
+        b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)") != "")
+        cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)")
+        memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)")
         if auth or self.has_cgroupsV2:
             self.assertIn('%', cpu)
             num = cpu[:-1]
@@ -860,7 +860,7 @@ class TestApplication(testlib.MachineCase):
 
             # Test that the value is updated dynamically
             self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 count=1000000 < /dev/urandom > /dev/null'")
-            new_cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)")
+            new_cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)")
             self.assertIn('%', new_cpu)
             new_num = new_cpu[:-1]
             self.assertTrue(new_num.replace('.', '', 1).isdigit())
@@ -893,8 +893,8 @@ class TestApplication(testlib.MachineCase):
 
         self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh')
         b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
-        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(3)", "")
         b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)", "")
+        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)", "")
 
     @testlib.nondestructive
     def testCheckpointRestoreCGroupsV2(self):
@@ -1483,7 +1483,10 @@ class TestApplication(testlib.MachineCase):
         if cmd:
             b.wait_text(sel + " .container-block small:last-child", cmd)
         if owner:
-            b.wait_text(sel + " td[data-label=Owner]", owner)
+            if owner == "system":
+                b.wait_text(sel + " td[data-label=Owner]", owner)
+            else:
+                b.wait_text(sel + " td[data-label=Owner]", "user: " + owner)
         if state:
             if not isinstance(state, list):
                 state = [state]

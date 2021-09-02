@@ -112,11 +112,11 @@ class Images extends React.Component {
 
         const columns = [
             { title: image.RepoTags ? image.RepoTags[0] : "<none>:<none>", header: true },
-            { title: image.isSystem ? _("system") : <div><span className="images-grey-text">{_("user:")} </span>{this.props.user}</div> },
+            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
             utils.localize_time(image.Created),
             utils.truncate_id(image.Id),
             cockpit.format_bytes(image.Size, 1000),
-            { title: <span className={usedByCount === 0 ? "images-grey-text" : ""}>{usedByText}</span> },
+            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span> },
             {
                 title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable} />,
                 props: { className: 'pf-c-table__action' }

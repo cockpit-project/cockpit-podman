@@ -150,9 +150,9 @@ class Containers extends React.Component {
 
         const columns = [
             { title: info_block },
+            { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
             proc,
             mem,
-            container.isSystem ? _("system") : this.props.user,
             { title: <Badge isRead className={"ct-badge-container-" + container.State.toLowerCase()}>{_(container.State)}</Badge> }, // States are defined in util.js
         ];
 
@@ -319,7 +319,7 @@ class Containers extends React.Component {
     }
 
     render() {
-        const columnTitles = [_("Container"), _("CPU"), _("Memory"), _("Owner"), _("State")];
+        const columnTitles = [_("Container"), _("Owner"), _("CPU"), _("Memory"), _("State")];
         const partitionedContainers = { 'no-pod': [] };
         let filtered = [];
 
