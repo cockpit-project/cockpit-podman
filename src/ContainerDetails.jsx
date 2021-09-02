@@ -57,10 +57,6 @@ const ContainerDetails = ({ container, containerDetail }) => (
             <DescriptionListDescription>{containerDetail ? containerDetail.NetworkSettings.IPAddress : ""}</DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>
-            <DescriptionListTerm>{_("IP prefix length")}</DescriptionListTerm>
-            <DescriptionListDescription>{containerDetail ? containerDetail.NetworkSettings.IPPrefixLen : ""}</DescriptionListDescription>
-        </DescriptionListGroup>
-        <DescriptionListGroup>
             <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
             <DescriptionListDescription>{containerDetail ? containerDetail.NetworkSettings.Gateway : ""}</DescriptionListDescription>
         </DescriptionListGroup>
