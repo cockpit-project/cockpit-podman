@@ -33,7 +33,7 @@ const ContainerDetails = ({ container, containerDetail }) => {
             <DescriptionList className='container-details-basic'>
                 <DescriptionListGroup>
                     <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
-                    <DescriptionListDescription>{container.Id}</DescriptionListDescription>
+                    <DescriptionListDescription>{utils.truncate_id(container.Id)}</DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
                     <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
