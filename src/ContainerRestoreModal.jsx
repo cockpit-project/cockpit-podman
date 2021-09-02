@@ -25,7 +25,7 @@ class ContainerRestoreModal extends React.Component {
 
     render() {
         return (
-            <Modal isOpen={this.props.selectContainerRestoreModal}
+            <Modal isOpen
                    showClose={false}
                    position="top" variant="medium"
                    title={cockpit.format(_("Restore container $0"), utils.truncate_id(this.props.containerWillCheckpoint.Id))}
