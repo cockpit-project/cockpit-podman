@@ -8,6 +8,7 @@ import {
     KebabToggle,
     Text, TextVariants
 } from '@patternfly/react-core';
+import { cellWidth } from '@patternfly/react-table';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
@@ -145,7 +146,15 @@ class Images extends React.Component {
     }
 
     render() {
-        const columnTitles = [_("Image"), _("Owner"), _("Created"), _("ID"), _("Disk space"), _("Used by"), ''];
+        const columnTitles = [
+            { title: _("Image"), transforms: [cellWidth(20)] },
+            _("Owner"),
+            _("Created"),
+            _("ID"),
+            _("Disk space"),
+            _("Used by"),
+            ''
+        ];
         let emptyCaption = _("No images");
         if (this.props.images === null)
             emptyCaption = "Loading...";

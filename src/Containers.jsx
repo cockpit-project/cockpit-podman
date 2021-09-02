@@ -5,6 +5,7 @@ import {
     Text, TextVariants, FormSelect, FormSelectOption,
     Toolbar, ToolbarContent, ToolbarItem,
 } from '@patternfly/react-core';
+import { cellWidth } from '@patternfly/react-table';
 import { TrashIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
@@ -319,7 +320,13 @@ class Containers extends React.Component {
     }
 
     render() {
-        const columnTitles = [_("Container"), _("Owner"), _("CPU"), _("Memory"), _("State")];
+        const columnTitles = [
+            { title: _("Container"), transforms: [cellWidth(20)] },
+            _("Owner"),
+            _("CPU"),
+            _("Memory"),
+            _("State")
+        ];
         const partitionedContainers = { 'no-pod': [] };
         let filtered = [];
 
