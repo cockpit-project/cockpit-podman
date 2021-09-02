@@ -2,7 +2,7 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
-import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, Flex } from "@patternfly/react-core";
+import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, Flex, List, ListItem } from "@patternfly/react-core";
 
 const _ = cockpit.gettext;
 
@@ -14,15 +14,17 @@ const render_container_state = (container) => {
 };
 
 const render_container_published_ports = (ports) => {
-    const result = [];
     if (!ports)
-        return result;
+        return null;
+
+    const result = [];
+
     for (let i = 0; i < ports.length; ++i)
         result.push(
-            <React.Fragment key={ ports[i].protocol + ports[i].hostPort + ports[i].containerPort }>
-                { ports[i].hostIP || '0.0.0.0' }:{ ports[i].hostPort } &rarr; { ports[i].containerPort }/{ ports[i].protocol }{ i < ports.length - 1 && ', ' }
-            </React.Fragment>);
-    return result;
+            <ListItem key={ ports[i].protocol + ports[i].hostPort + ports[i].containerPort }>
+                { ports[i].hostIP || '0.0.0.0' }:{ ports[i].hostPort } &rarr; { ports[i].containerPort }/{ ports[i].protocol }
+            </ListItem>);
+    return <List isPlain>{result}</List>;
 };
 
 const ContainerDetails = ({ container, containerDetail }) => {
@@ -45,7 +47,7 @@ const ContainerDetails = ({ container, containerDetail }) => {
                 </DescriptionListGroup>
             </DescriptionList>
             <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
-                {ports.length > 0 && <DescriptionListGroup>
+                {ports && <DescriptionListGroup>
                     <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
                     <DescriptionListDescription>{ports}</DescriptionListDescription>
                 </DescriptionListGroup>}
