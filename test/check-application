@@ -1356,8 +1356,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox-without-publish")')
         b.click('#containers-containers tbody tr:contains("busybox-without-publish") td.pf-c-table__toggle button')
-        b.wait_visible('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
-        b.wait_text('#containers-containers tr:contains("busybox-without-publish") + tr dt:contains("Ports") + dd', "")
+        b.wait_not_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
 
         # Rootless only works with CGroupsV2
         if auth or self.has_cgroupsV2:
