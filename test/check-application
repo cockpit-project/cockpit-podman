@@ -597,13 +597,13 @@ class TestApplication(testlib.MachineCase):
         if auth:
             # Remove current container for easier selectors
             self.execute(auth, "podman rm -f test-sh4")
-            b.wait_not_present(".container-details")
+            b.wait_not_present(".container-details-networking")
 
             self.execute(auth, "podman run -dt --name net_check alpine")
             b.click('#containers-containers tbody tr:contains("net_check") td.pf-c-table__toggle button')
-            b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
-            b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
-            b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
+            b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
+            b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
+            b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
 
         # delete image alpine that has been used by a container
         alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
@@ -1424,7 +1424,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_val("#containers-containers-filter", "all")
         b.wait_in_text("#containers-containers", "busybox-without-publish")
         # auto-expands container details
-        b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep 1000m")
+        b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details-basic", "sleep 1000m")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
         b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') td[data-label='Used by']", 'unused')
