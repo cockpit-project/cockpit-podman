@@ -603,7 +603,6 @@ class TestApplication(testlib.MachineCase):
             b.click('#containers-containers tbody tr:contains("net_check") td.pf-c-table__toggle button')
             b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
             b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
-            b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPPrefixLen}}' net_check").strip())
             b.wait_in_text(".container-details", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
 
         # delete image alpine that has been used by a container
