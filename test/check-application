@@ -91,6 +91,10 @@ class TestApplication(testlib.MachineCase):
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__toggle")
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__menu li:contains({cmd})")
 
+    def toggleExpandedContainer(self, container):
+        b = self.browser
+        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-table__toggle button")
+
     def execute(self, system, cmd):
         if system:
             return self.machine.execute(cmd)
@@ -492,7 +496,7 @@ class TestApplication(testlib.MachineCase):
         def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
             self.filter_containers("all")
             b.wait_visible('#containers-containers td[data-label="Container"]:contains({0})'.format(container_name))
-            b.click('#containers-containers tbody tr:contains({0}) td.pf-c-table__toggle button'.format(container_name))
+            self.toggleExpandedContainer(container_name)
             # open commit modal and close it using cancel
             self.performContainerAction(container_name, "Commit")
             self.confirm_modal("Cancel")
@@ -602,7 +606,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present(".container-details-networking")
 
             self.execute(auth, "podman run -dt --name net_check alpine")
-            b.click('#containers-containers tbody tr:contains("net_check") td.pf-c-table__toggle button')
+            self.toggleExpandedContainer("net_check")
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
@@ -948,7 +952,7 @@ class TestApplication(testlib.MachineCase):
         # Run a container
         self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
-        b.click('#containers-containers tbody tr:contains(swamped-crate) td.pf-c-table__toggle button')
+        self.toggleExpandedContainer("swamped-crate")
 
         # Check that the restore option is not present (i.e. start is a regular button)
         b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
@@ -1280,7 +1284,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait(lambda: "3" in self.execute(auth, "podman logs busybox-with-tty"))
 
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
+        self.toggleExpandedContainer("busybox:latest")
 
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6000 \u2192 5000/tcp')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '127.0.0.1:6001 \u2192 5001/udp')
@@ -1336,7 +1340,7 @@ class TestApplication(testlib.MachineCase):
 
         # Create another instance without port publishing
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
-        b.click('#containers-containers tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
+        self.toggleExpandedContainer("busybox:latest")
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
 
@@ -1353,7 +1357,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("div.pf-c-modal-box")
 
         b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox-without-publish")')
-        b.click('#containers-containers tbody tr:contains("busybox-without-publish") td.pf-c-table__toggle button')
+        self.toggleExpandedContainer("busybox-without-publish")
         b.wait_not_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
 
         # Rootless only works with CGroupsV2
@@ -1397,7 +1401,7 @@ class TestApplication(testlib.MachineCase):
 
         b.set_val("#containers-containers-filter", "all")
         self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
-        b.click('#containers-containers tr:contains("busybox-without-publish") .pf-c-table__toggle button')
+        self.toggleExpandedContainer("busybox-without-publish")
         b.click(".pf-m-expanded a:contains('Console')")
         b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
 
