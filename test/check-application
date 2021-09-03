@@ -952,7 +952,6 @@ class TestApplication(testlib.MachineCase):
         # Run a container
         self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
-        self.toggleExpandedContainer("swamped-crate")
 
         # Check that the restore option is not present (i.e. start is a regular button)
         b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
