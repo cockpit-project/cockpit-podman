@@ -150,6 +150,13 @@ class TestApplication(testlib.MachineCase):
             else:
                 self.browser.wait_in_text("#table-" + podName + " .pf-c-empty-state", "No running containers in this pod")
 
+    def waitContainerRow(self, container, present=True):
+        b = self.browser
+        if present:
+            b.wait_visible(f'#containers-containers td[data-label="Container"]:contains("{container}")')
+        else:
+            b.wait_not_present(f'#containers-containers td[data-label="Container"]:contains("{container}")')
+
     def performPodAction(self, podName, podOwner, action):
         b = self.browser
 
@@ -428,11 +435,11 @@ class TestApplication(testlib.MachineCase):
 
         # running busybox shown
         if auth:
-            b.wait_visible("#containers-containers .container-name:contains('swamped-crate-system')")
+            self.waitContainerRow("swamped-crate-system")
             self.waitContainer(system_containers["swamped-crate-system"], True, name='swamped-crate-system',
                                image='busybox:latest', cmd="sleep 1000", state='running')
 
-        b.wait_visible("#containers-containers .container-name:contains('swamped-crate-user')")
+        self.waitContainerRow("swamped-crate-user")
         self.waitContainer(user_containers["swamped-crate-user"], False, name='swamped-crate-user',
                            image='busybox:latest', cmd="sleep 1000", state='running')
 
@@ -478,28 +485,28 @@ class TestApplication(testlib.MachineCase):
         if auth:
             self.performContainerAction("swamped-crate-system", "Delete")
             self.confirm_modal("Force delete")
-            b.wait_not_in_text("#containers-containers", "swamped-crate-system")
+            self.waitContainerRow("swamped-crate-system", False)
 
         self.filter_containers("all")
 
         self.performContainerAction("swamped-crate-user", "Delete")
         self.confirm_modal("Force delete")
-        b.wait_not_in_text("#containers-containers", "swamped-crate-user")
+        self.waitContainerRow("swamped-crate-user", False)
 
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh-user")')
+        self.waitContainerRow("test-sh-user")
         self.performContainerAction("test-sh-user", "Delete")
         self.confirm_modal("Delete")
         b.wait_not_in_text("#containers-containers", "test-sh-user")
 
         if auth:
-            b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh-system")')
+            self.waitContainerRow("test-sh-system")
             self.performContainerAction("test-sh-system", "Delete")
             self.confirm_modal("Delete")
             b.wait_not_in_text("#containers-containers", "test-sh-system")
 
         def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
             self.filter_containers("all")
-            b.wait_visible('#containers-containers td[data-label="Container"]:contains({0})'.format(container_name))
+            self.waitContainerRow(container_name)
             self.toggleExpandedContainer(container_name)
             # open commit modal and close it using cancel
             self.performContainerAction(container_name, "Commit")
@@ -547,7 +554,7 @@ class TestApplication(testlib.MachineCase):
             self.execute(False, "podman rm -f test-sh3; podman rmi testimg:testtag")
 
         self.execute(auth, "podman run -d --name test-sh4 alpine sh")
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains("test-sh4")')
+        self.waitContainerRow("test-sh4")
         # open commit modal and check error modal
         self.performContainerAction("test-sh4", "Commit")
         # check required field error
@@ -836,7 +843,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         b.wait_visible("#containers-containers")
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains("swamped-crate")')
+        self.waitContainerRow("swamped-crate")
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-c-dropdown__toggle")
 
         if not auth:
@@ -892,7 +899,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
         b.wait_visible("#containers-containers")
 
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox:latest")')
+        self.waitContainerRow("busybox:latest")
         if not auth:
             # Check that the checkpoint option is not present for rootless
             b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
@@ -985,7 +992,7 @@ class TestApplication(testlib.MachineCase):
             return
 
         # Restore the container
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains(swamped-crate)')
+        self.waitContainerRow("swamped-crate")
         self.performContainerAction("swamped-crate", "Restore")
         b.set_checked('.pf-c-modal-box input#restore-dialog-keep', True)
         b.set_checked('.pf-c-modal-box input#restore-dialog-tcpEstablished', True)
@@ -995,7 +1002,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'running')
 
         # Checkpoint the container without stopping
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains(swamped-crate)')
+        self.waitContainerRow("swamped-crate")
         self.performContainerAction("swamped-crate", "Checkpoint")
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-leaveRunning', True)
         b.click('.pf-c-modal-box button:contains(Checkpoint)')
@@ -1269,7 +1276,7 @@ class TestApplication(testlib.MachineCase):
 
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         b.wait_not_present("div.pf-c-modal-box")
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox:latest")')
+        self.waitContainerRow("busybox:latest")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
         self.waitContainer(sha, auth, name='busybox-with-tty', image='busybox:latest',
                            cmd='sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"',
@@ -1359,7 +1366,7 @@ class TestApplication(testlib.MachineCase):
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         b.wait_not_present("div.pf-c-modal-box")
 
-        b.wait_visible('#containers-containers td[data-label="Container"]:contains("busybox-without-publish")')
+        self.waitContainerRow("busybox-without-publish")
         self.toggleExpandedContainer("busybox-without-publish")
         b.wait_not_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
 
