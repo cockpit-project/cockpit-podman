@@ -632,7 +632,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_collected_text("#containers-containers .container-name", "bac")
             self.execute(False, "podman run -d --name doremi registry:2 sh")
             b.wait_collected_text("#containers-containers .container-name", "bdoremiac")
-            b.wait(lambda: b.text('#containers-containers tr:contains(doremi) td:nth-of-type(6)') in NOT_RUNNING)
+            b.wait(lambda: b.text('#containers-containers tr:contains(doremi) td[data-label=State]') in NOT_RUNNING)
         else:
             b.wait_collected_text("#containers-containers .container-name", "abc")
 
@@ -645,7 +645,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
         b.wait_in_text("#containers-images", "<none>:<none>")
-        b.wait_in_text("#containers-images tbody:last-child td:nth-child(4)", "today at")
+        b.wait_in_text("#containers-images tbody:last-child td[data-label=Created]", "today at")
 
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
@@ -850,9 +850,9 @@ class TestApplication(testlib.MachineCase):
             self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh',
                                state='running', owner="system" if auth else "admin")
         # Check we show usage
-        b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)") != "")
-        cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)")
-        memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)")
+        b.wait(lambda: b.text("#containers-containers tbody tr:contains('busybox:latest') > td[data-label=CPU]") != "")
+        cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td[data-label=CPU]")
+        memory = b.text("#containers-containers tbody tr:contains('busybox:latest') > td[data-label=Memory]")
         if auth or self.has_cgroupsV2:
             self.assertIn('%', cpu)
             num = cpu[:-1]
@@ -867,7 +867,7 @@ class TestApplication(testlib.MachineCase):
 
             # Test that the value is updated dynamically
             self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 count=1000000 < /dev/urandom > /dev/null'")
-            new_cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)")
+            new_cpu = b.text("#containers-containers tbody tr:contains('busybox:latest') > td[data-label=CPU]")
             self.assertIn('%', new_cpu)
             new_num = new_cpu[:-1]
             self.assertTrue(new_num.replace('.', '', 1).isdigit())
@@ -898,9 +898,9 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("busybox:latest", "Force stop")
 
         self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh')
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
-        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(4)", "")
-        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td:nth-child(5)", "")
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td[data-label=State]') in NOT_RUNNING)
+        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td[data-label=CPU]", "")
+        b.wait_text("#containers-containers tbody tr:contains('busybox:latest') > td[data-labe=Memory]", "")
 
     @testlib.nondestructive
     def testCheckpointRestoreCGroupsV2(self):
@@ -973,7 +973,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present(".pf-c-modal-box")
 
         if self.has_criu:
-            b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
+            b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td[data-label=State]') in NOT_RUNNING)
         else:
             # expect proper error message
             b.wait_in_text(".pf-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
@@ -988,7 +988,7 @@ class TestApplication(testlib.MachineCase):
         b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticIP', True)
         b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticMAC', True)
         b.click('.pf-c-modal-box button:contains(Restore)')
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') == 'running')
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td[data-label=State]') == 'running')
 
         # Checkpoint the container without stopping
         b.wait_visible('#containers-containers td[data-label="Container"]:contains(swamped-crate)')
@@ -999,12 +999,12 @@ class TestApplication(testlib.MachineCase):
 
         # Stop the container
         m.execute("podman stop swamped-crate")
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') in NOT_RUNNING)
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td[data-label=State]') in NOT_RUNNING)
 
         # Restore the container
         self.performContainerAction("swamped-crate", "Restore")
         b.click('.pf-c-modal-box button:contains(Restore)')
-        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td:nth-of-type(6)') == 'running')
+        b.wait(lambda: b.text('#containers-containers tr:contains(swamped-crate) td[data-label=State]') == 'running')
 
     @testlib.nondestructive
     def testNotRunning(self):
