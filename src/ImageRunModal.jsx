@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Button, Checkbox, Form, FormGroup, FormSelect, FormSelectOption,
-    InputGroup, Modal, TextInput
+    InputGroup, Modal, TextInput, Tabs, Tab, TabTitleText, Flex, FlexItem,
 } from '@patternfly/react-core';
 import { CloseIcon, PlusIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
@@ -12,6 +12,8 @@ import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import cockpit from 'cockpit';
+
+import "./ImageRunModal.scss";
 
 const _ = cockpit.gettext;
 
@@ -238,6 +240,7 @@ export class ImageRunModal extends React.Component {
             validationFailed: {},
             volumes: [],
             runImage: true,
+            activeTabKey: 0,
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onCreateClicked = this.onCreateClicked.bind(this);
@@ -328,104 +331,128 @@ export class ImageRunModal extends React.Component {
         this.setState({ [key]: value });
     }
 
+    handleTabClick = (event, tabIndex) => {
+        // Prevent the form from being submitted.
+        event.preventDefault();
+        this.setState({
+            activeTabKey: tabIndex,
+        });
+    };
+
     render() {
         const { image } = this.props;
         const dialogValues = this.state;
+        const { activeTabKey } = this.state;
 
         const defaultBody = (
             <Form isHorizontal>
-                <FormGroup fieldId='run-image-dialog-image' label={_("Image")} hasNoPaddingTop>
-                    <div id='run-image-dialog-image'> { image.RepoTags ? image.RepoTags[0] : "" } </div>
-                </FormGroup>
-
-                <FormGroup fieldId='run-image-dialog-name' label={_("Name")}>
-                    <TextInput id='run-image-dialog-name'
+                <Flex>
+                    <FlexItem align={{ default: 'alignLeft' }}>
+                        <FormGroup fieldId='run-image-dialog-name' label={_("Name")}>
+                            <TextInput id='run-image-dialog-name'
                                placeholder={_("Container name")}
                                value={dialogValues.containerName}
                                onChange={value => this.onValueChanged('containerName', value)} />
-                </FormGroup>
+                        </FormGroup>
+                    </FlexItem>
+                </Flex>
+                <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
+                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-l-grid pf-m-gutter">
+                        <FormGroup fieldId='run-image-dialog-image' label={_("Image")} hasNoPaddingTop>
+                            <div id='run-image-dialog-image'> { image.RepoTags ? image.RepoTags[0] : "" } </div>
+                        </FormGroup>
 
-                <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
-                    <TextInput id='run-image-dialog-command'
-                               placeholder={_("Command")}
-                               value={dialogValues.command || ''}
-                               onChange={value => this.onValueChanged('command', value)} />
-                </FormGroup>
+                        <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
+                            <TextInput id='run-image-dialog-command'
+                           placeholder={_("Command")}
+                           value={dialogValues.command || ''}
+                           onChange={value => this.onValueChanged('command', value)} />
+                        </FormGroup>
 
-                <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
-                    <InputGroup className="ct-input-group-spacer-sm" id="run-image-dialog-memory-limit">
-                        <Checkbox id="run-image-dialog-memory-limit-checkbox"
+                        <FormGroup fieldId="run=image-dialog-tty">
+                            <Checkbox id="run-image-dialog-tty"
+                              isChecked={this.state.hasTTY}
+                              label={_("With terminal")}
+                              onChange={checked => this.onValueChanged('hasTTY', checked)} />
+                        </FormGroup>
+
+                        <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
+                            <InputGroup className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-memory-limit">
+                                <Checkbox id="run-image-dialog-memory-limit-checkbox"
+                                  className="pf-u-align-content-center"
                                   isChecked={this.state.memoryConfigure}
                                   onChange={checked => this.onValueChanged('memoryConfigure', checked)} />
-                        <TextInput type='number'
+                                <TextInput type='number'
                                    value={dialogValues.memory}
                                    id="run-image-dialog-memory"
+                                   className="dialog-run-form-input"
                                    step={1}
                                    min={0}
                                    isReadOnly={!this.state.memoryConfigure}
                                    onChange={value => this.onValueChanged('memory', value)} />
-                        <FormSelect id='memory-unit-select'
+                                <FormSelect id='memory-unit-select'
                                     aria-label={_("Memory unit")}
                                     value={this.state.memoryUnit}
                                     isDisabled={!this.state.memoryConfigure}
+                                    className="dialog-run-form-select"
                                     onChange={value => this.onValueChanged('memoryUnit', value)}>
-                            <FormSelectOption value={units.KiB.name} key={units.KiB.name} label={_("KiB")} />
-                            <FormSelectOption value={units.MiB.name} key={units.MiB.name} label={_("MiB")} />
-                            <FormSelectOption value={units.GiB.name} key={units.GiB.name} label={_("GiB")} />
-                        </FormSelect>
-                    </InputGroup>
-                </FormGroup>
+                                    <FormSelectOption value={units.KiB.name} key={units.KiB.name} label={_("KiB")} />
+                                    <FormSelectOption value={units.MiB.name} key={units.MiB.name} label={_("MiB")} />
+                                    <FormSelectOption value={units.GiB.name} key={units.GiB.name} label={_("GiB")} />
+                                </FormSelect>
+                            </InputGroup>
+                        </FormGroup>
 
-                { this.state.image.isSystem &&
-                <FormGroup fieldId='run-image-cpu-priority' label={_("CPU shares")}>
-                    <InputGroup className="ct-input-group-spacer-sm" id="run-image-dialog-cpu-priority">
-                        <Checkbox id="run-image-dialog-cpu-priority-checkbox"
-                                  isChecked={this.state.cpuSharesConfigure}
-                                  onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
-                        <TextInput type='number'
-                                   id="run-image-cpu-priority"
-                                   value={dialogValues.cpuShares}
-                                   step={1}
-                                   min={2}
-                                   isReadOnly={!this.state.cpuSharesConfigure}
-                                   onChange={value => this.onValueChanged('cpuShares', value === "" ? "" : parseInt(value))} />
-                    </InputGroup>
-                </FormGroup>}
+                        { this.state.image.isSystem &&
+                            <FormGroup fieldId='run-image-cpu-priority' label={_("CPU shares")}>
+                                <InputGroup className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
+                                    <Checkbox id="run-image-dialog-cpu-priority-checkbox"
+                                        className="pf-u-align-content-center"
+                                        isChecked={this.state.cpuSharesConfigure}
+                                        onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
+                                    <TextInput type='number'
+                                        id="run-image-cpu-priority"
+                                        value={dialogValues.cpuShares}
+                                        step={1}
+                                        min={2}
+                                        max={262144}
+                                        isReadOnly={!this.state.cpuSharesConfigure}
+                                        onChange={value => this.onValueChanged('cpuShares', value === "" ? "" : parseInt(value))} />
+                                </InputGroup>
+                            </FormGroup>}
 
-                <FormGroup fieldId="run=image-dialog-tty">
-                    <Checkbox id="run-image-dialog-tty"
-                              isChecked={this.state.hasTTY}
-                              label={_("With terminal")}
-                              onChange={checked => this.onValueChanged('hasTTY', checked)} />
-                </FormGroup>
+                        <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Start after creation")} hasNoPaddingTop>
+                            <Checkbox isChecked={this.state.runImage} id="run-image-dialog-start-after-creation" onChange={value => this.onValueChanged('runImage', value)} />
+                        </FormGroup>
+                    </Tab>
+                    <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-l-grid pf-m-gutter">
 
-                <FormGroup fieldId='run-image-dialog-publish' label={_("Ports")}>
-                    <DynamicListForm id='run-image-dialog-publish'
+                        <FormGroup fieldId='run-image-dialog-publish' label={_("Ports")}>
+                            <DynamicListForm id='run-image-dialog-publish'
                                      formclass='publish-port-form'
                                      onChange={value => this.onValueChanged('publish', value)}
                                      default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                                      itemcomponent={ <PublishPort />} />
-                </FormGroup>
+                        </FormGroup>
 
-                <FormGroup fieldId='run-image-dialog-env' label={_("Volumes")}>
-                    <DynamicListForm id='run-image-dialog-volume'
+                        <FormGroup fieldId='run-image-dialog-volume' label={_("Volumes")}>
+                            <DynamicListForm id='run-image-dialog-volume'
                                      formclass='volume-form'
                                      onChange={value => this.onValueChanged('volumes', value)}
                                      default={{ containerPath: null, hostPath: null, mode: 'rw' }}
                                      options={{ selinuxAvailable: this.props.selinuxAvailable }}
                                      itemcomponent={ <Volume />} />
-                </FormGroup>
+                        </FormGroup>
 
-                <FormGroup fieldId='run-image-dialog-env' label={_("Environment")}>
-                    <DynamicListForm id='run-image-dialog-env'
+                        <FormGroup fieldId='run-image-dialog-env' label={_("Environment")}>
+                            <DynamicListForm id='run-image-dialog-env'
                                      formclass='env-form'
                                      onChange={value => this.onValueChanged('env', value)}
                                      default={{ envKey: null, envValue: null }}
                                      itemcomponent={ <EnvVar />} />
-                </FormGroup>
-                <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Start after creation")} hasNoPaddingTop>
-                    <Checkbox isChecked={this.state.runImage} id="start-after-creation" onChange={value => this.onValueChanged('runImage', value)} />
-                </FormGroup>
+                        </FormGroup>
+                    </Tab>
+                </Tabs>
             </Form>
         );
         return (

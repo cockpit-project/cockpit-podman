@@ -1208,6 +1208,9 @@ class TestApplication(testlib.MachineCase):
         # Set up command line
         b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
 
+        # Switch to Integration tab
+        b.click("#pf-tab-1-create-image-dialog-tab-integration")
+
         # Configure published ports
         b.set_input_text('.publish-port-form[data-key="0"] input[aria-label="Host port (optional)"]', '6000')
         b.set_input_text('.publish-port-form[data-key="0"] input[aria-label="Container port"]', '5000')
@@ -1448,7 +1451,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#run-image-dialog-name", container_name)
 
         # Uncheck start container after creation
-        b.click("#start-after-creation")
+        b.click("#run-image-dialog-start-after-creation")
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         b.wait_not_present("div.pf-c-modal-box")
 
