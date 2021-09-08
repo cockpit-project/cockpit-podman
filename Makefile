@@ -76,10 +76,10 @@ download-po: $(WEBLATE_REPO)
 	sed -e 's/%{VERSION}/$(VERSION)/g' $< > $@
 
 $(WEBPACK_TEST): $(NODE_MODULES_TEST) $(LIB_TEST) $(shell find src/ -type f) package.json webpack.config.js
-	NODE_ENV=$(NODE_ENV) npm run build
+	NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack
 
 watch:
-	NODE_ENV=$(NODE_ENV) npm run watch
+	NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack --watch
 
 clean:
 	rm -rf dist/
