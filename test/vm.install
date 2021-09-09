@@ -21,10 +21,10 @@ if [ -d /var/tmp/debian ]; then
 
     # build source package
     cd /var/tmp
-    TAR=$(ls cockpit-podman-*.tar.gz)
+    TAR=$(ls cockpit-podman-*.tar.xz)
     VERSION="${TAR#cockpit-podman-}"
-    VERSION="${VERSION%.tar.gz}"
-    ln -s $TAR cockpit-podman_${VERSION}.orig.tar.gz
+    VERSION="${VERSION%.tar.xz}"
+    ln -s $TAR cockpit-podman_${VERSION}.orig.tar.xz
     tar xf "$TAR"
     cd cockpit-podman
     cp -r ../debian .

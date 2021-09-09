@@ -13,7 +13,7 @@ actions:
     - make NODE_ENV=development NODE_OPTIONS=--max-old-space-size=500
     # dummy LICENSE.txt, as terser did not run
     - touch dist/index.js.LICENSE.txt.gz
-    - make dist-gzip
+    - make dist
 jobs:
   - job: tests
     trigger: pull_request
