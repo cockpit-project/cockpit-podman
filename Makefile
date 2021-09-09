@@ -6,7 +6,7 @@ ifeq ($(TEST_OS),)
 TEST_OS = fedora-34
 endif
 export TEST_OS
-TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz
+TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.xz
 NODE_CACHE=cockpit-$(PACKAGE_NAME)-node-$(VERSION).tar.xz
 RPMFILE=$(shell rpmspec -D"VERSION $(VERSION)" -q `ls cockpit-podman.spec.in cockpit-podman.spec 2>/dev/null | head -n1`).rpm
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
@@ -97,7 +97,7 @@ devel-install: $(WEBPACK_TEST)
 	mkdir -p ~/.local/share/cockpit
 	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
-dist-gzip: $(TARFILE)
+dist: $(TARFILE)
 	@ls -1 $(TARFILE)
 
 # when building a distribution tarball, call webpack with a 'production' environment
@@ -108,7 +108,7 @@ $(TARFILE): export NODE_ENV=production
 $(TARFILE): $(WEBPACK_TEST) $(RPM_NAME).spec
 	touch -r package.json $(NODE_MODULES_TEST)
 	touch dist/*
-	tar czf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
+	tar --xz -cf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
 		--exclude $(RPM_NAME).spec.in --exclude node_modules \
 		$$(git ls-files) $(LIB_TEST) src/lib/ package-lock.json $(RPM_NAME).spec dist/
 
@@ -206,4 +206,4 @@ $(NODE_MODULES_TEST): package.json
 	env -u NODE_ENV npm install
 	env -u NODE_ENV npm prune
 
-.PHONY: all clean install devel-install dist-gzip node-cache srpm rpm check vm update-po
+.PHONY: all clean install devel-install dist node-cache srpm rpm check vm update-po
