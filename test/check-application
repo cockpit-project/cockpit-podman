@@ -1197,7 +1197,7 @@ class TestApplication(testlib.MachineCase):
         if auth:
             b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
             b.wait_visible("#run-image-dialog-cpu-priority-checkbox:checked")
-            b.wait_visible('#run-image-dialog-cpu-priority input[value=""]')
+            b.wait_visible('#run-image-dialog-cpu-priority input[value="1024"]')
             b.set_input_text("#run-image-dialog-cpu-priority input[type=number]", "512")
         else:
             b.wait_not_present("#run-image-dialog-cpu-priority-checkbox")
