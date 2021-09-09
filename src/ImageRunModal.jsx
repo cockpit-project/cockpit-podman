@@ -233,7 +233,7 @@ export class ImageRunModal extends React.Component {
             publish: [],
             image: props.image,
             memory: 512,
-            cpuShares: "",
+            cpuShares: 1024,
             memoryConfigure: false,
             cpuSharesConfigure: false,
             memoryUnit: 'MiB',
@@ -262,7 +262,7 @@ export class ImageRunModal extends React.Component {
             resourceLimit.memory = { limit: memorySize };
             createConfig.resource_limits = resourceLimit;
         }
-        if (this.state.cpuSharesConfigure && this.state.cpuShares !== "") {
+        if (this.state.cpuSharesConfigure && this.state.cpuShares !== 0) {
             resourceLimit.cpu = { shares: this.state.cpuShares };
             createConfig.resource_limits = resourceLimit;
         }
@@ -417,7 +417,7 @@ export class ImageRunModal extends React.Component {
                                         min={2}
                                         max={262144}
                                         isReadOnly={!this.state.cpuSharesConfigure}
-                                        onChange={value => this.onValueChanged('cpuShares', value === "" ? "" : parseInt(value))} />
+                                        onChange={value => this.onValueChanged('cpuShares', parseInt(value))} />
                                 </InputGroup>
                             </FormGroup>}
 
