@@ -21,10 +21,8 @@
 }
 
 .container-block small {
-    flex-basis: calc(var(--pf-global--LineHeight--sm) * 1rem);
-    line-height: var(--pf-global--LineHeight--sm);
-    opacity: 0.7;
-    overflow: hidden;
+    @include pf-line-clamp("1");
+    color: var(--pf-global--Color--200);
 }
 
 .container-name {
