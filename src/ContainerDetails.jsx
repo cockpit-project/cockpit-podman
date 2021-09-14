@@ -29,6 +29,15 @@ const render_container_published_ports = (ports) => {
 
 const ContainerDetails = ({ container, containerDetail }) => {
     const ports = render_container_published_ports(container.Ports);
+    const networkOptions = (
+        containerDetail &&
+        [
+            containerDetail.NetworkSettings.IPAddress,
+            containerDetail.NetworkSettings.Gateway,
+            containerDetail.NetworkSettings.MacAddress,
+            ports
+        ].some(itm => !!itm)
+    );
 
     return (
         <Flex spaceItems={{ modifier: 'spaceItemsXl' }}>
@@ -46,7 +55,7 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListDescription>{container.Command ? utils.quote_cmdline(container.Command) : ""}</DescriptionListDescription>
                 </DescriptionListGroup>
             </DescriptionList>
-            <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
+            {networkOptions && <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
                 {ports && <DescriptionListGroup>
                     <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
                     <DescriptionListDescription>{ports}</DescriptionListDescription>
@@ -63,7 +72,7 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
                     <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
                 </DescriptionListGroup>}
-            </DescriptionList>
+            </DescriptionList>}
             <DescriptionList className='container-details-state'>
                 <DescriptionListGroup>
                     <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
