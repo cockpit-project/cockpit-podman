@@ -26,6 +26,13 @@
     }
 }
 
+@media screen and (max-width: 768px) {
+    // Badges should not stretch in mobile mode
+    .pf-c-table [data-label] > .pf-c-badge {
+        justify-self: start;
+    }
+}
+
 .container-block {
     display: flex;
     flex-direction: column;
