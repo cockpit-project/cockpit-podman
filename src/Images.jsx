@@ -311,11 +311,19 @@ const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
     const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
 
     const handleRemoveImage = (tags, all) => {
-        setShowImageDeleteModal(false);
+        console.log("Deleting", all);
+        console.log(JSON.stringify(tags));
         if (all)
             client.delImage(image.isSystem, image.Id, false)
+                    .then(m => {
+                        console.log("RESOLVED");
+                        console.log(JSON.stringify(m));
+                        setShowImageDeleteModal(false);
+                    })
                     .catch(ex => {
+                        console.log("FAILED");
                         setImageDeleteErrorMsg(ex.message);
+                        setShowImageDeleteModal(false);
                         setShowImageDeleteErrorModal(true);
                     });
         else {
@@ -326,10 +334,13 @@ const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
                     .then(() => {
                         if (tags.length > 0)
                             handleRemoveImage(tags, all);
+                        else
+                            setShowImageDeleteModal(false);
                     })
                     .catch(ex => {
                         const error = cockpit.format(_("Failed to remove image $0"), tag);
                         onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                        setShowImageDeleteModal(false);
                     });
         }
     };

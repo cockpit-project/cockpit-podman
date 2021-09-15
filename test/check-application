@@ -1277,6 +1277,7 @@ class TestApplication(testlib.MachineCase):
         b.key_press(["\r"])
         rw_label = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
 
+        print(m.execute("lsof -i tcp:6000 || true"))
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         b.wait_not_present("div.pf-c-modal-box")
         self.waitContainerRow("busybox:latest")

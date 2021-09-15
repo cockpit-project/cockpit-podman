@@ -55,6 +55,7 @@ if [ -d /var/tmp/debian ]; then
 # install rpms
 elif [ -e /var/tmp/*.rpm ]; then
     rpm -i --verbose /var/tmp/*.rpm
+    dnf install -y lsof
 fi
 
 systemctl enable cockpit.socket
