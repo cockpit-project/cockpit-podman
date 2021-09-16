@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import {
     Badge,
+    Button,
     Card, CardBody, CardHeader, CardTitle, CardActions,
+    Divider,
     Dropdown, DropdownItem, DropdownSeparator,
     KebabToggle,
     Text, TextVariants, FormSelect, FormSelectOption,
@@ -24,6 +26,7 @@ import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
 
 import './Containers.scss';
+import { ImageRunModal } from './ImageRunModal.jsx';
 import { PodActions } from './PodActions.jsx';
 
 const _ = cockpit.gettext;
@@ -267,6 +270,8 @@ class Containers extends React.Component {
         super(props);
         this.state = {
             width: 0,
+            showCreateContainerModal: false,
+            downloadingContainers: [],
         };
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
@@ -282,6 +287,18 @@ class Containers extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowResize);
+    }
+
+    onDownloadContainer = (container) => {
+        this.setState(prevState => ({
+            downloadingContainers: [...prevState.downloadingContainers, container]
+        }));
+    }
+
+    onDownloadContainerFinished = container => {
+        this.setState(prevState => ({
+            downloadingContainers: prevState.downloadingContainers.filter(entry => entry.name !== container.name),
+        }));
     }
 
     renderRow(containersStats, container, containerDetail) {
@@ -307,14 +324,21 @@ class Containers extends React.Component {
                 <small>{utils.quote_cmdline(container.Command)}</small>
             </div>;
 
+        let containerStateClass = "ct-badge-container-" + container.State.toLowerCase();
+        if (container.isDownloading) {
+            containerStateClass += " downloading";
+        }
         const columns = [
             { title: info_block },
             { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
             proc,
             mem,
-            { title: <Badge isRead className={"ct-badge-container-" + container.State.toLowerCase()}>{_(container.State)}</Badge> }, // States are defined in util.js
-            { title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} />, props: { className: "pf-c-table__action" } },
+            { title: <Badge isRead className={containerStateClass}>{_(container.State)}</Badge> }, // States are defined in util.js
         ];
+
+        if (!container.isDownloading) {
+            columns.push({ title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} />, props: { className: "pf-c-table__action" } });
+        }
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
 
@@ -409,6 +433,11 @@ class Containers extends React.Component {
                     (partitionedContainers[container.Pod ? (container.Pod + container.isSystem.toString()) : 'no-pod'] || []).push(container);
             });
 
+            // Append downloading containers
+            this.state.downloadingContainers.forEach(cont => {
+                partitionedContainers['no-pod'].push(cont);
+            });
+
             // Apply filters to pods
             Object.keys(partitionedContainers).forEach(section => {
                 const lcf = this.props.textFilter.toLowerCase();
@@ -427,6 +456,25 @@ class Containers extends React.Component {
             if (Object.keys(partitionedContainers).length > 1 && !partitionedContainers["no-pod"].length)
                 delete partitionedContainers["no-pod"];
         }
+
+        // Convert to the search result output
+        let localImages = null;
+        if (this.props.images) {
+            localImages = Object.keys(this.props.images).map(id => {
+                const img = this.props.images[id];
+                if (img.RepoTags) {
+                    img.Index = img.RepoTags[0].split('/')[0];
+                    img.Name = img.RepoTags[0];
+                } else {
+                    img.Name = "<none:none>";
+                    img.Index = "";
+                }
+                img.toString = function imgToString() { return this.Name };
+
+                return img;
+            });
+        }
+
         const filterRunning =
             <Toolbar>
                 <ToolbarContent>
@@ -439,7 +487,28 @@ class Containers extends React.Component {
                             <FormSelectOption value='all' label={_("All")} />
                         </FormSelect>
                     </ToolbarItem>
+                    <Divider isVertical />
+                    <ToolbarItem>
+                        <Button variant="primary" key="get-new-image-action"
+                        isDisabled={localImages === null}
+                        onClick={() => this.setState({ showCreateContainerModal: true })}>
+                            {_("Create container")}
+                        </Button>
+                    </ToolbarItem>
                 </ToolbarContent>
+                {this.state.showCreateContainerModal && localImages &&
+                <ImageRunModal
+                user={this.props.user}
+                localImages={localImages}
+                close={() => this.setState({ showCreateContainerModal: false })}
+                registries={this.props.registries}
+                selinuxAvailable={this.props.selinuxAvailable}
+                systemServiceAvailable={this.props.systemServiceAvailable}
+                userServiceAvailable={this.props.userServiceAvailable}
+                onAddNotification={this.props.onAddNotification}
+                onDownloadContainer={this.onDownloadContainer}
+                onDownloadContainerFinished={this.onDownloadContainerFinished}
+                /> }
             </Toolbar>;
 
         const card = (

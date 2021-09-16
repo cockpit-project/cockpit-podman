@@ -273,3 +273,7 @@ export function pullImage(system, reference) {
                 .catch(reject);
     });
 }
+
+export function imageExists(system, id) {
+    return podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
+}

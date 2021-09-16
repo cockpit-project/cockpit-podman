@@ -643,6 +643,7 @@ class Application extends React.Component {
             <Containers
                 key="containerList"
                 version={this.state.version}
+                images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
                 pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
                 containersStats={this.state.containersStats}
@@ -656,6 +657,8 @@ class Application extends React.Component {
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
                 cgroupVersion={this.state.cgroupVersion}
+                registries={this.state.registries}
+                selinuxAvailable={this.state.selinuxAvailable}
             />;
 
         const notificationList = (

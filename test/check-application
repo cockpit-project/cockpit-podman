@@ -95,9 +95,9 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-table__toggle button")
 
-    def getContainerAttr(self, container, key):
+    def getContainerAttr(self, container, key, selector=""):
         b = self.browser
-        return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}]")
+        return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}] {selector}")
 
     def execute(self, system, cmd):
         if system:
@@ -1138,6 +1138,76 @@ class TestApplication(testlib.MachineCase):
         self.allow_restart_journal_messages()
         self.allow_journal_messages(".*podman/podman.sock/.*: couldn't connect:.*")
         self.allow_journal_messages(".*podman/podman.sock/.*/events.*: received truncated HTTP response.*")
+
+    @testlib.nondestructive
+    def testCreateContainerSystem(self):
+        self._testCreateContainer(True)
+
+    @testlib.nondestructive
+    def testCreateContainerUser(self):
+        self._testCreateContainer(False)
+
+    def _testCreateContainer(self, auth):
+        self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
+        self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
+        # Add local insecure registry into registries conf
+        self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop podman.service".format(REGISTRIES_CONF))
+        # Push busybox image to the local registries
+        self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
+        self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
+        # Untag busybox image which duplicates the image we are about to download
+        self.execute(True, "podman rmi -f quay.io/libpod/busybox localhost:5000/my-busybox localhost:6000/my-busybox")
+
+        self.login(auth)
+
+        b = self.browser
+        container_name = "busybox-downloaded"
+        # No local results found
+        b.click("#containers-containers button.pf-c-button.pf-m-primary")
+
+        b.set_input_text("#create-image-image-select-typeahead", "notfound")
+
+        b.click('button.pf-c-toggle-group__button:contains("Local")')
+        b.wait_text("button.pf-c-select__menu-item.pf-m-disabled", "No images found")
+
+        # Local results found
+        b.set_input_text("#create-image-image-select-typeahead", "registry")
+        b.click('button.pf-c-toggle-group__button:contains("Local")')
+        b.wait_text("button.pf-c-select__menu-item", "quay.io/cockpit/registry:2")
+
+        # Local registry
+        b.set_input_text("#create-image-image-select-typeahead", "my-busybox")
+        b.click('button.pf-c-toggle-group__button:contains("localhost:5000")')
+        b.wait_text("button.pf-c-select__menu-item:not(.pf-m-disabled)", "localhost:5000/my-busybox")
+
+        # Select image
+        b.click('button.pf-c-select__menu-item:contains("localhost:5000/my-busybox")')
+        b.set_input_text("#run-image-dialog-name", container_name)
+
+        # Create Container, image is pulled and should end up being "running"
+        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        sel = "> span:not(.downloading)"
+        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'running')
+
+        # Test creating a container with
+        if auth:
+            container_name = "busybox-download-admin"
+            b.click("#containers-containers button.pf-c-button.pf-m-primary")
+
+            # Start container as admin
+            b.click('button.pf-c-toggle-group__button:contains("User: admin")')
+
+            # Create Container, image is pulled and should end up being "running"
+            b.set_input_text("#run-image-dialog-name", container_name)
+
+            b.set_input_text("#create-image-image-select-typeahead", "quay.io/libpod/busybox:latest")
+            b.click('button.pf-c-toggle-group__button:contains("Local")')
+            b.click('button.pf-c-select__menu-item:contains("quay.io/libpod/busybox:latest")')
+            # Wait till the input is filled
+            b.blur("#create-image-image-select-typeahead")
+
+            b.click('.pf-c-modal-box__footer button:contains("Create")')
+            b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'running')
 
     @testlib.nondestructive
     def testRunImageSystem(self):
