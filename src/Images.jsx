@@ -119,7 +119,10 @@ class Images extends React.Component {
             cockpit.format_bytes(image.Size, 1000),
             { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span> },
             {
-                title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable} />,
+                title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable}
+                                     registries={this.props.registries} user={this.props.user}
+                                     userServiceAvailable={this.props.userServiceAvailable}
+                                     systemServiceAvailable={this.props.systemServiceAvailable} />,
                 props: { className: 'pf-c-table__action' }
             },
         ];
@@ -303,7 +306,7 @@ const ImageOverActions = ({ handleDownloadNewImage }) => {
     );
 };
 
-const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
+const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, user, systemServiceAvailable, userServiceAvailable }) => {
     const [showRunImageModal, setShowImageRunModal] = useState(false);
     const [showImageDeleteModal, setShowImageDeleteModal] = useState(false);
     const [showImageDeleteErrorModal, setShowImageDeleteErrorModal] = useState(false);
@@ -390,8 +393,14 @@ const ImageActions = ({ image, onAddNotification, selinuxAvailable }) => {
             {showRunImageModal &&
             <ImageRunModal
                 close={() => setShowImageRunModal(false)}
+                registries={registries}
                 selinuxAvailable={selinuxAvailable}
-                image={image} /> }
+                systemServiceAvailable={systemServiceAvailable}
+                userServiceAvailable={userServiceAvailable}
+                user={user}
+                image={image}
+                onAddNotification={onAddNotification}
+            /> }
         </Flex>
     );
 };

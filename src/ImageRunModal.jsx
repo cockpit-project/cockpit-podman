@@ -6,8 +6,11 @@ import {
     Form, FormGroup, FormFieldGroup, FormFieldGroupHeader,
     FormSelect, FormSelectOption,
     Grid,
-    Modal, TextInput, Tabs, Tab, TabTitleText,
-    Flex, FlexItem,
+    Modal, Select, SelectVariant,
+    SelectOption, SelectGroup,
+    TextInput, Tabs, Tab, TabTitleText,
+    ToggleGroup, ToggleGroupItem,
+    Flex,
     Popover,
 } from '@patternfly/react-core';
 import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
@@ -17,11 +20,16 @@ import { ErrorNotification } from './Notification.jsx';
 import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
+import rest from './rest.js';
 import cockpit from 'cockpit';
+
+import { debounce } from 'throttle-debounce';
 
 import "./ImageRunModal.scss";
 
 const _ = cockpit.gettext;
+
+const systemOwner = "system";
 
 const units = {
     KiB: {
@@ -253,8 +261,13 @@ DynamicListForm.propTypes = {
 export class ImageRunModal extends React.Component {
     constructor(props) {
         super(props);
+        let command = "sh";
+        if (this.props.image && this.props.image.Command) {
+            command = utils.quote_cmdline(this.props.image.Command);
+        }
+
         this.state = {
-            command: this.props.image.Command ? utils.quote_cmdline(this.props.image.Command) : "sh",
+            command,
             containerName: dockerNames.getRandomName(),
             env: [],
             hasTTY: true,
@@ -269,16 +282,46 @@ export class ImageRunModal extends React.Component {
             volumes: [],
             runImage: true,
             activeTabKey: 0,
+            owner: this.props.systemServiceAvailable ? systemOwner : this.props.user,
+            /* image select */
+            selectedImage: "",
+            searchFinished: false,
+            searchInProgress: false,
+            searchText: "",
+            imageResults: {},
+            isImageSelectOpen: false,
+            searchByRegistry: 'all',
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onCreateClicked = this.onCreateClicked.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
     }
 
+    componentDidMount() {
+        this._isMounted = true;
+        this.onSearchTriggered(this.state.searchText);
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
+
+        if (this.activeConnection)
+            this.activeConnection.close();
+    }
+
     getCreateConfig() {
         const createConfig = {};
 
-        createConfig.image = this.state.image.RepoTags ? this.state.image.RepoTags[0] : "";
+        if (this.state.image) {
+            createConfig.image = this.state.image.RepoTags ? this.state.image.RepoTags[0] : "";
+        } else {
+            let img = this.state.selectedImage.Name;
+            // Make implicit :latest
+            if (!img.includes(":")) {
+                img += ":latest";
+            }
+            createConfig.image = img;
+        }
         if (this.state.containerName)
             createConfig.name = this.state.containerName;
         if (this.state.command) {
@@ -328,14 +371,11 @@ export class ImageRunModal extends React.Component {
         return createConfig;
     }
 
-    onCreateClicked() {
-        const createConfig = this.getCreateConfig();
-        const { runImage } = this.state;
-
-        client.createContainer(this.state.image.isSystem, createConfig)
+    createContainer = (isSystem, createConfig, runImage) => {
+        client.createContainer(isSystem, createConfig)
                 .then(reply => {
                     if (runImage) {
-                        client.postContainer(this.state.image.isSystem, "start", reply.Id, {})
+                        client.postContainer(isSystem, "start", reply.Id, {})
                                 .then(() => this.props.close())
                                 .catch(ex => {
                                     this.setState({
@@ -355,6 +395,56 @@ export class ImageRunModal extends React.Component {
                 });
     }
 
+    onCreateClicked() {
+        const createConfig = this.getCreateConfig();
+        const { owner, runImage } = this.state;
+        const isSystem = owner === systemOwner;
+
+        client.imageExists(isSystem, createConfig.image).then(reply => {
+            this.createContainer(isSystem, createConfig, runImage);
+        })
+                .catch(ex => {
+                    this.props.close();
+                    const tempImage = { ...createConfig };
+
+                    // Assign temporary properties to allow rendering
+                    tempImage.Id = tempImage.name;
+                    tempImage.isSystem = isSystem;
+                    tempImage.State = _("downloading");
+                    tempImage.Created = new Date();
+                    tempImage.Names = [tempImage.name];
+                    tempImage.Image = createConfig.image;
+                    tempImage.isDownloading = true;
+
+                    this.props.onDownloadContainer(tempImage);
+
+                    client.pullImage(isSystem, createConfig.image).then(reply => {
+                        client.createContainer(isSystem, createConfig)
+                                .then(reply => {
+                                    if (runImage) {
+                                        client.postContainer(isSystem, "start", reply.Id, {})
+                                                .then(() => this.props.onDownloadContainerFinished(createConfig))
+                                                .catch(ex => {
+                                                    this.props.onDownloadContainerFinished(createConfig);
+                                                    const error = cockpit.format(_("Failed to run container $0"), tempImage.name);
+                                                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                                });
+                                    }
+                                })
+                                .catch(ex => {
+                                    this.props.onDownloadContainerFinished(createConfig);
+                                    const error = cockpit.format(_("Failed to create container $0"), tempImage.name);
+                                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.reason });
+                                });
+                    })
+                            .catch(ex => {
+                                this.props.onDownloadContainerFinished(createConfig);
+                                const error = cockpit.format(_("Failed to pull image $0"), tempImage.image);
+                                this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.reason });
+                            });
+                });
+    }
+
     onValueChanged(key, value) {
         this.setState({ [key]: value });
     }
@@ -367,31 +457,318 @@ export class ImageRunModal extends React.Component {
         });
     };
 
+    onSearchTriggered = value => {
+        // Do not call the SearchImage API if the input string  is not at least 2 chars,
+        // The comparison was done considering the fact that we miss always one letter due to delayed setState
+        if (value.length < 2)
+            return;
+
+        // Don't search for a value with a tag specified
+        const patt = /:[\w|\d]+$/;
+        if (patt.test(value)) {
+            return;
+        }
+
+        if (this.activeConnection)
+            this.activeConnection.close();
+
+        this.setState({ searchFinished: false, searchInProgress: true });
+        this.activeConnection = rest.connect(client.getAddress(this.state.isSystem), this.state.isSystem);
+
+        const options = {
+            method: "GET",
+            path: client.VERSION + "libpod/images/search",
+            body: "",
+            params: {
+                term: value,
+            },
+        };
+        this.activeConnection.call(options)
+                .then(reply => {
+                    if (reply && this._isMounted) {
+                        const imageResults = JSON.parse(reply);
+                        // Group images on registry
+                        const images = {};
+                        imageResults.forEach(image => {
+                            // Add Tag is it's there
+                            image.toString = function imageToString() {
+                                if (this.Tag) {
+                                    return this.Name + ':' + this.Tag;
+                                }
+                                return this.Name;
+                            };
+
+                            let index = image.Index;
+
+                            // listTags results do not return the registry Index.
+                            // https://github.com/containers/common/pull/803
+                            if (!index) {
+                                index = image.Name.split('/')[0];
+                            }
+
+                            if (index in images) {
+                                images[index].push(image);
+                            } else {
+                                images[index] = [image];
+                            }
+                        });
+                        this.setState({
+                            imageResults: images || {},
+                            searchFinished: true,
+                            searchInProgress: false,
+                            dialogError: ""
+                        });
+                    }
+                })
+                .catch(ex => {
+                    if (this._isMounted) {
+                        this.setState({
+                            searchFinished: true,
+                            searchInProgress: false,
+                            dialogError: _("Failed to search for new images"),
+                            dialogErrorDetail: cockpit.format(_("Failed to search for images: $0"), ex.message ? ex.message : "")
+                        });
+                    }
+                });
+    }
+
+    clearImageSelection = () => {
+        this.setState({
+            selectedImage: "",
+            image: "",
+            isImageSelectOpen: false,
+            imageResults: {},
+            searchText: "",
+            searchFinished: false,
+        });
+    }
+
+    onImageSelectToggle = isOpen => {
+        this.setState({
+            isImageSelectOpen: isOpen,
+        });
+    }
+
+    onImageSelect = (event, value, placeholder) => {
+        if (event === undefined)
+            return;
+
+        this.setState({
+            selectedImage: value,
+            isImageSelectOpen: false,
+        });
+    }
+
+    handleImageSelectInput = value => {
+        this.setState({
+            searchText: value,
+            // Reset searchFinished status when text input changes
+            searchFinished: false,
+            selectedImage: "",
+        });
+        this.onSearchTriggered(value);
+    }
+
+    debouncedInputChanged = debounce(300, this.handleImageSelectInput);
+
+    handleOwnerSelect = (_, event) => {
+        const id = event.currentTarget.id;
+        this.setState({
+            owner: id
+        });
+    }
+
+    filterImages = () => {
+        const { localImages } = this.props;
+        const { imageResults, searchText, owner } = this.state;
+        const local = _("Local images");
+        const images = { ...imageResults };
+        const isSystem = owner == systemOwner;
+
+        let imageRegistries = [];
+        if (this.state.searchByRegistry == 'local' || this.state.searchByRegistry == 'all') {
+            imageRegistries.push(local);
+            images[local] = localImages;
+
+            if (this.state.searchByRegistry == 'all')
+                imageRegistries = imageRegistries.concat(Object.keys(imageResults));
+        } else {
+            imageRegistries.push(this.state.searchByRegistry);
+        }
+
+        let regexString = searchText;
+        // Strip image registry option if set for comparing results for docker.io searching for docker.io/fedora
+        // returns docker.io/$username/fedora for example.
+        if (regexString.includes('/')) {
+            regexString = searchText.replace(searchText.split('/')[0], '');
+        }
+        const input = new RegExp(regexString, 'i');
+
+        const results = imageRegistries
+                .map((reg, index) => {
+                    const filtered = (reg in images ? images[reg] : [])
+                            .filter(image => {
+                                if (image.isSystem && !isSystem) {
+                                    return false;
+                                }
+                                if ('isSystem' in image && !image.isSystem && isSystem) {
+                                    return false;
+                                }
+                                return image.Name.search(input) !== -1;
+                            })
+                            .map((image, index) => {
+                                return (
+                                    <SelectOption
+                                        key={index}
+                                        value={image}
+                                        {...(image.Description && { description: image.Description })}
+                                    />
+                                );
+                            });
+
+                    if (filtered.length === 0) {
+                        return [];
+                    } else {
+                        return (
+                            <SelectGroup label={reg} key={index} value={reg}>
+                                {filtered}
+                            </SelectGroup>
+                        );
+                    }
+                })
+                .filter(group => group.length !== 0); // filter out empty groups
+
+        // Remove <SelectGroup> when there is a filter selected.
+        if (this.state.searchByRegistry !== 'all' && imageRegistries.length === 1 && results.length === 1) {
+            return results[0].props.children;
+        }
+
+        return results;
+    }
+
+    // Similiar to the output of podman search and podman's /libpod/images/search endpoint only show the root domain.
+    truncateRegistryDomain = (domain) => {
+        const parts = domain.split('.');
+        if (parts.length > 2) {
+            return parts[parts.length - 2] + "." + parts[parts.length - 1];
+        }
+        return domain;
+    }
+
     render() {
         const { image } = this.props;
         const dialogValues = this.state;
-        const { activeTabKey } = this.state;
+        const { activeTabKey, owner, selectedImage } = this.state;
 
-        // The Name field should be always horizontal regardless of the rest of the fields in the row
-        // For this reason we need to explicitely add the pf-m-horizontal class to the Name field container
-        // See design https://github.com/cockpit-project/cockpit/discussions/16059
+        let imageListOptions = [];
+        if (!image) {
+            imageListOptions = this.filterImages();
+        }
+
+        // Add the search component
+        const footer = (
+            <ToggleGroup className='image-search-footer' aria-label={_("Search by registry")}>
+                <ToggleGroupItem text={_("All")} key='all' isSelected={this.state.searchByRegistry == 'all'} onChange={(_, ev) => {
+                    ev.stopPropagation();
+                    this.setState({ searchByRegistry: 'all' });
+                }}
+                // Ignore SelectToggle's touchstart's default behaviour
+                onTouchStart={ev => {
+                    ev.stopPropagation();
+                }}
+                />
+                <ToggleGroupItem text={_("Local")} key='local' isSelected={this.state.searchByRegistry == 'local'} onChange={(_, ev) => {
+                    ev.stopPropagation();
+                    this.setState({ searchByRegistry: 'local' });
+                }}
+                onTouchStart={ev => {
+                    ev.stopPropagation();
+                }}
+                />
+                {this.props.registries && this.props.registries.search &&
+                  this.props.registries.search.map(registry => {
+                      const index = this.truncateRegistryDomain(registry);
+                      return (
+                          <ToggleGroupItem text={index} key={index} isSelected={this.state.searchByRegistry == index} onChange={(_, ev) => {
+                              ev.stopPropagation();
+                              this.setState({ searchByRegistry: index });
+                          }}
+                        onTouchStart={ev => {
+                            ev.stopPropagation();
+                        }}
+                          />);
+                  })}
+            </ToggleGroup>
+        );
+
         const defaultBody = (
             <Form isHorizontal={activeTabKey == 0}>
-                <Flex>
-                    <FlexItem className="pf-c-form pf-m-horizontal" align={{ default: 'alignLeft' }}>
-                        <FormGroup fieldId='run-image-dialog-name' label={_("Name")}>
-                            <TextInput id='run-image-dialog-name'
-                               placeholder={_("Container name")}
-                               value={dialogValues.containerName}
-                               onChange={value => this.onValueChanged('containerName', value)} />
-                        </FormGroup>
-                    </FlexItem>
+                <Flex className="run-image-dialog-header" justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+                    <FormGroup fieldId='run-image-dialog-name' label={_("Name")}>
+                        <TextInput id='run-image-dialog-name'
+                           placeholder={_("Container name")}
+                           value={dialogValues.containerName}
+                           onChange={value => this.onValueChanged('containerName', value)} />
+                    </FormGroup>
+                    { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
+                    <FormGroup fieldId='run-image-dialog-owner' label={_("Owner")}>
+                        <ToggleGroup aria-label={_("Default with single selectable")}>
+                            <ToggleGroupItem text={_("System")} buttonId="system" isSelected={owner === "system"}
+                                             onChange={this.handleOwnerSelect} />
+                            <ToggleGroupItem text={cockpit.format("$0 $1", _("User:"), this.props.user)}
+                                             buttonId={this.props.user}
+                                             isSelected={owner === this.props.user}
+                                             onChange={this.handleOwnerSelect} />
+                        </ToggleGroup>
+                    </FormGroup>
+                    }
                 </Flex>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-l-grid pf-m-gutter">
+
+                        {!image &&
+                        <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}
+                          labelIcon={
+                              <Popover aria-label={_("Image selection help")}
+                                enableFlip
+                                bodyContent={_("host[:port]/[user]/container[:tag].")}>
+                                  <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <OutlinedQuestionCircleIcon />
+                                  </button>
+                              </Popover>
+                          }
+                        >
+                            <Select
+                                // We are unable to set id of the input directly, the select component appends
+                                // '-select-typeahead' to toggleId.
+                                toggleId='create-image-image'
+                                isGrouped
+                                {...(this.state.searchInProgress && { loadingVariant: 'spinner' })}
+                                menuAppendTo={() => document.body}
+                                variant={SelectVariant.typeahead}
+                                noResultsFoundText={_("No images found")}
+                                onToggle={this.onImageSelectToggle}
+                                isOpen={this.state.isImageSelectOpen}
+                                selections={selectedImage}
+                                isInputValuePersisted
+                                placeholderText={_("Search string or container location")}
+                                onSelect={this.onImageSelect}
+                                onClear={this.clearImageSelection}
+                                // onFilter must be set or the spinner crashes https://github.com/patternfly/patternfly-react/issues/6384
+                                onFilter={() => {}}
+                                onTypeaheadInputChanged={value => this.debouncedInputChanged(value)}
+                                footer={footer}
+                            >
+                                {imageListOptions}
+                            </Select>
+                        </FormGroup>
+                        }
+
+                        {image &&
                         <FormGroup fieldId='run-image-dialog-image' label={_("Image")} hasNoPaddingTop>
                             <div id='run-image-dialog-image'> { image.RepoTags ? image.RepoTags[0] : "" } </div>
                         </FormGroup>
+                        }
 
                         <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
                             <TextInput id='run-image-dialog-command'
@@ -433,7 +810,7 @@ export class ImageRunModal extends React.Component {
                             </Flex>
                         </FormGroup>
 
-                        { this.state.image.isSystem &&
+                        { this.state.image && this.state.image.isSystem &&
                             <FormGroup fieldId='run-image-cpu-priority' label={_("CPU shares")}>
                                 <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
                                     <Checkbox id="run-image-dialog-cpu-priority-checkbox"
@@ -491,10 +868,18 @@ export class ImageRunModal extends React.Component {
             <Modal isOpen
                    position="top" variant="medium"
                    onClose={this.props.close}
+                   // TODO: still not ideal on chromium https://github.com/patternfly/patternfly-react/issues/6471
+                   onEscapePress={() => {
+                       if (this.state.isImageSelectOpen) {
+                           this.onImageSelectToggle(!this.state.isImageSelectOpen);
+                       } else {
+                           this.props.close();
+                       }
+                   }}
                    title={_("Create container")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                       <Button variant='primary' onClick={this.onCreateClicked}>
+                       <Button variant='primary' onClick={this.onCreateClicked} isDisabled={!image && selectedImage === ""}>
                            {_("Create")}
                        </Button>
                        <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
