@@ -1,17 +1,18 @@
-@import '@patternfly/patternfly/layouts/Grid/grid.css';
+.dynamic-form-group {
+    .pf-c-empty-state {
+        padding: 0;
+    }
 
-// Limit the max-width more the override in podman.scss which is 40%, this is a
-// temporary workaround until the "Integration" tab has been redesigned to no
-// longer require a 40% max-width.
-.ct-input-group-spacer-sm.pf-c-input-group.modal-run-limiter {
+    .pf-c-form__label {
+        // Don't allow labels to wrap
+        white-space: nowrap
+    }
 
-  // Avoid inputs taking up more space then required.
-  > input[type=number].pf-c-form-control:not(.pf-c-select__toggle-typeahead) {
-     max-width: 6rem;
-  }
-
-  // Avoid the memory dropdown to take more space then required.
-  > select.pf-c-form-control:not(.pf-c-select__toggle-typeahead) {
-     max-width: 5rem;
-  }
+    .remove-button-group {
+        // Move 'Remove' button the the end of the row
+        grid-column: -1;
+        // Move 'Remove' button to the bottom of the line so as to align with the other form fields
+        display: flex;
+        align-items: flex-end;
+    }
 }
