@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Button, Checkbox,
+    EmptyState, EmptyStateBody,
     Form, FormGroup, FormFieldGroup, FormFieldGroupHeader,
     FormSelect, FormSelectOption,
     Grid,
@@ -180,9 +181,9 @@ class DynamicListForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            list: [Object.assign({ key: 0 }, props.default)],
+            list: [],
         };
-        this.keyCounter = 1;
+        this.keyCounter = 0;
         this.removeItem = this.removeItem.bind(this);
         this.addItem = this.addItem.bind(this);
         this.onItemChange = this.onItemChange.bind(this);
@@ -211,7 +212,7 @@ class DynamicListForm extends React.Component {
     }
 
     render () {
-        const { id, label, actionLabel, formclass } = this.props;
+        const { id, label, actionLabel, formclass, emptyStateString } = this.props;
         const dialogValues = this.state;
         return (
             <FormFieldGroup header={
@@ -221,20 +222,26 @@ class DynamicListForm extends React.Component {
                 />
             } className={"dynamic-form-group " + formclass}>
                 {
-                    dialogValues.list.map((item, idx) => {
-                        return React.cloneElement(this.props.itemcomponent, {
-                            idx: idx, item: item, id: id + "-" + idx,
-                            onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
-                            itemCount: Object.keys(dialogValues.list).length,
-                        });
-                    }
-                    )
+                    dialogValues.list.length
+                        ? dialogValues.list.map((item, idx) => {
+                            return React.cloneElement(this.props.itemcomponent, {
+                                idx: idx, item: item, id: id + "-" + idx,
+                                onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
+                                itemCount: Object.keys(dialogValues.list).length,
+                            });
+                        })
+                        : <EmptyState>
+                            <EmptyStateBody>
+                                {emptyStateString}
+                            </EmptyStateBody>
+                        </EmptyState>
                 }
             </FormFieldGroup>
         );
     }
 }
 DynamicListForm.propTypes = {
+    emptyStateString: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     id: PropTypes.string.isRequired,
     itemcomponent: PropTypes.object.isRequired,
@@ -451,6 +458,7 @@ export class ImageRunModal extends React.Component {
                     <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-c-form">
 
                         <DynamicListForm id='run-image-dialog-publish'
+                                 emptyStateString={_("No ports exposed")}
                                  formclass='publish-port-form'
                                  label={_("Port mapping")}
                                  actionLabel={_("Add port mapping")}
@@ -459,6 +467,7 @@ export class ImageRunModal extends React.Component {
                                  itemcomponent={ <PublishPort />} />
 
                         <DynamicListForm id='run-image-dialog-volume'
+                                 emptyStateString={_("No volumes specified")}
                                  formclass='volume-form'
                                  label={_("Volumes")}
                                  actionLabel={_("Add volume")}
@@ -468,6 +477,7 @@ export class ImageRunModal extends React.Component {
                                  itemcomponent={ <Volume />} />
 
                         <DynamicListForm id='run-image-dialog-env'
+                                 emptyStateString={_("No environment variables specified")}
                                  formclass='env-form'
                                  label={_("Environment variables")}
                                  actionLabel={_("Add variable")}
