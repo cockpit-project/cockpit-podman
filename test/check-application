@@ -1212,6 +1212,7 @@ class TestApplication(testlib.MachineCase):
         b.click("#pf-tab-1-create-image-dialog-tab-integration")
 
         # Configure published ports
+        b.click('.publish-port-form .btn-add')
         b.set_input_text('#run-image-dialog-publish-0-host-port', '6000')
         b.set_input_text('#run-image-dialog-publish-0-container-port', '5000')
         b.click('.publish-port-form .btn-add')
@@ -1230,6 +1231,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-publish-3-container-port', '9001')
 
         # Configure env
+        b.click('.env-form .btn-add')
         b.set_input_text('#run-image-dialog-env-0-key', 'APPLE')
         b.set_input_text('#run-image-dialog-env-0-value', 'ORANGE')
         b.click('.env-form .btn-add')
@@ -1244,6 +1246,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-env-2-value', 'STRAWBERRY')
 
         # Configure volumes
+        b.click('.volume-form .btn-add')
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
         m.execute("chown admin:admin {0}".format(rodir))
         m.execute("chown admin:admin {0}".format(rwdir))
