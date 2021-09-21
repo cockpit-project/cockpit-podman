@@ -6,7 +6,7 @@ import {
     Form, FormGroup, FormFieldGroup, FormFieldGroupHeader,
     FormSelect, FormSelectOption,
     Grid,
-    InputGroup, Modal, TextInput, Tabs, Tab, TabTitleText,
+    Modal, TextInput, Tabs, Tab, TabTitleText,
     Flex, FlexItem,
     Popover,
 } from '@patternfly/react-core';
@@ -407,9 +407,8 @@ export class ImageRunModal extends React.Component {
                         </FormGroup>
 
                         <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
-                            <InputGroup className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-memory-limit">
+                            <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-memory-limit">
                                 <Checkbox id="run-image-dialog-memory-limit-checkbox"
-                                  className="pf-u-align-content-center"
                                   isChecked={this.state.memoryConfigure}
                                   onChange={checked => this.onValueChanged('memoryConfigure', checked)} />
                                 <TextInput type='number'
@@ -430,14 +429,13 @@ export class ImageRunModal extends React.Component {
                                     <FormSelectOption value={units.MiB.name} key={units.MiB.name} label={_("MiB")} />
                                     <FormSelectOption value={units.GiB.name} key={units.GiB.name} label={_("GiB")} />
                                 </FormSelect>
-                            </InputGroup>
+                            </Flex>
                         </FormGroup>
 
                         { this.state.image.isSystem &&
                             <FormGroup fieldId='run-image-cpu-priority' label={_("CPU shares")}>
-                                <InputGroup className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
+                                <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
                                     <Checkbox id="run-image-dialog-cpu-priority-checkbox"
-                                        className="pf-u-align-content-center"
                                         isChecked={this.state.cpuSharesConfigure}
                                         onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
                                     <TextInput type='number'
@@ -448,7 +446,7 @@ export class ImageRunModal extends React.Component {
                                         max={262144}
                                         isReadOnly={!this.state.cpuSharesConfigure}
                                         onChange={value => this.onValueChanged('cpuShares', parseInt(value))} />
-                                </InputGroup>
+                                </Flex>
                             </FormGroup>}
 
                         <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Start after creation")} hasNoPaddingTop>
