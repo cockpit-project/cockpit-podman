@@ -66,12 +66,12 @@ export function getContainers(system, id) {
     });
 }
 
-export function getContainerStats(system, id, callback) {
+export function getContainerStats(system, callback) {
     return new Promise((resolve, reject) => {
         const options = {
             stream: true,
         };
-        podmanMonitor("libpod/containers/" + id + "/stats", "GET", options, callback, system)
+        podmanMonitor("libpod/containers/stats", "GET", options, callback, system)
                 .then(resolve, reject);
     });
 }
