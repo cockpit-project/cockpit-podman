@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-14 18:14+0000\n"
+"POT-Creation-Date: 2021-09-21 18:15+0000\n"
 "PO-Revision-Date: 2021-09-14 10:31+0000\n"
 "Last-Translator: Charles Lee <lchopn@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
@@ -73,11 +73,11 @@ msgstr "CPU"
 msgid "CPU shares"
 msgstr "CPU 份额"
 
-#: src/ContainerDeleteModal.jsx:15 src/ImageSearchModal.jsx:213
-#: src/ContainerRestoreModal.jsx:40 src/ForceRemoveModal.jsx:21
-#: src/PodActions.jsx:159 src/ContainerCommitModal.jsx:222
-#: src/ImageRunModal.jsx:469 src/ContainerCheckpointModal.jsx:38
-#: src/ImageDeleteModal.jsx:62
+#: src/ImageDeleteModal.jsx:62 src/ContainerRestoreModal.jsx:40
+#: src/ImageRunModal.jsx:469 src/ImageSearchModal.jsx:213
+#: src/ContainerCheckpointModal.jsx:38 src/ContainerCommitModal.jsx:222
+#: src/ForceRemoveModal.jsx:21 src/ContainerDeleteModal.jsx:15
+#: src/PodActions.jsx:159
 msgid "Cancel"
 msgstr "取消"
 
@@ -89,9 +89,9 @@ msgstr "检查点"
 msgid "Checkpoint container $0"
 msgstr "检查点容器 $0"
 
-#: src/ImageDetails.jsx:15 src/ContainerDetails.jsx:45
-#: src/ContainerCommitModal.jsx:182 src/ImageRunModal.jsx:365
-#: src/ImageRunModal.jsx:367
+#: src/ImageRunModal.jsx:365 src/ImageRunModal.jsx:367
+#: src/ContainerDetails.jsx:45 src/ContainerCommitModal.jsx:182
+#: src/ImageDetails.jsx:15
 msgid "Command"
 msgstr "命令"
 
@@ -127,7 +127,7 @@ msgstr "容器正在运行。"
 msgid "Container is not running"
 msgstr "容器未运行"
 
-#: src/ContainerCommitModal.jsx:139 src/ImageRunModal.jsx:353
+#: src/ImageRunModal.jsx:353 src/ContainerCommitModal.jsx:139
 msgid "Container name"
 msgstr "容器名称"
 
@@ -149,17 +149,17 @@ msgstr "容器"
 msgid "Create"
 msgstr "已创建"
 
-#: src/Images.jsx:357 src/ImageRunModal.jsx:462
+#: src/ImageRunModal.jsx:462 src/Images.jsx:357
 #, fuzzy
 #| msgid "Pause the container"
 msgid "Create container"
 msgstr "暂停该容器"
 
-#: src/util.js:11 src/Images.jsx:152 src/ContainerDetails.jsx:69
+#: src/util.js:11 src/ContainerDetails.jsx:69 src/Images.jsx:152
 msgid "Created"
 msgstr "已创建"
 
-#: src/Containers.jsx:206 src/ContainerDeleteModal.jsx:14 src/Images.jsx:370
+#: src/Containers.jsx:206 src/Images.jsx:370 src/ContainerDeleteModal.jsx:14
 #: src/PodActions.jsx:138 src/PodActions.jsx:158
 msgid "Delete"
 msgstr "删除"
@@ -180,7 +180,7 @@ msgstr "删除容器会清空其中的全部数据。"
 msgid "Deleting this pod will remove the following containers:"
 msgstr "删除这个 Pod 将会移除这些容器："
 
-#: src/Containers.jsx:316 src/Images.jsx:128 src/ImageRunModal.jsx:360
+#: src/Containers.jsx:316 src/ImageRunModal.jsx:360 src/Images.jsx:128
 msgid "Details"
 msgstr "详情"
 
@@ -214,7 +214,7 @@ msgstr "环境"
 msgid "Error"
 msgstr "错误"
 
-#: src/Images.jsx:53 src/Notification.jsx:42
+#: src/Notification.jsx:42 src/Images.jsx:53
 msgid "Error message"
 msgstr "错误信息"
 
@@ -342,7 +342,7 @@ msgstr "主机路径"
 msgid "Host port (optional)"
 msgstr "主机端口（可选）"
 
-#: src/Images.jsx:153 src/ContainerDetails.jsx:37
+#: src/ContainerDetails.jsx:37 src/Images.jsx:153
 msgid "ID"
 msgstr "ID"
 
@@ -362,7 +362,7 @@ msgstr "如果以静态方式设置，则忽略 IP 地址"
 msgid "Ignore MAC address if set statically"
 msgstr "忽略被静态设定的 MAC 地址"
 
-#: src/Images.jsx:150 src/ContainerDetails.jsx:41 src/ImageRunModal.jsx:361
+#: src/ImageRunModal.jsx:361 src/ContainerDetails.jsx:41 src/Images.jsx:150
 msgid "Image"
 msgstr "镜像"
 
@@ -398,7 +398,7 @@ msgstr "在将检查点写入磁盘后保持运行"
 msgid "Loading logs..."
 msgstr "正在加载日志..."
 
-#: src/Containers.jsx:360 src/ImageUsedBy.jsx:9
+#: src/ImageUsedBy.jsx:9 src/Containers.jsx:360
 msgid "Loading..."
 msgstr "加载中……"
 
@@ -486,7 +486,7 @@ msgstr "没有正在运行的容器"
 msgid "Only running"
 msgstr "仅运行"
 
-#: src/Containers.jsx:348 src/Images.jsx:151 src/ImageSearchModal.jsx:130
+#: src/Containers.jsx:348 src/ImageSearchModal.jsx:130 src/Images.jsx:151
 #: src/ContainerHeader.jsx:43
 msgid "Owner"
 msgstr "所有者"
@@ -535,8 +535,8 @@ msgstr "Podman 容器"
 msgid "Podman service is not active"
 msgstr "Podman 服务未激活"
 
-#: src/ImageDetails.jsx:39 src/ContainerDetails.jsx:51
-#: src/ImageRunModal.jsx:430
+#: src/ImageRunModal.jsx:430 src/ContainerDetails.jsx:51
+#: src/ImageDetails.jsx:39
 msgid "Ports"
 msgstr "端口"
 
@@ -572,7 +572,7 @@ msgstr "删除构建变量"
 msgid "Restart"
 msgstr "重启"
 
-#: src/Containers.jsx:161 src/ContainerRestoreModal.jsx:36
+#: src/ContainerRestoreModal.jsx:36 src/Containers.jsx:161
 msgid "Restore"
 msgstr "恢复"
 
@@ -632,7 +632,7 @@ msgstr "显示镜像"
 msgid "Show intermediate images"
 msgstr "显示中间镜像"
 
-#: src/Containers.jsx:153 src/PodActions.jsx:98 src/app.jsx:614
+#: src/app.jsx:614 src/Containers.jsx:153 src/PodActions.jsx:98
 msgid "Start"
 msgstr "启动"
 
@@ -696,7 +696,7 @@ msgstr "UDP"
 msgid "Up since $0"
 msgstr "自 $0 开始运行"
 
-#: src/ImageDetails.jsx:33 src/Images.jsx:155
+#: src/Images.jsx:155 src/ImageDetails.jsx:33
 msgid "Used by"
 msgstr "使用者"
 
@@ -780,7 +780,7 @@ msgstr "全选"
 msgid "stopped"
 msgstr "已停止"
 
-#: src/Containers.jsx:306 src/Images.jsx:116 src/ImageSearchModal.jsx:131
+#: src/Containers.jsx:306 src/ImageSearchModal.jsx:131 src/Images.jsx:116
 msgid "system"
 msgstr "系统"
 

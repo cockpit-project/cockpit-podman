@@ -8,11 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-14 18:14+0000\n"
+"POT-Creation-Date: 2021-09-21 18:15+0000\n"
 "PO-Revision-Date: 2021-09-19 19:05+0000\n"
 "Last-Translator: simmon <simmon@nplob.com>\n"
-"Language-Team: Korean <https://translate.fedoraproject.org/projects/"
-"cockpit-podman/main/ko/>\n"
+"Language-Team: Korean <https://translate.fedoraproject.org/projects/cockpit-"
+"podman/main/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,11 +71,11 @@ msgstr "CPU"
 msgid "CPU shares"
 msgstr "CPU 공유"
 
-#: src/ContainerDeleteModal.jsx:15 src/ImageSearchModal.jsx:213
-#: src/ContainerRestoreModal.jsx:40 src/ForceRemoveModal.jsx:21
-#: src/PodActions.jsx:159 src/ContainerCommitModal.jsx:222
-#: src/ImageRunModal.jsx:469 src/ContainerCheckpointModal.jsx:38
-#: src/ImageDeleteModal.jsx:62
+#: src/ImageDeleteModal.jsx:62 src/ContainerRestoreModal.jsx:40
+#: src/ImageRunModal.jsx:469 src/ImageSearchModal.jsx:213
+#: src/ContainerCheckpointModal.jsx:38 src/ContainerCommitModal.jsx:222
+#: src/ForceRemoveModal.jsx:21 src/ContainerDeleteModal.jsx:15
+#: src/PodActions.jsx:159
 msgid "Cancel"
 msgstr "취소"
 
@@ -87,9 +87,9 @@ msgstr "점검점"
 msgid "Checkpoint container $0"
 msgstr "점검점 컨테이너 $0"
 
-#: src/ImageDetails.jsx:15 src/ContainerDetails.jsx:45
-#: src/ContainerCommitModal.jsx:182 src/ImageRunModal.jsx:365
-#: src/ImageRunModal.jsx:367
+#: src/ImageRunModal.jsx:365 src/ImageRunModal.jsx:367
+#: src/ContainerDetails.jsx:45 src/ContainerCommitModal.jsx:182
+#: src/ImageDetails.jsx:15
 msgid "Command"
 msgstr "명령"
 
@@ -125,7 +125,7 @@ msgstr "컨테이너가 현재 실행 중입니다."
 msgid "Container is not running"
 msgstr "컨테이너가 동작 중이 아닙니다"
 
-#: src/ContainerCommitModal.jsx:139 src/ImageRunModal.jsx:353
+#: src/ImageRunModal.jsx:353 src/ContainerCommitModal.jsx:139
 msgid "Container name"
 msgstr "컨테이너 이름"
 
@@ -145,15 +145,15 @@ msgstr "컨테이너들"
 msgid "Create"
 msgstr "생성"
 
-#: src/Images.jsx:357 src/ImageRunModal.jsx:462
+#: src/ImageRunModal.jsx:462 src/Images.jsx:357
 msgid "Create container"
 msgstr "컨테이너 생성"
 
-#: src/util.js:11 src/Images.jsx:152 src/ContainerDetails.jsx:69
+#: src/util.js:11 src/ContainerDetails.jsx:69 src/Images.jsx:152
 msgid "Created"
 msgstr "생성됨"
 
-#: src/Containers.jsx:206 src/ContainerDeleteModal.jsx:14 src/Images.jsx:370
+#: src/Containers.jsx:206 src/Images.jsx:370 src/ContainerDeleteModal.jsx:14
 #: src/PodActions.jsx:138 src/PodActions.jsx:158
 msgid "Delete"
 msgstr "삭제"
@@ -174,7 +174,7 @@ msgstr "컨테이너를 삭제는 내부의 모든 자료도 제거됩니다."
 msgid "Deleting this pod will remove the following containers:"
 msgstr "이 pod의 삭제는 다음 컨테이너도 제거될 것입니다:"
 
-#: src/Containers.jsx:316 src/Images.jsx:128 src/ImageRunModal.jsx:360
+#: src/Containers.jsx:316 src/ImageRunModal.jsx:360 src/Images.jsx:128
 msgid "Details"
 msgstr "세부 정보"
 
@@ -206,7 +206,7 @@ msgstr "환경"
 msgid "Error"
 msgstr "오류"
 
-#: src/Images.jsx:53 src/Notification.jsx:42
+#: src/Notification.jsx:42 src/Images.jsx:53
 msgid "Error message"
 msgstr "오류 메시지"
 
@@ -334,7 +334,7 @@ msgstr "호스트 경로"
 msgid "Host port (optional)"
 msgstr "호스트 경로(선택적)"
 
-#: src/Images.jsx:153 src/ContainerDetails.jsx:37
+#: src/ContainerDetails.jsx:37 src/Images.jsx:153
 msgid "ID"
 msgstr "ID"
 
@@ -354,7 +354,7 @@ msgstr "정적인 상태라면 IP 주소 무시"
 msgid "Ignore MAC address if set statically"
 msgstr "정적인 상태라면 맥 주소 무시"
 
-#: src/Images.jsx:150 src/ContainerDetails.jsx:41 src/ImageRunModal.jsx:361
+#: src/ImageRunModal.jsx:361 src/ContainerDetails.jsx:41 src/Images.jsx:150
 msgid "Image"
 msgstr "이미지"
 
@@ -390,7 +390,7 @@ msgstr "점검점을 디스크에 쓰기 후에 계속 진행"
 msgid "Loading logs..."
 msgstr "기록 적재 중..."
 
-#: src/Containers.jsx:360 src/ImageUsedBy.jsx:9
+#: src/ImageUsedBy.jsx:9 src/Containers.jsx:360
 msgid "Loading..."
 msgstr "적재 중..."
 
@@ -478,7 +478,7 @@ msgstr "실행 중인 컨테이너가 없습니다"
 msgid "Only running"
 msgstr "실행 만"
 
-#: src/Containers.jsx:348 src/Images.jsx:151 src/ImageSearchModal.jsx:130
+#: src/Containers.jsx:348 src/ImageSearchModal.jsx:130 src/Images.jsx:151
 #: src/ContainerHeader.jsx:43
 msgid "Owner"
 msgstr "소유자"
@@ -527,8 +527,8 @@ msgstr "포드맨 컨테이너"
 msgid "Podman service is not active"
 msgstr "포드맨 서비스가 동작하지 않습니다"
 
-#: src/ImageDetails.jsx:39 src/ContainerDetails.jsx:51
-#: src/ImageRunModal.jsx:430
+#: src/ImageRunModal.jsx:430 src/ContainerDetails.jsx:51
+#: src/ImageDetails.jsx:39
 msgid "Ports"
 msgstr "포트"
 
@@ -564,7 +564,7 @@ msgstr "빌드 변수에서 제거"
 msgid "Restart"
 msgstr "재시작"
 
-#: src/Containers.jsx:161 src/ContainerRestoreModal.jsx:36
+#: src/ContainerRestoreModal.jsx:36 src/Containers.jsx:161
 msgid "Restore"
 msgstr "복구"
 
@@ -624,7 +624,7 @@ msgstr "이미지 보여주기"
 msgid "Show intermediate images"
 msgstr "중간 이미지 보기"
 
-#: src/Containers.jsx:153 src/PodActions.jsx:98 src/app.jsx:614
+#: src/app.jsx:614 src/Containers.jsx:153 src/PodActions.jsx:98
 msgid "Start"
 msgstr "시작"
 
@@ -688,7 +688,7 @@ msgstr "UDP"
 msgid "Up since $0"
 msgstr "$0 이후 상승"
 
-#: src/ImageDetails.jsx:33 src/Images.jsx:155
+#: src/Images.jsx:155 src/ImageDetails.jsx:33
 msgid "Used by"
 msgstr "사용되었습니다"
 
@@ -772,7 +772,7 @@ msgstr "모두 선택"
 msgid "stopped"
 msgstr "정지됨"
 
-#: src/Containers.jsx:306 src/Images.jsx:116 src/ImageSearchModal.jsx:131
+#: src/Containers.jsx:306 src/ImageSearchModal.jsx:131 src/Images.jsx:116
 msgid "system"
 msgstr "systemd"
 
