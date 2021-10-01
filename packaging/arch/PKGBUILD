@@ -1,0 +1,15 @@
+pkgname=cockpit-podman
+pkgver=VERSION
+pkgrel=1
+pkgdesc='Cockpit UI for podman containers'
+arch=('any')
+url='https://github.com/cockpit-project/cockpit-podman'
+license=(LGPL)
+depends=(cockpit podman)
+source=("SOURCE")
+sha256sums=('SKIP')
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+}

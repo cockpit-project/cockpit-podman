@@ -123,8 +123,13 @@ ifneq ($(filter debian-% ubuntu-%,$(TEST_OS)),)
 VM_DEP=$(TARFILE) packaging/debian/rules packaging/debian/control
 VM_PACKAGE=--upload `pwd`/$(TARFILE):/var/tmp/ --upload `pwd`/packaging/debian:/var/tmp/
 else
+ifneq ($(filter arch,$(TEST_OS)),)
+VM_DEP=$(TARFILE) packaging/arch/PKGBUILD
+VM_PACKAGE=--upload `pwd`/$(TARFILE):/var/tmp/ --upload `pwd`/packaging/arch:/var/tmp/
+else
 VM_DEP=$(RPMFILE)
 VM_PACKAGE=--upload `pwd`/$(RPMFILE):/var/tmp/
+endif
 endif
 
 ifeq ($(TEST_SCENARIO),rawhide)

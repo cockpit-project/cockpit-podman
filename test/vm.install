@@ -55,6 +55,19 @@ if [ -d /var/tmp/debian ]; then
 # install rpms
 elif [ -e /var/tmp/*.rpm ]; then
     rpm -i --verbose /var/tmp/*.rpm
+elif [ -d /var/tmp/arch ]; then
+    # build source package
+    cd /var/tmp
+    TAR=$(ls cockpit-podman-*.tar.xz)
+    VERSION="${TAR#cockpit-podman-}"
+    VERSION="${VERSION%.tar.xz}"
+
+    cp arch/PKGBUILD .
+    sed -i "s/VERSION/$VERSION/" PKGBUILD
+    sed -i "s/SOURCE/$TAR/" PKGBUILD
+    su builder -c "extra-x86_64-build"
+
+    pacman -U --noconfirm *.pkg.tar.zst
 fi
 
 systemctl enable cockpit.socket
