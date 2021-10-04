@@ -17,10 +17,6 @@ WEBPACK_TEST=dist/manifest.json
 # one example file in src/lib to check if it was already checked out
 LIB_TEST=src/lib/cockpit-po-plugin.js
 
-WEBLATE_REPO=tmp/weblate-repo
-WEBLATE_REPO_URL=https://github.com/cockpit-project/cockpit-podman-weblate.git
-WEBLATE_REPO_BRANCH=main
-
 PYEXEFILES=$(shell git grep -lI '^#!.*python')
 
 all: $(WEBPACK_TEST)
@@ -48,26 +44,6 @@ po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST)
 
 po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot
 	msgcat --sort-output --output-file=$@ $^
-
-# Update translations against current PO template
-update-po: po/$(PACKAGE_NAME).pot
-	for lang in $(LINGUAS); do \
-		msgmerge --output-file=po/$$lang.po po/$$lang.po $<; \
-	done
-
-$(WEBLATE_REPO):
-	git clone --depth=1 -b $(WEBLATE_REPO_BRANCH) $(WEBLATE_REPO_URL) $(WEBLATE_REPO)
-
-upload-pot: po/$(PACKAGE_NAME).pot $(WEBLATE_REPO)
-	cp ./po/$(PACKAGE_NAME).pot $(WEBLATE_REPO)
-	git -C $(WEBLATE_REPO) commit -m "Update source file" -- $(PACKAGE_NAME).pot
-	git -C $(WEBLATE_REPO) push
-
-clean-po:
-	rm ./po/*.po
-
-download-po: $(WEBLATE_REPO)
-	cp $(WEBLATE_REPO)/*.po ./po/
 
 #
 # Build/Install/dist
@@ -206,4 +182,4 @@ $(NODE_MODULES_TEST): package.json
 	env -u NODE_ENV npm install
 	env -u NODE_ENV npm prune
 
-.PHONY: all clean install devel-install dist node-cache srpm rpm check vm update-po
+.PHONY: all clean install devel-install dist node-cache srpm rpm check vm
