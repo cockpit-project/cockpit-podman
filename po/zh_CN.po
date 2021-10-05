@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-21 18:15+0000\n"
+"POT-Creation-Date: 2021-10-04 15:37+0000\n"
 "PO-Revision-Date: 2021-09-14 10:31+0000\n"
 "Last-Translator: Charles Lee <lchopn@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
@@ -37,13 +37,23 @@ msgid "$0 unused image, $1"
 msgid_plural "$0 unused images, $1"
 msgstr[0] ""
 
-#: src/ImageRunModal.jsx:58 src/ImageRunModal.jsx:104 src/ImageRunModal.jsx:133
-msgid "Add item"
-msgstr "添加项目"
-
 #: src/ContainerCommitModal.jsx:133
 msgid "Add on build variable"
 msgstr "添加构建变量"
+
+#: src/ImageRunModal.jsx:462
+msgid "Add port mapping"
+msgstr ""
+
+#: src/ImageRunModal.jsx:481
+#, fuzzy
+#| msgid "Add on build variable"
+msgid "Add variable"
+msgstr "添加构建变量"
+
+#: src/ImageRunModal.jsx:471
+msgid "Add volume"
+msgstr ""
 
 #: src/Containers.jsx:433 src/ContainerHeader.jsx:49
 msgid "All"
@@ -69,12 +79,12 @@ msgstr "开机自动启动 podman"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/ImageRunModal.jsx:407
+#: src/ImageRunModal.jsx:436
 msgid "CPU shares"
 msgstr "CPU 份额"
 
 #: src/ImageDeleteModal.jsx:62 src/ContainerRestoreModal.jsx:40
-#: src/ImageRunModal.jsx:469 src/ImageSearchModal.jsx:213
+#: src/ImageRunModal.jsx:500 src/ImageSearchModal.jsx:213
 #: src/ContainerCheckpointModal.jsx:38 src/ContainerCommitModal.jsx:222
 #: src/ForceRemoveModal.jsx:21 src/ContainerDeleteModal.jsx:15
 #: src/PodActions.jsx:159
@@ -89,8 +99,8 @@ msgstr "检查点"
 msgid "Checkpoint container $0"
 msgstr "检查点容器 $0"
 
-#: src/ImageRunModal.jsx:365 src/ImageRunModal.jsx:367
-#: src/ContainerDetails.jsx:45 src/ContainerCommitModal.jsx:182
+#: src/ImageRunModal.jsx:395 src/ImageRunModal.jsx:397
+#: src/ContainerDetails.jsx:54 src/ContainerCommitModal.jsx:182
 #: src/ImageDetails.jsx:15
 msgid "Command"
 msgstr "命令"
@@ -111,11 +121,11 @@ msgstr "控制台"
 msgid "Container"
 msgstr "容器"
 
-#: src/ImageRunModal.jsx:324
+#: src/ImageRunModal.jsx:351
 msgid "Container failed to be created"
 msgstr "容器创建失败"
 
-#: src/ImageRunModal.jsx:314
+#: src/ImageRunModal.jsx:341
 msgid "Container failed to be started"
 msgstr "容器启动失败"
 
@@ -127,15 +137,15 @@ msgstr "容器正在运行。"
 msgid "Container is not running"
 msgstr "容器未运行"
 
-#: src/ImageRunModal.jsx:353 src/ContainerCommitModal.jsx:139
+#: src/ImageRunModal.jsx:383 src/ContainerCommitModal.jsx:139
 msgid "Container name"
 msgstr "容器名称"
 
-#: src/ImageRunModal.jsx:117 src/ImageRunModal.jsx:118
+#: src/ImageRunModal.jsx:147
 msgid "Container path"
 msgstr "容器路径"
 
-#: src/ImageRunModal.jsx:61 src/ImageRunModal.jsx:66
+#: src/ImageRunModal.jsx:81
 msgid "Container port"
 msgstr "容器端口"
 
@@ -143,19 +153,19 @@ msgstr "容器端口"
 msgid "Containers"
 msgstr "容器"
 
-#: src/ImageRunModal.jsx:466
+#: src/ImageRunModal.jsx:497
 #, fuzzy
 #| msgid "Created"
 msgid "Create"
 msgstr "已创建"
 
-#: src/ImageRunModal.jsx:462 src/Images.jsx:357
+#: src/ImageRunModal.jsx:493 src/Images.jsx:357
 #, fuzzy
 #| msgid "Pause the container"
 msgid "Create container"
 msgstr "暂停该容器"
 
-#: src/util.js:11 src/ContainerDetails.jsx:69 src/Images.jsx:152
+#: src/util.js:11 src/ContainerDetails.jsx:78 src/Images.jsx:152
 msgid "Created"
 msgstr "已创建"
 
@@ -180,7 +190,7 @@ msgstr "删除容器会清空其中的全部数据。"
 msgid "Deleting this pod will remove the following containers:"
 msgstr "删除这个 Pod 将会移除这些容器："
 
-#: src/Containers.jsx:316 src/ImageRunModal.jsx:360 src/Images.jsx:128
+#: src/Containers.jsx:316 src/ImageRunModal.jsx:390 src/Images.jsx:128
 msgid "Details"
 msgstr "详情"
 
@@ -206,8 +216,10 @@ msgstr "另存为："
 msgid "Entrypoint"
 msgstr "入口点"
 
-#: src/ImageRunModal.jsx:447
-msgid "Environment"
+#: src/ImageRunModal.jsx:480
+#, fuzzy
+#| msgid "Environment"
+msgid "Environment variables"
 msgstr "环境"
 
 #: src/util.js:11
@@ -318,11 +330,11 @@ msgstr "强制停止"
 msgid "Format"
 msgstr "格式"
 
-#: src/ContainerDetails.jsx:59
+#: src/ContainerDetails.jsx:68
 msgid "Gateway"
 msgstr "网关"
 
-#: src/ImageRunModal.jsx:401
+#: src/ImageRunModal.jsx:430
 msgid "GiB"
 msgstr "GiB"
 
@@ -334,25 +346,47 @@ msgstr "隐藏镜像"
 msgid "Hide intermediate images"
 msgstr "隐藏中间镜像"
 
-#: src/ImageRunModal.jsx:113 src/ImageRunModal.jsx:114
+#: src/ImageRunModal.jsx:142
 msgid "Host path"
 msgstr "主机路径"
 
-#: src/ImageRunModal.jsx:44 src/ImageRunModal.jsx:49
-msgid "Host port (optional)"
-msgstr "主机端口（可选）"
+#: src/ImageRunModal.jsx:61
+#, fuzzy
+#| msgid "Host path"
+msgid "Host port"
+msgstr "主机路径"
 
-#: src/ContainerDetails.jsx:37 src/Images.jsx:153
+#: src/ImageRunModal.jsx:64
+#, fuzzy
+#| msgid "Host path"
+msgid "Host port help"
+msgstr "主机路径"
+
+#: src/ContainerDetails.jsx:46 src/Images.jsx:153
 msgid "ID"
 msgstr "ID"
 
-#: src/ImageRunModal.jsx:39 src/ImageRunModal.jsx:41
-msgid "IP (optional)"
-msgstr "IP（可选）"
-
-#: src/ContainerDetails.jsx:55
+#: src/ImageRunModal.jsx:45 src/ContainerDetails.jsx:64
 msgid "IP address"
 msgstr "IP 地址"
+
+#: src/ImageRunModal.jsx:48
+#, fuzzy
+#| msgid "IP address"
+msgid "IP address help"
+msgstr "IP 地址"
+
+#: src/ImageRunModal.jsx:50
+msgid ""
+"If host IP is set to 0.0.0.0 or not set at all, the port will be bound on "
+"all IPs on the host."
+msgstr ""
+
+#: src/ImageRunModal.jsx:66
+msgid ""
+"If the host port is not set the container port will be randomly assigned a "
+"port on the host."
+msgstr ""
 
 #: src/ContainerRestoreModal.jsx:50
 msgid "Ignore IP address if set statically"
@@ -362,7 +396,7 @@ msgstr "如果以静态方式设置，则忽略 IP 地址"
 msgid "Ignore MAC address if set statically"
 msgstr "忽略被静态设定的 MAC 地址"
 
-#: src/ImageRunModal.jsx:361 src/ContainerDetails.jsx:41 src/Images.jsx:150
+#: src/ImageRunModal.jsx:391 src/ContainerDetails.jsx:50 src/Images.jsx:150
 msgid "Image"
 msgstr "镜像"
 
@@ -374,7 +408,7 @@ msgstr "镜像名称"
 msgid "Images"
 msgstr "镜像"
 
-#: src/ImageRunModal.jsx:428
+#: src/ImageRunModal.jsx:456
 msgid "Integration"
 msgstr ""
 
@@ -382,11 +416,11 @@ msgstr ""
 msgid "Keep all temporary checkpoint files"
 msgstr "保留所有临时检查点文件"
 
-#: src/ImageRunModal.jsx:84 src/ImageRunModal.jsx:86
+#: src/ImageRunModal.jsx:117
 msgid "Key"
 msgstr "键"
 
-#: src/ImageRunModal.jsx:399
+#: src/ImageRunModal.jsx:428
 msgid "KiB"
 msgstr "KiB"
 
@@ -406,7 +440,7 @@ msgstr "加载中……"
 msgid "Logs"
 msgstr "日志"
 
-#: src/ContainerDetails.jsx:63
+#: src/ContainerDetails.jsx:72
 msgid "MAC address"
 msgstr "MAC 地址"
 
@@ -414,11 +448,11 @@ msgstr "MAC 地址"
 msgid "Memory"
 msgstr "内存"
 
-#: src/ImageRunModal.jsx:379
+#: src/ImageRunModal.jsx:409
 msgid "Memory limit"
 msgstr "内存限制"
 
-#: src/ImageRunModal.jsx:394
+#: src/ImageRunModal.jsx:423
 msgid "Memory unit"
 msgstr "内存单元"
 
@@ -426,11 +460,11 @@ msgstr "内存单元"
 msgid "Message"
 msgstr "消息"
 
-#: src/ImageRunModal.jsx:400
+#: src/ImageRunModal.jsx:429
 msgid "MiB"
 msgstr "MiB"
 
-#: src/ImageRunModal.jsx:137
+#: src/ImageRunModal.jsx:152
 msgid "Mode"
 msgstr "模式"
 
@@ -438,13 +472,9 @@ msgstr "模式"
 msgid "Multiple tags exist for this image. Select the tagged images to delete."
 msgstr "此镜像存在多个标签。选择标记的镜像以删除。"
 
-#: src/ImageRunModal.jsx:351
+#: src/ImageRunModal.jsx:381
 msgid "Name"
 msgstr "名称"
-
-#: src/ImageRunModal.jsx:148
-msgid "No SELinux label"
-msgstr "无 SELinux 标签"
 
 #: src/Containers.jsx:357
 msgid "No containers"
@@ -462,6 +492,10 @@ msgstr "此 pod 中没有容器"
 msgid "No containers that match the current filter"
 msgstr "没有符合当前筛选条件的容器"
 
+#: src/ImageRunModal.jsx:478
+msgid "No environment variables specified"
+msgstr ""
+
 #: src/Images.jsx:158
 msgid "No images"
 msgstr "没有镜像"
@@ -474,6 +508,16 @@ msgstr "没有找到镜像"
 msgid "No images that match the current filter"
 msgstr "没有符合当前筛选条件的镜像"
 
+#: src/ImageRunModal.jsx:163
+#, fuzzy
+#| msgid "No SELinux label"
+msgid "No label"
+msgstr "无 SELinux 标签"
+
+#: src/ImageRunModal.jsx:459
+msgid "No ports exposed"
+msgstr ""
+
 #: src/ImageSearchModal.jsx:162
 msgid "No results for $0"
 msgstr "没有 $0 的结果"
@@ -481,6 +525,10 @@ msgstr "没有 $0 的结果"
 #: src/Containers.jsx:364
 msgid "No running containers"
 msgstr "没有正在运行的容器"
+
+#: src/ImageRunModal.jsx:468
+msgid "No volumes specified"
+msgstr ""
 
 #: src/Containers.jsx:432
 msgid "Only running"
@@ -535,16 +583,19 @@ msgstr "Podman 容器"
 msgid "Podman service is not active"
 msgstr "Podman 服务未激活"
 
-#: src/ImageRunModal.jsx:430 src/ContainerDetails.jsx:51
-#: src/ImageDetails.jsx:39
+#: src/ImageRunModal.jsx:461
+msgid "Port mapping"
+msgstr ""
+
+#: src/ContainerDetails.jsx:60 src/ImageDetails.jsx:39
 msgid "Ports"
 msgstr "端口"
 
-#: src/ImageRunModal.jsx:150
+#: src/ImageRunModal.jsx:165
 msgid "Private"
 msgstr "私有"
 
-#: src/ImageRunModal.jsx:70
+#: src/ImageRunModal.jsx:92
 msgid "Protocol"
 msgstr "协议"
 
@@ -552,15 +603,8 @@ msgstr "协议"
 msgid "Pulling"
 msgstr "正在拉取"
 
-#: src/ImageRunModal.jsx:140
-msgid "ReadOnly"
-msgstr "只读"
-
-#: src/ImageRunModal.jsx:141
-msgid "ReadWrite"
-msgstr "读写"
-
-#: src/ImageRunModal.jsx:55 src/ImageRunModal.jsx:97 src/ImageRunModal.jsx:124
+#: src/ImageRunModal.jsx:107 src/ImageRunModal.jsx:132
+#: src/ImageRunModal.jsx:172
 msgid "Remove item"
 msgstr "删除项目"
 
@@ -592,8 +636,10 @@ msgstr "继续"
 msgid "Running"
 msgstr "正在运行"
 
-#: src/ImageRunModal.jsx:145
-msgid "SELinux label"
+#: src/ImageRunModal.jsx:159
+#, fuzzy
+#| msgid "SELinux label"
+msgid "SELinux"
 msgstr "SELinux 标签"
 
 #: src/ImageSearchModal.jsx:138
@@ -616,7 +662,7 @@ msgstr "搜索中..."
 msgid "Set container on build variables"
 msgstr "设置容器构建时的变量"
 
-#: src/ImageRunModal.jsx:149
+#: src/ImageRunModal.jsx:164
 msgid "Shared"
 msgstr "共享"
 
@@ -636,7 +682,7 @@ msgstr "显示中间镜像"
 msgid "Start"
 msgstr "启动"
 
-#: src/ImageRunModal.jsx:424
+#: src/ImageRunModal.jsx:452
 msgid "Start after creation"
 msgstr ""
 
@@ -644,7 +690,7 @@ msgstr ""
 msgid "Start podman"
 msgstr "启动 podman"
 
-#: src/Containers.jsx:351 src/ContainerDetails.jsx:73
+#: src/Containers.jsx:351 src/ContainerDetails.jsx:82
 msgid "State"
 msgstr "状态"
 
@@ -668,7 +714,7 @@ msgstr "系统"
 msgid "System Podman service is also available"
 msgstr "系统 Podman 服务同样可用"
 
-#: src/ImageRunModal.jsx:73
+#: src/ImageRunModal.jsx:98
 msgid "TCP"
 msgstr "TCP"
 
@@ -688,7 +734,7 @@ msgstr "故障排除"
 msgid "Type to filter…"
 msgstr "输入筛选条件……"
 
-#: src/ImageRunModal.jsx:74
+#: src/ImageRunModal.jsx:99
 msgid "UDP"
 msgstr "UDP"
 
@@ -708,17 +754,21 @@ msgstr "用户"
 msgid "User Podman service is also available"
 msgstr "用户 Podman 服务同样可用"
 
-#: src/ImageRunModal.jsx:89 src/ImageRunModal.jsx:91
+#: src/ImageRunModal.jsx:122
 msgid "Value"
 msgstr "值"
 
-#: src/ImageRunModal.jsx:438
+#: src/ImageRunModal.jsx:470
 msgid "Volumes"
 msgstr "卷"
 
-#: src/ImageRunModal.jsx:375
+#: src/ImageRunModal.jsx:405
 msgid "With terminal"
 msgstr "分配伪终端"
+
+#: src/ImageRunModal.jsx:154
+msgid "Writable"
+msgstr ""
 
 #: src/util.js:8
 msgid "configured"
@@ -795,6 +845,21 @@ msgstr "已暂停"
 #| msgid "user"
 msgid "user:"
 msgstr "用户"
+
+#~ msgid "Add item"
+#~ msgstr "添加项目"
+
+#~ msgid "Host port (optional)"
+#~ msgstr "主机端口（可选）"
+
+#~ msgid "IP (optional)"
+#~ msgstr "IP（可选）"
+
+#~ msgid "ReadOnly"
+#~ msgstr "只读"
+
+#~ msgid "ReadWrite"
+#~ msgstr "读写"
 
 #~ msgid "Delete image"
 #~ msgstr "删除镜像"

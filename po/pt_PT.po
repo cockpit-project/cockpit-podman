@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-21 18:15+0000\n"
+"POT-Creation-Date: 2021-10-04 15:37+0000\n"
 "PO-Revision-Date: 2020-08-08 22:14+0000\n"
 "Last-Translator: Miguel Santana <mikeytsantana@gmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://translate.fedoraproject.org/"
@@ -41,13 +41,23 @@ msgid_plural "$0 unused images, $1"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/ImageRunModal.jsx:58 src/ImageRunModal.jsx:104 src/ImageRunModal.jsx:133
-msgid "Add item"
-msgstr "Adicionar item"
-
 #: src/ContainerCommitModal.jsx:133
 msgid "Add on build variable"
 msgstr "Adicionar nas variáveis de criação"
+
+#: src/ImageRunModal.jsx:462
+msgid "Add port mapping"
+msgstr ""
+
+#: src/ImageRunModal.jsx:481
+#, fuzzy
+#| msgid "Add on build variable"
+msgid "Add variable"
+msgstr "Adicionar nas variáveis de criação"
+
+#: src/ImageRunModal.jsx:471
+msgid "Add volume"
+msgstr ""
 
 #: src/Containers.jsx:433 src/ContainerHeader.jsx:49
 msgid "All"
@@ -73,12 +83,12 @@ msgstr "Iniciar automaticamente o ''podman'' ao inicializar"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/ImageRunModal.jsx:407
+#: src/ImageRunModal.jsx:436
 msgid "CPU shares"
 msgstr "Partilhas de CPU"
 
 #: src/ImageDeleteModal.jsx:62 src/ContainerRestoreModal.jsx:40
-#: src/ImageRunModal.jsx:469 src/ImageSearchModal.jsx:213
+#: src/ImageRunModal.jsx:500 src/ImageSearchModal.jsx:213
 #: src/ContainerCheckpointModal.jsx:38 src/ContainerCommitModal.jsx:222
 #: src/ForceRemoveModal.jsx:21 src/ContainerDeleteModal.jsx:15
 #: src/PodActions.jsx:159
@@ -93,8 +103,8 @@ msgstr "Posto de controlo"
 msgid "Checkpoint container $0"
 msgstr "Verificar ''container'' $0"
 
-#: src/ImageRunModal.jsx:365 src/ImageRunModal.jsx:367
-#: src/ContainerDetails.jsx:45 src/ContainerCommitModal.jsx:182
+#: src/ImageRunModal.jsx:395 src/ImageRunModal.jsx:397
+#: src/ContainerDetails.jsx:54 src/ContainerCommitModal.jsx:182
 #: src/ImageDetails.jsx:15
 msgid "Command"
 msgstr "Comando"
@@ -115,11 +125,11 @@ msgstr "Consola"
 msgid "Container"
 msgstr "'Container'"
 
-#: src/ImageRunModal.jsx:324
+#: src/ImageRunModal.jsx:351
 msgid "Container failed to be created"
 msgstr "Não foi possível criar 'Container'"
 
-#: src/ImageRunModal.jsx:314
+#: src/ImageRunModal.jsx:341
 msgid "Container failed to be started"
 msgstr "Não foi possível criar o 'container'"
 
@@ -131,15 +141,15 @@ msgstr "'Container' está em execução."
 msgid "Container is not running"
 msgstr "'Container' não está em execução."
 
-#: src/ImageRunModal.jsx:353 src/ContainerCommitModal.jsx:139
+#: src/ImageRunModal.jsx:383 src/ContainerCommitModal.jsx:139
 msgid "Container name"
 msgstr "Nome do 'Container'"
 
-#: src/ImageRunModal.jsx:117 src/ImageRunModal.jsx:118
+#: src/ImageRunModal.jsx:147
 msgid "Container path"
 msgstr "Caminho do 'Container'"
 
-#: src/ImageRunModal.jsx:61 src/ImageRunModal.jsx:66
+#: src/ImageRunModal.jsx:81
 msgid "Container port"
 msgstr "Porta do 'Container'"
 
@@ -147,19 +157,19 @@ msgstr "Porta do 'Container'"
 msgid "Containers"
 msgstr "'Containers'"
 
-#: src/ImageRunModal.jsx:466
+#: src/ImageRunModal.jsx:497
 #, fuzzy
 #| msgid "Created"
 msgid "Create"
 msgstr "Criado"
 
-#: src/ImageRunModal.jsx:462 src/Images.jsx:357
+#: src/ImageRunModal.jsx:493 src/Images.jsx:357
 #, fuzzy
 #| msgid "Pause the container"
 msgid "Create container"
 msgstr "Pausar o ''container''"
 
-#: src/util.js:11 src/ContainerDetails.jsx:69 src/Images.jsx:152
+#: src/util.js:11 src/ContainerDetails.jsx:78 src/Images.jsx:152
 msgid "Created"
 msgstr "Criado"
 
@@ -184,7 +194,7 @@ msgstr "Ao eliminar um ''container'' irá limpar todos os dados no mesmo."
 msgid "Deleting this pod will remove the following containers:"
 msgstr "Ao eliminar este 'pod' irá remover os seguintes 'containers':"
 
-#: src/Containers.jsx:316 src/ImageRunModal.jsx:360 src/Images.jsx:128
+#: src/Containers.jsx:316 src/ImageRunModal.jsx:390 src/Images.jsx:128
 msgid "Details"
 msgstr "Detalhes"
 
@@ -210,8 +220,10 @@ msgstr "Transferir como:"
 msgid "Entrypoint"
 msgstr "Ponto de entrada"
 
-#: src/ImageRunModal.jsx:447
-msgid "Environment"
+#: src/ImageRunModal.jsx:480
+#, fuzzy
+#| msgid "Environment"
+msgid "Environment variables"
 msgstr "Ambiente"
 
 #: src/util.js:11
@@ -326,11 +338,11 @@ msgstr "Forçar Parar"
 msgid "Format"
 msgstr "Formato"
 
-#: src/ContainerDetails.jsx:59
+#: src/ContainerDetails.jsx:68
 msgid "Gateway"
 msgstr "\"Gateway\""
 
-#: src/ImageRunModal.jsx:401
+#: src/ImageRunModal.jsx:430
 msgid "GiB"
 msgstr "GiB"
 
@@ -344,27 +356,47 @@ msgstr "Sem imagens"
 msgid "Hide intermediate images"
 msgstr "Ocultar imagens intermediárias"
 
-#: src/ImageRunModal.jsx:113 src/ImageRunModal.jsx:114
+#: src/ImageRunModal.jsx:142
 msgid "Host path"
 msgstr "Caminho do anfitrião"
 
-#: src/ImageRunModal.jsx:44 src/ImageRunModal.jsx:49
+#: src/ImageRunModal.jsx:61
 #, fuzzy
-#| msgid "Host port"
-msgid "Host port (optional)"
-msgstr "Porta do anfitrião"
+#| msgid "Host path"
+msgid "Host port"
+msgstr "Caminho do anfitrião"
 
-#: src/ContainerDetails.jsx:37 src/Images.jsx:153
+#: src/ImageRunModal.jsx:64
+#, fuzzy
+#| msgid "Host path"
+msgid "Host port help"
+msgstr "Caminho do anfitrião"
+
+#: src/ContainerDetails.jsx:46 src/Images.jsx:153
 msgid "ID"
 msgstr "Id."
 
-#: src/ImageRunModal.jsx:39 src/ImageRunModal.jsx:41
-msgid "IP (optional)"
-msgstr ""
-
-#: src/ContainerDetails.jsx:55
+#: src/ImageRunModal.jsx:45 src/ContainerDetails.jsx:64
 msgid "IP address"
 msgstr "Endereço IP"
+
+#: src/ImageRunModal.jsx:48
+#, fuzzy
+#| msgid "IP address"
+msgid "IP address help"
+msgstr "Endereço IP"
+
+#: src/ImageRunModal.jsx:50
+msgid ""
+"If host IP is set to 0.0.0.0 or not set at all, the port will be bound on "
+"all IPs on the host."
+msgstr ""
+
+#: src/ImageRunModal.jsx:66
+msgid ""
+"If the host port is not set the container port will be randomly assigned a "
+"port on the host."
+msgstr ""
 
 #: src/ContainerRestoreModal.jsx:50
 msgid "Ignore IP address if set statically"
@@ -374,7 +406,7 @@ msgstr "Ignorar o endereço IP, se definido estaticamente"
 msgid "Ignore MAC address if set statically"
 msgstr "Ignorar o endereço MAC, se definido estaticamente"
 
-#: src/ImageRunModal.jsx:361 src/ContainerDetails.jsx:41 src/Images.jsx:150
+#: src/ImageRunModal.jsx:391 src/ContainerDetails.jsx:50 src/Images.jsx:150
 msgid "Image"
 msgstr "Imagem"
 
@@ -386,7 +418,7 @@ msgstr "Nome da Imagem"
 msgid "Images"
 msgstr "Imagens"
 
-#: src/ImageRunModal.jsx:428
+#: src/ImageRunModal.jsx:456
 msgid "Integration"
 msgstr ""
 
@@ -394,11 +426,11 @@ msgstr ""
 msgid "Keep all temporary checkpoint files"
 msgstr "Manter todos os ficheiros de controlo temporários"
 
-#: src/ImageRunModal.jsx:84 src/ImageRunModal.jsx:86
+#: src/ImageRunModal.jsx:117
 msgid "Key"
 msgstr "Chave"
 
-#: src/ImageRunModal.jsx:399
+#: src/ImageRunModal.jsx:428
 msgid "KiB"
 msgstr "KiB"
 
@@ -418,7 +450,7 @@ msgstr "A carregar..."
 msgid "Logs"
 msgstr "\"Logs\""
 
-#: src/ContainerDetails.jsx:63
+#: src/ContainerDetails.jsx:72
 msgid "MAC address"
 msgstr "Endereço MAC"
 
@@ -426,11 +458,11 @@ msgstr "Endereço MAC"
 msgid "Memory"
 msgstr "Memória"
 
-#: src/ImageRunModal.jsx:379
+#: src/ImageRunModal.jsx:409
 msgid "Memory limit"
 msgstr "Limite de Memória"
 
-#: src/ImageRunModal.jsx:394
+#: src/ImageRunModal.jsx:423
 #, fuzzy
 #| msgid "Memory limit"
 msgid "Memory unit"
@@ -440,11 +472,11 @@ msgstr "Limite de Memória"
 msgid "Message"
 msgstr "Mensagem"
 
-#: src/ImageRunModal.jsx:400
+#: src/ImageRunModal.jsx:429
 msgid "MiB"
 msgstr "MiB"
 
-#: src/ImageRunModal.jsx:137
+#: src/ImageRunModal.jsx:152
 msgid "Mode"
 msgstr ""
 
@@ -454,13 +486,9 @@ msgstr ""
 "Existem várias etiquetas para esta imagem. Selecione as imagens marcadas com "
 "etiqueta para excluir."
 
-#: src/ImageRunModal.jsx:351
+#: src/ImageRunModal.jsx:381
 msgid "Name"
 msgstr "Nome"
-
-#: src/ImageRunModal.jsx:148
-msgid "No SELinux label"
-msgstr "Sem rótulo SELinux"
 
 #: src/Containers.jsx:357
 msgid "No containers"
@@ -478,6 +506,10 @@ msgstr "Nenhum ''container'' neste \"pod\""
 msgid "No containers that match the current filter"
 msgstr "Nenhum ''container'' corresponde ao filtro atual"
 
+#: src/ImageRunModal.jsx:478
+msgid "No environment variables specified"
+msgstr ""
+
 #: src/Images.jsx:158
 msgid "No images"
 msgstr "Sem imagens"
@@ -492,6 +524,16 @@ msgstr "Sem imagens"
 msgid "No images that match the current filter"
 msgstr "Nenhuma imagem corresponde ao filtro atual"
 
+#: src/ImageRunModal.jsx:163
+#, fuzzy
+#| msgid "No SELinux label"
+msgid "No label"
+msgstr "Sem rótulo SELinux"
+
+#: src/ImageRunModal.jsx:459
+msgid "No ports exposed"
+msgstr ""
+
 #: src/ImageSearchModal.jsx:162
 msgid "No results for $0"
 msgstr ""
@@ -499,6 +541,10 @@ msgstr ""
 #: src/Containers.jsx:364
 msgid "No running containers"
 msgstr "Sem ''containers'' em execução"
+
+#: src/ImageRunModal.jsx:468
+msgid "No volumes specified"
+msgstr ""
 
 #: src/Containers.jsx:432
 msgid "Only running"
@@ -555,16 +601,19 @@ msgstr "Podman containers"
 msgid "Podman service is not active"
 msgstr "O serviço Podman não está ativo"
 
-#: src/ImageRunModal.jsx:430 src/ContainerDetails.jsx:51
-#: src/ImageDetails.jsx:39
+#: src/ImageRunModal.jsx:461
+msgid "Port mapping"
+msgstr ""
+
+#: src/ContainerDetails.jsx:60 src/ImageDetails.jsx:39
 msgid "Ports"
 msgstr "Portas"
 
-#: src/ImageRunModal.jsx:150
+#: src/ImageRunModal.jsx:165
 msgid "Private"
 msgstr "Privado"
 
-#: src/ImageRunModal.jsx:70
+#: src/ImageRunModal.jsx:92
 msgid "Protocol"
 msgstr ""
 
@@ -572,15 +621,8 @@ msgstr ""
 msgid "Pulling"
 msgstr "Submissão"
 
-#: src/ImageRunModal.jsx:140
-msgid "ReadOnly"
-msgstr "Só de leitura"
-
-#: src/ImageRunModal.jsx:141
-msgid "ReadWrite"
-msgstr "Ler Gravar"
-
-#: src/ImageRunModal.jsx:55 src/ImageRunModal.jsx:97 src/ImageRunModal.jsx:124
+#: src/ImageRunModal.jsx:107 src/ImageRunModal.jsx:132
+#: src/ImageRunModal.jsx:172
 msgid "Remove item"
 msgstr "Remover item"
 
@@ -612,10 +654,10 @@ msgstr "Retomar"
 msgid "Running"
 msgstr "A executar"
 
-#: src/ImageRunModal.jsx:145
+#: src/ImageRunModal.jsx:159
 #, fuzzy
 #| msgid "No SELinux label"
-msgid "SELinux label"
+msgid "SELinux"
 msgstr "Sem rótulo SELinux"
 
 #: src/ImageSearchModal.jsx:138
@@ -640,7 +682,7 @@ msgstr "A carregar..."
 msgid "Set container on build variables"
 msgstr "Definir ''container'' nas variáveis de criação"
 
-#: src/ImageRunModal.jsx:149
+#: src/ImageRunModal.jsx:164
 msgid "Shared"
 msgstr "Partilhado"
 
@@ -662,7 +704,7 @@ msgstr "Mostrar imagens intermediárias"
 msgid "Start"
 msgstr "Iniciar"
 
-#: src/ImageRunModal.jsx:424
+#: src/ImageRunModal.jsx:452
 msgid "Start after creation"
 msgstr ""
 
@@ -670,7 +712,7 @@ msgstr ""
 msgid "Start podman"
 msgstr "Iniciar Podman"
 
-#: src/Containers.jsx:351 src/ContainerDetails.jsx:73
+#: src/Containers.jsx:351 src/ContainerDetails.jsx:82
 msgid "State"
 msgstr "Estado"
 
@@ -694,7 +736,7 @@ msgstr "Sistema"
 msgid "System Podman service is also available"
 msgstr "Também está disponível o serviço Podman do sistema"
 
-#: src/ImageRunModal.jsx:73
+#: src/ImageRunModal.jsx:98
 msgid "TCP"
 msgstr "TCP"
 
@@ -714,7 +756,7 @@ msgstr "Resolução de problemas"
 msgid "Type to filter…"
 msgstr "Digite para filtrar…"
 
-#: src/ImageRunModal.jsx:74
+#: src/ImageRunModal.jsx:99
 msgid "UDP"
 msgstr "UDP"
 
@@ -734,17 +776,21 @@ msgstr "Utilizador"
 msgid "User Podman service is also available"
 msgstr "Também está disponível o serviço Podman do utilizador"
 
-#: src/ImageRunModal.jsx:89 src/ImageRunModal.jsx:91
+#: src/ImageRunModal.jsx:122
 msgid "Value"
 msgstr "Valor"
 
-#: src/ImageRunModal.jsx:438
+#: src/ImageRunModal.jsx:470
 msgid "Volumes"
 msgstr "Volumes"
 
-#: src/ImageRunModal.jsx:375
+#: src/ImageRunModal.jsx:405
 msgid "With terminal"
 msgstr "Com terminal"
+
+#: src/ImageRunModal.jsx:154
+msgid "Writable"
+msgstr ""
 
 #: src/util.js:8
 msgid "configured"
@@ -821,6 +867,20 @@ msgstr "Em pausa"
 #| msgid "user"
 msgid "user:"
 msgstr "utilizador"
+
+#~ msgid "Add item"
+#~ msgstr "Adicionar item"
+
+#, fuzzy
+#~| msgid "Host port"
+#~ msgid "Host port (optional)"
+#~ msgstr "Porta do anfitrião"
+
+#~ msgid "ReadOnly"
+#~ msgstr "Só de leitura"
+
+#~ msgid "ReadWrite"
+#~ msgstr "Ler Gravar"
 
 #~ msgid "Delete image"
 #~ msgstr "Eliminar imagem"
