@@ -24,6 +24,10 @@ mv .git dot-git
 export TEST_OS="${ID}-${VERSION_ID/./-}"
 export TEST_AUDIT_NO_SELINUX=1
 
+if [ "$TEST_OS" = "centos-8" ]; then
+    TEST_OS=centos-8-stream
+fi
+
 EXCLUDES=""
 
 RC=0
