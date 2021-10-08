@@ -22,7 +22,7 @@ The release steps are controlled by the
 
 Pushing the release tag triggers the [release.yml](.github/workflows/release.yml)
 [GitHub action](https://github.com/features/actions) workflow. This uses the
-[cockpit-project organization secrets](https://github.com/organizations/cockpit-project/settings/secrets).
+[secrets from the release environment](https://github.com/cockpit-project/cockpit-podman/settings/environments).
 
 # Automated maintenance
 
@@ -33,4 +33,6 @@ which is run weekly or upon [manual request](https://github.com/cockpit-project/
 [npm-update.yml](.github/workflows/npm-update.yml) [GitHub action](https://github.com/features/actions).
 
 Similarly, translations are refreshed every Tuesday evening (or manually) through the
-[po-refresh.yml](.github/workflows/po-refresh.yml) action.
+[weblate-sync-po.yml](.github/workflows/weblate-sync-po.yml) action.
+Conversely, the PO template is uploaded to weblate every day through the
+[weblate-sync-pot.yml](.github/workflows/weblate-sync-pot.yml) action.
