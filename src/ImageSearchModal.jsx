@@ -113,6 +113,9 @@ export class ImageSearchModal extends React.Component {
     onKeyPress(e) {
         if (e.key != ' ') { // Space should not trigger search
             const forceSearch = e.key == 'Enter';
+            if (forceSearch) {
+                e.preventDefault();
+            }
 
             // Clears the previously set timer.
             clearTimeout(this.typingTimeout);
