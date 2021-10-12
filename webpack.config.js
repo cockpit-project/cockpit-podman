@@ -10,8 +10,6 @@ const CockpitPoPlugin = require("./src/lib/cockpit-po-plugin");
 
 const webpack = require("webpack");
 
-const nodedir = path.resolve((process.env.SRCDIR || __dirname), "node_modules");
-
 /* A standard nodejs and webpack pattern */
 const production = process.env.NODE_ENV === 'production';
 
@@ -39,11 +37,11 @@ if (production) {
 module.exports = {
     mode: production ? 'production' : 'development',
     resolve: {
-        modules: [ nodedir, path.resolve(__dirname, 'src/lib') ],
-        alias: { 'font-awesome': path.resolve(nodedir, 'font-awesome-sass/assets/stylesheets') },
+        modules: [ "node_modules", path.resolve(__dirname, 'src/lib') ],
+        alias: { 'font-awesome': 'font-awesome-sass/assets/stylesheets' },
     },
     resolveLoader: {
-        modules: [ nodedir, path.resolve(__dirname, 'src/lib') ],
+        modules: [ "node_modules", path.resolve(__dirname, 'src/lib') ],
     },
     watchOptions: {
         ignored: /node_modules/,
