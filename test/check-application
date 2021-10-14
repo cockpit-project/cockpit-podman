@@ -821,12 +821,10 @@ class TestApplication(testlib.MachineCase):
               .selectImageAndDownload() \
               .expectDownloadErrorForNonExistingTag()
 
-    @testlib.skipImage("TODO: investigate", "arch")
     @testlib.nondestructive
     def testLifecycleOperationsUser(self):
         self._testLifecycleOperations(False)
 
-    @testlib.skipImage("TODO: investigate", "arch")
     @testlib.nondestructive
     def testLifecycleOperationsSystem(self):
         self._testLifecycleOperations(True)
