@@ -17,6 +17,7 @@ import ImageDetails from './ImageDetails.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import { ImageDeleteModal } from './ImageDeleteModal.jsx';
+import PruneUnusedImagesModal from './PruneUnusedImagesModal.jsx';
 import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
@@ -63,6 +64,10 @@ class Images extends React.Component {
         this.setState({ showSearchImageModal: true });
     }
 
+    onOpenPruneUnusedImagesDialog = () => {
+        this.setState({ showPruneUnusedImagesModal: true });
+    }
+
     getUsedByText(image) {
         const { imageContainerList } = this.props;
         if (imageContainerList === null) {
@@ -79,6 +84,7 @@ class Images extends React.Component {
 
     calculateStats = () => {
         const { images, imageContainerList } = this.props;
+        const unusedImages = [];
         const imageStats = {
             imagesTotal: 0,
             imagesSize: 0,
@@ -87,7 +93,7 @@ class Images extends React.Component {
         };
 
         if (imageContainerList === null) {
-            return imageStats;
+            return { imageStats, unusedImages };
         }
 
         if (images !== null) {
@@ -100,11 +106,12 @@ class Images extends React.Component {
                 if (usedBy === undefined) {
                     imageStats.unusedTotal += 1;
                     imageStats.unusedSize += image.Size;
+                    unusedImages.push(image);
                 }
             });
         }
 
-        return imageStats;
+        return { imageStats, unusedImages };
     }
 
     renderRow(image) {
@@ -238,7 +245,7 @@ class Images extends React.Component {
             </>
         );
 
-        const imageStats = this.calculateStats();
+        const { imageStats, unusedImages } = this.calculateStats();
         const imageTitleStats = (
             <>
                 <Text component={TextVariants.h5}>
@@ -261,7 +268,11 @@ class Images extends React.Component {
                             {imageTitleStats}
                         </Flex>
                     </CardTitle>
-                    <CardActions><ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog} /></CardActions>
+                    <CardActions>
+                        <ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog}
+                                          handlePruneUsedImages={this.onOpenPruneUnusedImagesDialog}
+                                          unusedImages={unusedImages} />
+                    </CardActions>
                 </CardHeader>
                 <CardBody>
                     {filtered.length
@@ -280,6 +291,13 @@ class Images extends React.Component {
                     registries={this.props.registries}
                     userServiceAvailable={this.props.userServiceAvailable}
                     systemServiceAvailable={this.props.systemServiceAvailable} /> }
+                {this.state.showPruneUnusedImagesModal &&
+                <PruneUnusedImagesModal
+                  close={() => this.setState({ showPruneUnusedImagesModal: false })}
+                  unusedImages={unusedImages}
+                  onAddNotification={this.props.onAddNotification}
+                  userServiceAvailable={this.props.userServiceAvailable}
+                  systemServiceAvailable={this.props.systemServiceAvailable} /> }
                 {this.state.imageDownloadInProgress && <CardFooter>
                     <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>
                 </CardFooter>}
@@ -288,7 +306,7 @@ class Images extends React.Component {
     }
 }
 
-const ImageOverActions = ({ handleDownloadNewImage }) => {
+const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unusedImages }) => {
     const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
 
     return (
@@ -301,6 +319,15 @@ const ImageOverActions = ({ handleDownloadNewImage }) => {
                                     component="button"
                                     onClick={handleDownloadNewImage}>
                           {_("Download new image")}
+                      </DropdownItem>,
+                      <DropdownItem key="prune-unused-images"
+                                    id="prune-unused-images-button"
+                                    component="button"
+                                    className="pf-m-danger btn-delete"
+                                    onClick={handlePruneUsedImages}
+                                    isDisabled={unusedImages.length === 0}
+                                    isAriaDisabled={unusedImages.length === 0}>
+                          {_("Prune unused images")}
                       </DropdownItem>,
                   ]} />
     );
