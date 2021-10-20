@@ -1590,6 +1590,44 @@ class TestApplication(testlib.MachineCase):
         b.click(".pf-c-modal-box footer button:contains(%s)" % text)
         b.wait_not_present(".pf-c-modal-box footer button:contains(%s)" % text)
 
+    @testlib.nondestructive
+    def testPruneUnusedImagesSystem(self):
+        self._testPruneUnusedImagesSystem(True)
+
+    @testlib.nondestructive
+    def testPruneUnusedImagesUser(self):
+        self._testPruneUnusedImagesSystem(False)
+
+    def _testPruneUnusedImagesSystem(self, auth):
+        b = self.browser
+        self.login(auth)
+
+        # By default we have 3 unused images, start one.
+        self.execute(auth, "podman run -d --name used_image alpine:latest sh")
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Prune unused images)")
+
+        if auth:
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 5)
+        else:
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 2)
+        b.click(".pf-c-modal-box button:contains(Prune)")
+
+        # When being superuser, admin images are also removed
+        if auth:
+            b.wait_js_func("ph_count_check", "#containers-images table tbody", 1)
+            checkImage(b, "quay.io/libpod/alpine:latest", "system")
+        else:
+            b.wait_js_func("ph_count_check", "#containers-images table tbody", 1)
+            # Two images removed, one in use kept
+            b.wait_not_present("#containers-images:contains('quay.io/libpod/busybox:latest')")
+            b.wait_not_present("#containers-images:contains('quay.io/cockpit/registry:2')")
+            b.wait_visible("#containers-images:contains('quay.io/libpod/alpine:latest')")
+
+        # Prune button should now be disabled
+        b.click("#image-actions-dropdown")
+        b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
+
 
 if __name__ == '__main__':
     testlib.test_main()

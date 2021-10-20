@@ -274,6 +274,14 @@ export function pullImage(system, reference) {
     });
 }
 
+export function pruneUnusedImages(system) {
+    return new Promise((resolve, reject) => {
+        podmanCall("libpod/images/prune?all=true", "POST", {}, system).then(resolve)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
 export function imageExists(system, id) {
     return podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
 }
