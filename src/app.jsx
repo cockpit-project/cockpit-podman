@@ -275,8 +275,10 @@ class Application extends React.Component {
                         } else {
                             this.setState(prevState => {
                                 const copyDetails = Object.assign({}, prevState.containersDetails);
+                                const copyStats = Object.assign({}, prevState.containersStats);
                                 delete copyDetails[reply.Id + system.toString()];
-                                return { containersDetails: copyDetails };
+                                delete copyStats[reply.Id + system.toString()];
+                                return { containersDetails: copyDetails, containersStats: copyStats };
                             });
                         }
                     }
