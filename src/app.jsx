@@ -124,16 +124,16 @@ class Application extends React.Component {
         });
     }
 
-    updateContainerStats(id, system) {
-        client.getContainerStats(system, id, reply => {
-            if (reply.response) // executed when container stop, with reply: {cause, message, response}
+    updateContainerStats(system) {
+        client.getContainerStats(system, reply => {
+            if (reply.Error != null) // executed when container stop
                 console.warn("Failed to update container stats:", JSON.stringify(reply.message));
-            else
-                this.updateState("containersStats", reply.Id + system.toString(), reply);
+            else {
+                reply.Stats.forEach(stat => this.updateState("containersStats", stat.ContainerID + system.toString(), stat));
+            }
         }).catch(ex => {
-            if (ex.cause == "no support for CGroups V1 in rootless environments") {
+            if (ex.cause == "no support for CGroups V1 in rootless environments" || ex.cause == "Container stats resource only available for cgroup v2") {
                 console.log("This OS does not support CgroupsV2. Some information may be missing.");
-                this.updateState("containersStats", id + system.toString(), -1);
             } else
                 console.warn("Failed to update container stats:", JSON.stringify(ex.message));
         });
@@ -189,9 +189,8 @@ class Application extends React.Component {
                         };
                     });
                     if (init) {
+                        this.updateContainerStats(system);
                         for (const container of reply || []) {
-                            if (container.State === "running")
-                                this.updateContainerStats(container.Id, system);
                             this.inspectContainerDetail(container.Id, system);
                         }
                     }
@@ -273,14 +272,13 @@ class Application extends React.Component {
                         this.updateState("containers", reply.Id + system.toString(), reply);
                         if (reply.State == "running") {
                             this.inspectContainerDetail(reply.Id, system);
-                            this.updateContainerStats(reply.Id, system);
                         } else {
                             this.setState(prevState => {
-                                const copyStats = Object.assign({}, prevState.containersStats);
                                 const copyDetails = Object.assign({}, prevState.containersDetails);
-                                delete copyStats[reply.Id + system.toString()];
+                                const copyStats = Object.assign({}, prevState.containersStats);
                                 delete copyDetails[reply.Id + system.toString()];
-                                return { containersStats: copyStats, containersDetails: copyDetails };
+                                delete copyStats[reply.Id + system.toString()];
+                                return { containersDetails: copyDetails, containersStats: copyStats };
                             });
                         }
                     }
@@ -437,6 +435,7 @@ class Application extends React.Component {
                         [system ? "systemServiceAvailable" : "userServiceAvailable"]: true,
                         version: reply.version.Version,
                         registries: reply.registries,
+                        cgroupVersion: reply.host.cgroupVersion,
                     });
                     this.updateImagesAfterEvent(system);
                     this.updateContainersAfterEvent(system, true);
@@ -656,6 +655,7 @@ class Application extends React.Component {
                 onAddNotification={this.onAddNotification}
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
+                cgroupVersion={this.state.cgroupVersion}
             />;
 
         const notificationList = (

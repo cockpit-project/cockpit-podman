@@ -26,8 +26,6 @@ export function format_memory_and_limit(usage, limit) {
     if (usage === undefined || isNaN(usage))
         return "";
 
-    usage = usage / 1073741824; // 1024^3
-    limit = limit / 1073741824;
     let mtext = "";
     let units = 1024;
     let parts;

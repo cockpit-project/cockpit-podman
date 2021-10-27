@@ -290,9 +290,15 @@ class Containers extends React.Component {
 
         let proc = "";
         let mem = "";
+        if (this.props.cgroupVersion == 'v1' && !container.isSystem && container.State == 'running') {
+            proc = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
+            mem = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
+        }
         if (containerStats) {
-            proc = containerStats.cpu_stats ? containerStats.cpu_stats.cpu.toFixed(2) + "%" : <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
-            mem = containerStats.memory_stats ? utils.format_memory_and_limit(containerStats.memory_stats.usage, containerStats.memory_stats.limit) : <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
+            if (containerStats.CPU != undefined)
+                proc = containerStats.CPU.toFixed(2) + "%";
+            if (containerStats.MemUsage != undefined && containerStats.MemLimit != undefined)
+                mem = utils.format_memory_and_limit(containerStats.MemUsage, containerStats.MemLimit);
         }
         const info_block =
             <div className="container-block">
