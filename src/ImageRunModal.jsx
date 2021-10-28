@@ -10,7 +10,7 @@ import {
     SelectOption, SelectGroup,
     TextInput, Tabs, Tab, TabTitleText,
     ToggleGroup, ToggleGroupItem,
-    Flex,
+    Flex, FlexItem,
     Popover,
 } from '@patternfly/react-core';
 import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
@@ -731,7 +731,13 @@ export class ImageRunModal extends React.Component {
                           labelIcon={
                               <Popover aria-label={_("Image selection help")}
                                 enableFlip
-                                bodyContent={_("host[:port]/[user]/container[:tag].")}>
+                                bodyContent={
+                                    <Flex direction={{ default: 'column' }}>
+                                        <FlexItem>{_("host[:port]/[user]/container[:tag]")}</FlexItem>
+                                        <FlexItem>{cockpit.format(_("Example: $0"), "quay.io/libpod/busybox")}</FlexItem>
+                                        <FlexItem>{cockpit.format(_("Searching: $0"), "quay.io/busybox")}</FlexItem>
+                                    </Flex>
+                                }>
                                   <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
                                       <OutlinedQuestionCircleIcon />
                                   </button>
