@@ -1416,13 +1416,13 @@ class TestApplication(testlib.MachineCase):
             except ValueError:
                 return 0
 
-        b.click("a:contains('Logs')")
+        b.click("button:contains('Logs')")
         b.wait_text(".container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
         # firefox optimizes these out when not visible
         b.eval_js("document.querySelector('.container-logs .xterm-accessibility-tree').scrollIntoView()")
         b.wait_in_text(".container-logs .xterm-accessibility-tree", "6")
 
-        b.click("a:contains('Console')")
+        b.click("button:contains('Console')")
         b.wait(lambda: get_int(b.text(".container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
 
         # Create another instance without port publishing
@@ -1455,7 +1455,7 @@ class TestApplication(testlib.MachineCase):
 
         b.set_val("#containers-containers-filter", "all")
 
-        b.click(".pf-m-expanded a:contains('Console')")
+        b.click(".pf-m-expanded button:contains('Console')")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
         b.focus(".pf-m-expanded .xterm-helper-textarea")
         b.key_press('echo hello\r')
@@ -1488,8 +1488,7 @@ class TestApplication(testlib.MachineCase):
 
         b.set_val("#containers-containers-filter", "all")
         self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
-        self.toggleExpandedContainer("busybox-without-publish")
-        b.click(".pf-m-expanded a:contains('Console')")
+        b.click(".pf-m-expanded button:contains('Console')")
         b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
 
         self.filter_containers("running")
