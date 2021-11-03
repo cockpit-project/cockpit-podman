@@ -1628,6 +1628,42 @@ class TestApplication(testlib.MachineCase):
         b.click("#image-actions-dropdown")
         b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
 
+    def testPruneUnusedImagesSystemSelections(self):
+        ''' Test the prune unused images selection options'''
+        b = self.browser
+        self.login(True)
+
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Prune unused images)")
+
+        # Deselect both
+        b.click("#deleteSystemImages")
+        b.click("#deleteUserImages")
+        b.wait_visible(".pf-c-modal-box button:contains(Prune):disabled")
+
+        # Admin / user images are selected
+        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 6)
+        # Select user images
+        b.click("#deleteUserImages")
+        b.click(".pf-c-modal-box button:contains(Prune)")
+
+        # System images are left over
+        b.wait_js_func("ph_count_check", "#containers-images table tbody", 3)
+        checkImage(b, "quay.io/libpod/alpine:latest", "system")
+        checkImage(b, "quay.io/cockpit/registry:2", "system")
+        checkImage(b, "quay.io/libpod/busybox:latest", "system")
+
+        # Pruning again, should delete all system images
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Prune unused images)")
+        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 3)
+        b.click(".pf-c-modal-box button:contains(Prune)")
+        b.wait_js_func("ph_count_check", "#containers-images table tbody", 0)
+
+        # Prune button should now be disabled
+        b.click("#image-actions-dropdown")
+        b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
+
 
 if __name__ == '__main__':
     testlib.test_main()
