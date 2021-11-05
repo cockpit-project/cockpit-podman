@@ -5,6 +5,7 @@ import {
     Card, CardBody, CardHeader, CardTitle, CardActions,
     Divider,
     Dropdown, DropdownItem, DropdownSeparator,
+    Flex,
     KebabToggle,
     Text, TextVariants, FormSelect, FormSelectOption,
     Toolbar, ToolbarContent, ToolbarItem,
@@ -518,61 +519,61 @@ class Containers extends React.Component {
                     <CardActions>{filterRunning}</CardActions>
                 </CardHeader>
                 <CardBody>
-                    {(this.props.containers === null || this.props.pods === null)
-                        ? <ListingTable variant='compact'
-                                        aria-label={_("Containers")}
-                                        emptyCaption={emptyCaption}
-                                        columns={columnTitles}
-                                        rows={[]} />
-                        : Object.keys(partitionedContainers)
-                                .sort((a, b) => {
-                                    if (a == "no-pod") return -1;
-                                    else if (b == "no-pod") return 1;
+                    <Flex direction={{ default: 'column' }}>
+                        {(this.props.containers === null || this.props.pods === null)
+                            ? <ListingTable variant='compact'
+                                            aria-label={_("Containers")}
+                                            emptyCaption={emptyCaption}
+                                            columns={columnTitles}
+                                            rows={[]} />
+                            : Object.keys(partitionedContainers)
+                                    .sort((a, b) => {
+                                        if (a == "no-pod") return -1;
+                                        else if (b == "no-pod") return 1;
 
-                                    // User pods are in front of system ones
-                                    if (this.props.pods[a].isSystem !== this.props.pods[b].isSystem)
-                                        return this.props.pods[a].isSystem ? 1 : -1;
-                                    return this.props.pods[a].Name > this.props.pods[b].Name ? 1 : -1;
-                                })
-                                .map(section => {
-                                    const tableProps = {};
-                                    const rows = partitionedContainers[section].map(container => {
-                                        return this.renderRow(this.props.containersStats, container,
-                                                              this.props.containersDetails[container.Id + container.isSystem.toString()]);
-                                    });
-                                    let caption;
-                                    if (section !== 'no-pod') {
-                                        tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
-                                        caption = this.props.pods[section].Name;
-                                    } else {
-                                        tableProps['aria-label'] = _("Containers");
-                                    }
-                                    return (
-                                        <Card key={'table-' + section}
-                                         id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
-                                         isPlain={section == "no-pod"}
-                                         isFlat={section != "no-pod"}
-                                         className="container-section">
-                                            {caption && <CardHeader>
-                                                <CardTitle>
-                                                    <span className='pod-name'>{caption}</span>
-                                                    <span>{_("pod group")}</span>
-                                                </CardTitle>
-                                                <CardActions className='panel-actions'>
-                                                    <Badge isRead>{_(this.props.pods[section].Status)}</Badge>
-                                                    <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
-                                                </CardActions>
-                                            </CardHeader>}
-                                            <CardBody>
+                                        // User pods are in front of system ones
+                                        if (this.props.pods[a].isSystem !== this.props.pods[b].isSystem)
+                                            return this.props.pods[a].isSystem ? 1 : -1;
+                                        return this.props.pods[a].Name > this.props.pods[b].Name ? 1 : -1;
+                                    })
+                                    .map(section => {
+                                        const tableProps = {};
+                                        const rows = partitionedContainers[section].map(container => {
+                                            return this.renderRow(this.props.containersStats, container,
+                                                                  this.props.containersDetails[container.Id + container.isSystem.toString()]);
+                                        });
+                                        let caption;
+                                        if (section !== 'no-pod') {
+                                            tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
+                                            caption = this.props.pods[section].Name;
+                                        } else {
+                                            tableProps['aria-label'] = _("Containers");
+                                        }
+                                        return (
+                                            <Card key={'table-' + section}
+                                             id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
+                                             isPlain={section == "no-pod"}
+                                             isFlat={section != "no-pod"}
+                                             className="container-section">
+                                                {caption && <CardHeader>
+                                                    <CardTitle>
+                                                        <span className='pod-name'>{caption}</span>
+                                                        <span>{_("pod group")}</span>
+                                                    </CardTitle>
+                                                    <CardActions className='panel-actions'>
+                                                        <Badge isRead>{_(this.props.pods[section].Status)}</Badge>
+                                                        <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
+                                                    </CardActions>
+                                                </CardHeader>}
                                                 <ListingTable variant='compact'
                                                           emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
                                                           columns={columnTitles}
                                                           rows={rows}
                                                           {...tableProps} />
-                                            </CardBody>
-                                        </Card>
-                                    );
-                                })}
+                                            </Card>
+                                        );
+                                    })}
+                    </Flex>
                 </CardBody>
             </Card>
         );
