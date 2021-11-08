@@ -22,7 +22,7 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
             {showCheckbox &&
             <FlexItem>
                 <Checkbox
-                  label={isSystem ? _("The following unused system images will be deleted:") : _("The following unused user images will be deleted:")}
+                  label={isSystem ? _("Delete unused system images:") : _("Delete unused user images:")}
                   isChecked={checked}
                   id={name}
                   name={name}
