@@ -10,6 +10,8 @@ export const states = [_("configured"), _("created"), _("running"), _("stopped")
 // https://github.com/containers/podman/blob/main/libpod/define/podstate.go
 export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"), _("Exited"), _("Error")];
 
+export const fallbackRegistries = ["docker.io", "quay.io"];
+
 export function truncate_id(id) {
     if (!id) {
         return "";
