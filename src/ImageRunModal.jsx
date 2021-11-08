@@ -474,19 +474,47 @@ export class ImageRunModal extends React.Component {
 
         this.setState({ searchFinished: false, searchInProgress: true });
         this.activeConnection = rest.connect(client.getAddress(this.state.isSystem), this.state.isSystem);
+        let searches = [];
 
-        const options = {
-            method: "GET",
-            path: client.VERSION + "libpod/images/search",
-            body: "",
-            params: {
-                term: value,
-            },
-        };
-        this.activeConnection.call(options)
+        // If there are registries configured search in them, or if a user searches for `docker.io/cockpit` let
+        // podman search in the user specified registry.
+        if (Object.keys(this.props.registries).length !== 0 || value.includes('/')) {
+            searches.push(this.activeConnection.call({
+                method: "GET",
+                path: client.VERSION + "libpod/images/search",
+                body: "",
+                params: {
+                    term: value,
+                }
+            }));
+        } else {
+            searches = searches.concat(utils.fallbackRegistries.map(registry =>
+                this.activeConnection.call({
+                    method: "GET",
+                    path: client.VERSION + "libpod/images/search",
+                    body: "",
+                    params: {
+                        term: registry + "/" + value
+                    }
+                })));
+        }
+
+        Promise.allSettled(searches)
                 .then(reply => {
                     if (reply && this._isMounted) {
-                        const imageResults = JSON.parse(reply);
+                        let imageResults = [];
+                        let dialogError = "";
+                        let dialogErrorDetail = "";
+
+                        for (const result of reply) {
+                            if (result.status === "fulfilled") {
+                                imageResults = imageResults.concat(JSON.parse(result.value));
+                            } else {
+                                dialogError = _("Failed to search for new images");
+                                // TODO: add registry context, podman does not include it in the reply.
+                                dialogErrorDetail = cockpit.format(_("Failed to search for images: $0"), result.reason);
+                            }
+                        }
                         // Group images on registry
                         const images = {};
                         imageResults.forEach(image => {
@@ -516,17 +544,8 @@ export class ImageRunModal extends React.Component {
                             imageResults: images || {},
                             searchFinished: true,
                             searchInProgress: false,
-                            dialogError: ""
-                        });
-                    }
-                })
-                .catch(ex => {
-                    if (this._isMounted) {
-                        this.setState({
-                            searchFinished: true,
-                            searchInProgress: false,
-                            dialogError: _("Failed to search for new images"),
-                            dialogErrorDetail: cockpit.format(_("Failed to search for images: $0"), ex.message ? ex.message : "")
+                            dialogError,
+                            dialogErrorDetail,
                         });
                     }
                 });
@@ -665,6 +684,8 @@ export class ImageRunModal extends React.Component {
             imageListOptions = this.filterImages();
         }
 
+        const registries = this.props.registries && this.props.registries.search ? this.props.registries.search : utils.fallbackRegistries;
+
         // Add the search component
         const footer = (
             <ToggleGroup className='image-search-footer' aria-label={_("Search by registry")}>
@@ -685,19 +706,18 @@ export class ImageRunModal extends React.Component {
                     ev.stopPropagation();
                 }}
                 />
-                {this.props.registries && this.props.registries.search &&
-                  this.props.registries.search.map(registry => {
-                      const index = this.truncateRegistryDomain(registry);
-                      return (
-                          <ToggleGroupItem text={index} key={index} isSelected={this.state.searchByRegistry == index} onChange={(_, ev) => {
-                              ev.stopPropagation();
-                              this.setState({ searchByRegistry: index });
-                          }}
+                {registries.map(registry => {
+                    const index = this.truncateRegistryDomain(registry);
+                    return (
+                        <ToggleGroupItem text={index} key={index} isSelected={this.state.searchByRegistry == index} onChange={(_, ev) => {
+                            ev.stopPropagation();
+                            this.setState({ searchByRegistry: index });
+                        }}
                         onTouchStart={ev => {
                             ev.stopPropagation();
                         }}
-                          />);
-                  })}
+                        />);
+                })}
             </ToggleGroup>
         );
 

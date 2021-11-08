@@ -10,6 +10,7 @@ import { ErrorNotification } from './Notification.jsx';
 import cockpit from 'cockpit';
 import rest from './rest.js';
 import * as client from './client.js';
+import { fallbackRegistries } from './util.js';
 
 import './ImageSearchModal.css';
 
@@ -75,29 +76,43 @@ export class ImageSearchModal extends React.Component {
         this.setState({ searchInProgress: true });
 
         this.activeConnection = rest.connect(client.getAddress(this.state.isSystem), this.state.isSystem);
+        let registries = Object.keys(this.props.registries).length !== 0 ? [this.state.registry] : fallbackRegistries;
+        // if a user searches for `docker.io/cockpit` let podman search in the user specified registry.
+        if (this.state.imageIdentifier.includes('/')) {
+            registries = [""];
+        }
 
-        const rr = this.state.registry;
-        const registry = rr.length < 1 || rr[rr.length - 1] === "/" ? rr : rr + "/";
+        const searches = registries.map(rr => {
+            const registry = rr.length < 1 || rr[rr.length - 1] === "/" ? rr : rr + "/";
+            return this.activeConnection.call({
+                method: "GET",
+                path: client.VERSION + "libpod/images/search",
+                body: "",
+                params: {
+                    term: registry + this.state.imageIdentifier
+                }
+            });
+        });
 
-        const options = {
-            method: "GET",
-            path: client.VERSION + "libpod/images/search",
-            body: "",
-            params: {
-                term: registry + this.state.imageIdentifier,
-            },
-        };
-        this.activeConnection.call(options)
+        Promise.allSettled(searches)
                 .then(reply => {
-                    if (reply && this._isMounted)
-                        this.setState({ imageList: JSON.parse(reply) || [], searchInProgress: false, searchFinished: true, dialogError: "" });
-                })
-                .catch(ex => {
-                    if (this._isMounted) {
+                    if (reply && this._isMounted) {
+                        let results = [];
+                        let dialogError = "";
+                        let dialogErrorDetail = "";
+
+                        for (const result of reply) {
+                            if (result.status === "fulfilled") {
+                                results = results.concat(JSON.parse(result.value));
+                            } else {
+                                dialogError = _("Failed to search for new images");
+                                dialogErrorDetail = cockpit.format(_("Failed to search for images: $0"), result.reason);
+                            }
+                        }
+
                         this.setState({
-                            searchInProgress: false,
-                            dialogError: _("Failed to search for new images"),
-                            dialogErrorDetail: cockpit.format(_("Failed to search for images: $0"), ex.message ? ex.message : "")
+                            imageList: results || [], searchInProgress: false,
+                            searchFinished: true, dialogError, dialogErrorDetail
                         });
                     }
                 });
