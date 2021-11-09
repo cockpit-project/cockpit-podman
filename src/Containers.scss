@@ -1,13 +1,7 @@
 .container-section {
-    margin-top: var(--pf-global--spacer--md);
-
     .pf-c-card__header {
         border-color: #ddd;
         padding-top: var(--pf-global--spacer--md);
-    }
-
-    .pf-c-card__body {
-        padding: 0;
     }
 
     .pf-c-card__title {
@@ -22,7 +16,7 @@
         }
     }
 
-    .pf-c-card__header {
+    .pf-c-card__header:not(:last-child) {
         padding-bottom: var(--pf-global--spacer-sm);
     }
 }
