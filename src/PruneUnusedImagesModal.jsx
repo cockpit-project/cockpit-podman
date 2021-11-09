@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Flex, FlexItem, List, ListItem, Modal, } from '@patternfly/react-core';
+import { Button, Checkbox, Flex, List, ListItem, Modal, } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
 import * as client from './client.js';
+
+import "@patternfly/patternfly/utilities/Spacing/spacing.css";
 
 const _ = cockpit.gettext;
 
@@ -16,32 +18,32 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
     if (shownImages.length === 0) {
         return null;
     }
+    const listNameId = "list-" + name;
 
     return (
         <Flex flex={{ default: 'column' }}>
             {showCheckbox &&
-            <FlexItem>
                 <Checkbox
                   label={isSystem ? _("Delete unused system images:") : _("Delete unused user images:")}
                   isChecked={checked}
                   id={name}
                   name={name}
                   onChange={handleChange}
+                  aria-owns={listNameId}
                 />
-            </FlexItem>
             }
-            <FlexItem>
-                <List>
-                    {shownImages.map((image, index) =>
-                        <ListItem key={index}>{image.RepoTags ? image.RepoTags[0] : "<none>:<none>"}</ListItem> // TODO: common function for RepoTags
-                    )}
-                    {!isExpanded && images.length > 5 &&
-                        <Button onClick={onToggle} variant="link" isInline>
-                            {_("Show more")}
-                        </Button>
-                    }
-                </List>
-            </FlexItem>
+            <List id={listNameId}>
+                {shownImages.map((image, index) =>
+                    <ListItem className="pf-u-ml-md" key={index}>
+                        {image.RepoTags ? image.RepoTags[0] : "<none>:<none>"}
+                    </ListItem> // TODO: common function for RepoTags
+                )}
+                {!isExpanded && images.length > 5 &&
+                <Button onClick={onToggle} variant="link" isInline>
+                    {_("Show more")}
+                </Button>
+                }
+            </List>
         </Flex>
     );
 }
