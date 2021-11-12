@@ -5,11 +5,10 @@ import {
     Button, Alert, Modal,
     Dropdown, DropdownPosition, DropdownItem,
     KebabToggle, List, ListItem,
+    Stack,
 } from '@patternfly/react-core';
 
 import cockpit from 'cockpit';
-
-import "./PodActions.scss";
 
 const _ = cockpit.gettext;
 
@@ -159,15 +158,15 @@ export class PodActions extends React.Component {
                         <Button variant="link" onClick={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}>{_("Cancel")}</Button>
                     </>}
                 >
-                    {(pod.Containers || []).length > 0 && <>
+                    {(pod.Containers || []).length > 0 && <Stack hasGutter>
                         {this.state.deleteError && <Alert variant="danger" isInline title={_("An error occured")}>{this.state.deleteError}</Alert>}
-                        <p className="containers-delete-modal-title">{_("Deleting this pod will remove the following containers:")}</p>
+                        <p>{_("Deleting this pod will remove the following containers:")}</p>
                         <List>
                             {pod.Containers
                                     .filter(container => container.Id != pod.InfraId)
                                     .map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
                         </List>
-                    </>}
+                    </Stack>}
                 </Modal>}
             </>
         );
