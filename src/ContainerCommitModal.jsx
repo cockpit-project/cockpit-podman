@@ -1,5 +1,9 @@
 import React from 'react';
-import { Button, Checkbox, Form, FormGroup, Modal, Radio, TextInput } from '@patternfly/react-core';
+import {
+    Button, Checkbox,
+    Flex, FlexItem, Form, FormGroup,
+    Modal, Radio, TextInput
+} from '@patternfly/react-core';
 import { CloseIcon, PlusIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
 
@@ -119,9 +123,9 @@ class ContainerCommitModal extends React.Component {
     render() {
         const onbuilds =
             this.state.onbuild.map((bud, idx) => (
-                <div key={"onbuildvar" + idx} id="select-claimed-onbuildvars" className="form-inline containers-run-onbuildvarclaim containers-run-inline">
-                    <FormGroup className="form-inline">
-                        <TextInput value={this.state.onbuildvar_key} onChange={value => this.handleOnBuildsInputChange(idx, value)} />
+                <Flex key={"onbuildvar" + idx} id="select-claimed-onbuildvars" className="containers-run-onbuildvarclaim">
+                    <TextInput value={this.state.onbuildvar_key} onChange={value => this.handleOnBuildsInputChange(idx, value)} />
+                    <FlexItem align={{ default: 'alignRight' }}>
                         <Button variant="secondary" isDisabled={idx === 0}
                                 aria-label={_("Remove on build variable")}
                                 icon={<CloseIcon />}
@@ -131,8 +135,8 @@ class ContainerCommitModal extends React.Component {
                                 icon={<PlusIcon />}
                                 isSmall
                                 aria-label={_("Add on build variable")} />
-                    </FormGroup>
-                </div>
+                    </FlexItem>
+                </Flex>
             ));
         const commitContent =
             <Form isHorizontal>
@@ -192,7 +196,7 @@ class ContainerCommitModal extends React.Component {
                               label={_("Pause the container")} />
                 </FormGroup>
 
-                <FormGroup fieldId="commit-dialog-setonbuild">
+                <FormGroup fieldId="commit-dialog-setonbuild" isStack>
                     <Checkbox id="commit-dialog-setonbuild" isDisabled={this.state.onbuildDisabled}
                               isChecked={this.state.setonbuild}
                               onChange={value => this.handleInputChange("setonbuild", value)}
