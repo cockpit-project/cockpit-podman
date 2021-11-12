@@ -19,10 +19,11 @@
 
 import React from 'react';
 import {
-    Page, PageSection, PageSectionVariants, Gallery,
+    Page, PageSection, PageSectionVariants,
     Alert, AlertActionLink, AlertActionCloseButton, AlertGroup,
     Button, Checkbox, Title,
-    EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions
+    EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions,
+    Stack,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
@@ -688,11 +689,11 @@ class Application extends React.Component {
                     />
                 </PageSection>
                 <PageSection>
-                    <Gallery hasGutter>
+                    <Stack hasGutter>
                         { this.state.showStartService ? startService : null }
                         {imageList}
                         {containerList}
-                    </Gallery>
+                    </Stack>
                 </PageSection>
             </Page>
         );
