@@ -1,33 +1,9 @@
-.podman-search .modal-content {
-    display: grid;
-    min-height: calc(100vh - 1.5rem);
-    grid-template-rows: auto 1fr auto;
-}
-
-@media (min-width: 768px) {
-    .podman-search .modal-content {
-        min-height: calc(100vh - 5rem);
-        max-height: calc(100vh - 5rem);
-    }
-}
-
 .podman-search .pf-c-modal-box__body {
     display: grid;
     grid-auto-flow: row;
     overflow: hidden;
     grid-template-rows: auto auto 1fr;
     grid-gap: var(--pf-global--spacer--sm);
-}
-
-.podman-search .list-group {
-    overflow: hidden scroll;
-    flex: auto;
-    margin: 0;
-    border: 1px solid var(--pf-global--BorderColor--100);
-    /* Limit height to 75% of screen height;
-       it causes double-scrolling on mobile, but this allows people to scroll
-       the modal even on super-long lists */
-    max-height: 75vh;
 }
 
 .image-list-item {
@@ -49,49 +25,10 @@
     }
 }
 
-.image-list-item > .control-label {
-    margin: 0;
-}
-
-@media (max-width: 767px) {
-    .image-list-item {
-        font-size: var(--pf-global--FontSize--sm);
-    }
-    .image-list-item > .control-label {
-        font-size: var(--pf-global--FontSize--md);
-    }
-}
-
-.list-group .list-group-item:focus,
-.list-group .list-group-item:active,
-.list-group .list-group-item:hover {
-    background-color: var(--pf-global--BackgroundColor--light-300);
-    border-color: var(--pf-global--BackgroundColor--light-300);
-}
-
-.list-group .list-group-item.active {
-    background-color: var(--pf-global--active-color--200);
-    border-color: var(--pf-global--active-color--200);
-    color: var(--pf-global--Color--100);
-}
-
-.podman-search .modal-footer {
-    margin-top: var(--pf-global--spacer--sm);
-}
-
-.podman-search .modal-footer::before,
-.podman-search .modal-footer::after {
-    display: none;
-}
-
 .podman-search .image-search-modal-footer-grid {
     display: grid;
     grid-template-columns: 1fr auto auto;
     grid-gap: 0.25rem;
-}
-
-.podman-search .modal-footer > .btn {
-    margin: 0;
 }
 
 .image-tag-entry {
