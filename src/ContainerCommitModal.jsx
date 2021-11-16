@@ -102,7 +102,7 @@ class ContainerCommitModal extends React.Component {
                            onChange={format => this.handleFormatChange(format)} />
                 </FormGroup>
 
-                <FormGroup fieldId="commit-dialog-image-name" label={_("Image name")}>
+                <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}>
                     <TextInput id="commit-dialog-image-name"
                                value={this.state.imageName}
                                onChange={value => this.handleInputChange("imageName", value)} />
@@ -110,12 +110,14 @@ class ContainerCommitModal extends React.Component {
 
                 <FormGroup fieldId="commit-dialog-image-tag" label={_("Tag")}>
                     <TextInput id="commit-dialog-image-tag"
+                               placeholder="latest" // Do not translate
                                value={this.state.tag}
                                onChange={value => this.handleInputChange("tag", value)} />
                 </FormGroup>
 
                 <FormGroup fieldId="commit-dialog-author" label={_("Author")}>
                     <TextInput id="commit-dialog-author"
+                               placeholder={_("Example, Your Name <yourname@example.com>")}
                                value={this.state.author}
                                onChange={value => this.handleInputChange("author", value)} />
                 </FormGroup>
