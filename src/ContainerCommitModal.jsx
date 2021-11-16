@@ -10,6 +10,7 @@ import cockpit from 'cockpit';
 import * as utils from './util.js';
 import * as client from './client.js';
 import { ErrorNotification } from './Notification.jsx';
+import { fmt_to_fragments } from 'utils.jsx';
 
 const _ = cockpit.gettext;
 
@@ -140,12 +141,6 @@ class ContainerCommitModal extends React.Component {
             ));
         const commitContent =
             <Form isHorizontal>
-                <FormGroup fieldId="commit-dialog-container-name" label={_("Container name")} hasNoPaddingTop>
-                    <span id="commit-dialog-container-name">
-                        {this.props.container.Names}
-                    </span>
-                </FormGroup>
-
                 <FormGroup fieldId="commit-dialog-format" label={_("Format")} isInline>
                     <Radio id="format-oci" value="oci"
                            name="format"
@@ -209,7 +204,8 @@ class ContainerCommitModal extends React.Component {
             <Modal isOpen
                    showClose={false}
                    position="top" variant="medium"
-                   title={_("Commit image")}
+                   title={_("Commit container")}
+                   description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{this.props.container.Names}</b>)}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
                        <Button variant="primary"
