@@ -84,7 +84,7 @@ class TestApplication(testlib.MachineCase):
 
         self.has_criu = m.image not in ["debian-testing", "ubuntu-stable"]
         self.has_selinux = "arch" not in m.image and "debian" not in m.image and "ubuntu" not in m.image
-        self.has_cgroupsV2 = m.image not in ["ubuntu-stable"] and not m.image.startswith('rhel-8')
+        self.has_cgroupsV2 = m.image not in ["ubuntu-stable", "centos-8-stream"] and not m.image.startswith('rhel-8')
 
     def performContainerAction(self, container, cmd):
         b = self.browser
