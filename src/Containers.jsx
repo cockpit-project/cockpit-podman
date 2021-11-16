@@ -32,7 +32,7 @@ import { PodActions } from './PodActions.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, onAddNotification, version }) => {
+const ContainerActions = ({ container, onAddNotification, version, localImages }) => {
     const [removeErrorModal, setRemoveErrorModal] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
     const [checkpointInProgress, setCheckpointInProgress] = useState(false);
@@ -252,6 +252,7 @@ const ContainerActions = ({ container, onAddNotification, version }) => {
             onHide={() => setCommitModal(false)}
             container={container}
             version={version}
+            localImages={localImages}
         />;
 
     return (
@@ -302,7 +303,7 @@ class Containers extends React.Component {
         }));
     }
 
-    renderRow(containersStats, container, containerDetail) {
+    renderRow(containersStats, container, containerDetail, localImages) {
         const containerStats = containersStats[container.Id + container.isSystem.toString()];
         const image = container.Image;
 
@@ -338,7 +339,7 @@ class Containers extends React.Component {
         ];
 
         if (!container.isDownloading) {
-            columns.push({ title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} />, props: { className: "pf-c-table__action" } });
+            columns.push({ title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} localImages={localImages} />, props: { className: "pf-c-table__action" } });
         }
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
@@ -540,7 +541,8 @@ class Containers extends React.Component {
                                         const tableProps = {};
                                         const rows = partitionedContainers[section].map(container => {
                                             return this.renderRow(this.props.containersStats, container,
-                                                                  this.props.containersDetails[container.Id + container.isSystem.toString()]);
+                                                                  this.props.containersDetails[container.Id + container.isSystem.toString()],
+                                                                  localImages);
                                         });
                                         let caption;
                                         if (section !== 'no-pod') {
