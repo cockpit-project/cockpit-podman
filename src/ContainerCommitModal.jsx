@@ -1,10 +1,9 @@
 import React from 'react';
 import {
     Button, Checkbox,
-    Flex, FlexItem, Form, FormGroup,
+    Form, FormGroup,
     Modal, Radio, TextInput
 } from '@patternfly/react-core';
-import { CloseIcon, PlusIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
 
 import * as utils from './util.js';
@@ -21,39 +20,15 @@ class ContainerCommitModal extends React.Component {
             imageName: "",
             tag: "",
             author:"",
-            message: "",
             command: props.container.Command ? utils.quote_cmdline(props.container.Command) : "",
             pause: true,
-            setonbuild: false,
-            onbuild: [""],
             format: "oci",
             selectedFormat: "oci",
-            onbuildDisabled: true,
             commitInProgress: false,
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleCommit = this.handleCommit.bind(this);
-        this.handleOnBuildsInputChange = this.handleOnBuildsInputChange.bind(this);
-        this.handleAddOnBuild = this.handleAddOnBuild.bind(this);
-        this.handleRemoveOnBuild = this.handleRemoveOnBuild.bind(this);
-    }
-
-    handleOnBuildsInputChange(idx, value) {
-        const newOnbuilds = this.state.onbuild.map((bud, sidx) => {
-            if (idx !== sidx) return bud;
-            return value;
-        });
-
-        this.setState({ onbuild: newOnbuilds });
-    }
-
-    handleAddOnBuild() {
-        this.setState({ onbuild: this.state.onbuild.concat([""]) });
-    }
-
-    handleRemoveOnBuild(idx) {
-        this.setState({ onbuild: this.state.onbuild.filter((bud, sidx) => idx !== sidx) });
     }
 
     handleInputChange(targetName, value) {
@@ -80,9 +55,6 @@ class ContainerCommitModal extends React.Component {
         commitData.pause = this.state.pause;
         commitData.format = this.state.format;
 
-        if (this.state.comment)
-            commitData.comment = this.state.comment;
-
         if (this.state.tag)
             commitData.tag = this.state.tag;
 
@@ -94,12 +66,6 @@ class ContainerCommitModal extends React.Component {
             cmdData = "CMD [" + cmdStr + "]";
             commitData.changes.push(cmdData);
         }
-
-        let onbuildsArr = [];
-        if (this.state.setonbuild) {
-            onbuildsArr = utils.getCommitArr(this.state.onbuild, "ONBUILD");
-        }
-        commitData.changes.push(...onbuildsArr);
 
         this.setState({ commitInProgress: true });
         client.commitContainer(this.props.container.isSystem, commitData)
@@ -117,28 +83,10 @@ class ContainerCommitModal extends React.Component {
         this.setState({
             selectedFormat: selectItem,
             format: selectItem,
-            onbuildDisabled: selectItem === "oci"
         });
     }
 
     render() {
-        const onbuilds =
-            this.state.onbuild.map((bud, idx) => (
-                <Flex key={"onbuildvar" + idx} id="select-claimed-onbuildvars" className="containers-run-onbuildvarclaim">
-                    <TextInput value={this.state.onbuildvar_key} onChange={value => this.handleOnBuildsInputChange(idx, value)} />
-                    <FlexItem align={{ default: 'alignRight' }}>
-                        <Button variant="secondary" isDisabled={idx === 0}
-                                aria-label={_("Remove on build variable")}
-                                icon={<CloseIcon />}
-                                isSmall
-                                onClick={() => this.handleRemoveOnBuild(idx)} />
-                        <Button variant="secondary" onClick={this.handleAddOnBuild}
-                                icon={<PlusIcon />}
-                                isSmall
-                                aria-label={_("Add on build variable")} />
-                    </FlexItem>
-                </Flex>
-            ));
         const commitContent =
             <Form isHorizontal>
                 <FormGroup fieldId="commit-dialog-format" label={_("Format")} isInline>
@@ -172,12 +120,6 @@ class ContainerCommitModal extends React.Component {
                                onChange={value => this.handleInputChange("author", value)} />
                 </FormGroup>
 
-                <FormGroup fieldId="commit-dialog-message" label={_("Message")}>
-                    <TextInput id="commit-dialog-message"
-                               value={this.state.message}
-                               onChange={value => this.handleInputChange("message", value)} />
-                </FormGroup>
-
                 <FormGroup fieldId="commit-dialog-command" label={_("Command")}>
                     <TextInput id="commit-dialog-command"
                                value={this.state.command}
@@ -189,14 +131,6 @@ class ContainerCommitModal extends React.Component {
                               isChecked={this.state.pause}
                               onChange={value => this.handleInputChange("pause", value)}
                               label={_("Pause the container")} />
-                </FormGroup>
-
-                <FormGroup fieldId="commit-dialog-setonbuild" isStack>
-                    <Checkbox id="commit-dialog-setonbuild" isDisabled={this.state.onbuildDisabled}
-                              isChecked={this.state.setonbuild}
-                              onChange={value => this.handleInputChange("setonbuild", value)}
-                              label={_("Set container on build variables")} />
-                    {this.state.setonbuild && onbuilds}
                 </FormGroup>
             </Form>;
 
