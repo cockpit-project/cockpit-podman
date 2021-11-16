@@ -22,6 +22,9 @@ ln -s /usr/local/lib/firefox/firefox /usr/local/bin/
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
 dnf update -y podman crun
 
+# Show critical package versions
+rpm -q runc crun podman criu kernel-core || true
+
 # create user account for logging in
 if ! id admin 2>/dev/null; then
     useradd -c Administrator -G wheel admin
