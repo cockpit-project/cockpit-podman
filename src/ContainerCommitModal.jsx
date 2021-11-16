@@ -21,10 +21,11 @@ class ContainerCommitModal extends React.Component {
             tag: "",
             author:"",
             command: props.container.Command ? utils.quote_cmdline(props.container.Command) : "",
-            pause: true,
+            pause: false,
             selectedFormat: "oci",
             commitInProgress: false,
             useDocker: false,
+            nameError: "",
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -32,14 +33,26 @@ class ContainerCommitModal extends React.Component {
     }
 
     handleInputChange(targetName, value) {
-        this.setState({
-            [targetName]: value
-        });
+        const newState = { [targetName]: value };
+
+        if (targetName === "imageName" || targetName === "tag")
+            newState.nameError = "";
+
+        this.setState(newState);
     }
 
-    handleCommit() {
-        if (!this.state.imageName) {
-            this.setState({ dialogError: "Image name is required" });
+    handleCommit(force) {
+        if (!force && !this.state.imageName) {
+            this.setState({ nameError: "Image name is required" });
+            return;
+        }
+
+        let full_name = this.state.imageName + ":" + (this.state.tag ? this.state.tag : "latest");
+        if (full_name.indexOf("/") < 0)
+            full_name = "localhost/" + full_name;
+
+        if (!force && this.props.localImages.some(image => image.isSystem === this.props.container.isSystem && image.Name === full_name)) {
+            this.setState({ nameError: "Image name is not unique" });
             return;
         }
 
@@ -69,7 +82,7 @@ class ContainerCommitModal extends React.Component {
             commitData.changes.push(cmdData);
         }
 
-        this.setState({ commitInProgress: true });
+        this.setState({ commitInProgress: true, nameError: "", dialogError: "" });
         client.commitContainer(this.props.container.isSystem, commitData)
                 .then(() => this.props.onHide())
                 .catch(ex => {
@@ -84,9 +97,12 @@ class ContainerCommitModal extends React.Component {
     render() {
         const commitContent =
             <Form isHorizontal>
-                <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}>
+                <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}
+                           validated={this.state.nameError ? "error" : "default"}
+                           helperTextInvalid={this.state.nameError}>
                     <TextInput id="commit-dialog-image-name"
                                value={this.state.imageName}
+                               validated={this.state.nameError ? "error" : "default"}
                                onChange={value => this.handleInputChange("imageName", value)} />
                 </FormGroup>
 
@@ -133,11 +149,18 @@ class ContainerCommitModal extends React.Component {
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
                        <Button variant="primary"
                                className="btn-ctr-commit"
-                               isLoading={this.state.commitInProgress}
-                               isDisabled={this.state.commitInProgress}
-                               onClick={this.handleCommit}>
+                               isLoading={this.state.commitInProgress && !this.state.nameError}
+                               isDisabled={this.state.commitInProgress || this.state.nameError}
+                               onClick={() => this.handleCommit(false)}>
                            {_("Commit")}
                        </Button>
+                       {this.state.nameError && <Button variant="warning"
+                               className="btn-ctr-commit-force"
+                               isLoading={this.state.commitInProgress}
+                               isDisabled={this.state.commitInProgress}
+                               onClick={() => this.handleCommit(true)}>
+                           {_("Force commit")}
+                       </Button>}
                        <Button variant="link"
                                className="btn-ctr-cancel-commit"
                                isDisabled={this.state.commitInProgress}
