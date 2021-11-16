@@ -22,7 +22,7 @@ class ContainerCommitModal extends React.Component {
             tag: "",
             author:"",
             message: "",
-            command: props.container.command ? utils.quote_cmdline(props.container.command) : "",
+            command: props.container.Command ? utils.quote_cmdline(props.container.Command) : "",
             pause: true,
             setonbuild: false,
             onbuild: [""],
