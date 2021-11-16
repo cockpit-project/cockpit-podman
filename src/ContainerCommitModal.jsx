@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Button, Checkbox,
     Form, FormGroup,
-    Modal, Radio, TextInput
+    Modal, TextInput
 } from '@patternfly/react-core';
 import cockpit from 'cockpit';
 
@@ -22,9 +22,9 @@ class ContainerCommitModal extends React.Component {
             author:"",
             command: props.container.Command ? utils.quote_cmdline(props.container.Command) : "",
             pause: true,
-            format: "oci",
             selectedFormat: "oci",
             commitInProgress: false,
+            useDocker: false,
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -53,7 +53,9 @@ class ContainerCommitModal extends React.Component {
         commitData.repo = this.state.imageName;
         commitData.author = this.state.author;
         commitData.pause = this.state.pause;
-        commitData.format = this.state.format;
+
+        if (this.state.useDocker)
+            commitData.format = 'docker';
 
         if (this.state.tag)
             commitData.tag = this.state.tag;
@@ -79,29 +81,9 @@ class ContainerCommitModal extends React.Component {
                 });
     }
 
-    handleFormatChange(selectItem) {
-        this.setState({
-            selectedFormat: selectItem,
-            format: selectItem,
-        });
-    }
-
     render() {
         const commitContent =
             <Form isHorizontal>
-                <FormGroup fieldId="commit-dialog-format" label={_("Format")} isInline>
-                    <Radio id="format-oci" value="oci"
-                           name="format"
-                           label="oci"
-                           isChecked={this.state.selectedFormat === 'oci'}
-                           onChange={format => this.handleFormatChange(format)} />
-                    <Radio id="format-docker" value="docker"
-                           name="format"
-                           label="docker"
-                           isChecked={this.state.selectedFormat === 'docker'}
-                           onChange={format => this.handleFormatChange(format)} />
-                </FormGroup>
-
                 <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}>
                     <TextInput id="commit-dialog-image-name"
                                value={this.state.imageName}
@@ -128,11 +110,16 @@ class ContainerCommitModal extends React.Component {
                                onChange={value => this.handleInputChange("command", value)} />
                 </FormGroup>
 
-                <FormGroup fieldId="commit-dialog-pause">
+                <FormGroup fieldId="commit-dialog-pause" label={_("Options")} isStack hasNoPaddingTop>
                     <Checkbox id="commit-dialog-pause"
                               isChecked={this.state.pause}
                               onChange={value => this.handleInputChange("pause", value)}
-                              label={_("Pause the container")} />
+                              label={_("Pause container when creating image")} />
+                    <Checkbox id="commit-dialog-docker"
+                              isChecked={this.state.useDocker}
+                              onChange={value => this.handleInputChange("useDocker", value)}
+                              description={_("Docker format is useful when sharing the image with Docker or Moby Engine")}
+                              label={_("Use legacy Docker format")} />
                 </FormGroup>
             </Form>;
 
