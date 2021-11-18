@@ -799,7 +799,6 @@ export class ImageRunModal extends React.Component {
 
                         <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
                             <TextInput id='run-image-dialog-command'
-                           placeholder={_("Command")}
                            value={dialogValues.command || ''}
                            onChange={value => this.onValueChanged('command', value)} />
                         </FormGroup>
