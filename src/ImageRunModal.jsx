@@ -853,8 +853,9 @@ export class ImageRunModal extends React.Component {
                                 </Flex>
                             </FormGroup>}
 
-                        <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Start after creation")} hasNoPaddingTop>
-                            <Checkbox isChecked={this.state.runImage} id="run-image-dialog-start-after-creation" onChange={value => this.onValueChanged('runImage', value)} />
+                        <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Options")} hasNoPaddingTop>
+                            <Checkbox isChecked={this.state.runImage} id="run-image-dialog-start-after-creation"
+                                      onChange={value => this.onValueChanged('runImage', value)} label={_("Start after creation")} />
                         </FormGroup>
                     </Tab>
                     <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-c-form">
