@@ -504,75 +504,6 @@ class TestApplication(testlib.MachineCase):
             self.confirm_modal("Delete")
             b.wait_not_in_text("#containers-containers", "test-sh-system")
 
-        def container_commit(container_name, image_name="testimg", image_tag="testtag", image_author="tester", image_command="sleep 6000", owner="system"):
-            self.filter_containers("all")
-            self.waitContainerRow(container_name)
-            self.toggleExpandedContainer(container_name)
-            # open commit modal and close it using cancel
-            self.performContainerAction(container_name, "Commit")
-            self.confirm_modal("Cancel")
-            # open commit modal and create an image
-            self.performContainerAction(container_name, "Commit")
-            b.wait_visible(".pf-c-modal-box")
-            # set commit parameters
-            b.set_input_text("#commit-dialog-image-name", image_name)
-            b.set_input_text("#commit-dialog-image-tag", image_tag)
-            b.set_input_text("#commit-dialog-author", image_author)
-            b.set_input_text("#commit-dialog-command", image_command)
-            b.click(".pf-c-modal-box footer .btn-ctr-commit")
-            b.wait_not_present(".pf-c-modal-box")
-            b.wait_visible('#containers-images td[data-label="Image"]:contains("{0}:{1}")'.format(image_name, image_tag))
-            checkImage(b, "localhost/{0}:{1}".format(image_name, image_tag), owner)
-            # open the listing toggle of testimg and check the commit paramerters
-            toggle_sel = '#containers-images tbody tr:contains("{0}:{1}") td.pf-c-table__toggle button'.format(image_name, image_tag)
-            b.click(toggle_sel)
-            b.wait_in_text("#containers-images tbody tr.pf-c-table__expandable-row.pf-m-expanded dl:first-child", image_command)
-            # close listing toggle again
-            b.click(toggle_sel)
-
-        # run a container (will exit immediately) and test the display of commit modal
-        if auth:
-            self.execute(True, "podman run -d --name test-sh0 alpine sh")
-            container_commit("test-sh0")
-            checkImage(b, "localhost/testimg:testtag", "system")
-            self.execute(True, "podman rm -f test-sh0; podman rmi testimg:testtag")
-
-        self.execute(False, "podman run -d --name test-sh1 alpine sh")
-        container_commit("test-sh1", owner="admin")
-        checkImage(b, "localhost/testimg:testtag", "admin")
-        self.execute(False, "podman rm -f test-sh1; podman rmi testimg:testtag")
-
-        # test commit of a running container
-        if auth:
-            self.execute(True, "podman run -d --name test-sh2 busybox sleep 1000")
-            container_commit("test-sh2", image_command=r'sh -c "while echo \"Hello World\"; do sleep 1; done "')
-            self.execute(True, "podman rm -f test-sh2; podman rmi testimg:testtag")
-
-        if self.has_cgroupsV2:
-            self.execute(False, "podman run -d --name test-sh3 alpine sleep 1000")
-            container_commit("test-sh3", owner="admin")
-            self.execute(False, "podman rm -f test-sh3; podman rmi testimg:testtag")
-
-        self.execute(auth, "podman run -d --name test-sh4 alpine sh")
-        self.waitContainerRow("test-sh4")
-        # open commit modal and check error modal
-        self.performContainerAction("test-sh4", "Commit")
-        # check required field error
-        b.click(".pf-c-modal-box footer .btn-ctr-commit")
-        b.wait_visible('.pf-c-modal-box:contains("Image name is required")')
-        b.click(".pf-c-modal-box .pf-c-alert .pf-c-button")
-        b.wait_not_present(".pf-c-modal-box .alert")
-
-        # check error
-        b.set_input_text("#commit-dialog-image-name", "TEST")
-        b.click(".pf-c-modal-box footer .btn-ctr-commit")
-        b.wait_visible('.pf-c-modal-box:contains("Failed to commit container")')
-        b.click(".pf-c-modal-box .pf-c-alert .pf-c-button")
-        b.wait_not_present(".pf-c-modal-box .alert")
-        b.wait_visible(".pf-c-modal-box footer .btn-ctr-commit:not([disabled])")
-
-        b.click(".btn-ctr-cancel-commit")
-
         # delete image busybox that hasn't been used
         # First try to just untag and then remove with more tags
         self.execute(auth, "podman tag quay.io/libpod/busybox:latest quay.io/libpod/busybox:1")
@@ -612,10 +543,6 @@ class TestApplication(testlib.MachineCase):
         # Check that we correctly show networking information
         # Rootless don't have this info
         if auth:
-            # Remove current container for easier selectors
-            self.execute(auth, "podman rm -f test-sh4")
-            b.wait_not_present(".container-details-networking")
-
             self.execute(auth, "podman run -dt --name net_check alpine")
             self.toggleExpandedContainer("net_check")
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
@@ -623,6 +550,8 @@ class TestApplication(testlib.MachineCase):
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
 
         # delete image alpine that has been used by a container
+        self.execute(auth, "podman run -d --name test-sh4 alpine sh")
+        self.waitContainerRow("test-sh4")
         alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
@@ -660,6 +589,112 @@ class TestApplication(testlib.MachineCase):
 
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
+
+    @testlib.nondestructive
+    def testCommitUser(self):
+        self._testCommit(False)
+
+    @testlib.nondestructive
+    def testCommitSystem(self):
+        self._testCommit(True)
+
+    def _testCommit(self, auth):
+        b = self.browser
+
+        self.login(auth)
+
+        # run a container (will exit immediately) and test the display of commit modal
+        self.execute(auth, "podman run -d --name test-sh0 alpine sh -c 'ls -a'")
+
+        self.filter_containers("all")
+        self.waitContainerRow("test-sh0")
+        self.toggleExpandedContainer("test-sh0")
+
+        self.performContainerAction("test-sh0", "Commit")
+        b.wait_visible(".pf-c-modal-box")
+
+        b.wait_in_text(".pf-c-modal-box__description", "state of the test-sh0 container")
+
+        # Empty name yields warning
+        b.click("button:contains(Commit)")
+        b.wait_text("#commit-dialog-image-name-helper", "Image name is required")
+        b.wait_visible("button:contains(Commit):disabled")
+        b.wait_visible("button:contains('Force commit')")
+        # Warning should be cleaned when updating name
+        b.set_input_text("#commit-dialog-image-name", "foobar")
+        b.wait_not_present("button:contains('Force commit')")
+        b.wait_not_present("#commit-dialog-image-name-helper")
+
+        # Existing name yields warning
+        b.set_input_text("#commit-dialog-image-name", "quay.io/libpod/alpine")
+        b.click("button:contains(Commit)")
+        b.wait_text("#commit-dialog-image-name-helper", "Image name is not unique")
+        b.wait_visible("button:contains(Commit):disabled")
+        b.wait_visible("button:contains('Force commit')")
+        # Warning should be cleaned when updating tag
+        b.set_input_text("#commit-dialog-image-tag", "foobar")
+        b.wait_not_present("button:contains('Force commit')")
+        b.wait_not_present("#commit-dialog-image-name-helper")
+
+        # Check failing commit
+        b.set_input_text("#commit-dialog-image-name", "TEST")
+        b.click("button:contains(Commit)")
+        b.wait_in_text(".pf-c-alert", "Failed to commit container test-sh0")
+        b.wait_in_text(".pf-c-alert", "repository name must be lowercase")
+
+        # Test cancel
+        self.confirm_modal("Cancel")
+
+        # Force commit empty container
+        self.performContainerAction("test-sh0", "Commit")
+        b.wait_visible(".pf-c-modal-box")
+        # We prefill command
+        b.wait_val("#commit-dialog-command", 'sh -c "ls -a"')
+        # Test docker format
+        b.set_checked("#commit-dialog-docker", True)
+        b.click("button:contains(Commit)")
+        self.confirm_modal("Force commit")
+
+        b.wait_in_text("#containers-images", "7 images" if auth else "4 images")
+        image_id = self.execute(auth, "podman images --sort created --format '{{.Id}}' | head -n 1").strip()
+        manifest_type = self.execute(auth, "podman inspect --format '{{.ManifestType}}' " + image_id).strip()
+        cmd = self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' " + image_id).strip()
+        self.assertIn("docker.distribution.manifest", manifest_type)
+        self.assertEqual("[sh -c ls -a]", cmd)
+
+        # Commit with name, tag, author and edited command
+        self.performContainerAction("test-sh0", "Commit")
+        b.wait_visible(".pf-c-modal-box")
+        b.set_input_text("#commit-dialog-image-name", "newname")
+        b.set_input_text("#commit-dialog-image-tag", "24")
+        b.set_input_text("#commit-dialog-author", "MM")
+        b.set_input_text("#commit-dialog-command", "sh -c 'ps'")
+        self.confirm_modal("Commit")
+
+        b.wait_in_text("#containers-images", "8 images" if auth else "5 images")
+        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Author}}' newname:24").strip(), "MM")
+        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:24").strip(), "[sh -c ps]")
+        self.assertIn("vnd.oci.image.manifest", self.execute(auth, "podman inspect --format '{{.ManifestType}}' newname:24").strip())
+
+        # Test commit of running container
+        self.execute(auth, "podman run -d --name test-sh2 busybox sleep 1000")
+        self.performContainerAction("test-sh2", "Commit")
+        b.wait_visible(".pf-c-modal-box")
+        b.set_input_text("#commit-dialog-image-name", "newname")
+        self.confirm_modal("Commit")
+        b.wait_in_text("#containers-images", "9 images" if auth else "6 images")
+        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:latest").strip(), "[sleep 1000]")
+
+        # Test commit of running container with pause (also conflicting name through :latest)
+        # This only works on rootless with cgroupsv2
+        if auth or self.has_cgroupsV2:
+            self.performContainerAction("test-sh2", "Commit")
+            b.wait_visible(".pf-c-modal-box")
+            b.set_input_text("#commit-dialog-image-name", "newname")
+            b.set_checked("#commit-dialog-pause", True)
+            b.click("button:contains(Commit)")
+            self.confirm_modal("Force commit")
+            b.wait_in_text("#containers-images", "10 images" if auth else "7 images")
 
     @testlib.nondestructive
     def testDownloadImage(self):
