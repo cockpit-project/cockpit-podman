@@ -265,6 +265,10 @@ export class ImageRunModal extends React.Component {
         if (this.props.image && this.props.image.Command) {
             command = utils.quote_cmdline(this.props.image.Command);
         }
+        let selectedImage = "";
+        if (this.props.image) {
+            selectedImage = this.props.image.RepoTags ? this.props.image.RepoTags[0] : "<none>:<none>";
+        }
 
         this.state = {
             command,
@@ -284,7 +288,7 @@ export class ImageRunModal extends React.Component {
             activeTabKey: 0,
             owner: this.props.systemServiceAvailable ? systemOwner : this.props.user,
             /* image select */
-            selectedImage: "",
+            selectedImage,
             searchFinished: false,
             searchInProgress: false,
             searchText: "",
@@ -747,9 +751,8 @@ export class ImageRunModal extends React.Component {
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-l-grid pf-m-gutter">
 
-                        {!image &&
                         <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}
-                          labelIcon={
+                          labelIcon={!this.props.image &&
                               <Popover aria-label={_("Image selection help")}
                                 enableFlip
                                 bodyContent={
@@ -785,17 +788,11 @@ export class ImageRunModal extends React.Component {
                                 onFilter={() => {}}
                                 onTypeaheadInputChanged={value => this.debouncedInputChanged(value)}
                                 footer={footer}
+                                isDisabled={!!this.props.image}
                             >
                                 {imageListOptions}
                             </Select>
                         </FormGroup>
-                        }
-
-                        {image &&
-                        <FormGroup fieldId='run-image-dialog-image' label={_("Image")} hasNoPaddingTop>
-                            <div id='run-image-dialog-image'> { image.RepoTags ? image.RepoTags[0] : "" } </div>
-                        </FormGroup>
-                        }
 
                         <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
                             <TextInput id='run-image-dialog-command'
