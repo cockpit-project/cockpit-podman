@@ -1203,8 +1203,6 @@ class TestApplication(testlib.MachineCase):
             b.set_input_text("#create-image-image-select-typeahead", "quay.io/libpod/busybox:latest")
             b.click('button.pf-c-toggle-group__button:contains("Local")')
             b.click('button.pf-c-select__menu-item:contains("quay.io/libpod/busybox:latest")')
-            # Wait till the input is filled
-            b.blur("#create-image-image-select-typeahead")
 
             b.click('.pf-c-modal-box__footer button:contains("Create")')
             b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'running')
