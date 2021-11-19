@@ -382,10 +382,21 @@ export class ImageRunModal extends React.Component {
                         client.postContainer(isSystem, "start", reply.Id, {})
                                 .then(() => this.props.close())
                                 .catch(ex => {
-                                    this.setState({
-                                        dialogError: _("Container failed to be started"),
-                                        dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
-                                    });
+                                    // If container failed to start remove it, so a user can fix the settings and retry and
+                                    // won't get another error that the container name is already taken.
+                                    client.delContainer(isSystem, reply.Id, true)
+                                            .then(() => {
+                                                this.setState({
+                                                    dialogError: _("Container failed to be started"),
+                                                    dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
+                                                });
+                                            })
+                                            .catch(ex => {
+                                                this.setState({
+                                                    dialogError: _("Failed to clean up container"),
+                                                    dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
+                                                });
+                                            });
                                 });
                     } else {
                         this.props.close();
