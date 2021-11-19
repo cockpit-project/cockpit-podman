@@ -723,9 +723,10 @@ export class ImageRunModal extends React.Component {
 
         const defaultBody = (
             <Form isHorizontal={activeTabKey == 0}>
-                <Flex className="run-image-dialog-header" justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+                <Flex className="run-image-dialog-header pf-c-form pf-m-horizontal" justifyContent={{ default: 'justifyContentSpaceBetween' }}>
                     <FormGroup fieldId='run-image-dialog-name' label={_("Name")}>
                         <TextInput id='run-image-dialog-name'
+                           className="image-name"
                            placeholder={_("Container name")}
                            value={dialogValues.containerName}
                            onChange={value => this.onValueChanged('containerName', value)} />
