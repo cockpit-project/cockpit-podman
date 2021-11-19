@@ -54,6 +54,13 @@
     }
 }
 
-.run-image-dialog-header {
+.pf-c-form.run-image-dialog-header {
+    // The pf-l-flex class is not applied because of pf-c-form.pf-m-horizontal forces grid
+    display: flex;
     row-gap: var(--pf-global--spacer--md);
+
+    // Set max width to the image name - otherwise it often makes the owner wrap unecessarily
+    .image-name {
+        max-width: 10rem;
+    }
 }
