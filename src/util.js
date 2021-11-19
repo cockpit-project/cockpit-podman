@@ -170,3 +170,7 @@ export function compare_versions(a, b) {
 
     return a_ints.length - b_ints.length;
 }
+
+export function image_name(image) {
+    return image.RepoTags ? image.RepoTags[0] : "<none>:<none>";
+}

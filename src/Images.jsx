@@ -119,7 +119,7 @@ class Images extends React.Component {
         const { title: usedByText, count: usedByCount } = this.getUsedByText(image);
 
         const columns = [
-            { title: image.RepoTags ? image.RepoTags[0] : "<none>:<none>", header: true },
+            { title: utils.image_name(image), header: true },
             { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
             utils.localize_time(image.Created),
             utils.truncate_id(image.Id),

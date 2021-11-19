@@ -267,7 +267,7 @@ export class ImageRunModal extends React.Component {
         }
         let selectedImage = "";
         if (this.props.image) {
-            selectedImage = this.props.image.RepoTags ? this.props.image.RepoTags[0] : "<none>:<none>";
+            selectedImage = utils.image_name(this.props.image);
         }
 
         this.state = {
