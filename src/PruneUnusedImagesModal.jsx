@@ -3,6 +3,7 @@ import { Button, Checkbox, Flex, List, ListItem, Modal, } from '@patternfly/reac
 import cockpit from 'cockpit';
 
 import * as client from './client.js';
+import * as utils from './util.js';
 
 import "@patternfly/patternfly/utilities/Spacing/spacing.css";
 
@@ -35,8 +36,8 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
             <List id={listNameId}>
                 {shownImages.map((image, index) =>
                     <ListItem className="pf-u-ml-md" key={index}>
-                        {image.RepoTags ? image.RepoTags[0] : "<none>:<none>"}
-                    </ListItem> // TODO: common function for RepoTags
+                        {utils.image_name(image)}
+                    </ListItem>
                 )}
                 {!isExpanded && images.length > 5 &&
                 <Button onClick={onToggle} variant="link" isInline>
