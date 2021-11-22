@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
 import cockpit from 'cockpit';
-import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -28,7 +27,7 @@ class ContainerRestoreModal extends React.Component {
             <Modal isOpen
                    showClose={false}
                    position="top" variant="medium"
-                   title={cockpit.format(_("Restore container $0"), utils.truncate_id(this.props.containerWillCheckpoint.Id))}
+                   title={cockpit.format(_("Restore container $0"), this.props.containerWillCheckpoint.Names)}
                    footer={<>
                        <Button variant="primary" isDisabled={this.props.restoreInProgress}
                                isLoading={this.props.restoreInProgress}
