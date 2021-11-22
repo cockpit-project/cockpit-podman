@@ -844,8 +844,19 @@ export class ImageRunModal extends React.Component {
                             </Flex>
                         </FormGroup>
 
-                        { this.state.image && this.state.image.isSystem &&
-                            <FormGroup fieldId='run-image-cpu-priority' label={_("CPU shares")}>
+                        {this.state.owner === systemOwner &&
+                            <FormGroup
+                              fieldId='run-image-cpu-priority'
+                              label={_("CPU shares")}
+                              labelIcon={
+                                  <Popover aria-label={_("CPU Shares help")}
+                                      enableFlip
+                                      bodyContent={_("CPU shares determine the priority of running containers. Default priority is 1024. A higher number prioritizes this container. A lower number decreases priority.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
                                 <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
                                     <Checkbox id="run-image-dialog-cpu-priority-checkbox"
                                         isChecked={this.state.cpuSharesConfigure}
