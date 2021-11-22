@@ -62,6 +62,7 @@ class Application extends React.Component {
             showStartService: true,
             version: '1.3.0',
             selinuxAvailable: false,
+            podmanRestartAvailable: false,
             currentUser: _("User"),
             privileged: false,
         };
@@ -495,6 +496,16 @@ class Application extends React.Component {
                 .then(() => this.setState({ selinuxAvailable: true }))
                 .catch(() => this.setState({ selinuxAvailable: false }));
 
+        cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
+                .then(out => {
+                    console.log(out);
+                    if (out.trim() === "loaded") {
+                        this.setState({ podmanRestartAvailable: true });
+                    } else {
+                        this.setState({ podmanRestartAvailable: false });
+                    }
+                });
+
         superuser.addEventListener("changed", () => this.setState({ privileged: !!superuser.allowed }));
         this.setState({ privileged: superuser.allowed });
 
@@ -639,6 +650,7 @@ class Application extends React.Component {
                 systemServiceAvailable={this.state.systemServiceAvailable}
                 registries={this.state.registries}
                 selinuxAvailable={this.state.selinuxAvailable}
+                podmanRestartAvailable={this.state.podmanRestartAvailable}
             />;
         const containerList =
             <Containers
@@ -660,6 +672,7 @@ class Application extends React.Component {
                 cgroupVersion={this.state.cgroupVersion}
                 registries={this.state.registries}
                 selinuxAvailable={this.state.selinuxAvailable}
+                podmanRestartAvailable={this.state.podmanRestartAvailable}
             />;
 
         const notificationList = (

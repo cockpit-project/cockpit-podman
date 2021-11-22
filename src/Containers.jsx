@@ -505,6 +505,7 @@ class Containers extends React.Component {
                 close={() => this.setState({ showCreateContainerModal: false })}
                 registries={this.props.registries}
                 selinuxAvailable={this.props.selinuxAvailable}
+                podmanRestartAvailable={this.props.podmanRestartAvailable}
                 systemServiceAvailable={this.props.systemServiceAvailable}
                 userServiceAvailable={this.props.userServiceAvailable}
                 onAddNotification={this.props.onAddNotification}

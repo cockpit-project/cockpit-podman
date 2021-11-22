@@ -5,7 +5,7 @@ import {
     EmptyState, EmptyStateBody,
     Form, FormGroup, FormFieldGroup, FormFieldGroupHeader,
     FormSelect, FormSelectOption,
-    Grid,
+    Grid, GridItem,
     HelperText, HelperTextItem,
     Modal, Select, SelectVariant,
     SelectOption, SelectGroup,
@@ -317,6 +317,8 @@ export class ImageRunModal extends React.Component {
             validationFailed: {},
             volumes: [],
             runImage: true,
+            restartPolicy: "no",
+            restartTries: 5,
             activeTabKey: 0,
             owner: this.props.systemServiceAvailable ? systemOwner : this.props.user,
             /* image select */
@@ -402,6 +404,18 @@ export class ImageRunModal extends React.Component {
                             record.options.push(volume.selinux);
                         return record;
                     });
+        }
+
+        if (this.state.restartPolicy !== "no") {
+            createConfig.restart_policy = this.state.restartPolicy;
+            if (this.state.restartPolicy === "on-failure" && this.state.restartTries !== null) {
+                createConfig.restart_tries = parseInt(this.state.restartTries);
+            }
+            // Enable podman-restart.service for system containers, for user
+            // sessions enable-linger needs to be enabled for containers to start on boot.
+            if (this.state.restartPolicy === "always" && this.props.systemServiceAvailable) {
+                this.enablePodmanRestartService();
+            }
         }
 
         return createConfig;
@@ -721,6 +735,15 @@ export class ImageRunModal extends React.Component {
         return domain;
     }
 
+    enablePodmanRestartService = () => {
+        const argv = ["systemctl", "enable", "podman-restart.service"];
+
+        cockpit.spawn(argv, { superuser: "require", err: "message" })
+                .catch(err => {
+                    console.warn("Failed to start podman-restart.service:", JSON.stringify(err));
+                });
+    }
+
     render() {
         const { image } = this.props;
         const dialogValues = this.state;
@@ -902,8 +925,49 @@ export class ImageRunModal extends React.Component {
                                         isReadOnly={!this.state.cpuSharesConfigure}
                                         onChange={value => this.onValueChanged('cpuShares', parseInt(value))} />
                                 </Flex>
-                            </FormGroup>}
-
+                            </FormGroup>
+                        }
+                        {this.state.owner === systemOwner && this.props.podmanRestartAvailable &&
+                        <Grid hasGutter md={6} sm={3}>
+                            <GridItem>
+                                <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}
+                          labelIcon={
+                              <Popover aria-label={_("Restart policy help")}
+                                enableFlip
+                                bodyContent={_("Restart policy to follow when containers exit.")}>
+                                  <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <OutlinedQuestionCircleIcon />
+                                  </button>
+                              </Popover>
+                          }
+                                >
+                                    <FormSelect id="run-image-dialog-restart-policy"
+                              aria-label={_("Restart policy help")}
+                              value={dialogValues.restartPolicy}
+                              onChange={value => this.onValueChanged('restartPolicy', value)}>
+                                        <FormSelectOption value='no' key='no' label={_("No")} />
+                                        <FormSelectOption value='on-failure' key='on-failure' label={_("On failure")} />
+                                        <FormSelectOption value='always' key='always' label={_("Always")} />
+                                    </FormSelect>
+                                </FormGroup>
+                            </GridItem>
+                            {dialogValues.restartPolicy === "on-failure" &&
+                                <FormGroup fieldId='run-image-dialog-restart-retries'
+                                  label={_("Maximum retries")}>
+                                    <TextInput
+                              type="number"
+                              id="run-image-dialog-restart-retries"
+                              className="run-image-dialog-restart-retries"
+                              value={dialogValues.restartTries}
+                              step={1}
+                              min={1}
+                              max={65535}
+                              onChange={value => this.onValueChanged('restartTries', value)}
+                                    />
+                                </FormGroup>
+                            }
+                        </Grid>
+                        }
                         <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Options")} hasNoPaddingTop>
                             <Checkbox isChecked={this.state.runImage} id="run-image-dialog-start-after-creation"
                                       onChange={value => this.onValueChanged('runImage', value)} label={_("Start after creation")} />

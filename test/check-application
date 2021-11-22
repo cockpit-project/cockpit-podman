@@ -24,6 +24,10 @@ registries = ['localhost:5000', 'localhost:6000']
 
 NOT_RUNNING = ["exited", "stopped"]
 
+# Ubuntu stable has 3.2.1 while we need podman 3.3. debian-testing has 3.4 but does not ship the podman-restart unit.
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1001780
+DISTROS_WITHOUT_PODMAN_RESTART = ['ubuntu-stable', 'debian-testing']
+
 
 def checkImage(browser, name, owner):
     if browser.attr("#containers-images button.pf-c-expandable-section__toggle", "aria-expanded") == 'false':
@@ -1326,6 +1330,13 @@ class TestApplication(testlib.MachineCase):
         # Set up command line
         b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
 
+        if auth and m.image not in DISTROS_WITHOUT_PODMAN_RESTART:
+            # Set restart policy to 3 retries
+            b.set_val("#run-image-dialog-restart-policy", "on-failure")
+            b.set_input_text('#run-image-dialog-restart-retries', '3')
+        else:
+            b.wait_not_present("#run-image-dialog-restart-policy")
+
         # Switch to Integration tab
         b.click("#pf-tab-1-create-image-dialog-tab-integration")
 
@@ -1418,6 +1429,13 @@ class TestApplication(testlib.MachineCase):
         if auth:
             cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-with-tty || podman inspect --format '{{.HostConfig.CPUShares}}' busybox-with-tty").strip()
             self.assertEqual(cpuShares, '512')
+
+        restartPolicy = self.execute(auth, "podman inspect --format '{{.HostConfig.RestartPolicy}}' busybox-with-tty").strip()
+        if auth and m.image not in DISTROS_WITHOUT_PODMAN_RESTART:
+            self.assertEqual(restartPolicy, '{on-failure 3}')
+        else:
+            # No restart policy
+            self.assertEqual(restartPolicy, '{ 0}')
 
         b.wait(lambda: "3" in self.execute(auth, "podman logs busybox-with-tty"))
 
@@ -1744,6 +1762,41 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5001')
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         self.waitContainerRow(container_name)
+
+    @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_RESTART)
+    def testPodmanRestartEnabled(self):
+        b = self.browser
+        self.addCleanup(self.machine.execute, "systemctl disable podman-restart.service")
+
+        # Drop user images for easy selection
+        if "busybox" in self.execute(False, "podman images"):
+            self.execute(False, "podman rmi busybox")
+
+        self.login(True)
+        b.click("#containers-images button.pf-c-expandable-section__toggle")
+
+        def create_container(name, policy=None):
+            b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
+            b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
+            b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
+
+            b.set_input_text("#run-image-dialog-name", name)
+            if policy:
+                b.set_val("#run-image-dialog-restart-policy", "always")
+            b.click('.pf-c-modal-box__footer button:contains("Create")')
+            self.waitContainerRow(name)
+
+        container_name = 'none'
+        create_container(container_name)
+        restartPolicy = self.execute(True, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
+        self.assertEqual(restartPolicy, '{ 0}')
+
+        container_name = 'restart'
+        create_container(container_name, 'always')
+        restartPolicy = self.execute(True, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
+        self.assertEqual(restartPolicy, '{always 0}')
+        podmanRestartEnabled = self.execute(True, "systemctl is-enabled podman-restart.service || true").strip()
+        self.assertEqual(podmanRestartEnabled, 'enabled')
 
 
 if __name__ == '__main__':
