@@ -28,6 +28,10 @@ if [ "${TEST_OS#centos-}" != "$TEST_OS" ]; then
     TEST_OS="${TEST_OS}-stream"
 fi
 
+if [ "$TEST_OS" = "fedora-36" ]; then
+    export TEST_OS=fedora-35
+fi
+
 EXCLUDES=""
 
 RC=0
