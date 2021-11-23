@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Checkbox, Flex, List, ListItem, Modal, } from '@patternfly/react-core';
 import cockpit from 'cockpit';
+import { fmt_to_fragments } from 'utils.jsx';
 
 import * as client from './client.js';
 
@@ -24,7 +25,7 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
         <Flex flex={{ default: 'column' }}>
             {showCheckbox &&
                 <Checkbox
-                  label={isSystem ? _("Delete unused system images:") : _("Delete unused user images:")}
+                  label={fmt_to_fragments(_("Delete unused $0 images:"), <b>{isSystem ? _("system") : _("user")}</b>)}
                   isChecked={checked}
                   id={name}
                   name={name}
