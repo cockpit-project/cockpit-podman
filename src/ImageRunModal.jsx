@@ -49,7 +49,7 @@ const units = {
 const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
     (
         <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-4-col-on-sm"
+            <FormGroup className="pf-m-4-col-on-md"
                 label={_("IP address")}
                 fieldId={id + "-ip-address"}
                 labelIcon={
@@ -65,7 +65,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
                         value={item.IP || ''}
                         onChange={value => onChange(idx, 'IP', value)} />
             </FormGroup>
-            <FormGroup className="pf-m-2-col-on-sm"
+            <FormGroup className="pf-m-2-col-on-md"
                     label={_("Host port")}
                     fieldId={id + "-host-port"}
                     labelIcon={
@@ -85,7 +85,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
                             value={item.hostPort || ''}
                             onChange={value => onChange(idx, 'hostPort', value)} />
             </FormGroup>
-            <FormGroup className="pf-m-3-col-on-sm"
+            <FormGroup className="pf-m-3-col-on-md"
                         label={_("Container port")}
                         fieldId={id + "-container-port"} isRequired>
                 <TextInput id={id + "-container-port"}
@@ -96,7 +96,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
                             value={item.containerPort || ''}
                             onChange={value => onChange(idx, 'containerPort', value)} />
             </FormGroup>
-            <FormGroup className="pf-m-2-col-on-sm"
+            <FormGroup className="pf-m-2-col-on-md"
                         label={_("Protocol")}
                         fieldId={id + "-protocol"}>
                 <FormSelect className='pf-c-form-control container-port-protocol'
@@ -107,7 +107,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
                     <FormSelectOption value='udp' key='udp' label={_("UDP")} />
                 </FormSelect>
             </FormGroup>
-            <FormGroup className="pf-m-1-col-on-sm remove-button-group">
+            <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='secondary'
                             className="btn-close"
                             id={id + "-btn-close"}
@@ -122,17 +122,17 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
 const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
     (
         <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-5-col-on-sm" label={_("Key")} fieldId={id + "-key-address"}>
+            <FormGroup className="pf-m-5-col-on-md" label={_("Key")} fieldId={id + "-key-address"}>
                 <TextInput id={id + "-key"}
                        value={item.envKey || ''}
                        onChange={value => onChange(idx, 'envKey', value)} />
             </FormGroup>
-            <FormGroup className="pf-m-5-col-on-sm" label={_("Value")} fieldId={id + "-value-address"}>
+            <FormGroup className="pf-m-5-col-on-md" label={_("Value")} fieldId={id + "-value-address"}>
                 <TextInput id={id + "-value"}
                        value={item.envValue || ''}
                        onChange={value => onChange(idx, 'envValue', value)} />
             </FormGroup>
-            <FormGroup className="pf-m-1-col-on-sm remove-button-group">
+            <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='secondary'
                     className="btn-close"
                     id={id + "-btn-close"}
@@ -147,24 +147,24 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
 const Volume = ({ id, item, onChange, idx, removeitem, additem, options, itemCount }) =>
     (
         <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-3-col-on-sm" label={_("Host path")} fieldId={id + "-host-path"}>
+            <FormGroup className="pf-m-3-col-on-md" label={_("Host path")} fieldId={id + "-host-path"}>
                 <FileAutoComplete id={id + "-host-path"}
                     value={item.hostPath || ''}
                     onChange={ value => onChange(idx, 'hostPath', value) } />
             </FormGroup>
-            <FormGroup className="pf-m-3-col-on-sm" label={_("Container path")} fieldId={id + "-container-path"}>
+            <FormGroup className="pf-m-3-col-on-md" label={_("Container path")} fieldId={id + "-container-path"}>
                 <TextInput id={id + "-container-path"}
                     value={item.containerPath || ''}
                     onChange={value => onChange(idx, 'containerPath', value)} />
             </FormGroup>
-            <FormGroup className="pf-m-2-col-on-sm" label={_("Mode")} fieldId={id + "-mode"}>
+            <FormGroup className="pf-m-2-col-on-md" label={_("Mode")} fieldId={id + "-mode"}>
                 <Checkbox id={id + "-mode"}
                     label={_("Writable")}
                     isChecked={item.mode == "rw"}
                     onChange={value => onChange(idx, 'mode', value ? "rw" : "ro")} />
             </FormGroup>
             { options && options.selinuxAvailable &&
-            <FormGroup className="pf-m-3-col-on-sm" label={_("SELinux")} fieldId={id + "-selinux"}>
+            <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={id + "-selinux"}>
                 <FormSelect id={id + "-selinux"} className='pf-c-form-control'
                             value={item.selinux}
                             onChange={value => onChange(idx, 'selinux', value)}>
@@ -173,7 +173,7 @@ const Volume = ({ id, item, onChange, idx, removeitem, additem, options, itemCou
                     <FormSelectOption value='Z' key='Z' label={_("Private")} />
                 </FormSelect>
             </FormGroup> }
-            <FormGroup className="pf-m-1-col-on-sm remove-button-group">
+            <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='secondary'
                     className="btn-close"
                     id={id + "-btn-close"}
