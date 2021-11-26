@@ -192,6 +192,7 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
         b.set_input_text('#containers-filter', 'test-pod-1-system')
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
+        # TODO add pixel test when this is again reachable - https://github.com/cockpit-project/bots/issues/2463
 
         # Check Pod Actions
         self.performPodAction("pod-1", "system", "Start")
@@ -548,10 +549,15 @@ class TestApplication(testlib.MachineCase):
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
             b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
+            self.execute(auth, "podman stop net_check")
+            b.wait(lambda: self.execute(True, "podman ps --all | grep -e net_check -e Exited"))
+            self.toggleExpandedContainer("net_check")
 
         # delete image alpine that has been used by a container
         self.execute(auth, "podman run -d --name test-sh4 alpine sh")
         self.waitContainerRow("test-sh4")
+        if auth:
+            b.assert_pixels('#app', "overview")
         alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
@@ -669,6 +675,10 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#commit-dialog-image-tag", "24")
         b.set_input_text("#commit-dialog-author", "MM")
         b.set_input_text("#commit-dialog-command", "sh -c 'ps'")
+
+        if auth:
+            b.assert_pixels(".pf-c-modal-box", "commit")
+
         self.confirm_modal("Commit")
 
         b.wait_in_text("#containers-images", "8 images" if auth else "5 images")
@@ -816,6 +826,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_visible(".pf-c-data-list .image-name:contains('localhost:5000/my-busybox')")
         b.wait_visible(".pf-c-data-list .image-name:contains('localhost:6000/my-busybox')")
+        b.assert_pixels(".podman-search", "download")
 
         b.set_val('#registry-select', "localhost:6000")
         b.wait_not_present(".pf-c-data-list .image-name:contains('localhost:5000/my-busybox')")
@@ -1197,9 +1208,11 @@ class TestApplication(testlib.MachineCase):
 
         b = self.browser
         container_name = "busybox-downloaded"
-        # No local results found
-        b.click("#containers-containers button.pf-c-button.pf-m-primary")
 
+        b.click("#containers-containers button.pf-c-button.pf-m-primary")
+        b.set_input_text("#run-image-dialog-name", container_name)
+
+        # No local results found
         b.set_input_text("#create-image-image-select-typeahead", "notfound")
 
         b.click('button.pf-c-toggle-group__button:contains("Local")')
@@ -1207,6 +1220,8 @@ class TestApplication(testlib.MachineCase):
 
         # Local results found
         b.set_input_text("#create-image-image-select-typeahead", "registry")
+        if auth:
+            b.assert_pixels(".pf-c-modal-box", "image-select")
         b.click('button.pf-c-toggle-group__button:contains("Local")')
         b.wait_text("button.pf-c-select__menu-item", "quay.io/cockpit/registry:2")
 
@@ -1217,7 +1232,6 @@ class TestApplication(testlib.MachineCase):
 
         # Select image
         b.click('button.pf-c-select__menu-item:contains("localhost:5000/my-busybox")')
-        b.set_input_text("#run-image-dialog-name", container_name)
 
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-c-modal-box__footer button:contains("Create")')
@@ -1371,6 +1385,9 @@ class TestApplication(testlib.MachineCase):
         b.click('#run-image-dialog-volume-1-btn-close')
         b.wait_not_present('#run-image-dialog-volume-1')
         b.click('.volume-form .btn-add')
+
+        if auth:
+            b.assert_pixels(".pf-c-modal-box", "integration", ignore=["#run-image-dialog-volume-0 input.pf-c-select__toggle-typeahead"])
 
         if self.has_selinux:
             b.set_val('#run-image-dialog-volume-1-selinux', "Z")
