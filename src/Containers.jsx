@@ -545,8 +545,10 @@ class Containers extends React.Component {
                                                                   localImages);
                                         });
                                         let caption;
+                                        let podStatus;
                                         if (section !== 'no-pod') {
                                             tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
+                                            podStatus = this.props.pods[section].Status;
                                             caption = this.props.pods[section].Name;
                                         } else {
                                             tableProps['aria-label'] = _("Containers");
@@ -563,7 +565,7 @@ class Containers extends React.Component {
                                                         <span>{_("pod group")}</span>
                                                     </CardTitle>
                                                     <CardActions className='panel-actions'>
-                                                        <Badge isRead>{_(this.props.pods[section].Status)}</Badge>
+                                                        <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
                                                         <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
                                                     </CardActions>
                                                 </CardHeader>}
