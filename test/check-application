@@ -160,9 +160,9 @@ class TestApplication(testlib.MachineCase):
     def performPodAction(self, podName, podOwner, action):
         b = self.browser
 
-        b.click("#pod-{0}-{1}-action-toggle".format(podName, podOwner))
-        b.click("ul[aria-labelledby=pod-{1}-{2}-action-toggle] li > button.pod-action-{0}".format(action.lower(), podName, podOwner))
-        b.wait_not_present("ul[aria-labelledby=pod-{0}-{1}-action-toggle]".format(podName, podOwner))
+        b.click(f"#pod-{podName}-{podOwner}-action-toggle")
+        b.click(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle] li > button.pod-action-{action.lower()}")
+        b.wait_not_present(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle]")
 
     @testlib.nondestructive
     def testPods(self):
@@ -246,8 +246,8 @@ class TestApplication(testlib.MachineCase):
         # Drop privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        b.click("%s:contains('Switch to limited access') button:contains('Limit access')" % modal_sel)
-        b.wait_not_present("%s:contains('Switch to limited access')" % modal_sel)
+        b.click(f"{modal_sel}:contains('Switch to limited access') button:contains('Limit access')")
+        b.wait_not_present(f"{modal_sel}:contains('Switch to limited access')")
         b.wait_text("#super-user-indicator", "Limited access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
@@ -275,11 +275,11 @@ class TestApplication(testlib.MachineCase):
         # Gain privileges
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        b.wait_in_text("%s:contains('dministrative access')" % modal_sel, passwd_prompt)
+        b.wait_in_text(f"{modal_sel}:contains('dministrative access')", passwd_prompt)
         # Needs to match "Administrative" (before cockpit-244) and "administrative" (now)
-        b.set_input_text("%s:contains('dministrative access') input" % modal_sel, "foobar")
-        b.click("%s button:contains('Authenticate')" % modal_sel)
-        b.wait_not_present("%s:contains('dministrative access')" % modal_sel)
+        b.set_input_text(f"{modal_sel}:contains('dministrative access') input", "foobar")
+        b.click(f"{modal_sel} button:contains('Authenticate')")
+        b.wait_not_present(f"{modal_sel}:contains('dministrative access')")
         b.wait_text("#super-user-indicator", "Administrative access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
@@ -316,8 +316,8 @@ class TestApplication(testlib.MachineCase):
 
         b.switch_to_top()
         b.click("#super-user-indicator button")
-        b.click("%s:contains('Switch to limited access') button:contains('Limit access')" % modal_sel)
-        b.wait_not_present("%s:contains('Switch to limited access')" % modal_sel)
+        b.click(f"{modal_sel}:contains('Switch to limited access') button:contains('Limit access')")
+        b.wait_not_present(f"{modal_sel}:contains('Switch to limited access')")
         b.wait_text("#super-user-indicator", "Limited access")
         b.switch_to_frame("cockpit1:localhost/podman")
 
@@ -376,10 +376,10 @@ class TestApplication(testlib.MachineCase):
         for image in self.execute(auth, "podman images --noheading --no-trunc").strip().split("\n"):
             # <name> <tag> sha256:<sha> <other things>
             items = image.split()
-            images["{0}:{1}".format(items[0], items[1])] = items[2].split(":")[-1]
+            images[f"{items[0]}:{items[1]}"] = items[2].split(":")[-1]
 
         # show image listing toggle
-        busybox_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/busybox:latest"], auth).lower()
+        busybox_sel = f"#containers-images tbody tr[data-row-id={images['quay.io/libpod/busybox:latest']}{auth}]".lower()
         b.wait_visible(busybox_sel)
         b.click(busybox_sel + " td.pf-c-table__toggle button")
         b.click(busybox_sel + " .pf-c-dropdown__toggle")
@@ -558,7 +558,7 @@ class TestApplication(testlib.MachineCase):
         self.waitContainerRow("test-sh4")
         if auth:
             b.assert_pixels('#app', "overview")
-        alpine_sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(images["quay.io/libpod/alpine:latest"], auth).lower()
+        alpine_sel = f"#containers-images tbody tr[data-row-id={images['quay.io/libpod/alpine:latest']}{auth}]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
         b.click(alpine_sel + " .pf-c-dropdown__toggle")
@@ -585,8 +585,8 @@ class TestApplication(testlib.MachineCase):
         # Test intermediate images
         b.wait_not_present(".listing-action")
         tmpdir = self.execute(auth, "mktemp -d").strip()
-        self.execute(auth, "echo 'FROM quay.io/cockpit/registry:2\nRUN ls' > {0}/Dockerfile".format(tmpdir))
-        self.execute(auth, "podman build {0}".format(tmpdir))
+        self.execute(auth, f"echo 'FROM quay.io/cockpit/registry:2\nRUN ls' > {tmpdir}/Dockerfile")
+        self.execute(auth, f"podman build {tmpdir}")
 
         b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
@@ -716,7 +716,7 @@ class TestApplication(testlib.MachineCase):
             self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
             self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
             # Add local insecure registry into registries conf
-            self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop podman.service".format(REGISTRIES_CONF))
+            self.execute(True, f"echo \"{REGISTRIES_CONF}\" > /etc/containers/registries.conf && systemctl stop podman.service")
             # Push busybox image to the local registries
             self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
             self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
@@ -741,7 +741,7 @@ class TestApplication(testlib.MachineCase):
 
             def fillDialog(self):
                 # Search for image specified with self.imageName and self.imageTag
-                b.click("#{0}".format(self.user))
+                b.click(f"#{self.user}")
                 b.set_val('#registry-select', "localhost:5000")
                 # HACK: Sometimes the value is not shown fully. FIXME
                 b.set_input_text("#search-image-dialog-name", self.imageName, value_check=False)
@@ -752,8 +752,8 @@ class TestApplication(testlib.MachineCase):
 
             def selectImageAndDownload(self):
                 # Select and download the self.imageName image
-                b.wait_visible(".pf-c-data-list .image-name:contains({0})".format(self.imageName))
-                b.click(".pf-c-data-list .image-name:contains({0})".format(self.imageName))
+                b.wait_visible(f".pf-c-data-list .image-name:contains({self.imageName})")
+                b.click(f".pf-c-data-list .image-name:contains({self.imageName})")
                 b.wait_visible("div.pf-c-modal-box footer button:contains(Download):not([disabled])")
                 b.click("div.pf-c-modal-box footer button:contains(Download)")
 
@@ -761,12 +761,12 @@ class TestApplication(testlib.MachineCase):
 
             def expectDownloadErrorForNonExistingTag(self):
                 b.wait_not_present('div.pf-c-modal-box')
-                b.wait_visible('h4.pf-c-alert__title:contains("Danger alert:Failed to download image localhost:5000/{0}:{1}")'.format(self.imageName, self.imageTag))
+                b.wait_visible(f'h4.pf-c-alert__title:contains("Danger alert:Failed to download image localhost:5000/{self.imageName}:{self.imageTag}")')
 
                 return self
 
             def expectSearchErrorForNotExistingImage(self):
-                b.wait_visible(".pf-c-modal-box__body:contains(No results for {0})".format(self.imageName))
+                b.wait_visible(f".pf-c-modal-box__body:contains(No results for {self.imageName})")
 
                 return self
 
@@ -774,13 +774,13 @@ class TestApplication(testlib.MachineCase):
                 # Confirm that the modal dialog is not open anymore
                 b.wait_not_present('div.pf-c-modal-box')
                 # Confirm that the image got downloaded
-                checkImage(b, "localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest"), "system" if self.user == "system" else "admin")
+                checkImage(b, f"localhost:5000/{self.imageName}:{self.imageTag or 'latest'}", "system" if self.user == "system" else "admin")
 
                 # Confirm that no error has happened
                 b.wait_not_present('h4.pf-c-alert__title:contains("Failed to download image")')
 
                 # Find out this image ID
-                self.imageSha = execute(self.user == "system", "podman inspect --format '{{{{.Id}}}}' localhost:5000/{0}:{1}".format(self.imageName, self.imageTag or "latest")).strip()
+                self.imageSha = execute(self.user == "system", f"podman inspect --format '{{{{.Id}}}}' localhost:5000/{self.imageName}:{self.imageTag or 'latest'}").strip()
 
                 return self
 
@@ -790,7 +790,7 @@ class TestApplication(testlib.MachineCase):
                 # Select the image row
 
                 # show image listing toggle
-                sel = "#containers-images tbody tr[data-row-id={0}{1}]".format(self.imageSha, "true" if self.user == "system" else "false")
+                sel = f"#containers-images tbody tr[data-row-id={self.imageSha}{'true' if self.user == 'system' else 'false'}]"
                 b.wait_visible(sel)
                 b.click(sel + " td.pf-c-table__toggle button")
 
@@ -798,9 +798,9 @@ class TestApplication(testlib.MachineCase):
                 b.click(sel + " .pf-c-dropdown__toggle")
                 b.click(sel + ' button.btn-delete')
 
-                b.set_checked(".pf-c-check__input[aria-label='localhost:5000/{0}{1}']".format(self.imageName, imageTagSuffix), True)
+                b.set_checked(f".pf-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']", True)
                 if another:
-                    b.set_checked(".pf-c-check__input[aria-label='{0}']".format(another), True)
+                    b.set_checked(f".pf-c-check__input[aria-label='{another}']", True)
 
                 # Confirm deletion in the delete dialog
                 b.click(".pf-c-modal-box #btn-img-delete")
@@ -1197,7 +1197,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
         self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
         # Add local insecure registry into registries conf
-        self.execute(True, "echo \"{0}\" > /etc/containers/registries.conf && systemctl stop podman.service".format(REGISTRIES_CONF))
+        self.execute(True, f"echo \"{REGISTRIES_CONF}\" > /etc/containers/registries.conf && systemctl stop podman.service")
         # Push busybox image to the local registries
         self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
         self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
@@ -1366,8 +1366,8 @@ class TestApplication(testlib.MachineCase):
         # Configure volumes
         b.click('.volume-form .btn-add')
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
-        m.execute("chown admin:admin {0}".format(rodir))
-        m.execute("chown admin:admin {0}".format(rwdir))
+        m.execute(f"chown admin:admin {rodir}")
+        m.execute(f"chown admin:admin {rwdir}")
         b.set_checked("#run-image-dialog-volume-0-mode", False)
 
         if self.has_selinux:
@@ -1378,7 +1378,7 @@ class TestApplication(testlib.MachineCase):
         b.set_file_autocomplete_val("#run-image-dialog-volume-0 .pf-c-select", rodir)
         b.key_press(["\r"])
         b.set_input_text('#run-image-dialog-volume-0-container-path', '/tmp/ro')
-        ro_label = m.execute("ls -dZ {0}".format(rodir)).split(" ")[0]
+        ro_label = m.execute(f"ls -dZ {rodir}").split(" ")[0]
         b.key_press(["\r"])
         b.click('.volume-form .btn-add')
         b.wait_visible('#run-image-dialog-volume-1')
@@ -1397,7 +1397,7 @@ class TestApplication(testlib.MachineCase):
         b.set_file_autocomplete_val("#run-image-dialog-volume-1 .pf-c-select", rwdir)
         b.key_press(["\r"])
         b.set_input_text('#run-image-dialog-volume-1-container-path', '/tmp/rw')
-        rw_label = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
+        rw_label = m.execute(f"ls -dZ {rwdir}").split(" ")[0]
 
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         b.wait_not_present("div.pf-c-modal-box")
@@ -1451,12 +1451,12 @@ class TestApplication(testlib.MachineCase):
 
         if self.has_selinux:
             # rw was set to :Z so it should change, but not be shared
-            rw_label_new = m.execute("ls -dZ {0}".format(rwdir)).split(" ")[0]
+            rw_label_new = m.execute(f"ls -dZ {rwdir}").split(" ")[0]
             self.assertNotEqual(rw_label, rw_label_new)
             self.assertRegex(rw_label_new, r"container_file_t:s0:c\d*,c\d*$")
 
             # ro was set to :z to it should change and be shared
-            ro_label_new = m.execute("ls -dZ {0}".format(rodir)).split(" ")[0]
+            ro_label_new = m.execute(f"ls -dZ {rodir}").split(" ")[0]
             self.assertNotEqual(ro_label, ro_label_new)
             self.assertRegex(ro_label_new, "container_file_t:s0$")
 
@@ -1595,9 +1595,9 @@ class TestApplication(testlib.MachineCase):
     def check_content(self, type, present, not_present):
         b = self.browser
         for item in present:
-            b.wait_visible('#containers-{0} tbody tr:first-child:contains({1})'.format(type, item))
+            b.wait_visible(f'#containers-{type} tbody tr:first-child:contains({item})')
         for item in not_present:
-            b.wait_not_present('#containers-{0} tbody tr:first-child:contains({1})'.format(type, item))
+            b.wait_not_present(f'#containers-{type} tbody tr:first-child:contains({item})')
 
     def check_containers(self, present, not_present):
         self.check_content("containers", present, not_present)
@@ -1610,7 +1610,7 @@ class TestApplication(testlib.MachineCase):
             "image" can be substring, "state" might be string or array of possible states, other are
             checked for exact match.
         """
-        sel = "#containers-containers #table-" + pod + " tbody tr[data-row-id={0}{1}]".format(row_id, auth).lower()
+        sel = "#containers-containers #table-" + pod + f" tbody tr[data-row-id={row_id}{auth}]".lower()
         b = self.browser
         if name:
             b.wait_text(sel + " .container-name", name)
@@ -1636,8 +1636,8 @@ class TestApplication(testlib.MachineCase):
     def confirm_modal(self, text):
         """Wait for the pop up window and click the button with text"""
         b = self.browser
-        b.click(".pf-c-modal-box footer button:contains(%s)" % text)
-        b.wait_not_present(".pf-c-modal-box footer button:contains(%s)" % text)
+        b.click(f".pf-c-modal-box footer button:contains({text})")
+        b.wait_not_present(f".pf-c-modal-box footer button:contains({text})")
 
     @testlib.nondestructive
     def testPruneUnusedImagesSystem(self):
