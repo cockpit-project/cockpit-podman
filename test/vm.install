@@ -4,9 +4,6 @@ set -eu
 
 # for Debian based images, build and install debs; for RPM based ones, the locally built rpm gets installed separately
 if [ -d /var/tmp/debian ]; then
-    apt-get update
-    eatmydata apt-get install ${APT_INSTALL_OPTIONS:-} -y cockpit-ws cockpit-system podman
-
     # build source package
     cd /var/tmp
     TAR=$(ls cockpit-podman-*.tar.xz)
