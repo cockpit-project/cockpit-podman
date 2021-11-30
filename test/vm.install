@@ -5,19 +5,7 @@ set -eu
 # for Debian based images, build and install debs; for RPM based ones, the locally built rpm gets installed separately
 if [ -d /var/tmp/debian ]; then
     apt-get update
-    if grep -q 'VERSION_ID="20.10"' /etc/os-release; then
-        BACKPORTS="-t groovy-backports"
-    fi
-    eatmydata apt-get install ${BACKPORTS:-} ${APT_INSTALL_OPTIONS:-} -y cockpit-ws cockpit-system podman
-
-    # HACK: starting podman.service complains about missing crun: https://bugs.debian.org/961016
-    # use crun for Debian, but Ubuntu so far still has runc
-    OS_RELEASE=$(grep '^NAME' /etc/os-release | awk -F'=' '{print $2}')
-    if [ $OS_RELEASE != "Ubuntu" ]; then
-        eatmydata apt-get install -y runc
-    else
-        eatmydata apt-get install -y crun
-    fi
+    eatmydata apt-get install ${APT_INSTALL_OPTIONS:-} -y cockpit-ws cockpit-system podman
 
     # build source package
     cd /var/tmp
