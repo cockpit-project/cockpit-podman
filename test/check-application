@@ -1360,8 +1360,10 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-env-2-value', 'GRAPE')
         b.click('#run-image-dialog-env-2-btn-close')
         b.click('.env-form .btn-add')
-        b.set_input_text('#run-image-dialog-env-2-key', 'RHUBARB')
-        b.set_input_text('#run-image-dialog-env-2-value', 'STRAWBERRY')
+        # Test inputting an key=var entry
+        b.set_val('#run-image-dialog-env-2-value', "RHUBARB=STRAWBERRY DURIAN=LEMON")
+        # set_val does not trigger onChange so append a space.
+        b.set_input_text('#run-image-dialog-env-2-value', ' ', append=True, value_check=False)
 
         # Configure volumes
         b.click('.volume-form .btn-add')
@@ -1440,6 +1442,7 @@ class TestApplication(testlib.MachineCase):
         self.assertIn('APPLE=ORANGE', env)
         self.assertIn('PEAR=BANANA', env)
         self.assertIn('RHUBARB=STRAWBERRY', env)
+        self.assertIn('DURIAN=LEMON', env)
         self.assertNotIn('MELON=GRAPE', env)
 
         romnt = self.execute(auth, "podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro")
