@@ -6,6 +6,7 @@ import {
     Form, FormGroup, FormFieldGroup, FormFieldGroupHeader,
     FormSelect, FormSelectOption,
     Grid,
+    HelperText, HelperTextItem,
     Modal, Select, SelectVariant,
     SelectOption, SelectGroup,
     TextInput, Tabs, Tab, TabTitleText,
@@ -119,18 +120,41 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
         </Grid>
     );
 
+const handleEnvValue = (key, value, idx, onChange, additem, itemCount) => {
+    // Allow the input of KEY=VALUE seperated value pairs for bulk import
+    if (value.includes('=')) {
+        const parts = value.trim().split(" ");
+        let index = idx;
+        for (const part of parts) {
+            const [envKey, envVar] = part.split('=', 2);
+            if (!envKey || !envVar) {
+                continue;
+            }
+
+            if (index !== idx) {
+                additem();
+            }
+            onChange(index, 'envKey', envKey);
+            onChange(index, 'envValue', envVar);
+            index++;
+        }
+    } else {
+        onChange(idx, key, value);
+    }
+};
+
 const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-5-col-on-md" label={_("Key")} fieldId={id + "-key-address"}>
                 <TextInput id={id + "-key"}
                        value={item.envKey || ''}
-                       onChange={value => onChange(idx, 'envKey', value)} />
+                       onChange={value => handleEnvValue('envKey', value, idx, onChange, additem, itemCount)} />
             </FormGroup>
             <FormGroup className="pf-m-5-col-on-md" label={_("Value")} fieldId={id + "-value-address"}>
                 <TextInput id={id + "-value"}
                        value={item.envValue || ''}
-                       onChange={value => onChange(idx, 'envValue', value)} />
+                       onChange={value => handleEnvValue('envValue', value, idx, onChange, additem, itemCount)} />
             </FormGroup>
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='secondary'
@@ -220,7 +244,7 @@ class DynamicListForm extends React.Component {
     }
 
     render () {
-        const { id, label, actionLabel, formclass, emptyStateString } = this.props;
+        const { id, label, actionLabel, formclass, emptyStateString, helperText } = this.props;
         const dialogValues = this.state;
         return (
             <FormFieldGroup header={
@@ -231,14 +255,22 @@ class DynamicListForm extends React.Component {
             } className={"dynamic-form-group " + formclass}>
                 {
                     dialogValues.list.length
-                        ? dialogValues.list.map((item, idx) => {
-                            return React.cloneElement(this.props.itemcomponent, {
-                                idx: idx, item: item, id: id + "-" + idx,
-                                key: idx,
-                                onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
-                                itemCount: Object.keys(dialogValues.list).length,
-                            });
-                        })
+                        ? <>
+                            {dialogValues.list.map((item, idx) => {
+                                return React.cloneElement(this.props.itemcomponent, {
+                                    idx: idx, item: item, id: id + "-" + idx,
+                                    key: idx,
+                                    onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
+                                    itemCount: Object.keys(dialogValues.list).length,
+                                });
+                            })
+                            }
+                            {helperText &&
+                            <HelperText>
+                                <HelperTextItem>{helperText}</HelperTextItem>
+                            </HelperText>
+                            }
+                        </>
                         : <EmptyState>
                             <EmptyStateBody>
                                 {emptyStateString}
@@ -905,6 +937,7 @@ export class ImageRunModal extends React.Component {
                                  actionLabel={_("Add variable")}
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
+                                 helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
                                  itemcomponent={ <EnvVar />} />
                     </Tab>
                 </Tabs>
