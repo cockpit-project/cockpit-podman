@@ -760,7 +760,7 @@ export class ImageRunModal extends React.Component {
                     }
                 </Flex>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
-                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-l-grid pf-m-gutter">
+                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-c-form pf-m-horizontal">
 
                         <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}
                           labelIcon={!this.props.image &&
