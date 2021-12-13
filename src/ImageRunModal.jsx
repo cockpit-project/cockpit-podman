@@ -862,6 +862,7 @@ export class ImageRunModal extends React.Component {
                                    step={1}
                                    min={0}
                                    isReadOnly={!this.state.memoryConfigure}
+                                   onClick={() => !this.state.memoryConfigure && this.onValueChanged('memoryConfigure', true)}
                                    onChange={value => this.onValueChanged('memory', value)} />
                                 <FormSelect id='memory-unit-select'
                                     aria-label={_("Memory unit")}
@@ -896,6 +897,7 @@ export class ImageRunModal extends React.Component {
                                     <TextInput type='number'
                                         id="run-image-cpu-priority"
                                         value={dialogValues.cpuShares}
+                                        onClick={() => !this.state.cpuSharesConfigure && this.onValueChanged('cpuSharesConfigure', true)}
                                         step={1}
                                         min={2}
                                         max={262144}
