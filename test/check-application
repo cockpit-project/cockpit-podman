@@ -1313,6 +1313,12 @@ class TestApplication(testlib.MachineCase):
 
         # CPU shares work only with system containers
         if auth:
+            # Check that the checkbox is enabled when clicked on the field
+            b.wait_visible("#run-image-dialog-cpu-priority-checkbox:not(:checked)")
+            b.click('#run-image-cpu-priority')
+            b.wait_visible("#run-image-dialog-cpu-priority-checkbox:checked")
+            b.set_checked("#run-image-dialog-cpu-priority-checkbox", False)
+
             b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
             b.wait_visible("#run-image-dialog-cpu-priority-checkbox:checked")
             b.wait_visible('#run-image-dialog-cpu-priority input[value="1024"]')
