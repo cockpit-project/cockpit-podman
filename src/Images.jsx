@@ -207,7 +207,7 @@ class Images extends React.Component {
 
         const imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
 
-        const interm = this.props.images && Object.keys(this.props.images).some(id => {
+        const interim = this.props.images && Object.keys(this.props.images).some(id => {
             // Intermediate image does not have any tags
             if (this.props.images[id].RepoTags && this.props.images[id].RepoTags.length > 0)
                 return false;
@@ -228,7 +228,7 @@ class Images extends React.Component {
         });
 
         let toggleIntermediate = "";
-        if (interm) {
+        if (interim) {
             toggleIntermediate = <span className="listing-action">
                 <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened, isExpanded: true })}>
                     {intermediateOpened ? _("Hide intermediate images") : _("Show intermediate images")}</Button>
