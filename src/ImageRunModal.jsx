@@ -8,7 +8,7 @@ import {
     Grid, GridItem,
     HelperText, HelperTextItem,
     Modal, Select, SelectVariant,
-    SelectOption, SelectGroup,
+    SelectOption, SelectGroup, Stack,
     TextInput, Tabs, Tab, TabTitleText,
     ToggleGroup, ToggleGroupItem,
     Flex, FlexItem,
@@ -23,6 +23,7 @@ import * as utils from './util.js';
 import * as client from './client.js';
 import rest from './rest.js';
 import cockpit from 'cockpit';
+import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
 
 import { debounce } from 'throttle-debounce';
 
@@ -319,6 +320,7 @@ export class ImageRunModal extends React.Component {
             runImage: true,
             restartPolicy: "no",
             restartTries: 5,
+            pullLatestImage: false,
             activeTabKey: 0,
             owner: this.props.systemServiceAvailable ? systemOwner : this.props.user,
             /* image select */
@@ -460,54 +462,60 @@ export class ImageRunModal extends React.Component {
                 });
     }
 
-    onCreateClicked() {
+    async onCreateClicked() {
         const createConfig = this.getCreateConfig();
-        const { owner, runImage } = this.state;
+        const { owner, runImage, pullLatestImage } = this.state;
         const isSystem = owner === systemOwner;
+        let imageExists = true;
 
-        client.imageExists(isSystem, createConfig.image).then(reply => {
+        try {
+            await client.imageExists(isSystem, createConfig.image);
+        } catch (error) {
+            imageExists = false;
+        }
+
+        if (imageExists && !pullLatestImage) {
             this.createContainer(isSystem, createConfig, runImage);
-        })
-                .catch(ex => {
-                    this.props.close();
-                    const tempImage = { ...createConfig };
+        } else {
+            this.props.close();
+            const tempImage = { ...createConfig };
 
-                    // Assign temporary properties to allow rendering
-                    tempImage.Id = tempImage.name;
-                    tempImage.isSystem = isSystem;
-                    tempImage.State = _("downloading");
-                    tempImage.Created = new Date();
-                    tempImage.Names = [tempImage.name];
-                    tempImage.Image = createConfig.image;
-                    tempImage.isDownloading = true;
+            // Assign temporary properties to allow rendering
+            tempImage.Id = tempImage.name;
+            tempImage.isSystem = isSystem;
+            tempImage.State = _("downloading");
+            tempImage.Created = new Date();
+            tempImage.Names = [tempImage.name];
+            tempImage.Image = createConfig.image;
+            tempImage.isDownloading = true;
 
-                    this.props.onDownloadContainer(tempImage);
+            onDownloadContainer(tempImage);
 
-                    client.pullImage(isSystem, createConfig.image).then(reply => {
-                        client.createContainer(isSystem, createConfig)
-                                .then(reply => {
-                                    if (runImage) {
-                                        client.postContainer(isSystem, "start", reply.Id, {})
-                                                .then(() => this.props.onDownloadContainerFinished(createConfig))
-                                                .catch(ex => {
-                                                    this.props.onDownloadContainerFinished(createConfig);
-                                                    const error = cockpit.format(_("Failed to run container $0"), tempImage.name);
-                                                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                                });
-                                    }
-                                })
-                                .catch(ex => {
-                                    this.props.onDownloadContainerFinished(createConfig);
-                                    const error = cockpit.format(_("Failed to create container $0"), tempImage.name);
-                                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.reason });
-                                });
-                    })
-                            .catch(ex => {
-                                this.props.onDownloadContainerFinished(createConfig);
-                                const error = cockpit.format(_("Failed to pull image $0"), tempImage.image);
-                                this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.reason });
-                            });
-                });
+            client.pullImage(isSystem, createConfig.image).then(reply => {
+                client.createContainer(isSystem, createConfig)
+                        .then(reply => {
+                            if (runImage) {
+                                client.postContainer(isSystem, "start", reply.Id, {})
+                                        .then(() => onDownloadContainerFinished(createConfig))
+                                        .catch(ex => {
+                                            onDownloadContainerFinished(createConfig);
+                                            const error = cockpit.format(_("Failed to run container $0"), tempImage.name);
+                                            this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                        });
+                            }
+                        })
+                        .catch(ex => {
+                            onDownloadContainerFinished(createConfig);
+                            const error = cockpit.format(_("Failed to create container $0"), tempImage.name);
+                            this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.reason });
+                        });
+            })
+                    .catch(ex => {
+                        this.props.onDownloadContainerFinished(createConfig);
+                        const error = cockpit.format(_("Failed to pull image $0"), tempImage.image);
+                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.reason });
+                    });
+        }
     }
 
     onValueChanged(key, value) {
@@ -758,6 +766,7 @@ export class ImageRunModal extends React.Component {
             imageListOptions = this.filterImages();
         }
 
+        const localImage = this.state.image || (selectedImage && this.props.localImages.some(img => img.Id === selectedImage.Id));
         const registries = this.props.registries && this.props.registries.search ? this.props.registries.search : utils.fallbackRegistries;
 
         // Add the search component
@@ -863,6 +872,14 @@ export class ImageRunModal extends React.Component {
                                 {imageListOptions}
                             </Select>
                         </FormGroup>
+
+                        {(image || localImage) &&
+                        <FormGroup fieldId="run-image-dialog-pull-latest-image">
+                            <Checkbox isChecked={this.state.pullLatestImage} id="run-image-dialog-pull-latest-image"
+                                      onChange={value => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
+                            />
+                        </FormGroup>
+                        }
 
                         <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
                             <TextInput id='run-image-dialog-command'
@@ -975,8 +992,10 @@ export class ImageRunModal extends React.Component {
                         </Grid>
                         }
                         <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Options")} hasNoPaddingTop>
-                            <Checkbox isChecked={this.state.runImage} id="run-image-dialog-start-after-creation"
+                            <Stack hasGutter>
+                                <Checkbox isChecked={this.state.runImage} id="run-image-dialog-start-after-creation"
                                       onChange={value => this.onValueChanged('runImage', value)} label={_("Start after creation")} />
+                            </Stack>
                         </FormGroup>
                     </Tab>
                     <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-c-form">
