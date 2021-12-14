@@ -121,7 +121,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
     );
 
 const handleEnvValue = (key, value, idx, onChange, additem, itemCount) => {
-    // Allow the input of KEY=VALUE seperated value pairs for bulk import
+    // Allow the input of KEY=VALUE separated value pairs for bulk import
     if (value.includes('=')) {
         const parts = value.trim().split(" ");
         let index = idx;
@@ -712,7 +712,7 @@ export class ImageRunModal extends React.Component {
         return results;
     }
 
-    // Similiar to the output of podman search and podman's /libpod/images/search endpoint only show the root domain.
+    // Similar to the output of podman search and podman's /libpod/images/search endpoint only show the root domain.
     truncateRegistryDomain = (domain) => {
         const parts = domain.split('.');
         if (parts.length > 2) {

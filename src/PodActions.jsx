@@ -159,7 +159,7 @@ export class PodActions extends React.Component {
                     </>}
                 >
                     {(pod.Containers || []).length > 0 && <Stack hasGutter>
-                        {this.state.deleteError && <Alert variant="danger" isInline title={_("An error occured")}>{this.state.deleteError}</Alert>}
+                        {this.state.deleteError && <Alert variant="danger" isInline title={_("An error occurred")}>{this.state.deleteError}</Alert>}
                         <p>{_("Deleting this pod will remove the following containers:")}</p>
                         <List>
                             {pod.Containers

@@ -258,7 +258,7 @@ class ContainerTerminal extends React.Component {
             element = <EmptyStatePanel title={_("Container is not running")} />;
 
         return <>
-            {this.state.errorMessage && <ErrorNotification errorMessage={_("Error occured while connecting console")} errorDetail={this.state.errorMessage} onDismiss={() => this.setState({ errorMessage: "" })} />}
+            {this.state.errorMessage && <ErrorNotification errorMessage={_("Error occurred while connecting console")} errorDetail={this.state.errorMessage} onDismiss={() => this.setState({ errorMessage: "" })} />}
             {element}
         </>;
     }
