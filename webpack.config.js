@@ -8,8 +8,6 @@ const CompressionPlugin = require("compression-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
 const CockpitPoPlugin = require("./src/lib/cockpit-po-plugin");
 
-const webpack = require("webpack");
-
 /* A standard nodejs and webpack pattern */
 const production = process.env.NODE_ENV === 'production';
 
