@@ -1202,6 +1202,11 @@ class TestApplication(testlib.MachineCase):
         self._testCreateContainer(False)
 
     def _testCreateContainer(self, auth):
+        new_container = 'new-container'
+        self.execute(True, f"podman run -d --name {new_container} quay.io/libpod/busybox touch /latest")
+        self.execute(True, f"podman commit {new_container} newimage")
+        new_image_sha = self.execute(True, "podman inspect --format '{{.Id}}' newimage").strip()
+
         self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
         self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
         # Add local insecure registry into registries conf
@@ -1241,10 +1246,45 @@ class TestApplication(testlib.MachineCase):
         # Select image
         b.click('button.pf-c-select__menu-item:contains("localhost:5000/my-busybox")')
 
+        # Remote image, no pull latest image option
+        b.wait_not_present("#run-image-dialog-pull-latest-image")
+
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         sel = "> span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
+        output = self.execute(auth, f"podman exec {container_name} ls -lh /latest || true").strip()
+        self.assertEqual('', output)
+
+        # Now that we have downloaded an image, verify that selecting download latest image
+        # downloads the latest image we now push to the registry. Note this image has a /latest file
+        # to differnatiate it from the other local image.
+        self.execute(True, f"podman push {new_image_sha} localhost:5000/my-busybox")
+        self.execute(True, f"podman push {new_image_sha} localhost:6000/my-busybox")
+        self.execute(True, f"podman rmi {new_image_sha}")
+
+        container_name = "busybox-latest"
+
+        b.click("#containers-containers button.pf-c-button.pf-m-primary")
+        b.set_input_text("#run-image-dialog-name", container_name)
+
+        # Local registry
+        b.set_input_text("#create-image-image-select-typeahead", "my-busybox")
+        b.click('button.pf-c-toggle-group__button:contains("Local")')
+
+        # Select image
+        b.click('button.pf-c-select__menu-item:contains("localhost:5000/my-busybox")')
+
+        # Pull the latest image
+        b.set_checked("#run-image-dialog-pull-latest-image", True)
+
+        # Create Container, image is pulled and should end up being "running"
+        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        sel = "> span:not(.downloading)"
+        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
+        # Verify that the latest file exists
+        output = self.execute(auth, f"podman exec {container_name} ls -lh /latest").strip()
+        self.assertNotIn("No such file or directory", output)
 
         # Test creating a container with
         if auth:

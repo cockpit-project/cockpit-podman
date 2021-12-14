@@ -308,6 +308,18 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
     );
 };
 
+export let onDownloadContainer = function funcOnDownloadContainer(container) {
+    this.setState(prevState => ({
+        downloadingContainers: [...prevState.downloadingContainers, container]
+    }));
+};
+
+export let onDownloadContainerFinished = function funcOnDownloadContainerFinished(container) {
+    this.setState(prevState => ({
+        downloadingContainers: prevState.downloadingContainers.filter(entry => entry.name !== container.name),
+    }));
+};
+
 class Containers extends React.Component {
     constructor(props) {
         super(props);
@@ -322,6 +334,9 @@ class Containers extends React.Component {
 
         this.cardRef = React.createRef();
 
+        onDownloadContainer = onDownloadContainer.bind(this);
+        onDownloadContainerFinished = onDownloadContainerFinished.bind(this);
+
         window.addEventListener('resize', this.onWindowResize);
     }
 
@@ -331,18 +346,6 @@ class Containers extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowResize);
-    }
-
-    onDownloadContainer = (container) => {
-        this.setState(prevState => ({
-            downloadingContainers: [...prevState.downloadingContainers, container]
-        }));
-    }
-
-    onDownloadContainerFinished = container => {
-        this.setState(prevState => ({
-            downloadingContainers: prevState.downloadingContainers.filter(entry => entry.name !== container.name),
-        }));
     }
 
     renderRow(containersStats, container, containerDetail, localImages) {
@@ -553,8 +556,6 @@ class Containers extends React.Component {
                 systemServiceAvailable={this.props.systemServiceAvailable}
                 userServiceAvailable={this.props.userServiceAvailable}
                 onAddNotification={this.props.onAddNotification}
-                onDownloadContainer={this.onDownloadContainer}
-                onDownloadContainerFinished={this.onDownloadContainerFinished}
                 /> }
             </Toolbar>;
 
