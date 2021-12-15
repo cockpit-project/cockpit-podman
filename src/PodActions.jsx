@@ -3,7 +3,7 @@ import React from 'react';
 import * as client from './client.js';
 import {
     Button, Alert, Modal,
-    Dropdown, DropdownPosition, DropdownItem,
+    Dropdown, DropdownPosition, DropdownItem, DropdownSeparator,
     KebabToggle, List, ListItem,
     Stack,
 } from '@patternfly/react-core';
@@ -129,9 +129,12 @@ export class PodActions extends React.Component {
             );
         }
 
+        if (dropdownItems.length > 1) {
+            dropdownItems.push(<DropdownSeparator key="separator-1" />);
+        }
         dropdownItems.push(
             <DropdownItem key="action-delete"
-                          className="pod-action-delete"
+                          className="pod-action-delete pf-m-danger"
                           onClick={() => this.setState({ deleteModalOpen: true })}
                           component="button">
                 {_("Delete")}
