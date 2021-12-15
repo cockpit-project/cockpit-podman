@@ -144,6 +144,8 @@ export class PodActions extends React.Component {
         if (!dropdownItems.length)
             return null;
 
+        const containers = (pod.Containers || []).filter(ct => ct.Id !== pod.InfraId);
+
         return (
             <>
                 <Dropdown onSelect={this.onSelect}
@@ -161,13 +163,11 @@ export class PodActions extends React.Component {
                         <Button variant="link" onClick={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}>{_("Cancel")}</Button>
                     </>}
                 >
-                    {(pod.Containers || []).length > 0 && <Stack hasGutter>
+                    {containers.length > 0 && <Stack hasGutter>
                         {this.state.deleteError && <Alert variant="danger" isInline title={_("An error occurred")}>{this.state.deleteError}</Alert>}
                         <p>{_("Deleting this pod will remove the following containers:")}</p>
                         <List>
-                            {pod.Containers
-                                    .filter(container => container.Id != pod.InfraId)
-                                    .map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
+                            {containers.map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
                         </List>
                     </Stack>}
                 </Modal>}
