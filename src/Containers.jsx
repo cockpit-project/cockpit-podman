@@ -273,6 +273,7 @@ class Containers extends React.Component {
         this.state = {
             width: 0,
             showCreateContainerModal: false,
+            createPod: null,
             downloadingContainers: [],
         };
         this.renderRow = this.renderRow.bind(this);
@@ -502,7 +503,8 @@ class Containers extends React.Component {
                 <ImageRunModal
                 user={this.props.user}
                 localImages={localImages}
-                close={() => this.setState({ showCreateContainerModal: false })}
+                close={() => this.setState({ showCreateContainerModal: false, createPod: null })}
+                pod={this.state.createPod}
                 registries={this.props.registries}
                 selinuxAvailable={this.props.selinuxAvailable}
                 podmanRestartAvailable={this.props.podmanRestartAvailable}
@@ -566,6 +568,12 @@ class Containers extends React.Component {
                                                         <span>{_("pod group")}</span>
                                                     </CardTitle>
                                                     <CardActions className='panel-actions'>
+                                                        <Button
+                                                          variant="primary"
+                                                          className="create-container-in-pod"
+                                                          onClick={() => this.setState({ showCreateContainerModal: true, createPod: this.props.pods[section] })}>
+                                                            {_("Create container in pod")}
+                                                        </Button>
                                                         <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
                                                         <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
                                                     </CardActions>
