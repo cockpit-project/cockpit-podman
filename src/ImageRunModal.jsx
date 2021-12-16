@@ -350,6 +350,10 @@ export class ImageRunModal extends React.Component {
     getCreateConfig() {
         const createConfig = {};
 
+        if (this.props.pod) {
+            createConfig.pod = this.props.pod.Id;
+        }
+
         if (this.state.image) {
             createConfig.image = this.state.image.RepoTags ? this.state.image.RepoTags[0] : "";
         } else {
@@ -1021,7 +1025,7 @@ export class ImageRunModal extends React.Component {
                            this.props.close();
                        }
                    }}
-                   title={_("Create container")}
+                   title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                        <Button variant='primary' onClick={this.onCreateClicked} isDisabled={!image && selectedImage === ""}>
