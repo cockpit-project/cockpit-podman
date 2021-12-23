@@ -22,7 +22,7 @@ registries = ['localhost:5000', 'localhost:6000']
 registries = ['localhost:5000', 'localhost:6000']
 """
 
-NOT_RUNNING = ["exited", "stopped"]
+NOT_RUNNING = ["Exited", "Stopped"]
 
 # Ubuntu stable has 3.2.1 while we need podman 3.3.
 DISTROS_WITHOUT_PODMAN_RESTART = ['ubuntu-stable']
@@ -95,6 +95,9 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__toggle")
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__menu li:contains({cmd})")
+
+    def getContainerAction(self, container, cmd):
+        return f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__menu li:contains({cmd})"
 
     def toggleExpandedContainer(self, container):
         b = self.browser
@@ -186,7 +189,7 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod-1", [])
 
         containerId = self.machine.execute("podman run -d --pod pod-1 --name test-pod-1-system alpine sleep 100").strip()
-        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId}])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "Running", "id": containerId}])
         self.machine.execute("podman pod stop pod-1")
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
         self.filter_containers("running")
@@ -201,13 +204,13 @@ class TestApplication(testlib.MachineCase):
 
         # Check Pod Actions
         self.performPodAction("pod-1", "system", "Start")
-        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId}])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "Running", "id": containerId}])
 
         self.performPodAction("pod-1", "system", "Stop")
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
 
         self.machine.execute("podman pod start pod-1")
-        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "running", "id": containerId}])
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "Running", "id": containerId}])
 
         old_pid = m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system")
         self.performPodAction("pod-1", "system", "Restart")
@@ -443,11 +446,11 @@ class TestApplication(testlib.MachineCase):
         if auth:
             self.waitContainerRow("swamped-crate-system")
             self.waitContainer(system_containers["swamped-crate-system"], True, name='swamped-crate-system',
-                               image='busybox:latest', cmd="sleep 1000", state='running')
+                               image='busybox:latest', cmd="sleep 1000", state='Running')
 
         self.waitContainerRow("swamped-crate-user")
         self.waitContainer(user_containers["swamped-crate-user"], False, name='swamped-crate-user',
-                           image='busybox:latest', cmd="sleep 1000", state='running')
+                           image='busybox:latest', cmd="sleep 1000", state='Running')
 
         # exited alpine not shown
         b.wait_not_in_text("#containers-containers", "alpine:latest")
@@ -481,9 +484,9 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('running')
         if auth:
             self.waitContainer(system_containers["swamped-crate-system"], True, name='swamped-crate-system',
-                               image='busybox:latest', cmd="sleep 1000", state='running')
+                               image='busybox:latest', cmd="sleep 1000", state='Running')
         self.waitContainer(user_containers["swamped-crate-user"], False, name='swamped-crate-user',
-                           image='busybox:latest', cmd="sleep 1000", state='running')
+                           image='busybox:latest', cmd="sleep 1000", state='Running')
         # check exited alpine not in running list
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
@@ -900,7 +903,7 @@ class TestApplication(testlib.MachineCase):
         if not auth:
             # Checkpoint/restore is not supported on user containers yet - the related buttons should not be shown
             # Check that the restore option is not present
-            b.wait_not_present("#containers-containers tbody tr:contains('swamped-crate') .pf-c-dropdown__menu li:contains(Restore)")
+            b.wait_not_present(self.getContainerAction('swamped-crate', 'Restore'))
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-c-dropdown__toggle")
 
         # Start the container
@@ -910,7 +913,7 @@ class TestApplication(testlib.MachineCase):
 
         with b.wait_timeout(5):
             self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh',
-                               state='running', owner="system" if auth else "admin")
+                               state='Running', owner="system" if auth else "admin")
         # Check we show usage
         b.wait(lambda: self.getContainerAttr("busybox:latest", "CPU") != "")
         cpu = self.getContainerAttr("busybox:latest", "CPU")
@@ -945,7 +948,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
 
         with b.wait_timeout(5):
-            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh', state='running')
+            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh', state='Running')
 
         self.filter_containers('all')
         b.wait_visible("#containers-containers")
@@ -954,7 +957,7 @@ class TestApplication(testlib.MachineCase):
         if not auth:
             # Check that the checkpoint option is not present for rootless
             b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
-            b.wait_not_present("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__menu li:contains(Checkpoint)")
+            b.wait_not_present(self.getContainerAction('busybox:latest', 'Checkpoint'))
             b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
         # Stop the container
         self.performContainerAction("busybox:latest", "Force stop")
@@ -1018,12 +1021,12 @@ class TestApplication(testlib.MachineCase):
 
         # Check that the restore option is not present (i.e. start is a regular button)
         b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
-        b.wait_not_present("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__menu li:contains(Restore)")
+        b.wait_not_present(self.getContainerAction('busybox:latest', 'Restore'))
         b.click("#containers-containers tbody tr:contains('busybox:latest') .pf-c-dropdown__toggle")
 
         # Start the container
         self.performContainerAction("swamped-crate", "Start")
-        b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'running')
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
         # Checkpoint the container
         self.performContainerAction("swamped-crate", "Checkpoint")
@@ -1051,7 +1054,7 @@ class TestApplication(testlib.MachineCase):
         b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticIP', True)
         b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticMAC', True)
         b.click('.pf-c-modal-box button:contains(Restore)')
-        b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'running')
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
         # Checkpoint the container without stopping
         self.waitContainerRow("swamped-crate")
@@ -1067,7 +1070,7 @@ class TestApplication(testlib.MachineCase):
         # Restore the container
         self.performContainerAction("swamped-crate", "Restore")
         b.click('.pf-c-modal-box button:contains(Restore)')
-        b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'running')
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
     @testlib.nondestructive
     def testNotRunning(self):
@@ -1241,7 +1244,7 @@ class TestApplication(testlib.MachineCase):
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-c-modal-box__footer button:contains("Create")')
         sel = "> span:not(.downloading)"
-        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'running')
+        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
 
         # Test creating a container with
         if auth:
@@ -1251,7 +1254,7 @@ class TestApplication(testlib.MachineCase):
             # Start container as admin
             b.click('button.pf-c-toggle-group__button:contains("User: admin")')
 
-            # Create Container, image is pulled and should end up being "running"
+            # Create Container, image is pulled and should end up being "Running"
             b.set_input_text("#run-image-dialog-name", container_name)
 
             b.set_input_text("#create-image-image-select-typeahead", "quay.io/libpod/busybox:latest")
@@ -1259,7 +1262,7 @@ class TestApplication(testlib.MachineCase):
             b.click('button.pf-c-select__menu-item:contains("quay.io/libpod/busybox:latest")')
 
             b.click('.pf-c-modal-box__footer button:contains("Create")')
-            b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'running')
+            b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
 
     @testlib.nondestructive
     def testRunImageSystem(self):
@@ -1425,7 +1428,7 @@ class TestApplication(testlib.MachineCase):
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
         self.waitContainer(sha, auth, name='busybox-with-tty', image='busybox:latest',
                            cmd='sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"',
-                           state='running', owner="system" if auth else "admin")
+                           state='Running', owner="system" if auth else "admin")
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
@@ -1545,7 +1548,7 @@ class TestApplication(testlib.MachineCase):
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
         self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
         self.performContainerAction("busybox-without-publish", "Start")
-        self.waitContainer(sha, auth, state='running')
+        self.waitContainer(sha, auth, state='Running')
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
         self.performContainerAction("busybox-without-publish", "Stop")
         self.waitContainer(sha, auth, state=NOT_RUNNING)
@@ -1608,7 +1611,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_val("#containers-containers-filter", "all")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' " + container_name).strip()
-        self.waitContainer(sha, auth, name=container_name, image='busybox:latest', state='configured')
+        self.waitContainer(sha, auth, name=container_name, image='busybox:latest', state='Configured')
 
         b.set_input_text('#containers-filter', 'foobar')
         b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')
@@ -1828,13 +1831,42 @@ class TestApplication(testlib.MachineCase):
 
         container_sha = self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name}").strip()
         self.waitContainer(container_sha, auth, name=container_name, image='busybox:latest', cmd='sh',
-                           state='running', owner="system" if auth else "admin", pod=podname)
+                           state='Running', owner="system" if auth else "admin", pod=podname)
 
     def testCreateContainerInPodSystem(self):
         self._testCreateContainerInPod(True)
 
     def testCreateContainerInPodUser(self):
         self._testCreateContainerInPod(False)
+
+    def testPauseResumeContainerSystem(self):
+        self._testPauseResumeContainer(True)
+
+    def testPauseResumeContainerUser(self):
+        # rootless cgroupv1 containers do not support pausing
+        if not self.has_cgroupsV2:
+            return
+        self._testPauseResumeContainer(False)
+
+    def _testPauseResumeContainer(self, auth):
+        b = self.browser
+        container_name = "pauseresume"
+
+        self.execute(auth, f"podman run -dt --name {container_name} alpine")
+        self.login(auth)
+
+        self.waitContainerRow(container_name)
+        self.toggleExpandedContainer(container_name)
+        b.wait_not_present(self.getContainerAction(container_name, 'Resume'))
+        self.performContainerAction(container_name, "Pause")
+
+        # show all containers and check status
+        self.filter_containers('all')
+
+        b.wait(lambda: self.getContainerAttr(container_name, "State") == "Paused")
+        b.wait_not_present(self.getContainerAction(container_name, 'Pause'))
+        self.performContainerAction(container_name, "Resume")
+        b.wait(lambda: self.getContainerAttr(container_name, "State") == "Running")
 
 
 if __name__ == '__main__':
