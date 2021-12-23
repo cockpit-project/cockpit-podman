@@ -5,7 +5,7 @@ import { formatRelative } from 'date-fns';
 const _ = cockpit.gettext;
 
 // https://github.com/containers/podman/blob/main/libpod/define/containerstate.go
-export const states = [_("configured"), _("created"), _("running"), _("stopped"), _("paused"), _("exited"), _("removing")];
+export const states = [_("Configured"), _("Created"), _("Running"), _("Stopped"), _("Paused"), _("Exited"), _("Removing")];
 
 // https://github.com/containers/podman/blob/main/libpod/define/podstate.go
 export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"), _("Exited"), _("Error")];

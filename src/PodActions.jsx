@@ -81,6 +81,17 @@ export class PodActions extends React.Component {
                               component="button">
                     {_("Restart")}
                 </DropdownItem>,
+                <DropdownItem key="action-force-restart"
+                              className="pod-action-force-restart"
+                              onClick={() =>
+                                  client.postPod(pod.isSystem, "restart", pod.Id, { t: 0 })
+                                          .catch(ex => {
+                                              const error = cockpit.format(_("Failed to force restart pod $0"), pod.Name);
+                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                          })}
+                              component="button">
+                    {_("Force restart")}
+                </DropdownItem>,
             );
         }
         if (pod.Status == "Created" || pod.Status == "Exited" || pod.Status == "Stopped") {

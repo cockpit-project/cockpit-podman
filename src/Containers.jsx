@@ -42,6 +42,7 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
     const [commitModal, setCommitModal] = useState(false);
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State == "running";
+    const isPaused = container.State === "paused";
 
     const deleteContainer = (event) => {
         if (container.State == "running") {
@@ -73,6 +74,26 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
         client.postContainer(container.isSystem, "start", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to start container $0"), container.Names);
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
+    };
+
+    const resumeContainer = () => {
+        setActionsKebabOpen(false);
+
+        client.postContainer(container.isSystem, "unpause", container.Id, {})
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to resume container $0"), container.Names);
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
+    };
+
+    const pauseContainer = () => {
+        setActionsKebabOpen(false);
+
+        client.postContainer(container.isSystem, "pause", container.Id, {})
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to pause container $0"), container.Names);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -150,7 +171,54 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
     };
 
     const actions = [];
-    if (!isRunning) {
+    if (isRunning || isPaused) {
+        actions.push(
+            <DropdownItem key="stop"
+                          onClick={() => stopContainer()}>
+                {_("Stop")}
+            </DropdownItem>,
+            <DropdownItem key="force-stop"
+                          onClick={() => stopContainer(true)}>
+                {_("Force stop")}
+            </DropdownItem>,
+            <DropdownItem key="restart"
+                          onClick={() => restartContainer()}>
+                {_("Restart")}
+            </DropdownItem>,
+            <DropdownItem key="force-restart"
+                          onClick={() => restartContainer(true)}>
+                {_("Force restart")}
+            </DropdownItem>
+        );
+
+        if (!isPaused) {
+            actions.push(
+                <DropdownItem key="pause"
+                          onClick={() => pauseContainer()}>
+                    {_("Pause")}
+                </DropdownItem>
+            );
+        } else {
+            actions.push(
+                <DropdownItem key="resume"
+                          onClick={() => resumeContainer()}>
+                    {_("Resume")}
+                </DropdownItem>
+            );
+        }
+
+        if (container.isSystem && !isPaused) {
+            actions.push(
+                <DropdownSeparator key="separator-0" />,
+                <DropdownItem key="checkpoint"
+                              onClick={() => setCheckpointModal(true)}>
+                    {_("Checkpoint")}
+                </DropdownItem>
+            );
+        }
+    }
+
+    if (!isRunning && !isPaused) {
         actions.push(
             <DropdownItem key="start"
                           onClick={() => startContainer()}>
@@ -166,35 +234,8 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
                 </DropdownItem>
             );
         }
-    } else {
-        actions.push(
-            <DropdownItem key="restart"
-                          onClick={() => restartContainer()}>
-                {_("Restart")}
-            </DropdownItem>,
-            <DropdownItem key="force-restart"
-                          onClick={() => restartContainer(true)}>
-                {_("Force restart")}
-            </DropdownItem>,
-            <DropdownItem key="stop"
-                          onClick={() => stopContainer()}>
-                {_("Stop")}
-            </DropdownItem>,
-            <DropdownItem key="force-stop"
-                          onClick={() => stopContainer(true)}>
-                {_("Force stop")}
-            </DropdownItem>
-        );
-        if (container.isSystem) {
-            actions.push(
-                <DropdownSeparator key="separator-0" />,
-                <DropdownItem key="checkpoint"
-                              onClick={() => setCheckpointModal(true)}>
-                    {_("Checkpoint")}
-                </DropdownItem>
-            );
-        }
     }
+
     actions.push(<DropdownSeparator key="separator-1" />);
     actions.push(
         <DropdownItem key="commit"
@@ -331,12 +372,13 @@ class Containers extends React.Component {
         if (container.isDownloading) {
             containerStateClass += " downloading";
         }
+        const containerState = container.State.charAt(0).toUpperCase() + container.State.slice(1);
         const columns = [
             { title: info_block },
             { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
             { title: proc },
             { title: mem },
-            { title: <Badge isRead className={containerStateClass}>{_(container.State)}</Badge> }, // States are defined in util.js
+            { title: <Badge isRead className={containerStateClass}>{_(containerState)}</Badge> }, // States are defined in util.js
         ];
 
         if (!container.isDownloading) {
