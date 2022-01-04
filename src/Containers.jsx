@@ -568,13 +568,13 @@ class Containers extends React.Component {
                                                         <span>{_("pod group")}</span>
                                                     </CardTitle>
                                                     <CardActions className='panel-actions'>
+                                                        <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
                                                         <Button
                                                           variant="primary"
                                                           className="create-container-in-pod"
                                                           onClick={() => this.setState({ showCreateContainerModal: true, createPod: this.props.pods[section] })}>
                                                             {_("Create container in pod")}
                                                         </Button>
-                                                        <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
                                                         <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
                                                     </CardActions>
                                                 </CardHeader>}
