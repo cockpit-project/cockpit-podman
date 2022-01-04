@@ -24,9 +24,8 @@ registries = ['localhost:5000', 'localhost:6000']
 
 NOT_RUNNING = ["exited", "stopped"]
 
-# Ubuntu stable has 3.2.1 while we need podman 3.3. debian-testing has 3.4 but does not ship the podman-restart unit.
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1001780
-DISTROS_WITHOUT_PODMAN_RESTART = ['ubuntu-stable', 'debian-testing']
+# Ubuntu stable has 3.2.1 while we need podman 3.3.
+DISTROS_WITHOUT_PODMAN_RESTART = ['ubuntu-stable']
 
 
 def checkImage(browser, name, owner):
