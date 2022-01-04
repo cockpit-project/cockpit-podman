@@ -1828,6 +1828,7 @@ class TestApplication(testlib.MachineCase):
         b.click('button.pf-c-toggle-group__button:contains("Local")')
         b.click('button.pf-c-select__menu-item:contains("quay.io/libpod/busybox:latest")')
         b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.wait_not_present("#run-image-dialog-name")
 
         container_sha = self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name}").strip()
         self.waitContainer(container_sha, auth, name=container_name, image='busybox:latest', cmd='sh',
