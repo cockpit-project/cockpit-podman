@@ -498,7 +498,6 @@ class Application extends React.Component {
 
         cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
                 .then(out => {
-                    console.log(out);
                     if (out.trim() === "loaded") {
                         this.setState({ podmanRestartAvailable: true });
                     } else {
