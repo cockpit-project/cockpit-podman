@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 
 const copy = require("copy-webpack-plugin");
@@ -7,9 +8,13 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const CompressionPlugin = require("compression-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
 const CockpitPoPlugin = require("./src/lib/cockpit-po-plugin");
+const CockpitRsyncPlugin = require("./src/lib/cockpit-rsync-plugin");
 
 /* A standard nodejs and webpack pattern */
 const production = process.env.NODE_ENV === 'production';
+
+// Obtain package name from package.json
+const packageJson = JSON.parse(fs.readFileSync('package.json'));
 
 // Non-JS files which are copied verbatim to dist/
 const copy_files = [
@@ -22,6 +27,7 @@ const plugins = [
     new extract({filename: "[name].css"}),
     new ESLintPlugin({ extensions: ["js", "jsx"] }),
     new CockpitPoPlugin(),
+    new CockpitRsyncPlugin({ dest: packageJson.name}),
 ];
 
 /* Only minimize when in production mode */
