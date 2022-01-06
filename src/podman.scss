@@ -1,5 +1,7 @@
-@import './lib/page.scss';
-@import './lib/ct-card.scss';
+@use "ct-card.scss";
+@use "page.scss";
+// For pf-line-clamp
+@import "@patternfly/patternfly/sass-utilities/mixins.scss";
 
 #app .pf-c-card.containers-containers, #app .pf-c-card.containers-images {
     @extend .ct-card;
