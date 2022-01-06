@@ -8,6 +8,33 @@ Here's where to get the code:
 The remainder of the commands assume you're in the top level of the
 Cockpit Podman git repository checkout.
 
+For development, you usually want to run your module straight out of the git
+tree. To do that, link that to the location were `cockpit-bridge` looks for packages:
+
+```
+mkdir -p ~/.local/share/cockpit
+ln -s `pwd`/dist ~/.local/share/cockpit/podman
+```
+
+After changing the code and running `make` again, reload the Cockpit page in
+your browser.
+
+You can also use
+[watch mode](https://webpack.js.org/guides/development/#using-watch-mode) to
+automatically update the webpack on every code change with
+
+    $ npm run watch
+
+or
+
+    $ make watch
+
+When developing against a virtual machine, webpack can also automatically upload
+the code changes by setting the `RSYNC` environment variable to
+the remote hostname.
+
+    $ RSYNC=c make watch
+
 ## Running eslint
 
 Cockpit Podman uses [ESLint](https://eslint.org/) to automatically check
