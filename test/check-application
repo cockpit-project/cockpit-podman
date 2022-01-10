@@ -1265,7 +1265,14 @@ class TestApplication(testlib.MachineCase):
 
     @testlib.nondestructive
     def testRunImageSystem(self):
-        self._testRunImage(True)
+        try:
+            self._testRunImage(True)
+        except Exception:
+            print(self.machine.execute("systemctl --failed"))
+            print(self.machine.execute("systemctl status systemd-journald"))
+            print(self.machine.execute("systemctl status systemd-journald.socket"))
+            print(self.machine.execute("free -m"))
+            raise('Issue!')
 
     @testlib.nondestructive
     def testRunImageUser(self):
