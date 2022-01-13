@@ -103,7 +103,11 @@ class ContainerTerminal extends React.Component {
     }
 
     resize(width) {
-        const padding = 11 + 5 + 50;
+        // 24 PF padding * 4
+        // 3 line border
+        // 21 inner padding of xterm.js
+        // xterm.js scrollbar 20
+        const padding = 24 * 4 + 3 + 21 + 20;
         const realWidth = this.state.term._core._renderService.dimensions.actualCellWidth;
         const cols = Math.floor((width - padding) / realWidth);
         this.state.term.resize(cols, 24);
