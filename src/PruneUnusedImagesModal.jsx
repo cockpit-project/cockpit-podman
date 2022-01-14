@@ -26,7 +26,7 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
         <Flex flex={{ default: 'column' }}>
             {showCheckbox &&
                 <Checkbox
-                  label={fmt_to_fragments(_("Delete unused $0 images:"), <b>{isSystem ? _("system") : _("user")}</b>)}
+                  label={isSystem ? _("Delete unused system images:") : _("Delete unused user images:")}
                   isChecked={checked}
                   id={name}
                   name={name}
