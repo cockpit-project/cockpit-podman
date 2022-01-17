@@ -30,7 +30,7 @@ const plugins = [
         failOnWarning: true,
     }),
     new CockpitPoPlugin(),
-    new CockpitRsyncPlugin({ dest: packageJson.name}),
+    new CockpitRsyncPlugin({dest: packageJson.name}),
 ];
 
 /* Only minimize when in production mode */
