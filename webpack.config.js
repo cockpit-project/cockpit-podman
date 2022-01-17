@@ -25,7 +25,10 @@ const copy_files = [
 const plugins = [
     new copy({ patterns: copy_files }),
     new extract({filename: "[name].css"}),
-    new ESLintPlugin({ extensions: ["js", "jsx"] }),
+    new ESLintPlugin({
+        extensions: ["js", "jsx"],
+        failOnWarning: true,
+    }),
     new CockpitPoPlugin(),
     new CockpitRsyncPlugin({ dest: packageJson.name}),
 ];
