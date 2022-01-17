@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Checkbox, Flex, List, ListItem, Modal, } from '@patternfly/react-core';
 import cockpit from 'cockpit';
-import { fmt_to_fragments } from 'utils.jsx';
 
 import * as client from './client.js';
 import * as utils from './util.js';
