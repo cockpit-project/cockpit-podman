@@ -464,8 +464,8 @@ export class ImageRunModal extends React.Component {
 
     async onCreateClicked() {
         const createConfig = this.getCreateConfig();
-        const { owner, runImage, pullLatestImage } = this.state;
-        const isSystem = owner === systemOwner;
+        const { runImage, pullLatestImage } = this.state;
+        const isSystem = this.isSystem();
         let imageExists = true;
 
         try {
@@ -546,7 +546,7 @@ export class ImageRunModal extends React.Component {
             this.activeConnection.close();
 
         this.setState({ searchFinished: false, searchInProgress: true });
-        this.activeConnection = rest.connect(client.getAddress(this.state.isSystem), this.state.isSystem);
+        this.activeConnection = rest.connect(client.getAddress(this.isSystem()), this.isSystem());
         let searches = [];
 
         // If there are registries configured search in them, or if a user searches for `docker.io/cockpit` let
@@ -672,10 +672,10 @@ export class ImageRunModal extends React.Component {
 
     filterImages = () => {
         const { localImages } = this.props;
-        const { imageResults, searchText, owner } = this.state;
+        const { imageResults, searchText } = this.state;
         const local = _("Local images");
         const images = { ...imageResults };
-        const isSystem = owner == systemOwner;
+        const isSystem = this.isSystem();
 
         let imageRegistries = [];
         if (this.state.searchByRegistry == 'local' || this.state.searchByRegistry == 'all') {
@@ -754,6 +754,11 @@ export class ImageRunModal extends React.Component {
                 .catch(err => {
                     console.warn("Failed to start podman-restart.service:", JSON.stringify(err));
                 });
+    }
+
+    isSystem = () => {
+        const { owner } = this.state;
+        return owner === systemOwner;
     }
 
     render() {
@@ -921,7 +926,7 @@ export class ImageRunModal extends React.Component {
                             </Flex>
                         </FormGroup>
 
-                        {this.state.owner === systemOwner &&
+                        {this.isSystem() &&
                             <FormGroup
                               fieldId='run-image-cpu-priority'
                               label={_("CPU shares")}
@@ -950,7 +955,7 @@ export class ImageRunModal extends React.Component {
                                 </Flex>
                             </FormGroup>
                         }
-                        {this.state.owner === systemOwner && this.props.podmanRestartAvailable &&
+                        {this.isSystem() && this.props.podmanRestartAvailable &&
                         <Grid hasGutter md={6} sm={3}>
                             <GridItem>
                                 <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}
