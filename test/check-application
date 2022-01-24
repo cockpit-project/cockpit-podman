@@ -346,6 +346,11 @@ class TestApplication(testlib.MachineCase):
         # There should not be 'owner' selector
         b.wait_not_present("#containers-containers-owner")
 
+        # Test the isSystem boolean for searching
+        # https://github.com/cockpit-project/cockpit-podman/pull/891
+        b.click("#containers-containers-create-container-btn")
+        b.set_input_text("#create-image-image-select-typeahead", "registry")
+
     @testlib.nondestructive
     def testBasicUser(self):
         self._testBasic(False)

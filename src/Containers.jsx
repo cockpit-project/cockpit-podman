@@ -538,6 +538,7 @@ class Containers extends React.Component {
                     <Divider isVertical />
                     <ToolbarItem>
                         <Button variant="primary" key="get-new-image-action"
+                        id="containers-containers-create-container-btn"
                         isDisabled={localImages === null}
                         onClick={() => this.setState({ showCreateContainerModal: true })}>
                             {_("Create container")}
