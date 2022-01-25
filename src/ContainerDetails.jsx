@@ -17,13 +17,19 @@ const render_container_published_ports = (ports) => {
     if (!ports)
         return null;
 
-    const result = [];
+    const result = ports.map(port => {
+        // podman v4 has different names than v3
+        const protocol = port.protocol;
+        const host_port = port.hostPort || port.host_port;
+        const container_port = port.containerPort || port.container_port;
+        const host_ip = port.hostIP || port.host_ip || '0.0.0.0';
+        return (
+            <ListItem key={ protocol + host_port + container_port }>
+                { host_ip }:{ host_port } &rarr; { container_port }/{ protocol }
+            </ListItem>
+        );
+    });
 
-    for (let i = 0; i < ports.length; ++i)
-        result.push(
-            <ListItem key={ ports[i].protocol + ports[i].hostPort + ports[i].containerPort }>
-                { ports[i].hostIP || '0.0.0.0' }:{ ports[i].hostPort } &rarr; { ports[i].containerPort }/{ ports[i].protocol }
-            </ListItem>);
     return <List isPlain>{result}</List>;
 };
 
