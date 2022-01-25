@@ -1093,8 +1093,6 @@ class TestApplication(testlib.MachineCase):
 
         def disable_user():
             self.execute(False, "systemctl --user disable --now podman.socket")
-            # HACK: user podman.service leaks a "podman pause" outside of the unit: https://github.com/containers/podman/issues/7180
-            self.execute(False, "pkill -u $USER -e podman; while pgrep -u $USER -a podman; do sleep 1; done")
 
         def is_active_system(string):
             b.wait(lambda: self.execute(True, "systemctl is-active podman.socket || true").strip() == string)
