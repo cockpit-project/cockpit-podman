@@ -137,11 +137,10 @@ ifeq ($(TEST_SCENARIO),rawhide)
 UPGRADES=--run-command 'dnf update -y --releasever=rawhide podman conmon crun containernetworking-plugins containers-common kernel'
 endif
 
-# build a VM with locally built rpm/dsc installed
+# build a VM with locally built distro pkgs installed
 $(VM_IMAGE): $(VM_DEP) bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
 	bots/image-customize -v $(VM_PACKAGE) -s $(CURDIR)/test/vm.install $(UPGRADES) $(TEST_OS)
-	$(RAWHIDE)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
