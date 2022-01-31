@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import {
     Button,
-    Card, CardBody, CardHeader, CardTitle, CardActions, CardFooter,
+    Card, CardBody, CardHeader, CardFooter,
     Dropdown, DropdownItem,
-    Flex,
+    Flex, FlexItem,
     ExpandableSection,
     KebabToggle,
     Text, TextVariants
@@ -23,6 +23,7 @@ import * as client from './client.js';
 import * as utils from './util.js';
 
 import './Images.css';
+import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 
 const _ = cockpit.gettext;
 
@@ -119,7 +120,7 @@ class Images extends React.Component {
         const { title: usedByText, count: usedByCount } = this.getUsedByText(image);
 
         const columns = [
-            { title: utils.image_name(image), header: true },
+            { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
             { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
             utils.localize_time(image.Created),
             utils.truncate_id(image.Id),
@@ -131,7 +132,7 @@ class Images extends React.Component {
                                      userServiceAvailable={this.props.userServiceAvailable}
                                      systemServiceAvailable={this.props.systemServiceAvailable}
                                      podmanRestartAvailable={this.props.podmanRestartAvailable} />,
-                props: { className: 'pf-c-table__action' }
+                props: { className: 'pf-c-table__action content-action' }
             },
         ];
 
@@ -163,8 +164,7 @@ class Images extends React.Component {
             _("Created"),
             _("ID"),
             _("Disk space"),
-            _("Used by"),
-            ''
+            _("Used by")
         ];
         let emptyCaption = _("No images");
         if (this.props.images === null)
@@ -263,17 +263,19 @@ class Images extends React.Component {
         return (
             <Card id="containers-images" key="images" className="containers-images">
                 <CardHeader>
-                    <CardTitle>
-                        <Flex>
-                            <Text className="images-title" component={TextVariants.h3}>{_("Images")}</Text>
-                            {imageTitleStats}
-                        </Flex>
-                    </CardTitle>
-                    <CardActions>
-                        <ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog}
-                                          handlePruneUsedImages={this.onOpenPruneUnusedImagesDialog}
-                                          unusedImages={unusedImages} />
-                    </CardActions>
+                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-u-w-100">
+                        <FlexItem grow={{ default: 'grow' }}>
+                            <Flex>
+                                <Text className="images-title" component={TextVariants.h3}>{_("Images")}</Text>
+                                <Flex>{imageTitleStats}</Flex>
+                            </Flex>
+                        </FlexItem>
+                        <FlexItem>
+                            <ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog}
+                                              handlePruneUsedImages={this.onOpenPruneUnusedImagesDialog}
+                                              unusedImages={unusedImages} />
+                        </FlexItem>
+                    </Flex>
                 </CardHeader>
                 <CardBody>
                     {filtered.length
@@ -377,7 +379,7 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
 
     const runImage = (
         <Button key={image.Id + "create"}
-                className="ct-container-create"
+                className="ct-container-create show-only-when-wide"
                 variant='secondary'
                 onClick={ e => {
                     e.stopPropagation();
@@ -393,7 +395,14 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
         <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} />}
                   isOpen={isActionsKebabOpen}
                   isPlain
+                  position="right"
                   dropdownItems={[
+                      <DropdownItem key={image.Id + "create-menu"}
+                                    component="button"
+                                    className="show-only-when-narrow"
+                                    onClick={() => setShowImageRunModal(true)}>
+                          {_("Create container")}
+                      </DropdownItem>,
                       <DropdownItem key={image.Id + "delete"}
                                     component="button"
                                     className="pf-m-danger btn-delete"
@@ -404,7 +413,7 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
     );
 
     return (
-        <Flex flexWrap={{ default: 'nowrap' }}>
+        <>
             {runImage}
             {extraActions}
             {showImageDeleteErrorModal &&
@@ -430,7 +439,7 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
                 image={image}
                 onAddNotification={onAddNotification}
             /> }
-        </Flex>
+        </>
     );
 };
 
