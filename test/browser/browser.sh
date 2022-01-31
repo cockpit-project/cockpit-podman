@@ -19,7 +19,7 @@ chmod a+w "$LOGS"
 
 # install firefox (available everywhere in Fedora and RHEL)
 # we don't need the H.264 codec, and it is sometimes not available (rhbz#2005760)
-dnf install --disablerepo=fedora-cisco-openh264 -y firefox
+dnf install --disablerepo=fedora-cisco-openh264 -y --setopt=install_weak_deps=False firefox
 
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
 dnf update -y podman crun
