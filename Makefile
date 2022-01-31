@@ -9,7 +9,6 @@ export TEST_OS
 TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.xz
 NODE_CACHE=cockpit-$(PACKAGE_NAME)-node-$(VERSION).tar.xz
 SPEC=$(RPM_NAME).spec
-RPMFILE=$(shell rpmspec -D"VERSION $(VERSION)" -q `ls packaging/$(SPEC).in $(SPEC) 2>/dev/null | head -n1`).rpm
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check if/when npm install ran
 NODE_MODULES_TEST=package-lock.json
@@ -94,15 +93,8 @@ $(NODE_CACHE): $(NODE_MODULES_TEST)
 
 node-cache: $(NODE_CACHE)
 
-srpm: $(TARFILE) $(SPEC)
-	rpmbuild -bs \
-	  --define "_sourcedir `pwd`" \
-	  --define "_srcrpmdir `pwd`" \
-	  $(SPEC)
-
-rpm: $(RPMFILE)
-
-$(RPMFILE): $(TARFILE) $(SPEC)
+# convenience target for developers
+rpm: $(TARFILE) $(SPEC)
 	mkdir -p "`pwd`/output"
 	mkdir -p "`pwd`/rpmbuild"
 	rpmbuild -bb \
@@ -116,31 +108,15 @@ $(RPMFILE): $(TARFILE) $(SPEC)
 	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
-	# sanity check
-	test -e "$(RPMFILE)"
-
-# determine what to depend on and do for Fedora/RHEL/Debian VM preparation
-ifneq ($(filter debian-% ubuntu-%,$(TEST_OS)),)
-VM_DEP=$(TARFILE) packaging/debian/rules packaging/debian/control
-VM_PACKAGE=--upload `pwd`/$(TARFILE):/var/tmp/ --upload `pwd`/packaging/debian:/var/tmp/
-else
-ifneq ($(filter arch,$(TEST_OS)),)
-VM_DEP=$(TARFILE) packaging/arch/PKGBUILD
-VM_PACKAGE=--upload `pwd`/$(TARFILE):/var/tmp/ --upload `pwd`/packaging/arch:/var/tmp/
-else
-VM_DEP=$(RPMFILE)
-VM_PACKAGE=--upload `pwd`/$(RPMFILE):/var/tmp/
-endif
-endif
 
 ifeq ($(TEST_SCENARIO),rawhide)
 UPGRADES=--run-command 'dnf update -y --releasever=rawhide podman conmon crun containernetworking-plugins containers-common kernel'
 endif
 
 # build a VM with locally built distro pkgs installed
-$(VM_IMAGE): $(VM_DEP) bots
+$(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
-	bots/image-customize -v $(VM_PACKAGE) -s $(CURDIR)/test/vm.install $(UPGRADES) $(TEST_OS)
+	bots/image-customize --verbose --build $(TARFILE) --script $(CURDIR)/test/vm.install $(UPGRADES) $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
@@ -186,4 +162,4 @@ $(NODE_MODULES_TEST): package.json
 	env -u NODE_ENV npm install
 	env -u NODE_ENV npm prune
 
-.PHONY: all clean install devel-install dist node-cache srpm rpm check vm
+.PHONY: all clean install devel-install dist node-cache rpm check vm

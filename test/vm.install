@@ -2,29 +2,7 @@
 # image-customize script to prepare a bots VM for cockpit-podman testing
 set -eu
 
-# for Debian based images, build and install debs; for RPM based ones, the locally built rpm gets installed separately
-if [ -d /var/tmp/debian ]; then
-    # build source package
-    cd /var/tmp
-    TAR=$(ls cockpit-podman-*.tar.xz)
-    VERSION="${TAR#cockpit-podman-}"
-    VERSION="${VERSION%.tar.xz}"
-    ln -s $TAR cockpit-podman_${VERSION}.orig.tar.xz
-    tar xf "$TAR"
-    cd cockpit-podman
-    cp -r ../debian .
-    sed -i "s/(0-1)/(${VERSION}-1)/" debian/changelog
-    dpkg-buildpackage -S -us -uc -nc
-
-    # build and install binary package; prefer pbuilder if available (on Cockpit test VMs)
-    if [ -e /var/cache/pbuilder/base.tgz ]; then
-        pbuilder build --buildresult .. ../*.dsc
-    else
-        eatmydata apt-get install ${APT_INSTALL_OPTIONS:-} -y build-essential debhelper
-        dpkg-buildpackage -us -uc -b
-    fi
-    dpkg -i ../*.deb
-
+if grep -q ID.*debian /usr/lib/os-release; then
     # Debian does not enable user namespaces by default
     echo kernel.unprivileged_userns_clone = 1 > /etc/sysctl.d/00-local-userns.conf
     systemctl restart systemd-sysctl
@@ -37,23 +15,6 @@ if [ -d /var/tmp/debian ]; then
     # tuned is installed for testing cockpit; but it causes funny bugs, and we are not testing this here
     # https://launchpad.net/bugs/1774000 https://launchpad.net/bugs/1925765
     systemctl disable tuned
-
-# install rpms
-elif [ -e /var/tmp/*.rpm ]; then
-    rpm -i --verbose /var/tmp/*.rpm
-elif [ -d /var/tmp/arch ]; then
-    # build source package
-    cd /var/tmp
-    TAR=$(ls cockpit-podman-*.tar.xz)
-    VERSION="${TAR#cockpit-podman-}"
-    VERSION="${VERSION%.tar.xz}"
-
-    cp arch/PKGBUILD .
-    sed -i "s/VERSION/$VERSION/" PKGBUILD
-    sed -i "s/SOURCE/$TAR/" PKGBUILD
-    su builder -c "extra-x86_64-build"
-
-    pacman -U --noconfirm *.pkg.tar.zst
 fi
 
 systemctl enable cockpit.socket
