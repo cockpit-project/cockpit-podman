@@ -1,5 +1,5 @@
 #!/bin/sh
-# image-customize script to enable cockpit in test VMs
+# image-customize script to prepare a bots VM for cockpit-podman testing
 set -eu
 
 # for Debian based images, build and install debs; for RPM based ones, the locally built rpm gets installed separately
@@ -35,6 +35,7 @@ if [ -d /var/tmp/debian ]; then
     fi
 
     # tuned is installed for testing cockpit; but it causes funny bugs, and we are not testing this here
+    # https://launchpad.net/bugs/1774000 https://launchpad.net/bugs/1925765
     systemctl disable tuned
 
 # install rpms
