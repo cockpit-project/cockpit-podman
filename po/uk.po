@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-24 02:58+0000\n"
+"POT-Creation-Date: 2022-01-31 02:51+0000\n"
 "PO-Revision-Date: 2022-01-23 11:07+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://translate.fedoraproject.org/projects/"
@@ -41,19 +41,19 @@ msgstr[0] "$0 невикористаний образ, $1"
 msgstr[1] "$0 невикористані образи, $1"
 msgstr[2] "$0 невикористаних образів, $1"
 
-#: src/ImageRunModal.jsx:1007
+#: src/ImageRunModal.jsx:1012
 msgid "Add port mapping"
 msgstr "Додати прив'язку портів"
 
-#: src/ImageRunModal.jsx:1026
+#: src/ImageRunModal.jsx:1031
 msgid "Add variable"
 msgstr "Додати змінну"
 
-#: src/ImageRunModal.jsx:1016
+#: src/ImageRunModal.jsx:1021
 msgid "Add volume"
 msgstr "Додати том"
 
-#: src/ImageRunModal.jsx:775 src/ContainerHeader.jsx:49 src/Containers.jsx:535
+#: src/ContainerHeader.jsx:49 src/Containers.jsx:535 src/ImageRunModal.jsx:780
 msgid "All"
 msgstr "Усі"
 
@@ -61,7 +61,7 @@ msgstr "Усі"
 msgid "All registries"
 msgstr "Усі реєстри"
 
-#: src/ImageRunModal.jsx:973
+#: src/ImageRunModal.jsx:978
 msgid "Always"
 msgstr "Завжди"
 
@@ -81,15 +81,15 @@ msgstr "Автоматично запускати podman під час зава�
 msgid "CPU"
 msgstr "Процесор"
 
-#: src/ImageRunModal.jsx:929
+#: src/ImageRunModal.jsx:934
 msgid "CPU Shares help"
 msgstr "Довідка щодо спільних процесорів"
 
-#: src/ImageRunModal.jsx:927
+#: src/ImageRunModal.jsx:932
 msgid "CPU shares"
 msgstr "Спільне використання процесора"
 
-#: src/ImageRunModal.jsx:931
+#: src/ImageRunModal.jsx:936
 msgid ""
 "CPU shares determine the priority of running containers. Default priority is "
 "1024. A higher number prioritizes this container. A lower number decreases "
@@ -99,11 +99,11 @@ msgstr ""
 "пріоритетністю є 1024. Більші числа роблять контейнер пріоритетнішим. Менші "
 "числа зменшують пріоритетність."
 
-#: src/ImageRunModal.jsx:1054 src/ContainerRestoreModal.jsx:39
-#: src/ContainerCommitModal.jsx:168 src/ContainerCheckpointModal.jsx:38
+#: src/ContainerCheckpointModal.jsx:38 src/ForceRemoveModal.jsx:21
+#: src/ContainerRestoreModal.jsx:39 src/ContainerCommitModal.jsx:168
+#: src/ContainerDeleteModal.jsx:15 src/ImageSearchModal.jsx:231
 #: src/PodActions.jsx:174 src/PruneUnusedImagesModal.jsx:103
-#: src/ImageDeleteModal.jsx:62 src/ContainerDeleteModal.jsx:15
-#: src/ForceRemoveModal.jsx:21 src/ImageSearchModal.jsx:231
+#: src/ImageRunModal.jsx:1059 src/ImageDeleteModal.jsx:62
 msgid "Cancel"
 msgstr "Скасувати"
 
@@ -115,12 +115,12 @@ msgstr "Контрольна точка"
 msgid "Checkpoint container $0"
 msgstr "Контрольна точка контейнера $0"
 
-#: src/ContainerDetails.jsx:54 src/ImageRunModal.jsx:884
-#: src/ContainerCommitModal.jsx:123 src/ImageDetails.jsx:15
+#: src/ContainerCommitModal.jsx:123 src/ContainerDetails.jsx:60
+#: src/ImageDetails.jsx:15 src/ImageRunModal.jsx:889
 msgid "Command"
 msgstr "Команда"
 
-#: src/ContainerCommitModal.jsx:155 src/Containers.jsx:243
+#: src/Containers.jsx:243 src/ContainerCommitModal.jsx:155
 msgid "Commit"
 msgstr "Надіслати"
 
@@ -156,7 +156,7 @@ msgstr "Контейнер працює."
 msgid "Container is not running"
 msgstr "Контейнер не запущено"
 
-#: src/ImageRunModal.jsx:813
+#: src/ImageRunModal.jsx:818
 msgid "Container name"
 msgstr "Назва контейнера"
 
@@ -168,11 +168,11 @@ msgstr "Шлях до контейнера"
 msgid "Container port"
 msgstr "Порт контейнера"
 
-#: src/Containers.jsx:565 src/Containers.jsx:572 src/Containers.jsx:600
+#: src/Containers.jsx:566 src/Containers.jsx:573 src/Containers.jsx:601
 msgid "Containers"
 msgstr "Контейнери"
 
-#: src/ImageRunModal.jsx:1051
+#: src/ImageRunModal.jsx:1056
 msgid "Create"
 msgstr "Створити"
 
@@ -180,28 +180,28 @@ msgstr "Створити"
 msgid "Create a new image based on the current state of the $0 container."
 msgstr "Створити образ на основі поточного стану контейнера $0."
 
-#: src/ImageRunModal.jsx:1047 src/Images.jsx:388 src/Containers.jsx:543
+#: src/Containers.jsx:544 src/Images.jsx:388 src/ImageRunModal.jsx:1052
 msgid "Create container"
 msgstr "Створити контейнер"
 
-#: src/ImageRunModal.jsx:1047
+#: src/ImageRunModal.jsx:1052
 msgid "Create container in $0"
 msgstr "Створити контейнер у $0"
 
-#: src/Containers.jsx:619
+#: src/Containers.jsx:620
 msgid "Create container in pod"
 msgstr "Створити контейнер у стручку"
 
-#: src/ContainerDetails.jsx:78 src/Images.jsx:163 src/util.js:8 src/util.js:11
+#: src/util.js:8 src/util.js:11 src/ContainerDetails.jsx:84 src/Images.jsx:163
 msgid "Created"
 msgstr "Створено"
 
-#: src/ImageRunModal.jsx:819
+#: src/ImageRunModal.jsx:824
 msgid "Default with single selectable"
 msgstr "Типове із одним варіантом вибору"
 
-#: src/Images.jsx:401 src/PodActions.jsx:151 src/PodActions.jsx:173
-#: src/Containers.jsx:251 src/ContainerDeleteModal.jsx:14
+#: src/Containers.jsx:251 src/ContainerDeleteModal.jsx:14 src/Images.jsx:401
+#: src/PodActions.jsx:151 src/PodActions.jsx:173
 msgid "Delete"
 msgstr "Вилучити"
 
@@ -231,7 +231,7 @@ msgstr ""
 msgid "Deleting this pod will remove the following containers:"
 msgstr "Вилучення цього кокону призведе до вилучення таких контейнерів:"
 
-#: src/ImageRunModal.jsx:831 src/Images.jsx:139 src/Containers.jsx:394
+#: src/Containers.jsx:394 src/Images.jsx:139 src/ImageRunModal.jsx:836
 msgid "Details"
 msgstr "Подробиці"
 
@@ -262,7 +262,7 @@ msgstr "Отримати новий образ"
 msgid "Entrypoint"
 msgstr "Точка входження"
 
-#: src/ImageRunModal.jsx:1025
+#: src/ImageRunModal.jsx:1030
 msgid "Environment variables"
 msgstr "Змінні середовища"
 
@@ -270,7 +270,7 @@ msgstr "Змінні середовища"
 msgid "Error"
 msgstr "Помилка"
 
-#: src/Images.jsx:54 src/Notification.jsx:42
+#: src/Notification.jsx:42 src/Images.jsx:54
 msgid "Error message"
 msgstr "Повідомлення про помилку"
 
@@ -282,11 +282,11 @@ msgstr "Під час спроби встановити з'єднання з к�
 msgid "Example, Your Name <yourname@example.com>"
 msgstr "Приклад: Ваше Ім'я <vasheimya@example.com>"
 
-#: src/ImageRunModal.jsx:840
+#: src/ImageRunModal.jsx:845
 msgid "Example: $0"
 msgstr "Приклад: $0"
 
-#: src/ContainerDetails.jsx:13 src/util.js:8 src/util.js:11
+#: src/util.js:8 src/util.js:11 src/ContainerDetails.jsx:13
 msgid "Exited"
 msgstr "Вийшов"
 
@@ -374,11 +374,11 @@ msgstr "Не вдалося відновити кокон $0"
 msgid "Failed to run container $0"
 msgstr "Не вдалося запустити контейнер $0"
 
-#: src/ImageRunModal.jsx:588 src/ImageSearchModal.jsx:109
+#: src/ImageSearchModal.jsx:109 src/ImageRunModal.jsx:588
 msgid "Failed to search for images: $0"
 msgstr "Не вдалося виконати пошук образів: $0"
 
-#: src/ImageRunModal.jsx:586 src/ImageSearchModal.jsx:108
+#: src/ImageSearchModal.jsx:108 src/ImageRunModal.jsx:586
 msgid "Failed to search for new images"
 msgstr "Не вдалося виконати пошук нових образів"
 
@@ -402,23 +402,23 @@ msgstr "Не вдалося зупинити кокон $0"
 msgid "Force commit"
 msgstr "Примусово внести"
 
-#: src/PodActions.jsx:173 src/ForceRemoveModal.jsx:19
+#: src/ForceRemoveModal.jsx:19 src/PodActions.jsx:173
 msgid "Force delete"
 msgstr "Примусове вилучення"
 
-#: src/PodActions.jsx:93 src/Containers.jsx:190
+#: src/Containers.jsx:190 src/PodActions.jsx:93
 msgid "Force restart"
 msgstr "Примусовий перезапуск"
 
-#: src/PodActions.jsx:71 src/Containers.jsx:182
+#: src/Containers.jsx:182 src/PodActions.jsx:71
 msgid "Force stop"
 msgstr "Примусово зупинити"
 
-#: src/ContainerDetails.jsx:68
+#: src/ContainerDetails.jsx:74
 msgid "Gateway"
 msgstr "Шлюз"
 
-#: src/ImageRunModal.jsx:919
+#: src/ImageRunModal.jsx:924
 msgid "GiB"
 msgstr "ГіБ"
 
@@ -442,11 +442,11 @@ msgstr "Порт в основній системі"
 msgid "Host port help"
 msgstr "Довідка щодо порту в основній системі"
 
-#: src/ContainerDetails.jsx:46 src/Images.jsx:164
+#: src/ContainerDetails.jsx:52 src/Images.jsx:164
 msgid "ID"
 msgstr "Ід."
 
-#: src/ContainerDetails.jsx:64 src/ImageRunModal.jsx:55
+#: src/ContainerDetails.jsx:70 src/ImageRunModal.jsx:55
 msgid "IP address"
 msgstr "IP-адреса"
 
@@ -479,11 +479,11 @@ msgstr "Ігнорувати IP-адресу, якщо її встановлен
 msgid "Ignore MAC address if set statically"
 msgstr "Ігнорувати MAC-адресу, якщо її встановлено статично"
 
-#: src/ContainerDetails.jsx:50 src/ImageRunModal.jsx:833 src/Images.jsx:161
+#: src/ContainerDetails.jsx:56 src/Images.jsx:161 src/ImageRunModal.jsx:838
 msgid "Image"
 msgstr "Образ"
 
-#: src/ImageRunModal.jsx:835
+#: src/ImageRunModal.jsx:840
 msgid "Image selection help"
 msgstr "Довідка щодо вибору образу"
 
@@ -491,11 +491,11 @@ msgstr "Довідка щодо вибору образу"
 msgid "Images"
 msgstr "Образи"
 
-#: src/ImageRunModal.jsx:1001
+#: src/ImageRunModal.jsx:1006
 msgid "Integration"
 msgstr "Інтеграція"
 
-#: src/ContainerRestoreModal.jsx:44 src/ContainerCheckpointModal.jsx:43
+#: src/ContainerCheckpointModal.jsx:43 src/ContainerRestoreModal.jsx:44
 msgid "Keep all temporary checkpoint files"
 msgstr "Зберігати усі тимчасові файли контрольних точок"
 
@@ -503,7 +503,7 @@ msgstr "Зберігати усі тимчасові файли контроль
 msgid "Key"
 msgstr "Ключ"
 
-#: src/ImageRunModal.jsx:917
+#: src/ImageRunModal.jsx:922
 msgid "KiB"
 msgstr "КіБ"
 
@@ -515,11 +515,11 @@ msgstr "Лишати запущеним після запису контроль
 msgid "Loading logs..."
 msgstr "Завантаження журналу…"
 
-#: src/ImageUsedBy.jsx:9 src/Containers.jsx:438
+#: src/Containers.jsx:438 src/ImageUsedBy.jsx:9
 msgid "Loading..."
 msgstr "Завантаження…"
 
-#: src/ImageRunModal.jsx:784
+#: src/ImageRunModal.jsx:789
 msgid "Local"
 msgstr "Локальний"
 
@@ -531,11 +531,11 @@ msgstr "Локальні образи"
 msgid "Logs"
 msgstr "Журнал"
 
-#: src/ContainerDetails.jsx:72
+#: src/ContainerDetails.jsx:78
 msgid "MAC address"
 msgstr "MAC-адреса"
 
-#: src/ImageRunModal.jsx:979
+#: src/ImageRunModal.jsx:984
 msgid "Maximum retries"
 msgstr "Максимум повторних спроб"
 
@@ -543,15 +543,15 @@ msgstr "Максимум повторних спроб"
 msgid "Memory"
 msgstr "Пам'ять"
 
-#: src/ImageRunModal.jsx:897
+#: src/ImageRunModal.jsx:902
 msgid "Memory limit"
 msgstr "Обмеження пам’яті"
 
-#: src/ImageRunModal.jsx:912
+#: src/ImageRunModal.jsx:917
 msgid "Memory unit"
 msgstr "Одиниця пам’яті"
 
-#: src/ImageRunModal.jsx:918
+#: src/ImageRunModal.jsx:923
 msgid "MiB"
 msgstr "МіБ"
 
@@ -565,7 +565,7 @@ msgstr ""
 "Для цього образу існує декілька міток. Виберіть позначені міткою образи для "
 "вилучення."
 
-#: src/ImageRunModal.jsx:810
+#: src/ImageRunModal.jsx:815
 msgid "Name"
 msgstr "Назва"
 
@@ -573,7 +573,7 @@ msgstr "Назва"
 msgid "New image name"
 msgstr "Назва нового образу"
 
-#: src/ImageRunModal.jsx:971
+#: src/ImageRunModal.jsx:976
 msgid "No"
 msgstr "Ні"
 
@@ -593,7 +593,7 @@ msgstr "У цьому коконі немає контейнерів"
 msgid "No containers that match the current filter"
 msgstr "Немає контейнерів, які проходять поточні умови фільтрування"
 
-#: src/ImageRunModal.jsx:1023
+#: src/ImageRunModal.jsx:1028
 msgid "No environment variables specified"
 msgstr "Змінних середовища не визначено"
 
@@ -601,7 +601,7 @@ msgstr "Змінних середовища не визначено"
 msgid "No images"
 msgstr "Немає образів"
 
-#: src/ImageRunModal.jsx:858 src/ImageSearchModal.jsx:176
+#: src/ImageSearchModal.jsx:176 src/ImageRunModal.jsx:863
 msgid "No images found"
 msgstr "Образів не знайдено"
 
@@ -613,7 +613,7 @@ msgstr "Немає образів, які проходять поточні ум
 msgid "No label"
 msgstr "Немає мітки"
 
-#: src/ImageRunModal.jsx:1004
+#: src/ImageRunModal.jsx:1009
 msgid "No ports exposed"
 msgstr "Не відкрито жодного порту"
 
@@ -625,11 +625,11 @@ msgstr "Немає результатів, що відповідають $0"
 msgid "No running containers"
 msgstr "Немає запущених контейнерів"
 
-#: src/ImageRunModal.jsx:1013
+#: src/ImageRunModal.jsx:1018
 msgid "No volumes specified"
 msgstr "Томів не визначено"
 
-#: src/ImageRunModal.jsx:972
+#: src/ImageRunModal.jsx:977
 msgid "On failure"
 msgstr "При помилці"
 
@@ -637,23 +637,23 @@ msgstr "При помилці"
 msgid "Only running"
 msgstr "Лише запущені"
 
-#: src/ImageRunModal.jsx:994 src/ContainerCommitModal.jsx:129
+#: src/ContainerCommitModal.jsx:129 src/ImageRunModal.jsx:999
 msgid "Options"
 msgstr "Параметри"
 
-#: src/ImageRunModal.jsx:818 src/ContainerHeader.jsx:43 src/Images.jsx:162
-#: src/Containers.jsx:426 src/ImageSearchModal.jsx:148
+#: src/ContainerHeader.jsx:43 src/Containers.jsx:426 src/Images.jsx:162
+#: src/ImageSearchModal.jsx:148 src/ImageRunModal.jsx:823
 msgid "Owner"
 msgstr "Власник"
 
-#: src/ImageRunModal.jsx:1029
+#: src/ImageRunModal.jsx:1034
 msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr ""
 "Вставте один або декілька рядків у форматі парт «ключ=значення» до будь-"
 "якого поля для пакетного імпортування"
 
-#: src/PodActions.jsx:138 src/Containers.jsx:198
+#: src/Containers.jsx:198 src/PodActions.jsx:138
 msgid "Pause"
 msgstr "Призупинити"
 
@@ -697,11 +697,11 @@ msgstr "Контейнери Podman"
 msgid "Podman service is not active"
 msgstr "Служба Podman є неактивною"
 
-#: src/ImageRunModal.jsx:1006
+#: src/ImageRunModal.jsx:1011
 msgid "Port mapping"
 msgstr "Прив'язка портів"
 
-#: src/ContainerDetails.jsx:60 src/ImageDetails.jsx:39
+#: src/ContainerDetails.jsx:66 src/ImageDetails.jsx:39
 msgid "Ports"
 msgstr "Порти"
 
@@ -725,7 +725,7 @@ msgstr "Позбутися невикористаних образів"
 msgid "Pruning images"
 msgstr "Позбуваємося образів"
 
-#: src/ImageRunModal.jsx:879
+#: src/ImageRunModal.jsx:884
 msgid "Pull latest image"
 msgstr "Отримати найсвіжіший образ"
 
@@ -742,23 +742,23 @@ msgstr "Вилучити запис"
 msgid "Removing"
 msgstr "Вилучення"
 
-#: src/PodActions.jsx:82 src/Containers.jsx:186
+#: src/Containers.jsx:186 src/PodActions.jsx:82
 msgid "Restart"
 msgstr "Перезапустити"
 
-#: src/ImageRunModal.jsx:956
+#: src/ImageRunModal.jsx:961
 msgid "Restart policy"
 msgstr "Правила перезапуску"
 
-#: src/ImageRunModal.jsx:958 src/ImageRunModal.jsx:968
+#: src/ImageRunModal.jsx:963 src/ImageRunModal.jsx:973
 msgid "Restart policy help"
 msgstr "Довідка щодо правил перезапуску"
 
-#: src/ImageRunModal.jsx:960
+#: src/ImageRunModal.jsx:965
 msgid "Restart policy to follow when containers exit."
 msgstr "Правила перезапуску, які слід виконувати при виході з контейнерів."
 
-#: src/ContainerRestoreModal.jsx:35 src/Containers.jsx:233
+#: src/Containers.jsx:233 src/ContainerRestoreModal.jsx:35
 msgid "Restore"
 msgstr "Відновити"
 
@@ -770,11 +770,11 @@ msgstr "Відновити контейнер $0"
 msgid "Restore with established TCP connections"
 msgstr "Відновити із встановленими з'єднаннями TCP"
 
-#: src/PodActions.jsx:123 src/Containers.jsx:205
+#: src/Containers.jsx:205 src/PodActions.jsx:123
 msgid "Resume"
 msgstr "Продовжити"
 
-#: src/ImageUsedBy.jsx:32 src/util.js:8 src/util.js:11
+#: src/util.js:8 src/util.js:11 src/ImageUsedBy.jsx:32
 msgid "Running"
 msgstr "Запущено"
 
@@ -786,7 +786,7 @@ msgstr "SELinux"
 msgid "Search by name or description"
 msgstr "Шукати за назвою і описом"
 
-#: src/ImageRunModal.jsx:774
+#: src/ImageRunModal.jsx:779
 msgid "Search by registry"
 msgstr "Шукати за реєстром"
 
@@ -798,7 +798,7 @@ msgstr "Шукати"
 msgid "Search for an image"
 msgstr "Шукати образ"
 
-#: src/ImageRunModal.jsx:863
+#: src/ImageRunModal.jsx:868
 msgid "Search string or container location"
 msgstr "Рядок для пошуку або розташування контейнера"
 
@@ -806,7 +806,7 @@ msgstr "Рядок для пошуку або розташування конт�
 msgid "Searching..."
 msgstr "Пошук…"
 
-#: src/ImageRunModal.jsx:841
+#: src/ImageRunModal.jsx:846
 msgid "Searching: $0"
 msgstr "Шукаємо: $0"
 
@@ -830,11 +830,11 @@ msgstr "Показати проміжні образи"
 msgid "Show more"
 msgstr "Додаткові відомості"
 
-#: src/PodActions.jsx:108 src/Containers.jsx:225 src/app.jsx:624
+#: src/Containers.jsx:225 src/app.jsx:624 src/PodActions.jsx:108
 msgid "Start"
 msgstr "Запустити"
 
-#: src/ImageRunModal.jsx:997
+#: src/ImageRunModal.jsx:1002
 msgid "Start after creation"
 msgstr "Запустити після створення"
 
@@ -842,11 +842,11 @@ msgstr "Запустити після створення"
 msgid "Start podman"
 msgstr "Запустити podman"
 
-#: src/ContainerDetails.jsx:82 src/Containers.jsx:429
+#: src/Containers.jsx:429 src/ContainerDetails.jsx:88
 msgid "State"
 msgstr "Стан"
 
-#: src/PodActions.jsx:60 src/Containers.jsx:178
+#: src/Containers.jsx:178 src/PodActions.jsx:60
 msgid "Stop"
 msgstr "Зупинити"
 
@@ -858,7 +858,7 @@ msgstr "Зупинено"
 msgid "Support preserving established TCP connections"
 msgstr "Підтримка збереження встановлених з'єднань TCP"
 
-#: src/ImageRunModal.jsx:820 src/ContainerHeader.jsx:48
+#: src/ContainerHeader.jsx:48 src/ImageRunModal.jsx:825
 msgid "System"
 msgstr "Система"
 
@@ -910,7 +910,7 @@ msgstr "Користувач"
 msgid "User Podman service is also available"
 msgstr "Також доступна служба користувачів Podman"
 
-#: src/ImageRunModal.jsx:822
+#: src/ImageRunModal.jsx:827
 msgid "User:"
 msgstr "Користувач:"
 
@@ -918,11 +918,11 @@ msgstr "Користувач:"
 msgid "Value"
 msgstr "Значення"
 
-#: src/ImageRunModal.jsx:1015
+#: src/ImageRunModal.jsx:1020
 msgid "Volumes"
 msgstr "Томи"
 
-#: src/ImageRunModal.jsx:893
+#: src/ImageRunModal.jsx:898
 msgid "With terminal"
 msgstr "За допомогою термінала"
 
@@ -938,7 +938,7 @@ msgstr "контейнер"
 msgid "downloading"
 msgstr "отримання"
 
-#: src/ImageRunModal.jsx:839
+#: src/ImageRunModal.jsx:844
 msgid "host[:port]/[user]/container[:tag]"
 msgstr "вузол[:порт]/[користувач]/контейнер[:мітка]"
 
@@ -958,7 +958,7 @@ msgstr "н/д"
 msgid "not available"
 msgstr "не доступне"
 
-#: src/Containers.jsx:611
+#: src/Containers.jsx:612
 msgid "pod group"
 msgstr "група коконів"
 
@@ -970,7 +970,7 @@ msgstr "podman"
 msgid "select all"
 msgstr "вибрати все"
 
-#: src/Images.jsx:123 src/Containers.jsx:381 src/ImageSearchModal.jsx:149
+#: src/Containers.jsx:381 src/Images.jsx:123 src/ImageSearchModal.jsx:149
 msgid "system"
 msgstr "система"
 
@@ -978,7 +978,7 @@ msgstr "система"
 msgid "unused"
 msgstr "не використано"
 
-#: src/Images.jsx:123 src/Containers.jsx:381
+#: src/Containers.jsx:381 src/Images.jsx:123
 msgid "user:"
 msgstr "користувач:"
 

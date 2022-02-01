@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-24 02:58+0000\n"
-"PO-Revision-Date: 2021-12-31 15:16+0000\n"
+"POT-Creation-Date: 2022-01-31 02:51+0000\n"
+"PO-Revision-Date: 2022-01-31 19:16+0000\n"
 "Last-Translator: Jan Kuparinen <copper_fin@hotmail.com>\n"
 "Language-Team: Finnish <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/fi/>\n"
@@ -38,19 +38,19 @@ msgid_plural "$0 unused images, $1"
 msgstr[0] "$0 käyttämätön levykuva, $1"
 msgstr[1] "$0 käyttämätöntä levykuvaa, $1"
 
-#: src/ImageRunModal.jsx:1007
+#: src/ImageRunModal.jsx:1012
 msgid "Add port mapping"
 msgstr "Lisää porttiassosiaatio"
 
-#: src/ImageRunModal.jsx:1026
+#: src/ImageRunModal.jsx:1031
 msgid "Add variable"
 msgstr "Lisää muuttuja"
 
-#: src/ImageRunModal.jsx:1016
+#: src/ImageRunModal.jsx:1021
 msgid "Add volume"
 msgstr "Lisää taltio"
 
-#: src/ImageRunModal.jsx:775 src/ContainerHeader.jsx:49 src/Containers.jsx:535
+#: src/ContainerHeader.jsx:49 src/Containers.jsx:535 src/ImageRunModal.jsx:780
 msgid "All"
 msgstr "Kaikki"
 
@@ -58,7 +58,7 @@ msgstr "Kaikki"
 msgid "All registries"
 msgstr "Kaikki rekisterit"
 
-#: src/ImageRunModal.jsx:973
+#: src/ImageRunModal.jsx:978
 msgid "Always"
 msgstr "Aina"
 
@@ -78,15 +78,15 @@ msgstr "Käynnistä podman automaattisesti käynnistyksen yhteydessä"
 msgid "CPU"
 msgstr "Suoritin"
 
-#: src/ImageRunModal.jsx:929
+#: src/ImageRunModal.jsx:934
 msgid "CPU Shares help"
 msgstr "Ohjeita CPU-osuuksista"
 
-#: src/ImageRunModal.jsx:927
+#: src/ImageRunModal.jsx:932
 msgid "CPU shares"
 msgstr "Suoritinosuus"
 
-#: src/ImageRunModal.jsx:931
+#: src/ImageRunModal.jsx:936
 msgid ""
 "CPU shares determine the priority of running containers. Default priority is "
 "1024. A higher number prioritizes this container. A lower number decreases "
@@ -96,11 +96,11 @@ msgstr ""
 "Oletusprioriteetti on 1024. Suurempi numero priorisoi tätä konttia. Pienempi "
 "numero laskee prioriteettia."
 
-#: src/ImageRunModal.jsx:1054 src/ContainerRestoreModal.jsx:39
-#: src/ContainerCommitModal.jsx:168 src/ContainerCheckpointModal.jsx:38
+#: src/ContainerCheckpointModal.jsx:38 src/ForceRemoveModal.jsx:21
+#: src/ContainerRestoreModal.jsx:39 src/ContainerCommitModal.jsx:168
+#: src/ContainerDeleteModal.jsx:15 src/ImageSearchModal.jsx:231
 #: src/PodActions.jsx:174 src/PruneUnusedImagesModal.jsx:103
-#: src/ImageDeleteModal.jsx:62 src/ContainerDeleteModal.jsx:15
-#: src/ForceRemoveModal.jsx:21 src/ImageSearchModal.jsx:231
+#: src/ImageRunModal.jsx:1059 src/ImageDeleteModal.jsx:62
 msgid "Cancel"
 msgstr "Peru"
 
@@ -112,12 +112,12 @@ msgstr "Tarkistuspiste"
 msgid "Checkpoint container $0"
 msgstr "Luo tarkistuspiste kontista $0"
 
-#: src/ContainerDetails.jsx:54 src/ImageRunModal.jsx:884
-#: src/ContainerCommitModal.jsx:123 src/ImageDetails.jsx:15
+#: src/ContainerCommitModal.jsx:123 src/ContainerDetails.jsx:60
+#: src/ImageDetails.jsx:15 src/ImageRunModal.jsx:889
 msgid "Command"
 msgstr "Komento"
 
-#: src/ContainerCommitModal.jsx:155 src/Containers.jsx:243
+#: src/Containers.jsx:243 src/ContainerCommitModal.jsx:155
 msgid "Commit"
 msgstr "Kommitoi"
 
@@ -126,10 +126,8 @@ msgid "Commit container"
 msgstr "Kommitoi kontti"
 
 #: src/util.js:8
-#, fuzzy
-#| msgid "configured"
 msgid "Configured"
-msgstr "asetukset asetettu"
+msgstr "Asetukset asetettu"
 
 #: src/Containers.jsx:402
 msgid "Console"
@@ -155,7 +153,7 @@ msgstr "Kontti on parhaillaan käynnissä."
 msgid "Container is not running"
 msgstr "Kontti ei ole käynnissä"
 
-#: src/ImageRunModal.jsx:813
+#: src/ImageRunModal.jsx:818
 msgid "Container name"
 msgstr "Kontin nimi"
 
@@ -167,11 +165,11 @@ msgstr "Kontin polku"
 msgid "Container port"
 msgstr "Kontin portti"
 
-#: src/Containers.jsx:565 src/Containers.jsx:572 src/Containers.jsx:600
+#: src/Containers.jsx:566 src/Containers.jsx:573 src/Containers.jsx:601
 msgid "Containers"
 msgstr "Kontit"
 
-#: src/ImageRunModal.jsx:1051
+#: src/ImageRunModal.jsx:1056
 msgid "Create"
 msgstr "Luo"
 
@@ -179,28 +177,28 @@ msgstr "Luo"
 msgid "Create a new image based on the current state of the $0 container."
 msgstr "Luo uusi levykuva $0-kontin nykyisen tilan perusteella."
 
-#: src/ImageRunModal.jsx:1047 src/Images.jsx:388 src/Containers.jsx:543
+#: src/Containers.jsx:544 src/Images.jsx:388 src/ImageRunModal.jsx:1052
 msgid "Create container"
 msgstr "Luo kontti"
 
-#: src/ImageRunModal.jsx:1047
+#: src/ImageRunModal.jsx:1052
 msgid "Create container in $0"
 msgstr "Luo kontti kohteeseen $0"
 
-#: src/Containers.jsx:619
+#: src/Containers.jsx:620
 msgid "Create container in pod"
 msgstr "Luo kontti podiin"
 
-#: src/ContainerDetails.jsx:78 src/Images.jsx:163 src/util.js:8 src/util.js:11
+#: src/util.js:8 src/util.js:11 src/ContainerDetails.jsx:84 src/Images.jsx:163
 msgid "Created"
 msgstr "Luotu"
 
-#: src/ImageRunModal.jsx:819
+#: src/ImageRunModal.jsx:824
 msgid "Default with single selectable"
 msgstr "Oletusarvo kun yksi valittavissa"
 
-#: src/Images.jsx:401 src/PodActions.jsx:151 src/PodActions.jsx:173
-#: src/Containers.jsx:251 src/ContainerDeleteModal.jsx:14
+#: src/Containers.jsx:251 src/ContainerDeleteModal.jsx:14 src/Images.jsx:401
+#: src/PodActions.jsx:151 src/PodActions.jsx:173
 msgid "Delete"
 msgstr "Poista"
 
@@ -217,10 +215,8 @@ msgid "Delete unused system images:"
 msgstr "Poista käyttämättömät järjestelmälevykuvat:"
 
 #: src/PruneUnusedImagesModal.jsx:28
-#, fuzzy
-#| msgid "Delete unused system images:"
 msgid "Delete unused user images:"
-msgstr "Poista käyttämättömät järjestelmälevykuvat:"
+msgstr "Poista käyttämättömät käyttäjän levykuvat:"
 
 #: src/ContainerDeleteModal.jsx:18
 msgid "Deleting a container will erase all data in it."
@@ -230,7 +226,7 @@ msgstr "Kontin poistaminen tuhoaa kaiken sillä olevan datan."
 msgid "Deleting this pod will remove the following containers:"
 msgstr "Tämän podin poisto poistaa seuraavat kontit:"
 
-#: src/ImageRunModal.jsx:831 src/Images.jsx:139 src/Containers.jsx:394
+#: src/Containers.jsx:394 src/Images.jsx:139 src/ImageRunModal.jsx:836
 msgid "Details"
 msgstr "Yksityiskohdat"
 
@@ -261,7 +257,7 @@ msgstr "Lataa uusi levykuva"
 msgid "Entrypoint"
 msgstr "Sisääntulokohta"
 
-#: src/ImageRunModal.jsx:1025
+#: src/ImageRunModal.jsx:1030
 msgid "Environment variables"
 msgstr "Ympäristömuuttujat"
 
@@ -269,7 +265,7 @@ msgstr "Ympäristömuuttujat"
 msgid "Error"
 msgstr "Virhe"
 
-#: src/Images.jsx:54 src/Notification.jsx:42
+#: src/Notification.jsx:42 src/Images.jsx:54
 msgid "Error message"
 msgstr "Virheviesti"
 
@@ -281,11 +277,11 @@ msgstr "Virhe konsolia liitettäessä"
 msgid "Example, Your Name <yourname@example.com>"
 msgstr "Esimerkki: Nimesi <nimesi@esimerkki.fi>"
 
-#: src/ImageRunModal.jsx:840
+#: src/ImageRunModal.jsx:845
 msgid "Example: $0"
 msgstr "Esimerkki: $0"
 
-#: src/ContainerDetails.jsx:13 src/util.js:8 src/util.js:11
+#: src/util.js:8 src/util.js:11 src/ContainerDetails.jsx:13
 msgid "Exited"
 msgstr "Päättyi"
 
@@ -318,20 +314,16 @@ msgid "Failed to force remove image $0"
 msgstr "Levykuvan $0 pakotettu poistaminen epäonnistui"
 
 #: src/PodActions.jsx:89
-#, fuzzy
-#| msgid "Failed to restart pod $0"
 msgid "Failed to force restart pod $0"
-msgstr "Podin $0 uudelleenkäynnistäminen epäonnistui"
+msgstr "Podin $0 pakotettu uudelleenkäynnistäminen epäonnistui"
 
 #: src/PodActions.jsx:67
 msgid "Failed to force stop pod $0"
 msgstr "Podin $0 pakotettu pysäyttäminen epäonnistui"
 
 #: src/Containers.jsx:96
-#, fuzzy
-#| msgid "Failed to run container $0"
 msgid "Failed to pause container $0"
-msgstr "Kontin $0 suorittaminen epäonnistui"
+msgstr "Kontin $0 keskeyttäminen epäonnistui"
 
 #: src/PodActions.jsx:134
 msgid "Failed to pause pod $0"
@@ -366,10 +358,8 @@ msgid "Failed to restore container $0"
 msgstr "Kontin $0 palauttaminen epäonnistui"
 
 #: src/Containers.jsx:86
-#, fuzzy
-#| msgid "Failed to remove container $0"
 msgid "Failed to resume container $0"
-msgstr "Kontin $0 poistaminen epäonnistui"
+msgstr "Kontin $0 palauttaminen epäonnistui"
 
 #: src/PodActions.jsx:119
 msgid "Failed to resume pod $0"
@@ -379,11 +369,11 @@ msgstr "Podin $0 käytön jatkaminen epäonnistui"
 msgid "Failed to run container $0"
 msgstr "Kontin $0 suorittaminen epäonnistui"
 
-#: src/ImageRunModal.jsx:588 src/ImageSearchModal.jsx:109
+#: src/ImageSearchModal.jsx:109 src/ImageRunModal.jsx:588
 msgid "Failed to search for images: $0"
 msgstr "Levykuvien etsintä epäonnistui: $0"
 
-#: src/ImageRunModal.jsx:586 src/ImageSearchModal.jsx:108
+#: src/ImageSearchModal.jsx:108 src/ImageRunModal.jsx:586
 msgid "Failed to search for new images"
 msgstr "Uusien levykuvien etsintä epäonnistui"
 
@@ -407,23 +397,23 @@ msgstr "Podin $0 pysäyttäminen epäonnistui"
 msgid "Force commit"
 msgstr "Pakota kommitti"
 
-#: src/PodActions.jsx:173 src/ForceRemoveModal.jsx:19
+#: src/ForceRemoveModal.jsx:19 src/PodActions.jsx:173
 msgid "Force delete"
 msgstr "Pakota poisto"
 
-#: src/PodActions.jsx:93 src/Containers.jsx:190
+#: src/Containers.jsx:190 src/PodActions.jsx:93
 msgid "Force restart"
 msgstr "Pakota uudelleenkäynnistys"
 
-#: src/PodActions.jsx:71 src/Containers.jsx:182
+#: src/Containers.jsx:182 src/PodActions.jsx:71
 msgid "Force stop"
 msgstr "Pakota pysäytys"
 
-#: src/ContainerDetails.jsx:68
+#: src/ContainerDetails.jsx:74
 msgid "Gateway"
 msgstr "Yhdyskäytävä"
 
-#: src/ImageRunModal.jsx:919
+#: src/ImageRunModal.jsx:924
 msgid "GiB"
 msgstr "GiB"
 
@@ -447,11 +437,11 @@ msgstr "Koneen portti"
 msgid "Host port help"
 msgstr "Ohjeita koneen portista"
 
-#: src/ContainerDetails.jsx:46 src/Images.jsx:164
+#: src/ContainerDetails.jsx:52 src/Images.jsx:164
 msgid "ID"
 msgstr "TUNNISTE"
 
-#: src/ContainerDetails.jsx:64 src/ImageRunModal.jsx:55
+#: src/ContainerDetails.jsx:70 src/ImageRunModal.jsx:55
 msgid "IP address"
 msgstr "IP-osoite"
 
@@ -483,11 +473,11 @@ msgstr "Ohita IP-osoite, jos se on asetettu staattisesti"
 msgid "Ignore MAC address if set statically"
 msgstr "Ohita MAC-osoite, jos se on asetettu staattisesti"
 
-#: src/ContainerDetails.jsx:50 src/ImageRunModal.jsx:833 src/Images.jsx:161
+#: src/ContainerDetails.jsx:56 src/Images.jsx:161 src/ImageRunModal.jsx:838
 msgid "Image"
 msgstr "Levykuva"
 
-#: src/ImageRunModal.jsx:835
+#: src/ImageRunModal.jsx:840
 msgid "Image selection help"
 msgstr "Ohjeita levykuvan valintaan"
 
@@ -495,11 +485,11 @@ msgstr "Ohjeita levykuvan valintaan"
 msgid "Images"
 msgstr "Levykuvat"
 
-#: src/ImageRunModal.jsx:1001
+#: src/ImageRunModal.jsx:1006
 msgid "Integration"
 msgstr "Integraatio"
 
-#: src/ContainerRestoreModal.jsx:44 src/ContainerCheckpointModal.jsx:43
+#: src/ContainerCheckpointModal.jsx:43 src/ContainerRestoreModal.jsx:44
 msgid "Keep all temporary checkpoint files"
 msgstr "Säilytä kaikki väliaikaiset tarkistuspistetiedostot"
 
@@ -507,7 +497,7 @@ msgstr "Säilytä kaikki väliaikaiset tarkistuspistetiedostot"
 msgid "Key"
 msgstr "Avain"
 
-#: src/ImageRunModal.jsx:917
+#: src/ImageRunModal.jsx:922
 msgid "KiB"
 msgstr "KiB"
 
@@ -519,11 +509,11 @@ msgstr "Jätä käyntiin tarkistuspisteen levylle kirjoittamisen jälkeen"
 msgid "Loading logs..."
 msgstr "Ladataan lokeja..."
 
-#: src/ImageUsedBy.jsx:9 src/Containers.jsx:438
+#: src/Containers.jsx:438 src/ImageUsedBy.jsx:9
 msgid "Loading..."
 msgstr "Ladataan..."
 
-#: src/ImageRunModal.jsx:784
+#: src/ImageRunModal.jsx:789
 msgid "Local"
 msgstr "Paikallinen"
 
@@ -535,11 +525,11 @@ msgstr "Paikallisia levykuvia"
 msgid "Logs"
 msgstr "Lokit"
 
-#: src/ContainerDetails.jsx:72
+#: src/ContainerDetails.jsx:78
 msgid "MAC address"
 msgstr "MAC-osoite"
 
-#: src/ImageRunModal.jsx:979
+#: src/ImageRunModal.jsx:984
 msgid "Maximum retries"
 msgstr "Uudelleenyritysten enimmäismäärä"
 
@@ -547,15 +537,15 @@ msgstr "Uudelleenyritysten enimmäismäärä"
 msgid "Memory"
 msgstr "Muisti"
 
-#: src/ImageRunModal.jsx:897
+#: src/ImageRunModal.jsx:902
 msgid "Memory limit"
 msgstr "Muistiraja"
 
-#: src/ImageRunModal.jsx:912
+#: src/ImageRunModal.jsx:917
 msgid "Memory unit"
 msgstr "Muistiyksikkö"
 
-#: src/ImageRunModal.jsx:918
+#: src/ImageRunModal.jsx:923
 msgid "MiB"
 msgstr "MiB"
 
@@ -569,7 +559,7 @@ msgstr ""
 "Tälle levykuvalle on useita tunnisteita. Valitse tunnisteelliset levykuvat "
 "jotka poistetaan."
 
-#: src/ImageRunModal.jsx:810
+#: src/ImageRunModal.jsx:815
 msgid "Name"
 msgstr "Nimi"
 
@@ -577,7 +567,7 @@ msgstr "Nimi"
 msgid "New image name"
 msgstr "Uusi levykuvan nimi"
 
-#: src/ImageRunModal.jsx:971
+#: src/ImageRunModal.jsx:976
 msgid "No"
 msgstr "Ei"
 
@@ -597,7 +587,7 @@ msgstr "Tässä podissa ei ole kontteja"
 msgid "No containers that match the current filter"
 msgstr "Ei nykyistä suodatusta vastaavia kontteja"
 
-#: src/ImageRunModal.jsx:1023
+#: src/ImageRunModal.jsx:1028
 msgid "No environment variables specified"
 msgstr "Ympäristömuuttujia ei ole määritetty"
 
@@ -605,7 +595,7 @@ msgstr "Ympäristömuuttujia ei ole määritetty"
 msgid "No images"
 msgstr "Ei levykuvia"
 
-#: src/ImageRunModal.jsx:858 src/ImageSearchModal.jsx:176
+#: src/ImageSearchModal.jsx:176 src/ImageRunModal.jsx:863
 msgid "No images found"
 msgstr "Levykuvia ei löytynyt"
 
@@ -617,7 +607,7 @@ msgstr "Ei nykyistä suodatusta vastaavia levykuvia"
 msgid "No label"
 msgstr "Ei nimiötä"
 
-#: src/ImageRunModal.jsx:1004
+#: src/ImageRunModal.jsx:1009
 msgid "No ports exposed"
 msgstr "Ei paljastettuja portteja"
 
@@ -629,11 +619,11 @@ msgstr "Ei tuloksia hakusanalle $0"
 msgid "No running containers"
 msgstr "Ei käynnissä olevia kontteja"
 
-#: src/ImageRunModal.jsx:1013
+#: src/ImageRunModal.jsx:1018
 msgid "No volumes specified"
 msgstr "Taltiota ei ole määritelty"
 
-#: src/ImageRunModal.jsx:972
+#: src/ImageRunModal.jsx:977
 msgid "On failure"
 msgstr "Epäonnistumisesta"
 
@@ -641,23 +631,23 @@ msgstr "Epäonnistumisesta"
 msgid "Only running"
 msgstr "Vain käynnissä olevat"
 
-#: src/ImageRunModal.jsx:994 src/ContainerCommitModal.jsx:129
+#: src/ContainerCommitModal.jsx:129 src/ImageRunModal.jsx:999
 msgid "Options"
 msgstr "Valinnat"
 
-#: src/ImageRunModal.jsx:818 src/ContainerHeader.jsx:43 src/Images.jsx:162
-#: src/Containers.jsx:426 src/ImageSearchModal.jsx:148
+#: src/ContainerHeader.jsx:43 src/Containers.jsx:426 src/Images.jsx:162
+#: src/ImageSearchModal.jsx:148 src/ImageRunModal.jsx:823
 msgid "Owner"
 msgstr "omistaja"
 
-#: src/ImageRunModal.jsx:1029
+#: src/ImageRunModal.jsx:1034
 msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr ""
 "Liitä yksi tai useampi rivi avain=arvo-pareja mihin tahansa kenttään "
 "joukkotuontia varten"
 
-#: src/PodActions.jsx:138 src/Containers.jsx:198
+#: src/Containers.jsx:198 src/PodActions.jsx:138
 msgid "Pause"
 msgstr "Keskeytä"
 
@@ -701,11 +691,11 @@ msgstr "Podman-kontit"
 msgid "Podman service is not active"
 msgstr "Podman-palvelu ei ole aktiivinen"
 
-#: src/ImageRunModal.jsx:1006
+#: src/ImageRunModal.jsx:1011
 msgid "Port mapping"
 msgstr "Porttiassosiaatio"
 
-#: src/ContainerDetails.jsx:60 src/ImageDetails.jsx:39
+#: src/ContainerDetails.jsx:66 src/ImageDetails.jsx:39
 msgid "Ports"
 msgstr "Portit"
 
@@ -729,11 +719,9 @@ msgstr "Karsi käyttämättömät levykuvat"
 msgid "Pruning images"
 msgstr "Karsitaan levykuvia"
 
-#: src/ImageRunModal.jsx:879
-#, fuzzy
-#| msgid "Delete image"
+#: src/ImageRunModal.jsx:884
 msgid "Pull latest image"
-msgstr "Poista levykuva"
+msgstr "Hae viimeisin levykuva"
 
 #: src/Images.jsx:303
 msgid "Pulling"
@@ -745,28 +733,26 @@ msgid "Remove item"
 msgstr "Poista kohde"
 
 #: src/util.js:8
-#, fuzzy
-#| msgid "removing"
 msgid "Removing"
-msgstr "poistetaan"
+msgstr "Poistetaan"
 
-#: src/PodActions.jsx:82 src/Containers.jsx:186
+#: src/Containers.jsx:186 src/PodActions.jsx:82
 msgid "Restart"
 msgstr "Käynnistä uudelleen"
 
-#: src/ImageRunModal.jsx:956
+#: src/ImageRunModal.jsx:961
 msgid "Restart policy"
 msgstr "Uudelleenkäynnistyksen käytäntö"
 
-#: src/ImageRunModal.jsx:958 src/ImageRunModal.jsx:968
+#: src/ImageRunModal.jsx:963 src/ImageRunModal.jsx:973
 msgid "Restart policy help"
 msgstr "Ohjeita uudelleenkäynnistyksen käytännöstä"
 
-#: src/ImageRunModal.jsx:960
+#: src/ImageRunModal.jsx:965
 msgid "Restart policy to follow when containers exit."
 msgstr "Noudata uudelleenkäynnistyskäytäntöä, kun kontit poistuvat."
 
-#: src/ContainerRestoreModal.jsx:35 src/Containers.jsx:233
+#: src/Containers.jsx:233 src/ContainerRestoreModal.jsx:35
 msgid "Restore"
 msgstr "Palauta"
 
@@ -778,11 +764,11 @@ msgstr "Palauta kontti $0"
 msgid "Restore with established TCP connections"
 msgstr "Palauta käyttäen luotuja TCP-yhteyksiä"
 
-#: src/PodActions.jsx:123 src/Containers.jsx:205
+#: src/Containers.jsx:205 src/PodActions.jsx:123
 msgid "Resume"
 msgstr "Jatka"
 
-#: src/ImageUsedBy.jsx:32 src/util.js:8 src/util.js:11
+#: src/util.js:8 src/util.js:11 src/ImageUsedBy.jsx:32
 msgid "Running"
 msgstr "Käynnissä"
 
@@ -794,7 +780,7 @@ msgstr "SELinux"
 msgid "Search by name or description"
 msgstr "Hae nimen tai kuvauksen perusteella"
 
-#: src/ImageRunModal.jsx:774
+#: src/ImageRunModal.jsx:779
 msgid "Search by registry"
 msgstr "Haku rekisterin perusteella"
 
@@ -806,7 +792,7 @@ msgstr "Etsittävä"
 msgid "Search for an image"
 msgstr "Etsi levykuvaa"
 
-#: src/ImageRunModal.jsx:863
+#: src/ImageRunModal.jsx:868
 msgid "Search string or container location"
 msgstr "Hae merkkijonon tai kontin sijaintia"
 
@@ -814,7 +800,7 @@ msgstr "Hae merkkijonon tai kontin sijaintia"
 msgid "Searching..."
 msgstr "Etsitään..."
 
-#: src/ImageRunModal.jsx:841
+#: src/ImageRunModal.jsx:846
 msgid "Searching: $0"
 msgstr "Etsitään: $0"
 
@@ -838,11 +824,11 @@ msgstr "Näytä välivaiheen levykuvat"
 msgid "Show more"
 msgstr "Näytä lisää"
 
-#: src/PodActions.jsx:108 src/Containers.jsx:225 src/app.jsx:624
+#: src/Containers.jsx:225 src/app.jsx:624 src/PodActions.jsx:108
 msgid "Start"
 msgstr "Käynnistä"
 
-#: src/ImageRunModal.jsx:997
+#: src/ImageRunModal.jsx:1002
 msgid "Start after creation"
 msgstr "Käynnistä luomisen jälkeen"
 
@@ -850,11 +836,11 @@ msgstr "Käynnistä luomisen jälkeen"
 msgid "Start podman"
 msgstr "Käynnistä podman"
 
-#: src/ContainerDetails.jsx:82 src/Containers.jsx:429
+#: src/Containers.jsx:429 src/ContainerDetails.jsx:88
 msgid "State"
 msgstr "Tila"
 
-#: src/PodActions.jsx:60 src/Containers.jsx:178
+#: src/Containers.jsx:178 src/PodActions.jsx:60
 msgid "Stop"
 msgstr "Pysäytä"
 
@@ -866,7 +852,7 @@ msgstr "Pysäytetty"
 msgid "Support preserving established TCP connections"
 msgstr "Tue jo luotujen TCP -yhteyksien säilyttämistä"
 
-#: src/ImageRunModal.jsx:820 src/ContainerHeader.jsx:48
+#: src/ContainerHeader.jsx:48 src/ImageRunModal.jsx:825
 msgid "System"
 msgstr "Järjestelmä"
 
@@ -918,7 +904,7 @@ msgstr "Käyttäjä"
 msgid "User Podman service is also available"
 msgstr "Käyttäjän Podman-palvelu on myös saatavilla"
 
-#: src/ImageRunModal.jsx:822
+#: src/ImageRunModal.jsx:827
 msgid "User:"
 msgstr "Käyttäjä:"
 
@@ -926,11 +912,11 @@ msgstr "Käyttäjä:"
 msgid "Value"
 msgstr "Arvo"
 
-#: src/ImageRunModal.jsx:1015
+#: src/ImageRunModal.jsx:1020
 msgid "Volumes"
 msgstr "Taltiot"
 
-#: src/ImageRunModal.jsx:893
+#: src/ImageRunModal.jsx:898
 msgid "With terminal"
 msgstr "Päätteen kanssa"
 
@@ -946,7 +932,7 @@ msgstr "kontti"
 msgid "downloading"
 msgstr "ladataan"
 
-#: src/ImageRunModal.jsx:839
+#: src/ImageRunModal.jsx:844
 msgid "host[:port]/[user]/container[:tag]"
 msgstr "host[:port]/[user]/container[:tag]"
 
@@ -966,7 +952,7 @@ msgstr "ei sovellu"
 msgid "not available"
 msgstr "ei käytettävissä"
 
-#: src/Containers.jsx:611
+#: src/Containers.jsx:612
 msgid "pod group"
 msgstr "podiryhmä"
 
@@ -978,7 +964,7 @@ msgstr "podman"
 msgid "select all"
 msgstr "valitse kaikki"
 
-#: src/Images.jsx:123 src/Containers.jsx:381 src/ImageSearchModal.jsx:149
+#: src/Containers.jsx:381 src/Images.jsx:123 src/ImageSearchModal.jsx:149
 msgid "system"
 msgstr "järjestelmä"
 
@@ -986,7 +972,7 @@ msgstr "järjestelmä"
 msgid "unused"
 msgstr "ei käytössä"
 
-#: src/Images.jsx:123 src/Containers.jsx:381
+#: src/Containers.jsx:381 src/Images.jsx:123
 msgid "user:"
 msgstr "käyttäjä:"
 
