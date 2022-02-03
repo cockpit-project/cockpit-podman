@@ -22,7 +22,7 @@ chmod a+w "$LOGS"
 dnf install --disablerepo=fedora-cisco-openh264 -y --setopt=install_weak_deps=False firefox
 
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
-dnf update -y podman crun
+dnf update -y podman crun conmon
 
 # Show critical package versions
 rpm -q runc crun podman criu kernel-core selinux-policy || true
