@@ -1,15 +1,14 @@
 # Hacking on Cockpit Podman
 
-Here's where to get the code:
+The commands here assume you're in the top level of the Cockpit Podman git
+repository checkout.
 
-    $ git clone https://github.com/cockpit-project/cockpit-podman
-    $ cd cockpit-podman
-
-The remainder of the commands assume you're in the top level of the
-Cockpit Podman git repository checkout.
+## Running out of git checkout
 
 For development, you usually want to run your module straight out of the git
-tree. To do that, link that to the location were `cockpit-bridge` looks for packages:
+tree. To do that, run `make devel-install`, which links your checkout to the
+location were `cockpit-bridge` looks for packages. If you prefer to do this
+manually:
 
 ```
 mkdir -p ~/.local/share/cockpit
@@ -22,10 +21,6 @@ your browser.
 You can also use
 [watch mode](https://webpack.js.org/guides/development/#using-watch-mode) to
 automatically update the webpack on every code change with
-
-    $ npm run watch
-
-or
 
     $ make watch
 
@@ -51,3 +46,39 @@ Violations of some rules can be fixed automatically by:
     $ npm run eslint:fix
 
 Rules configuration can be found in the `.eslintrc.json` file.
+
+# Running tests locally
+
+Run `make vm` to build an RPM and install it into a standard Cockpit test VM.
+This will be `fedora-35` by default. You can set `$TEST_OS` to use a different
+image, for example
+
+    TEST_OS=centos-8-stream make vm
+
+Then run
+
+    make test/common
+
+to pull in [Cockpit's shared test API](https://github.com/cockpit-project/cockpit/tree/main/test/common)
+for running Chrome DevTools Protocol based browser tests.
+
+With this preparation, you can manually run a single test without
+rebuilding the VM, possibly with extra options for tracing and halting on test
+failures (for interactive debugging):
+
+    TEST_OS=... test/check-application TestApplication.testRunImageSystem -stv
+
+Use this command to list all known tests:
+
+    test/check-application -l
+
+You can also run all of the tests:
+
+    TEST_OS=centos-8-stream make check
+
+However, this is rather expensive, and most of the time it's better to let the
+CI machinery do this on a draft pull request.
+
+Please see [Cockpit's test documentation](https://github.com/cockpit-project/cockpit/blob/main/test/README.md)
+for details how to run against existing VMs, interactive browser window,
+interacting with the test VM, and more.

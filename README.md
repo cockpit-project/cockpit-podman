@@ -10,6 +10,32 @@ containers](https://podman.io/).
  - This project is based on the [Cockpit Starter Kit](https://github.com/cockpit-project/starter-kit).
    See [Starter Kit Intro](http://cockpit-project.org/blog/cockpit-starter-kit.html) for details.
 
+# Getting and building the source
+
+Make sure you have `npm` available (usually from your distribution package).
+These commands check out the source and build it into the `dist/` directory:
+
+```
+git clone https://github.com/cockpit-project/cockpit-podman
+cd cockpit-podman
+make
+```
+
+# Installing
+
+`sudo make install` installs the package in `/usr/share/cockpit/`. This depends
+on the `dist` target, which generates the distribution tarball.
+
+You can also run `make rpm` to build RPMs for local installation.
+
+In `production` mode, source files are automatically minified and compressed.
+Set `NODE_ENV=production` if you want to duplicate this behavior.
+
+# Development instructions
+
+See [HACKING.md](./HACKING.md) for details about how to efficiently change the
+code, run, and test it.
+
 # Automated release
 
 Releases are automated using [Cockpituous release](https://github.com/cockpit-project/cockpituous/tree/main/release)
