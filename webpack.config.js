@@ -13,6 +13,9 @@ const CockpitRsyncPlugin = require("./src/lib/cockpit-rsync-plugin");
 /* A standard nodejs and webpack pattern */
 const production = process.env.NODE_ENV === 'production';
 
+/* development options for faster iteration */
+const eslint = process.env.ESLINT !== '0';
+
 // Obtain package name from package.json
 const packageJson = JSON.parse(fs.readFileSync('package.json'));
 
@@ -25,13 +28,13 @@ const copy_files = [
 const plugins = [
     new copy({ patterns: copy_files }),
     new extract({filename: "[name].css"}),
-    new ESLintPlugin({
-        extensions: ["js", "jsx"],
-        failOnWarning: true,
-    }),
     new CockpitPoPlugin(),
     new CockpitRsyncPlugin({dest: packageJson.name}),
 ];
+
+if (eslint) {
+    plugins.push(new ESLintPlugin({ extensions: ["js", "jsx"], failOnWarning: true, }));
+}
 
 /* Only minimize when in production mode */
 if (production) {
