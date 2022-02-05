@@ -52,6 +52,12 @@ po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po
 %.spec: packaging/%.spec.in
 	sed -e 's/%{VERSION}/$(VERSION)/g' $< > $@
 
+packaging/arch/PKGBUILD: packaging/arch/PKGBUILD.in
+	sed 's/VERSION/$(VERSION)/; s/SOURCE/$(TARFILE)/' $< > $@
+
+packaging/debian/changelog: packaging/debian/changelog.in
+	sed 's/VERSION/$(VERSION)/' $< > $@
+
 $(WEBPACK_TEST): $(NODE_MODULES_TEST) $(LIB_TEST) $(shell find src/ -type f) package.json webpack.config.js
 	NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack
 
@@ -60,7 +66,7 @@ watch:
 
 clean:
 	rm -rf dist/
-	rm -f $(SPEC)
+	rm -f $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 
 install: $(WEBPACK_TEST)
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
@@ -81,12 +87,12 @@ dist: $(TARFILE)
 # pre-built dist/ (so it's not necessary) and ship packge-lock.json (so that
 # node_modules/ can be reconstructed if necessary)
 $(TARFILE): export NODE_ENV=production
-$(TARFILE): $(WEBPACK_TEST) $(SPEC)
+$(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	touch -r package.json $(NODE_MODULES_TEST)
 	touch dist/*
 	tar --xz -cf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
-		--exclude packaging/$(SPEC).in --exclude node_modules \
-		$$(git ls-files) src/lib/ package-lock.json $(SPEC) dist/
+		--exclude '*.in' --exclude node_modules \
+		$$(git ls-files) src/lib/ package-lock.json $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
 
 $(NODE_CACHE): $(NODE_MODULES_TEST)
 	tar --xz -cf $@ node_modules
