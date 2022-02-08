@@ -121,8 +121,7 @@ endif
 
 # build a VM with locally built distro pkgs installed
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
-	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
-	bots/image-customize --verbose --build $(TARFILE) --script $(CURDIR)/test/vm.install $(UPGRADES) $(TEST_OS)
+	bots/image-customize --verbose --fresh --build $(TARFILE) --script $(CURDIR)/test/vm.install $(UPGRADES) $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
