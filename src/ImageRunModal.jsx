@@ -513,7 +513,7 @@ export class ImageRunModal extends React.Component {
                     .catch(ex => {
                         onDownloadContainerFinished(createConfig);
                         const error = cockpit.format(_("Failed to pull image $0"), tempImage.image);
-                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.reason });
+                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                     });
         }
     }
