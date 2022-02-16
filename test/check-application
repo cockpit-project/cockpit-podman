@@ -1657,7 +1657,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_val("#containers-containers-filter", "all")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' " + container_name).strip()
-        self.waitContainer(sha, auth, name=container_name, image='busybox:latest', state='Configured')
+        self.waitContainer(sha, auth, name=container_name, image='busybox:latest', state=['Configured', 'Created'])
 
         b.set_input_text('#containers-filter', 'foobar')
         b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')
