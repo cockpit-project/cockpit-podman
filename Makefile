@@ -115,13 +115,9 @@ rpm: $(TARFILE) $(SPEC)
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
 
-ifeq ($(TEST_SCENARIO),rawhide)
-UPGRADES=--run-command 'dnf update -y --releasever=rawhide podman conmon crun containernetworking-plugins containers-common kernel'
-endif
-
 # build a VM with locally built distro pkgs installed
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
-	bots/image-customize --verbose --fresh --build $(TARFILE) --script $(CURDIR)/test/vm.install $(UPGRADES) $(TEST_OS)
+	bots/image-customize --verbose --fresh --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
