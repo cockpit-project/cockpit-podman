@@ -922,14 +922,18 @@ class TestApplication(testlib.MachineCase):
         with b.wait_timeout(5):
             self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh',
                                state='Running', owner="system" if auth else "admin")
+
+        def get_cpu_usage(sel):
+            cpu = self.getContainerAttr(sel, "CPU")
+            self.assertIn('%', cpu)
+            # If it not a number it will raise ValueError which is what we want to know
+            return float(cpu[:-1])
+
         # Check we show usage
         b.wait(lambda: self.getContainerAttr("busybox:latest", "CPU") != "")
-        cpu = self.getContainerAttr("busybox:latest", "CPU")
         memory = self.getContainerAttr("busybox:latest", "Memory")
         if auth or self.has_cgroupsV2:
-            self.assertIn('%', cpu)
-            num = cpu[:-1]
-            self.assertTrue(num.replace('.', '', 1).isdigit())
+            cpu = get_cpu_usage("busybox:latest")
 
             self.assertIn('/', memory)
             numbers = memory.split('/')
@@ -940,14 +944,10 @@ class TestApplication(testlib.MachineCase):
 
             # Test that the value is updated dynamically
             self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 count=1000000 < /dev/urandom > /dev/null'")
-            new_cpu = self.getContainerAttr("busybox:latest", "CPU")
-            self.assertIn('%', new_cpu)
-            new_num = new_cpu[:-1]
-            self.assertTrue(new_num.replace('.', '', 1).isdigit())
-            self.assertTrue(new_num > num)
+            b.wait(lambda: get_cpu_usage("busybox:latest") > cpu)
         else:
             # No support for CGroupsV2
-            self.assertEqual(cpu, "n/a")
+            self.assertEqual(self.getContainerAttr("busybox:latest", "CPU"), "n/a")
             self.assertEqual(memory, "n/a")
 
         # Restart the container
