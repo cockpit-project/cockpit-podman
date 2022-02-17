@@ -33,8 +33,56 @@ const render_container_published_ports = (ports) => {
     return <List isPlain>{result}</List>;
 };
 
+const render_container_published_volumes = (binds) => {
+    if (!binds)
+        return null;
+
+    const result = binds.map(bind => {
+        return (
+            <ListItem key={ bind }>
+                { bind }
+            </ListItem>
+        );
+    });
+
+    return <List isPlain>{result}</List>;
+};
+
+const render_container_published_environment = (envs) => {
+    if (!envs)
+        return null;
+
+    const result = envs.map(env => {
+        return (
+            <ListItem key={ env }>
+                { env }
+            </ListItem>
+        );
+    });
+
+    return <List isPlain>{result}</List>;
+};
+
+const render_container_published_networks = (networks) => {
+    if (!networks)
+        return null;
+
+    const result = Object.entries(networks).map(([key, value]) => {
+        return (
+            <ListItem key={ key }>
+                { key }: { value.Gateway }/{ value.IPPrefixLen }
+            </ListItem>
+        );
+    });
+
+    return <List isPlain>{result}</List>;
+};
+
 const ContainerDetails = ({ container, containerDetail }) => {
     const ports = render_container_published_ports(container.Ports);
+    const volumes = render_container_published_volumes(containerDetail.HostConfig.Binds);
+    const environment = render_container_published_environment(containerDetail.Config.Env);
+    const networks = render_container_published_networks(containerDetail.NetworkSettings.Networks);
     const networkOptions = (
         containerDetail &&
         [
@@ -53,6 +101,14 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListDescription>{utils.truncate_id(container.Id)}</DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
+                    <DescriptionListTerm>{_("State")}</DescriptionListTerm>
+                    <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                    <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
+                    <DescriptionListDescription>{utils.localize_time(Date.parse(container.Created) / 1000)}</DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
                     <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
                     <DescriptionListDescription>{container.Image}</DescriptionListDescription>
                 </DescriptionListGroup>
@@ -61,10 +117,10 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListDescription>{container.Command ? utils.quote_cmdline(container.Command) : ""}</DescriptionListDescription>
                 </DescriptionListGroup>
             </DescriptionList>
-            {networkOptions && <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
-                {ports && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
-                    <DescriptionListDescription>{ports}</DescriptionListDescription>
+            {networkOptions && <DescriptionList className='container-details-networking'>
+                {containerDetail && containerDetail.NetworkSettings.MacAddress && <DescriptionListGroup>
+                    <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
+                    <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
                 </DescriptionListGroup>}
                 {containerDetail && containerDetail.NetworkSettings.IPAddress && <DescriptionListGroup>
                     <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
@@ -74,19 +130,27 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
                     <DescriptionListDescription>{containerDetail.NetworkSettings.Gateway}</DescriptionListDescription>
                 </DescriptionListGroup>}
-                {containerDetail && containerDetail.NetworkSettings.MacAddress && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
-                    <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
+                {ports && <DescriptionListGroup>
+                    <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
+                    <DescriptionListDescription>{ports}</DescriptionListDescription>
                 </DescriptionListGroup>}
             </DescriptionList>}
-            <DescriptionList className='container-details-state'>
+            <DescriptionList className='container-details-networks'>
                 <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
-                    <DescriptionListDescription>{utils.localize_time(Date.parse(container.Created) / 1000)}</DescriptionListDescription>
+                    <DescriptionListTerm>{_("Networks")}</DescriptionListTerm>
+                    <DescriptionListDescription>{networks}</DescriptionListDescription>
                 </DescriptionListGroup>
+            </DescriptionList>
+            <DescriptionList className='container-details-volumes'>
                 <DescriptionListGroup>
-                    <DescriptionListTerm>{_("State")}</DescriptionListTerm>
-                    <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
+                    <DescriptionListTerm>{_("Volumes")}</DescriptionListTerm>
+                    <DescriptionListDescription>{volumes}</DescriptionListDescription>
+                </DescriptionListGroup>
+            </DescriptionList>
+            <DescriptionList className='container-details-environment'>
+                <DescriptionListGroup>
+                    <DescriptionListTerm>{_("Environment")}</DescriptionListTerm>
+                    <DescriptionListDescription>{environment}</DescriptionListDescription>
                 </DescriptionListGroup>
             </DescriptionList>
         </Flex>
