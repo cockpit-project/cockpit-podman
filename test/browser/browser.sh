@@ -8,12 +8,9 @@ if [ -d source ]; then
 else
     SOURCE="$(realpath $TESTS/../..)"
 fi
-# workaround until tmt-1.10 is out with https://github.com/psss/tmt/pull/1004
-if [ -n "${TMT_TREE:-}" ]; then
-    LOGS="$TMT_TREE/../execute/data/test/browser/logs"
-else
-    LOGS="$(pwd)/logs"
-fi
+
+# https://tmt.readthedocs.io/en/stable/overview.html#variables
+LOGS="${TMT_TEST_DATA:-logs}"
 mkdir -p "$LOGS"
 chmod a+w "$LOGS"
 
