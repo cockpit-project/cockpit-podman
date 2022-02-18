@@ -80,9 +80,9 @@ const render_container_published_networks = (networks) => {
 
 const ContainerDetails = ({ container, containerDetail }) => {
     const ports = render_container_published_ports(container.Ports);
-    const volumes = render_container_published_volumes(containerDetail.HostConfig.Binds);
-    const environment = render_container_published_environment(containerDetail.Config.Env);
-    const networks = render_container_published_networks(containerDetail.NetworkSettings.Networks);
+    const volumes = (containerDetail && containerDetail.HostConfig) ? render_container_published_volumes(containerDetail.HostConfig.Binds) : null;
+    const environment = (containerDetail && containerDetail.Config) ? render_container_published_environment(containerDetail.Config.Env) : null;
+    const networks = (containerDetail && containerDetail.NetworkSettings) ? render_container_published_networks(containerDetail.NetworkSettings.Networks) : null;
     const networkOptions = (
         containerDetail &&
         [
