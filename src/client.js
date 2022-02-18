@@ -66,6 +66,28 @@ export function getContainers(system, id) {
     });
 }
 
+export function getVolumes(system) {
+    return new Promise((resolve, reject) => {
+        const options = { };
+
+        podmanCall("libpod/volumes/json", "GET", options, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
+export function getNetworks(system, id) {
+    return new Promise((resolve, reject) => {
+        const options = { };
+        if (id)
+            options.filters = JSON.stringify({ id: [id] });
+
+        podmanCall("libpod/networks/json", "GET", options, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
 export function getContainerStats(system, callback) {
     return new Promise((resolve, reject) => {
         const options = {
