@@ -95,6 +95,8 @@ export const commitContainer = (system, commitData) => podmanCall("libpod/commit
 
 export const postContainer = (system, action, id, args) => podmanCall("libpod/containers/" + id + "/" + action, "POST", args, system);
 
+export const runHealthcheck = (system, id) => podmanCall("libpod/containers/" + id + "/healthcheck", "GET", {}, system);
+
 export const postPod = (system, action, id, args) => podmanCall("libpod/pods/" + id + "/" + action, "POST", args, system);
 
 export const delPod = (system, id, force) => podmanCall("libpod/pods/" + id, "DELETE", { force }, system);

@@ -25,6 +25,12 @@
     padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md) var(--pf-global--spacer--lg);
 }
 
+/* HACK - force DescriptionList to wrap but not fill the width */
+#container-details-healthcheck {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 /* Upstream issue https://github.com/patternfly/patternfly/pull/3714 */
 .containers-containers .pf-c-toolbar__content-section {
     gap: var(--pf-global--spacer--sm);
