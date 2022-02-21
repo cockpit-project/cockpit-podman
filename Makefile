@@ -91,7 +91,7 @@ $(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/cha
 	touch -r package.json $(NODE_MODULES_TEST)
 	touch dist/*
 	tar --xz -cf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
-		--exclude '*.in' \
+		--exclude '*.in' --exclude test/reference \
 		$$(git ls-files) src/lib/ package-lock.json $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
 
 $(NODE_CACHE): $(NODE_MODULES_TEST)
@@ -129,7 +129,7 @@ codecheck:
 	python3 -m pycodestyle --max-line-length=195 $(PYEXEFILES) # TODO: Fix long lines
 
 # run the browser integration tests; skip check for SELinux denials
-check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common
+check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common test/reference
 	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests
 
 # checkout Cockpit's bots for standard test VM images and API to launch them
@@ -147,6 +147,9 @@ test/common:
 	    git fetch --depth=1 https://github.com/cockpit-project/cockpit.git edec865986b2e0e37f7d34be77965185da16596b; \
 	    git checkout --force FETCH_HEAD -- test/common; \
 	    git reset test/common'
+
+test/reference: test/common
+	test/common/pixel-tests pull
 
 # checkout Cockpit's PF/React/build library; again this has no API stability guarantee, so check out a stable tag
 $(LIB_TEST):
