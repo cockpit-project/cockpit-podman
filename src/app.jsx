@@ -395,6 +395,7 @@ class Application extends React.Component {
         case 'checkpoint':
         case 'create':
         case 'died':
+        case 'exec_died':
         case 'kill':
         case 'mount':
         case 'pause':

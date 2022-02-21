@@ -7,7 +7,8 @@ import {
     FormSelect, FormSelectOption,
     Grid, GridItem,
     HelperText, HelperTextItem,
-    Modal, Radio, Select, SelectVariant,
+    InputGroup, Radio, InputGroupText, InputGroupTextVariant,
+    Modal, NumberInput, Select, SelectVariant,
     SelectOption, SelectGroup,
     TextInput, Tabs, Tab, TabTitleText,
     ToggleGroup, ToggleGroupItem,
@@ -330,6 +331,13 @@ export class ImageRunModal extends React.Component {
             imageResults: {},
             isImageSelectOpen: false,
             searchByRegistry: 'all',
+            /* health check */
+            healthcheck_command: "",
+            healthcheck_interval: 30,
+            healthcheck_timeout: 30,
+            healthcheck_start_period: 0,
+            healthcheck_retries: 3,
+
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
@@ -420,6 +428,16 @@ export class ImageRunModal extends React.Component {
             if (this.state.restartPolicy === "always" && this.props.systemServiceAvailable) {
                 this.enablePodmanRestartService();
             }
+        }
+
+        if (this.state.healthcheck_command !== "") {
+            createConfig.healthconfig = {
+                Interval: parseInt(this.state.healthcheck_interval) * 1000000000,
+                Retries: this.state.healthcheck_retries,
+                StartPeriod: parseInt(this.state.healthcheck_start_period) * 1000000000,
+                Test: utils.unquote_cmdline(this.state.healthcheck_command),
+                Timeout: parseInt(this.state.healthcheck_timeout) * 1000000000,
+            };
         }
 
         return createConfig;
@@ -518,6 +536,14 @@ export class ImageRunModal extends React.Component {
 
     onValueChanged(key, value) {
         this.setState({ [key]: value });
+    }
+
+    onPlusOne(key) {
+        this.setState(state => ({ [key]: state[key] + 1 }));
+    }
+
+    onMinusOne(key) {
+        this.setState(state => ({ [key]: state[key] - 1 }));
     }
 
     handleTabClick = (event, tabIndex) => {
@@ -1026,6 +1052,111 @@ export class ImageRunModal extends React.Component {
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
                                  itemcomponent={ <EnvVar />} />
+                    </Tab>
+                    <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck" className="pf-c-form pf-m-horizontal">
+                        <FormGroup fieldId='run-image-dialog-healthcheck-command' label={_("Command")}>
+                            <TextInput id='run-image-dialog-healthcheck-command'
+                           value={dialogValues.healthcheck_command || ''}
+                           onChange={value => this.onValueChanged('healthcheck_command', value)} />
+                        </FormGroup>
+
+                        <FormGroup fieldId='run-image-healthcheck-interval' label={_("Interval")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check interval help")}
+                                      enableFlip
+                                      bodyContent={_("Interval how often health check is run.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <InputGroup>
+                                <NumberInput
+                                        id="run-image-healthcheck-interval"
+                                        value={dialogValues.healthcheck_interval}
+                                        min={0}
+                                        max={262144}
+                                        widthChars={6}
+                                        minutBtnAriaLabel={_("Decrease interval by one")}
+                                        plusBtnAriaLabel={_("Increase interval by one")}
+                                        onMinus={() => this.onMinusOne('healthcheck_interval')}
+                                        onPlus={() => this.onPlusOne('healthcheck_interval')}
+                                        onChange={ev => this.onValueChanged('healthcheck_interval', parseInt(ev.target.value))} />
+                                <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
+                            </InputGroup>
+                        </FormGroup>
+                        <FormGroup fieldId='run-image-healthcheck-timeout' label={_("Timeout")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check timeout help")}
+                                      enableFlip
+                                      bodyContent={_("The maximum time allowed to complete the health check before an interval is considered failed.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <InputGroup>
+                                <NumberInput
+                                        id="run-image-healthcheck-timeout"
+                                        value={dialogValues.healthcheck_timeout}
+                                        min={0}
+                                        max={262144}
+                                        widthChars={6}
+                                        minutBtnAriaLabel={_("Decrease timeout by one")}
+                                        plusBtnAriaLabel={_("Increase timeout by one")}
+                                        onMinus={() => this.onMinusOne('healthcheck_timeout')}
+                                        onPlus={() => this.onPlusOne('healthcheck_timeout')}
+                                        onChange={ev => this.onValueChanged('healthcheck_timeout', parseInt(ev.target.value))} />
+                                <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
+                            </InputGroup>
+                        </FormGroup>
+                        <FormGroup fieldId='run-image-healthcheck-start-period' label={_("Start period")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check start period help")}
+                                      enableFlip
+                                      bodyContent={_("The initialization time needed for a container to bootstrap.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <InputGroup>
+                                <NumberInput
+                                        id="run-image-healthcheck-start-period"
+                                        value={dialogValues.healthcheck_start_period}
+                                        min={0}
+                                        max={262144}
+                                        widthChars={6}
+                                        minutBtnAriaLabel={_("Decrease start period by one")}
+                                        plusBtnAriaLabel={_("Increase start period by one")}
+                                        onMinus={() => this.onMinusOne('healthcheck_start_period')}
+                                        onPlus={() => this.onPlusOne('healthcheck_start_period')}
+                                        onChange={ev => this.onValueChanged('healthcheck_start_period', parseInt(ev.target.value))} />
+                                <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
+                            </InputGroup>
+                        </FormGroup>
+                        <FormGroup fieldId='run-image-healthcheck-retries' label={_("Retries")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check retries help")}
+                                      enableFlip
+                                      bodyContent={_("The number of retries allowed before a healthcheck is considered to be unhealthy.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <NumberInput
+                                    id="run-image-healthcheck-retries"
+                                    value={dialogValues.healthcheck_retries}
+                                    min={0}
+                                    max={999}
+                                    widthChars={3}
+                                    minutBtnAriaLabel={_("Decrease retries by one")}
+                                    plusBtnAriaLabel={_("Increase retries by one")}
+                                    onMinus={() => this.onMinusOne('healthcheck_retries')}
+                                    onPlus={() => this.onPlusOne('healthcheck_retries')}
+                                    onChange={ev => this.onValueChanged('healthcheck_retries', parseInt(ev.target.value))} />
+                        </FormGroup>
                     </Tab>
                 </Tabs>
             </Form>

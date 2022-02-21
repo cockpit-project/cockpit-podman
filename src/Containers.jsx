@@ -7,6 +7,7 @@ import {
     Dropdown, DropdownItem, DropdownSeparator,
     Flex,
     KebabToggle,
+    LabelGroup,
     Text, TextVariants, FormSelect, FormSelectOption,
     Toolbar, ToolbarContent, ToolbarItem,
 } from '@patternfly/react-core';
@@ -18,6 +19,7 @@ import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
+import ContainerHealthLogs from './ContainerHealthLogs.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
 import ContainerRestoreModal from './ContainerRestoreModal.jsx';
@@ -33,7 +35,7 @@ import { PodActions } from './PodActions.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, onAddNotification, version, localImages, updateContainerAfterEvent }) => {
+const ContainerActions = ({ container, healthcheck, onAddNotification, version, localImages, updateContainerAfterEvent }) => {
     const [removeErrorModal, setRemoveErrorModal] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
     const [checkpointInProgress, setCheckpointInProgress] = useState(false);
@@ -96,6 +98,16 @@ const ContainerActions = ({ container, onAddNotification, version, localImages, 
         client.postContainer(container.isSystem, "pause", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to pause container $0"), container.Names);
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
+    };
+
+    const runHealthcheck = () => {
+        setActionsKebabOpen(false);
+
+        client.runHealthcheck(container.isSystem, container.Id)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to run health check on container $0"), container.Names);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -266,6 +278,17 @@ const ContainerActions = ({ container, onAddNotification, version, localImages, 
             {_("Commit")}
         </DropdownItem>
     );
+
+    if (isRunning && healthcheck !== "") {
+        actions.push(<DropdownSeparator key="separator-1-1" />);
+        actions.push(
+            <DropdownItem key="healthcheck"
+                          onClick={() => runHealthcheck()}>
+                {_("Run health check")}
+            </DropdownItem>
+        );
+    }
+
     actions.push(<DropdownSeparator key="separator-2" />);
     actions.push(
         <DropdownItem key="delete"
@@ -352,6 +375,18 @@ export let onDownloadContainerFinished = function funcOnDownloadContainerFinishe
     }));
 };
 
+const localize_health = (state) => {
+    if (state === "healthy")
+        return _("Healthy");
+    else if (state === "unhealthy")
+        return _("Unhealthy");
+    else if (state === "starting")
+        return _("Checking health");
+    else
+        console.error("Unexpected health check status", state);
+    return null;
+};
+
 class Containers extends React.Component {
     constructor(props) {
         super(props);
@@ -383,6 +418,13 @@ class Containers extends React.Component {
     renderRow(containersStats, container, containerDetail, localImages) {
         const containerStats = containersStats[container.Id + container.isSystem.toString()];
         const image = container.Image;
+        let healthcheck = "";
+        let localized_health = null;
+
+        // HACK: Podman renamed `Healthcheck` to `Health` randomly
+        // https://github.com/containers/podman/commit/119973375
+        if (containerDetail)
+            healthcheck = containerDetail.State.Health ? containerDetail.State.Health.Status : containerDetail.State.Healthcheck.Status;
 
         let proc = "";
         let mem = "";
@@ -404,20 +446,28 @@ class Containers extends React.Component {
             </div>;
 
         let containerStateClass = "ct-badge-container-" + container.State.toLowerCase();
-        if (container.isDownloading) {
+        if (container.isDownloading)
             containerStateClass += " downloading";
-        }
+
         const containerState = container.State.charAt(0).toUpperCase() + container.State.slice(1);
+
+        const state = [<Badge key={containerState} isRead className={containerStateClass}>{_(containerState)}</Badge>]; // States are defined in util.js
+        if (healthcheck) {
+            localized_health = localize_health(healthcheck);
+            if (localized_health)
+                state.push(<Badge key={healthcheck} isRead className={"ct-badge-container-" + healthcheck}>{localized_health}</Badge>);
+        }
+
         const columns = [
             { title: info_block },
             { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
             { title: proc, props: { modifier: "nowrap" } },
             { title: mem, props: { modifier: "nowrap" } },
-            { title: <Badge isRead className={containerStateClass}>{_(containerState)}</Badge> }, // States are defined in util.js
+            { title: <LabelGroup isVertical>{state}</LabelGroup> },
         ];
 
         if (!container.isDownloading) {
-            columns.push({ title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} localImages={localImages} updateContainerAfterEvent={this.props.updateContainerAfterEvent} />, props: { className: "pf-c-table__action" } });
+            columns.push({ title: <ContainerActions version={this.props.version} container={container} healthcheck={healthcheck} onAddNotification={this.props.onAddNotification} localImages={localImages} updateContainerAfterEvent={this.props.updateContainerAfterEvent} />, props: { className: "pf-c-table__action" } });
         }
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
@@ -435,6 +485,14 @@ class Containers extends React.Component {
             renderer: ContainerTerminal,
             data: { containerId: container.Id, containerStatus: container.State, width: this.state.width, system: container.isSystem, tty: tty }
         }];
+
+        if (healthcheck) {
+            tabs.push({
+                name: _("Health check"),
+                renderer: ContainerHealthLogs,
+                data: { container: container, containerDetail: containerDetail, onAddNotification: this.props.onAddNotification, state: localized_health }
+            });
+        }
 
         return {
             expandedContent: <ListingPanel colSpan='4'
@@ -499,6 +557,17 @@ class Containers extends React.Component {
             filtered = filtered.filter(id => !this.props.containers[id].IsInfra);
 
             filtered.sort((a, b) => {
+                // Show unhealthy containers first
+                if (this.props.containersDetails[a] && this.props.containersDetails[b]) {
+                    const a_health = this.props.containersDetails[a].State.Health || this.props.containersDetails[a].State.Healthcheck;
+                    const b_health = this.props.containersDetails[b].State.Health || this.props.containersDetails[b].State.Healthcheck;
+                    if (a_health.Status !== b_health.Status) {
+                        if (a_health.Status === "unhealthy")
+                            return -1;
+                        if (b_health.Status === "unhealthy")
+                            return 1;
+                    }
+                }
                 // User containers are in front of system ones
                 if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
                     return this.props.containers[a].isSystem ? 1 : -1;

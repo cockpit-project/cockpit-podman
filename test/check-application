@@ -972,6 +972,10 @@ class TestApplication(testlib.MachineCase):
             # Checkpoint/restore is not supported on user containers yet - the related buttons should not be shown
             # Check that the restore option is not present
             b.wait_not_present(self.getContainerAction('swamped-crate', 'Restore'))
+
+        # Health check is not set up
+        b.wait_not_present(self.getContainerAction('swamped-crate', 'Run health check'))
+
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-c-dropdown__toggle")
 
         # Start the container
@@ -1318,7 +1322,7 @@ class TestApplication(testlib.MachineCase):
 
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
-        sel = "> span:not(.downloading)"
+        sel = " span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
         output = self.execute(auth, f"podman exec {container_name} ls -lh /latest || true").strip()
         self.assertEqual('', output)
@@ -1347,7 +1351,7 @@ class TestApplication(testlib.MachineCase):
 
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
-        sel = "> span:not(.downloading)"
+        sel = " span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
         # Verify that the latest file exists
         output = self.execute(auth, f"podman exec {container_name} ls -lh /latest").strip()
@@ -1604,8 +1608,10 @@ class TestApplication(testlib.MachineCase):
             except ValueError:
                 return 0
 
+        b.wait_not_present("button:contains('Health check logs')")
         b.click(".pf-m-expanded button:contains('Logs')")
         b.wait_text(".pf-m-expanded .container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
+
         # firefox optimizes these out when not visible
         b.eval_js("document.querySelector('.pf-m-expanded .container-logs .xterm-accessibility-tree').scrollIntoView()")
         b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "6")
@@ -1896,6 +1902,94 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5001')
         b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         self.waitContainerRow(container_name)
+
+    def _testHealthcheck(self, auth):
+        b = self.browser
+
+        # Just drop user images so we can use simpler selectors
+        if auth:
+            self.execute(False, "podman rmi busybox")
+
+        self.login(auth)
+
+        b.click("#containers-images button.pf-c-expandable-section__toggle")
+
+        b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
+        b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
+        b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
+
+        b.set_input_text("#run-image-dialog-name", "healthy")
+
+        b.click("#pf-tab-2-create-image-dialog-tab-healthcheck")
+        b.set_input_text('#run-image-dialog-healthcheck-command', 'true')
+        b.set_input_text('#run-image-healthcheck-interval input', '325')
+        b.set_input_text('#run-image-healthcheck-timeout input', '35')
+        b.set_input_text('#run-image-healthcheck-start-period input', '5')
+        b.click('#run-image-healthcheck-retries button:nth-child(1)')
+        b.wait_val("#run-image-healthcheck-retries input", 2)
+        if auth:
+            b.assert_pixels('.pf-c-modal-box', "healthcheck-modal")
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
+
+        self.waitContainerRow("healthy")
+        b.click("#containers-images button.pf-c-expandable-section__toggle")
+
+        healthy_sha = self.execute(auth, "podman inspect --format '{{.Id}}' healthy").strip()
+        self.waitContainer(healthy_sha, auth, state='RunningHealthy')
+
+        self.toggleExpandedContainer("healthy")
+        b.click(".pf-m-expanded button:contains('Health check')")
+
+        b.wait_in_text('#container-details-healthcheck dt:contains("Command") + dd', 'true')
+        b.wait_in_text('#container-details-healthcheck dt:contains("Interval") + dd', '325 seconds')
+        b.wait_in_text('#container-details-healthcheck dt:contains("Retries") + dd', '2')
+        b.wait_in_text('#container-details-healthcheck dt:contains("Timeout") + dd', '35 seconds')
+        b.wait_in_text('#container-details-healthcheck dt:contains("Start period") + dd', '5 seconds')
+        b.wait_not_present('#container-details-healthcheck dt:contains("Failing streak")')
+
+        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' healthy").strip(), "{[true] 5s 5m25s 35s 2}")
+
+        b.wait_in_text(".ct-listing-panel-body tbody tr", "Passed health run")
+        b.wait_not_present(".ct-listing-panel-body tbody tr:nth-child(2)")
+        b.wait_visible(".ct-listing-panel-body tbody:nth-child(2) svg.green")
+
+        # Trigger run manually
+        self.performContainerAction("healthy", "Run health check")
+        b.wait_visible(".ct-listing-panel-body tbody tr:nth-child(2)")
+
+        self.toggleExpandedContainer("healthy")
+
+        self.execute(auth, "podman run --name sick -dt --health-cmd false --health-interval 5s busybox")
+        self.waitContainerRow("sick")
+        unhealthy_sha = self.execute(auth, "podman inspect --format '{{.Id}}' sick").strip()
+        self.waitContainer(unhealthy_sha, auth, state='RunningUnhealthy')
+        # Unhealthy should be first
+        expected_ws = ""
+        if auth and self.machine.ostree_image:
+            expected_ws = "ws"
+        b.wait_collected_text("#containers-containers .container-name", "sickhealthy" + expected_ws)
+
+        self.toggleExpandedContainer("sick")
+        b.click(".pf-m-expanded button:contains('Health check')")
+        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(1)")
+        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(4)")
+        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(2) svg.red")
+        b.wait_visible('#container-details-healthcheck dt:contains("Failing streak")')
+        self.assertGreater(int(b.text('#container-details-healthcheck dt:contains("Failing streak") + dd')), 3)
+        if auth:
+            b.wait_js_func("ph_count_check", ".pf-m-expanded table[aria-label=Logs] tbody tr", 5)
+            b.assert_pixels(".pf-m-expanded .pf-c-table__expandable-row-content",
+                            "healthcheck-details",
+                            ignore=["thead", "#container-details-healthcheck dt:contains('Failing streak') + dd",
+                                    "td[data-label='Started at']"])
+
+    @testlib.skipImage("Ubuntu-stable does not get health check run signals", "ubuntu-stable")
+    def testHealthcheckSystem(self):
+        self._testHealthcheck(True)
+
+    @testlib.skipImage("Ubuntu-stable does not get health check run signals", "ubuntu-stable")
+    def testHealthcheckUser(self):
+        self._testHealthcheck(False)
 
     @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_RESTART)
     def testPodmanRestartEnabled(self):
