@@ -2,7 +2,7 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
-import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, Flex, List, ListItem } from "@patternfly/react-core";
+import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, Flex, List, FlexItem, ListItem } from "@patternfly/react-core";
 
 const _ = cockpit.gettext;
 
@@ -94,59 +94,65 @@ const ContainerDetails = ({ container, containerDetail }) => {
     );
 
     return (
-        <Flex spaceItems={{ modifier: 'spaceItemsXl' }}>
-            <DescriptionList className='container-details-basic'>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
-                    <DescriptionListDescription>{utils.truncate_id(container.Id)}</DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
-                    <DescriptionListDescription>{container.Image}</DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("State")}</DescriptionListTerm>
-                    <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
-                    <DescriptionListDescription>{utils.localize_time(Date.parse(container.Created) / 1000)}</DescriptionListDescription>
-                </DescriptionListGroup>
-            </DescriptionList>
-            {networkOptions && <DescriptionList className='container-details-networking'>
-                {networks && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Networks")}</DescriptionListTerm>
-                    <DescriptionListDescription>{networks}</DescriptionListDescription>
-                </DescriptionListGroup>}
-                {containerDetail && containerDetail.NetworkSettings.IPAddress && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
-                    <DescriptionListDescription>{containerDetail.NetworkSettings.IPAddress}</DescriptionListDescription>
-                </DescriptionListGroup>}
-                {containerDetail && containerDetail.NetworkSettings.Gateway && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
-                    <DescriptionListDescription>{containerDetail.NetworkSettings.Gateway}</DescriptionListDescription>
-                </DescriptionListGroup>}
-                {containerDetail && containerDetail.NetworkSettings.MacAddress && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
-                    <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
-                </DescriptionListGroup>}
-                {ports && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
-                    <DescriptionListDescription>{ports}</DescriptionListDescription>
-                </DescriptionListGroup>}
-            </DescriptionList>}
-            {volumes && <DescriptionList className='container-details-volumes'>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Volumes")}</DescriptionListTerm>
-                    <DescriptionListDescription>{volumes}</DescriptionListDescription>
-                </DescriptionListGroup>
-            </DescriptionList>}
-            {environment && <DescriptionList className='container-details-environment'>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Environment")}</DescriptionListTerm>
-                    <DescriptionListDescription>{environment}</DescriptionListDescription>
-                </DescriptionListGroup>
-            </DescriptionList>}
+        <Flex>
+            <FlexItem>
+                <DescriptionList className='container-details-basic'>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
+                        <DescriptionListDescription>{utils.truncate_id(container.Id)}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
+                        <DescriptionListDescription>{container.Image}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("State")}</DescriptionListTerm>
+                        <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
+                        <DescriptionListDescription>{utils.localize_time(Date.parse(container.Created) / 1000)}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                </DescriptionList>
+            </FlexItem>
+            <FlexItem>
+                {networkOptions && <DescriptionList className='container-details-networking'>
+                    {networks && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Networks")}</DescriptionListTerm>
+                        <DescriptionListDescription>{networks}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                    {containerDetail && containerDetail.NetworkSettings.IPAddress && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
+                        <DescriptionListDescription>{containerDetail.NetworkSettings.IPAddress}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                    {containerDetail && containerDetail.NetworkSettings.Gateway && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
+                        <DescriptionListDescription>{containerDetail.NetworkSettings.Gateway}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                    {containerDetail && containerDetail.NetworkSettings.MacAddress && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
+                        <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                    {ports && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
+                        <DescriptionListDescription>{ports}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                </DescriptionList>}
+            </FlexItem>
+            <FlexItem>
+                {volumes && <DescriptionList className='container-details-volumes'>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Volumes")}</DescriptionListTerm>
+                        <DescriptionListDescription>{volumes}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                </DescriptionList>}
+                {environment && <DescriptionList className='container-details-environment'>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Environment")}</DescriptionListTerm>
+                        <DescriptionListDescription>{environment}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                </DescriptionList>}
+            </FlexItem>
         </Flex>
     );
 };
