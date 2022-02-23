@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-14 02:50+0000\n"
-"PO-Revision-Date: 2021-12-03 23:16+0000\n"
+"POT-Creation-Date: 2022-02-16 02:54+0000\n"
+"PO-Revision-Date: 2022-02-16 22:16+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/cs/>\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
-"X-Generator: Weblate 4.9.1\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: src/Images.jsx:79
 msgid "$0 container"
@@ -59,11 +59,9 @@ msgstr "Všechny registry"
 
 #: src/ImageRunModal.jsx:978
 msgid "Always"
-msgstr ""
+msgstr "Vždy"
 
 #: src/PodActions.jsx:178
-#, fuzzy
-#| msgid "An error occured"
 msgid "An error occurred"
 msgstr "Došlo k chybě"
 
@@ -80,10 +78,8 @@ msgid "CPU"
 msgstr "Procesor"
 
 #: src/ImageRunModal.jsx:934
-#, fuzzy
-#| msgid "IP address help"
 msgid "CPU Shares help"
-msgstr "Nápověda k IP adrese"
+msgstr "Nápověda ke sdílení procesoru"
 
 #: src/ImageRunModal.jsx:932
 msgid "CPU shares"
@@ -95,6 +91,9 @@ msgid ""
 "1024. A higher number prioritizes this container. A lower number decreases "
 "priority."
 msgstr ""
+"Sdílení procesoru určuje prioritu spuštěných kontejnerů. Výchozí priorita je "
+"1024. Vyšší číslo upřednostňuje tento kontejner. Nižší číslo jeho přednost "
+"snižuje."
 
 #: src/ContainerRestoreModal.jsx:39 src/ImageRunModal.jsx:1059
 #: src/PruneUnusedImagesModal.jsx:103 src/PodActions.jsx:174
@@ -126,10 +125,8 @@ msgid "Commit container"
 msgstr "Odeslat kontejner"
 
 #: src/util.js:8
-#, fuzzy
-#| msgid "configured"
 msgid "Configured"
-msgstr "nastaveno"
+msgstr "Nastaveno"
 
 #: src/Containers.jsx:402
 msgid "Console"
@@ -185,16 +182,12 @@ msgid "Create container"
 msgstr "Vytvořit kontejner"
 
 #: src/ImageRunModal.jsx:1052
-#, fuzzy
-#| msgid "Create container"
 msgid "Create container in $0"
-msgstr "Vytvořit kontejner"
+msgstr "Vytvořit kontejner v $0"
 
 #: src/Containers.jsx:620
-#, fuzzy
-#| msgid "Create container"
 msgid "Create container in pod"
-msgstr "Vytvořit kontejner"
+msgstr "Vytvořit kontejner v podu"
 
 #: src/ContainerDetails.jsx:84 src/Images.jsx:164 src/util.js:8 src/util.js:11
 msgid "Created"
@@ -218,16 +211,12 @@ msgid "Delete tagged images"
 msgstr "Smazat značkou označené obrazy"
 
 #: src/PruneUnusedImagesModal.jsx:28
-#, fuzzy
-#| msgid "Delete tagged images"
 msgid "Delete unused system images:"
-msgstr "Smazat značkou označené obrazy"
+msgstr "Smazat nepoužité systémové obrazy:"
 
 #: src/PruneUnusedImagesModal.jsx:28
-#, fuzzy
-#| msgid "Delete tagged images"
 msgid "Delete unused user images:"
-msgstr "Smazat značkou označené obrazy"
+msgstr "Smazat nepoužívané uživatelské obrazy:"
 
 #: src/ContainerDeleteModal.jsx:18
 msgid "Deleting a container will erase all data in it."
@@ -279,8 +268,6 @@ msgid "Error message"
 msgstr "Chybové hlášení"
 
 #: src/ContainerTerminal.jsx:265
-#, fuzzy
-#| msgid "Error occured while connecting console"
 msgid "Error occurred while connecting console"
 msgstr "Nastala chyba při připojování ke konzoli"
 
@@ -325,20 +312,16 @@ msgid "Failed to force remove image $0"
 msgstr "Nepodařilo se vynutit odebrání obrazu $0"
 
 #: src/PodActions.jsx:89
-#, fuzzy
-#| msgid "Failed to restart pod $0"
 msgid "Failed to force restart pod $0"
-msgstr "Nepodařilo se restartovat pod $0"
+msgstr "Nepodařilo se vynutit restart podu $0"
 
 #: src/PodActions.jsx:67
 msgid "Failed to force stop pod $0"
 msgstr "Nepodařilo se vynutit zastavení podu $0"
 
 #: src/Containers.jsx:96
-#, fuzzy
-#| msgid "Failed to run container $0"
 msgid "Failed to pause container $0"
-msgstr "Nepodařilo se spustit kontejner $0"
+msgstr "Nepodařilo se pozastavit kontejner $0"
 
 #: src/PodActions.jsx:134
 msgid "Failed to pause pod $0"
@@ -373,10 +356,8 @@ msgid "Failed to restore container $0"
 msgstr "Nepodařilo se obnovit kontejner $0"
 
 #: src/Containers.jsx:86
-#, fuzzy
-#| msgid "Failed to remove container $0"
 msgid "Failed to resume container $0"
-msgstr "Nepodařilo se odebrat kontejner $0"
+msgstr "Nepodařilo se obnovit kontejner $0"
 
 #: src/PodActions.jsx:119
 msgid "Failed to resume pod $0"
@@ -548,7 +529,7 @@ msgstr "MAC adresa"
 
 #: src/ImageRunModal.jsx:984
 msgid "Maximum retries"
-msgstr ""
+msgstr "Maximální počet opětovných pokusů"
 
 #: src/Containers.jsx:428
 msgid "Memory"
@@ -586,7 +567,7 @@ msgstr "Název nového obrazu"
 
 #: src/ImageRunModal.jsx:976
 msgid "No"
-msgstr ""
+msgstr "Ne"
 
 #: src/Containers.jsx:435
 msgid "No containers"
@@ -642,7 +623,7 @@ msgstr "Nejsou určeny žádné svazky"
 
 #: src/ImageRunModal.jsx:977
 msgid "On failure"
-msgstr ""
+msgstr "Při nezdaru"
 
 #: src/Containers.jsx:534
 msgid "Only running"
@@ -661,6 +642,8 @@ msgstr "Vlastník"
 msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr ""
+"Pokud chcete hromadně naimportovat, zadejte do libovolné kolonky jeden či "
+"více řádků s dvojicemi klíč=hodnota"
 
 #: src/Containers.jsx:198 src/PodActions.jsx:138
 msgid "Pause"
@@ -735,10 +718,8 @@ msgid "Pruning images"
 msgstr "Prořezávají se obrazy"
 
 #: src/ImageRunModal.jsx:884
-#, fuzzy
-#| msgid "Delete image"
 msgid "Pull latest image"
-msgstr "Smazat obraz"
+msgstr "Stáhnout si nejnovější obraz"
 
 #: src/Images.jsx:305
 msgid "Pulling"
@@ -750,30 +731,25 @@ msgid "Remove item"
 msgstr "Odebrat položku"
 
 #: src/util.js:8
-#, fuzzy
-#| msgid "removing"
 msgid "Removing"
-msgstr "odebírání"
+msgstr "Odebírá se"
 
 #: src/Containers.jsx:186 src/PodActions.jsx:82
 msgid "Restart"
 msgstr "Restart"
 
 #: src/ImageRunModal.jsx:961
-#, fuzzy
-#| msgid "Restart"
 msgid "Restart policy"
-msgstr "Restart"
+msgstr "Zásada restartu"
 
 #: src/ImageRunModal.jsx:963 src/ImageRunModal.jsx:973
-#, fuzzy
-#| msgid "Host port help"
 msgid "Restart policy help"
-msgstr "Nápověda k portu hostitele"
+msgstr "Nápověda k zásadě restartování"
 
 #: src/ImageRunModal.jsx:965
 msgid "Restart policy to follow when containers exit."
 msgstr ""
+"Kterou zásadu ohledně restartování následovat když se kontejnery ukončují."
 
 #: src/ContainerRestoreModal.jsx:35 src/Containers.jsx:233
 msgid "Restore"
