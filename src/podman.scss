@@ -87,3 +87,21 @@
         display: none;
     }
 }
+
+/* PatternFly workarounds */
+.pf-l-flex {
+    /* PF spacer should be implemented with gap, not a margin hack */
+    // https://github.com/patternfly/patternfly/issues/4523
+    // https://github.com/cockpit-project/cockpit/pull/17043
+    gap: var(--pf-l-flex--spacer-base);
+
+    > * {
+        margin-right: unset;
+    }
+
+    /* Flex should ignore empty blocks in the flow */
+    // Ideally: Do not render empty children in JSX
+    > :empty {
+        display: none;
+    }
+}
