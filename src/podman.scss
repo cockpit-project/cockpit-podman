@@ -86,6 +86,28 @@
     .show-only-when-narrow {
         display: none;
     }
+
+    // FIXME: Move this into PF JSX where possible;
+    // otherwise add classes to the elements and update whatever CSS remains
+    .ct-table {
+        td {
+            &[data-label=Owner], &[data-label=CPU], &[data-label=Memory], &[data-label="Disk space"], &[data-label="Used by"] {
+                white-space: nowrap;
+            }
+
+            &[data-label=Owner], &[data-label=CPU], &[data-label=Memory], &[data-label="Disk space"], &[data-label="Created"] {
+                text-align: right;
+            }
+
+            &[data-label=CPU] {
+                min-width: 6ch;
+            }
+
+            &[data-label=Memory] {
+                min-width: 14ch;
+            }
+        }
+    }
 }
 
 /* PatternFly workarounds */
