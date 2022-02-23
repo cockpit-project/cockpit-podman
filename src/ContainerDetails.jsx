@@ -101,6 +101,10 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListDescription>{utils.truncate_id(container.Id)}</DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
+                    <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
+                    <DescriptionListDescription>{container.Image}</DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
                     <DescriptionListTerm>{_("State")}</DescriptionListTerm>
                     <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
                 </DescriptionListGroup>
@@ -108,19 +112,11 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
                     <DescriptionListDescription>{utils.localize_time(Date.parse(container.Created) / 1000)}</DescriptionListDescription>
                 </DescriptionListGroup>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
-                    <DescriptionListDescription>{container.Image}</DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
-                    <DescriptionListDescription>{container.Command ? utils.quote_cmdline(container.Command) : ""}</DescriptionListDescription>
-                </DescriptionListGroup>
             </DescriptionList>
             {networkOptions && <DescriptionList className='container-details-networking'>
-                {containerDetail && containerDetail.NetworkSettings.MacAddress && <DescriptionListGroup>
-                    <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
-                    <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
+                {networks && <DescriptionListGroup>
+                    <DescriptionListTerm>{_("Networks")}</DescriptionListTerm>
+                    <DescriptionListDescription>{networks}</DescriptionListDescription>
                 </DescriptionListGroup>}
                 {containerDetail && containerDetail.NetworkSettings.IPAddress && <DescriptionListGroup>
                     <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
@@ -130,29 +126,27 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
                     <DescriptionListDescription>{containerDetail.NetworkSettings.Gateway}</DescriptionListDescription>
                 </DescriptionListGroup>}
+                {containerDetail && containerDetail.NetworkSettings.MacAddress && <DescriptionListGroup>
+                    <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
+                    <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
+                </DescriptionListGroup>}
                 {ports && <DescriptionListGroup>
                     <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
                     <DescriptionListDescription>{ports}</DescriptionListDescription>
                 </DescriptionListGroup>}
             </DescriptionList>}
-            <DescriptionList className='container-details-networks'>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>{_("Networks")}</DescriptionListTerm>
-                    <DescriptionListDescription>{networks}</DescriptionListDescription>
-                </DescriptionListGroup>
-            </DescriptionList>
-            <DescriptionList className='container-details-volumes'>
+            {volumes && <DescriptionList className='container-details-volumes'>
                 <DescriptionListGroup>
                     <DescriptionListTerm>{_("Volumes")}</DescriptionListTerm>
                     <DescriptionListDescription>{volumes}</DescriptionListDescription>
                 </DescriptionListGroup>
-            </DescriptionList>
-            <DescriptionList className='container-details-environment'>
+            </DescriptionList>}
+            {environment && <DescriptionList className='container-details-environment'>
                 <DescriptionListGroup>
                     <DescriptionListTerm>{_("Environment")}</DescriptionListTerm>
                     <DescriptionListDescription>{environment}</DescriptionListDescription>
                 </DescriptionListGroup>
-            </DescriptionList>
+            </DescriptionList>}
         </Flex>
     );
 };
