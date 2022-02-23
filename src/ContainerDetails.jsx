@@ -146,6 +146,8 @@ const ContainerDetails = ({ container, containerDetail }) => {
                         <DescriptionListDescription>{volumes}</DescriptionListDescription>
                     </DescriptionListGroup>
                 </DescriptionList>}
+            </FlexItem>
+            <FlexItem>
                 {environment && <DescriptionList className='container-details-environment'>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Environment")}</DescriptionListTerm>
