@@ -378,9 +378,9 @@ class Containers extends React.Component {
         const containerState = container.State.charAt(0).toUpperCase() + container.State.slice(1);
         const columns = [
             { title: info_block },
-            { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
-            { title: proc },
-            { title: mem },
+            { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
+            { title: proc, props: { modifier: "nowrap" } },
+            { title: mem, props: { modifier: "nowrap" } },
             { title: <Badge isRead className={containerStateClass}>{_(containerState)}</Badge> }, // States are defined in util.js
         ];
 
