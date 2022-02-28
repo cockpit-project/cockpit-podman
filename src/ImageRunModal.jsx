@@ -797,14 +797,16 @@ export class ImageRunModal extends React.Component {
                 {registries.map(registry => {
                     const index = this.truncateRegistryDomain(registry);
                     return (
-                        <ToggleGroupItem text={index} key={index} isSelected={this.state.searchByRegistry == index} onChange={(_, ev) => {
-                            ev.stopPropagation();
-                            this.setState({ searchByRegistry: index });
-                        }}
-                        onTouchStart={ev => {
-                            ev.stopPropagation();
-                        }}
-                        />);
+                        <ToggleGroupItem
+                            text={index} key={index}
+                            isSelected={ this.state.searchByRegistry == index }
+                            onChange={ (_, ev) => {
+                                ev.stopPropagation();
+                                this.setState({ searchByRegistry: index });
+                            } }
+                            onTouchStart={ ev => ev.stopPropagation() }
+                        />
+                    );
                 })}
             </ToggleGroup>
         );
