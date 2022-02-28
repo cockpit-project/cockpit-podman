@@ -121,11 +121,11 @@ class Images extends React.Component {
 
         const columns = [
             { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
-            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div> },
+            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
             utils.localize_time(image.Created),
             utils.truncate_id(image.Id),
-            cockpit.format_bytes(image.Size, 1000),
-            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span> },
+            { title: cockpit.format_bytes(image.Size, 1000), props: { modifier: "nowrap" } },
+            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { modifier: "nowrap" } },
             {
                 title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable}
                                      registries={this.props.registries} user={this.props.user}
