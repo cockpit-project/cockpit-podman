@@ -596,7 +596,8 @@ class Application extends React.Component {
                             </Button>
                         </EmptyStateSecondaryActions>
                     }
-                </EmptyState>);
+                </EmptyState>
+            );
         }
 
         let imageContainerList = {};
