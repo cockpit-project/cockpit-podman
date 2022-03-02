@@ -34,17 +34,17 @@ const _ = cockpit.gettext;
 const systemOwner = "system";
 
 const units = {
-    KiB: {
-        name: "KiB",
-        base1024Exponent: 1,
+    KB: {
+        name: "KB",
+        baseExponent: 1,
     },
-    MiB: {
-        name: "MiB",
-        base1024Exponent: 2,
+    MB: {
+        name: "MB",
+        baseExponent: 2,
     },
-    GiB: {
-        name: "GiB",
-        base1024Exponent: 3,
+    GB: {
+        name: "GB",
+        baseExponent: 3,
     },
 };
 
@@ -314,7 +314,7 @@ export class ImageRunModal extends React.Component {
             cpuShares: 1024,
             memoryConfigure: false,
             cpuSharesConfigure: false,
-            memoryUnit: 'MiB',
+            memoryUnit: 'MB',
             validationFailed: {},
             volumes: [],
             runImage: true,
@@ -373,7 +373,7 @@ export class ImageRunModal extends React.Component {
         }
         const resourceLimit = {};
         if (this.state.memoryConfigure && this.state.memory) {
-            const memorySize = this.state.memory * (1024 ** units[this.state.memoryUnit].base1024Exponent);
+            const memorySize = this.state.memory * (1000 ** units[this.state.memoryUnit].baseExponent);
             resourceLimit.memory = { limit: memorySize };
             createConfig.resource_limits = resourceLimit;
         }
@@ -921,9 +921,9 @@ export class ImageRunModal extends React.Component {
                                     isDisabled={!this.state.memoryConfigure}
                                     className="dialog-run-form-select"
                                     onChange={value => this.onValueChanged('memoryUnit', value)}>
-                                    <FormSelectOption value={units.KiB.name} key={units.KiB.name} label={_("KiB")} />
-                                    <FormSelectOption value={units.MiB.name} key={units.MiB.name} label={_("MiB")} />
-                                    <FormSelectOption value={units.GiB.name} key={units.GiB.name} label={_("GiB")} />
+                                    <FormSelectOption value={units.KB.name} key={units.KB.name} label={_("KB")} />
+                                    <FormSelectOption value={units.MB.name} key={units.MB.name} label={_("MB")} />
+                                    <FormSelectOption value={units.GB.name} key={units.GB.name} label={_("GB")} />
                                 </FormSelect>
                             </Flex>
                         </FormGroup>

@@ -29,7 +29,7 @@ export function format_memory_and_limit(usage, limit) {
         return "";
 
     let mtext = "";
-    let units = 1024;
+    let units = 1000;
     let parts;
     if (limit) {
         parts = cockpit.format_bytes(limit, units, true);
