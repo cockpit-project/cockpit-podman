@@ -12,6 +12,7 @@ actions:
     # dummy LICENSE.txt, as terser did not run
     - touch dist/index.js.LICENSE.txt.gz
     - make dist
+srpm_build_deps: []
 jobs:
   - job: tests
     trigger: pull_request
