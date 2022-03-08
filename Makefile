@@ -48,6 +48,15 @@ po/$(PACKAGE_NAME).metainfo.pot: org.cockpit-project.$(PACKAGE_NAME).metainfo.xm
 po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot po/$(PACKAGE_NAME).metainfo.pot
 	msgcat --sort-output --output-file=$@ $^
 
+po/LINGUAS:
+	echo $(LINGUAS) | tr ' ' '\n' > $@
+
+# Update translations against current PO template
+update-po: po/$(PACKAGE_NAME).pot
+	for lang in $(LINGUAS); do \
+		msgmerge --output-file=po/$$lang.po po/$$lang.po $<; \
+	done
+
 #
 # Build/Install/dist
 #
@@ -70,12 +79,15 @@ watch:
 clean:
 	rm -rf dist/
 	rm -f $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
+	rm -f po/LINGUAS
 
-install: $(WEBPACK_TEST)
+install: $(WEBPACK_TEST) po/LINGUAS
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	cp -r dist/* $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	mkdir -p $(DESTDIR)/usr/share/metainfo/
-	cp org.cockpit-project.$(PACKAGE_NAME).metainfo.xml $(DESTDIR)/usr/share/metainfo/
+	msgfmt --xml -d po \
+		--template org.cockpit-project.$(PACKAGE_NAME).metainfo.xml \
+		-o $(DESTDIR)/usr/share/metainfo/org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
 
 # this requires a built source tree and avoids having to install anything system-wide
 devel-install: $(WEBPACK_TEST)
