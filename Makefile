@@ -42,7 +42,10 @@ po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST)
 po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST)
 	po/manifest2po src/manifest.json -o $@
 
-po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot
+po/$(PACKAGE_NAME).metainfo.pot: org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
+	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ $<
+
+po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot po/$(PACKAGE_NAME).metainfo.pot
 	msgcat --sort-output --output-file=$@ $^
 
 #
