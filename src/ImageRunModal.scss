@@ -1,3 +1,5 @@
+@import "global-variables";
+
 .dynamic-form-group {
     .pf-c-empty-state {
         padding: 0;
@@ -54,18 +56,6 @@
     }
 }
 
-.pf-c-form.run-image-dialog-header {
-    // The pf-l-flex class is not applied because of pf-c-form.pf-m-horizontal forces grid
-    display: flex;
-    row-gap: var(--pf-global--spacer--md);
-
-    // Set max width to the image name - otherwise it often makes the owner wrap unnecessarily
-    .image-name {
-        max-width: 10rem;
-    }
-}
-
-
  // PF4 does not yet support multiple form fields for the same label
 .ct-input-group-spacer-sm.pf-l-flex {
     // Limit width for select entries and inputs in the input groups otherwise they take up the whole space
@@ -76,4 +66,14 @@
 
 .run-image-dialog-restart-retries {
     max-width: 5ch;
+}
+
+// HACK: A local copy of pf-m-horizontal (as ct-m-horizontal),
+// but applied at the FormGroup level instead of Form
+@media (min-width: $pf-global--breakpoint--md) {
+    .pf-c-form__group.ct-m-horizontal {
+        display: grid;
+        grid-column-gap: var(--pf-c-form--m-horizontal__group-label--md--GridColumnGap);
+        grid-template-columns: var(--pf-c-form--m-horizontal__group-label--md--GridColumnWidth) var(--pf-c-form--m-horizontal__group-control--md--GridColumnWidth);
+    }
 }
