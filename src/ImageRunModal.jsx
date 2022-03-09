@@ -7,8 +7,8 @@ import {
     FormSelect, FormSelectOption,
     Grid, GridItem,
     HelperText, HelperTextItem,
-    Modal, Select, SelectVariant,
-    SelectOption, SelectGroup, Stack,
+    Modal, Radio, Select, SelectVariant,
+    SelectOption, SelectGroup,
     TextInput, Tabs, Tab, TabTitleText,
     ToggleGroup, ToggleGroupItem,
     Flex, FlexItem,
@@ -317,7 +317,6 @@ export class ImageRunModal extends React.Component {
             memoryUnit: 'MB',
             validationFailed: {},
             volumes: [],
-            runImage: true,
             restartPolicy: "no",
             restartTries: 5,
             pullLatestImage: false,
@@ -333,7 +332,6 @@ export class ImageRunModal extends React.Component {
             searchByRegistry: 'all',
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
-        this.onCreateClicked = this.onCreateClicked.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
     }
 
@@ -462,9 +460,9 @@ export class ImageRunModal extends React.Component {
                 });
     }
 
-    async onCreateClicked() {
+    async onCreateClicked(runImage = false) {
         const createConfig = this.getCreateConfig();
-        const { runImage, pullLatestImage } = this.state;
+        const { pullLatestImage } = this.state;
         const isSystem = this.isSystem();
         let imageExists = true;
 
@@ -664,9 +662,9 @@ export class ImageRunModal extends React.Component {
     debouncedInputChanged = debounce(300, this.handleImageSelectInput);
 
     handleOwnerSelect = (_, event) => {
-        const id = event.currentTarget.id;
+        const value = event.currentTarget.value;
         this.setState({
-            owner: id
+            owner: value
         });
     }
 
@@ -812,31 +810,30 @@ export class ImageRunModal extends React.Component {
         );
 
         const defaultBody = (
-            <Form isHorizontal={activeTabKey == 0}>
-                <Flex className="run-image-dialog-header pf-c-form pf-m-horizontal" justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                    <FormGroup fieldId='run-image-dialog-name' label={_("Name")}>
-                        <TextInput id='run-image-dialog-name'
+            <Form>
+                <FormGroup fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
+                    <TextInput id='run-image-dialog-name'
                            className="image-name"
                            placeholder={_("Container name")}
                            value={dialogValues.containerName}
                            onChange={value => this.onValueChanged('containerName', value)} />
-                    </FormGroup>
-                    { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
-                    <FormGroup fieldId='run-image-dialog-owner' label={_("Owner")}>
-                        <ToggleGroup aria-label={_("Default with single selectable")}>
-                            <ToggleGroupItem text={_("System")} buttonId="system" isSelected={owner === "system"}
-                                             onChange={this.handleOwnerSelect} />
-                            <ToggleGroupItem text={cockpit.format("$0 $1", _("User:"), this.props.user)}
-                                             buttonId={this.props.user}
-                                             isSelected={owner === this.props.user}
-                                             onChange={this.handleOwnerSelect} />
-                        </ToggleGroup>
-                    </FormGroup>
-                    }
-                </Flex>
+                </FormGroup>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-c-form pf-m-horizontal">
-
+                        { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
+                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}>
+                            <Radio value="system"
+                                   label={_("System")}
+                                   id="run-image-dialog-owner-system"
+                                   isChecked={owner === "system"}
+                                   onChange={this.handleOwnerSelect} />
+                            <Radio value={this.props.user}
+                                   label={cockpit.format("$0 $1", _("User:"), this.props.user)}
+                                   id="run-image-dialog-owner-user"
+                                   isChecked={owner === this.props.user}
+                                   onChange={this.handleOwnerSelect} />
+                        </FormGroup>
+                        }
                         <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}
                           labelIcon={!this.props.image &&
                               <Popover aria-label={_("Image selection help")}
@@ -998,12 +995,6 @@ export class ImageRunModal extends React.Component {
                             }
                         </Grid>
                         }
-                        <FormGroup fieldId='run-image-dialog-start-after-creation' label={_("Options")} hasNoPaddingTop>
-                            <Stack hasGutter>
-                                <Checkbox isChecked={this.state.runImage} id="run-image-dialog-start-after-creation"
-                                      onChange={value => this.onValueChanged('runImage', value)} label={_("Start after creation")} />
-                            </Stack>
-                        </FormGroup>
                     </Tab>
                     <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-c-form">
 
@@ -1054,7 +1045,10 @@ export class ImageRunModal extends React.Component {
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                       <Button variant='primary' onClick={this.onCreateClicked} isDisabled={!image && selectedImage === ""}>
+                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={!image && selectedImage === ""}>
+                           {_("Create and run")}
+                       </Button>
+                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={!image && selectedImage === ""}>
                            {_("Create")}
                        </Button>
                        <Button variant='link' className='btn-cancel' onClick={ this.props.close }>

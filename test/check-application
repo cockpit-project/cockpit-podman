@@ -1256,7 +1256,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("#run-image-dialog-pull-latest-image")
 
         # Create Container, image is pulled and should end up being "running"
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         sel = "> span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
         output = self.execute(auth, f"podman exec {container_name} ls -lh /latest || true").strip()
@@ -1285,7 +1285,7 @@ class TestApplication(testlib.MachineCase):
         b.set_checked("#run-image-dialog-pull-latest-image", True)
 
         # Create Container, image is pulled and should end up being "running"
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         sel = "> span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
         # Verify that the latest file exists
@@ -1298,7 +1298,7 @@ class TestApplication(testlib.MachineCase):
             b.click("#containers-containers button.pf-c-button.pf-m-primary")
 
             # Start container as admin
-            b.click('button.pf-c-toggle-group__button:contains("User: admin")')
+            b.click('#run-image-dialog-owner-user')
 
             # Create Container, image is pulled and should end up being "Running"
             b.set_input_text("#run-image-dialog-name", container_name)
@@ -1307,7 +1307,7 @@ class TestApplication(testlib.MachineCase):
             b.click('button.pf-c-toggle-group__button:contains("Local")')
             b.click('button.pf-c-select__menu-item:contains("quay.io/libpod/busybox:latest")')
 
-            b.click('.pf-c-modal-box__footer button:contains("Create")')
+            b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
             b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
 
     @testlib.nondestructive
@@ -1468,7 +1468,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-volume-1-container-path', '/tmp/rw')
         rw_label = m.execute(f"ls -dZ {rwdir}").split(" ")[0]
 
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("div.pf-c-modal-box")
         self.waitContainerRow("busybox:latest")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
@@ -1567,7 +1567,7 @@ class TestApplication(testlib.MachineCase):
         # Run without tty, console should be able to `exec`
         b.set_checked("#run-image-dialog-tty", False)
 
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("div.pf-c-modal-box")
 
         self.waitContainerRow("busybox-without-publish")
@@ -1650,9 +1650,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_val("#create-image-image-select-typeahead", "quay.io/libpod/busybox:latest")
         b.set_input_text("#run-image-dialog-name", container_name)
 
-        # Uncheck start container after creation
-        b.click("#run-image-dialog-start-after-creation")
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-btn')
         b.wait_not_present("div.pf-c-modal-box")
 
         b.wait_val("#containers-containers-filter", "all")
@@ -1811,12 +1809,12 @@ class TestApplication(testlib.MachineCase):
         b.click('.publish-port-form .btn-add')
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5000')
         b.set_input_text('#run-image-dialog-publish-0-container-port', '5000')
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         b.wait_in_text(".pf-c-alert", "address already in use")
 
         # Changing the port should allow creation of container
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5001')
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         self.waitContainerRow(container_name)
 
     @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_RESTART)
@@ -1839,7 +1837,7 @@ class TestApplication(testlib.MachineCase):
             b.set_input_text("#run-image-dialog-name", name)
             if policy:
                 b.set_val("#run-image-dialog-restart-policy", "always")
-            b.click('.pf-c-modal-box__footer button:contains("Create")')
+            b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
             self.waitContainerRow(name)
 
         container_name = 'none'
@@ -1873,7 +1871,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#create-image-image-select-typeahead", "quay.io/libpod/busybox:latest")
         b.click('button.pf-c-toggle-group__button:contains("Local")')
         b.click('button.pf-c-select__menu-item:contains("quay.io/libpod/busybox:latest")')
-        b.click('.pf-c-modal-box__footer button:contains("Create")')
+        b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("#run-image-dialog-name")
 
         container_sha = self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name}").strip()
