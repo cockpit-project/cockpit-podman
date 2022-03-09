@@ -28,7 +28,7 @@ all: $(WEBPACK_TEST)
 LINGUAS=$(basename $(notdir $(wildcard po/*.po)))
 
 po/$(PACKAGE_NAME).js.pot:
-	xgettext --default-domain=cockpit --output=$@ --language=C --keyword= \
+	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ --language=C --keyword= \
 		--keyword=_:1,1t --keyword=_:1c,2,2t --keyword=C_:1c,2 \
 		--keyword=N_ --keyword=NC_:1c,2 \
 		--keyword=gettext:1,1t --keyword=gettext:1c,2,2t \
