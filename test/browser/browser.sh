@@ -22,7 +22,7 @@ dnf install --disablerepo=fedora-cisco-openh264 -y --setopt=install_weak_deps=Fa
 dnf update -y podman crun conmon
 
 # Show critical package versions
-rpm -q runc crun podman criu kernel-core selinux-policy || true
+rpm -q runc crun podman criu kernel-core selinux-policy cockpit-podman cockpit-bridge || true
 
 # create user account for logging in
 if ! id admin 2>/dev/null; then
