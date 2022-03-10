@@ -9,6 +9,7 @@ export TEST_OS
 TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.xz
 NODE_CACHE=cockpit-$(PACKAGE_NAME)-node-$(VERSION).tar.xz
 SPEC=$(RPM_NAME).spec
+APPSTREAMFILE=org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check if/when npm install ran
 NODE_MODULES_TEST=package-lock.json
@@ -42,7 +43,7 @@ po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST)
 po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST)
 	po/manifest2po src/manifest.json -o $@
 
-po/$(PACKAGE_NAME).metainfo.pot: org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
+po/$(PACKAGE_NAME).metainfo.pot: $(APPSTREAMFILE)
 	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ $<
 
 po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot po/$(PACKAGE_NAME).metainfo.pot
@@ -86,8 +87,8 @@ install: $(WEBPACK_TEST) po/LINGUAS
 	cp -r dist/* $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	mkdir -p $(DESTDIR)/usr/share/metainfo/
 	msgfmt --xml -d po \
-		--template org.cockpit-project.$(PACKAGE_NAME).metainfo.xml \
-		-o $(DESTDIR)/usr/share/metainfo/org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
+		--template $(APPSTREAMFILE) \
+		-o $(DESTDIR)/usr/share/metainfo/$(APPSTREAMFILE)
 
 # this requires a built source tree and avoids having to install anything system-wide
 devel-install: $(WEBPACK_TEST)
