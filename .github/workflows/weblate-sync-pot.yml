@@ -16,7 +16,7 @@ jobs:
       - name: Set up dependencies
         run: |
           sudo apt update
-          sudo apt install -y --no-install-recommends npm make gettext
+          sudo apt install -y --no-install-recommends npm make gettext appstream
 
       - name: Clone source repository
         uses: actions/checkout@v2
