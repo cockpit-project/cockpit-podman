@@ -26,6 +26,10 @@ Source0:        https://github.com/cockpit-project/%{name}/releases/download/%{v
 BuildArch:      noarch
 BuildRequires:  libappstream-glib
 BuildRequires:  make
+BuildRequires: gettext
+%if 0%{?rhel} && 0%{?rhel} <= 8
+BuildRequires: libappstream-glib-devel
+%endif
 
 Requires:       cockpit-bridge >= 138
 Requires:       podman >= 2.0.4

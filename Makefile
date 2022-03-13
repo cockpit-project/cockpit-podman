@@ -9,6 +9,7 @@ export TEST_OS
 TARFILE=cockpit-$(PACKAGE_NAME)-$(VERSION).tar.xz
 NODE_CACHE=cockpit-$(PACKAGE_NAME)-node-$(VERSION).tar.xz
 SPEC=$(RPM_NAME).spec
+APPSTREAMFILE=org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check if/when npm install ran
 NODE_MODULES_TEST=package-lock.json
@@ -28,8 +29,8 @@ all: $(WEBPACK_TEST)
 LINGUAS=$(basename $(notdir $(wildcard po/*.po)))
 
 po/$(PACKAGE_NAME).js.pot:
-	xgettext --default-domain=cockpit --output=$@ --language=C --keyword= \
-		--keyword=_:1,1t --keyword=_:1c,2,1t --keyword=C_:1c,2 \
+	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ --language=C --keyword= \
+		--keyword=_:1,1t --keyword=_:1c,2,2t --keyword=C_:1c,2 \
 		--keyword=N_ --keyword=NC_:1c,2 \
 		--keyword=gettext:1,1t --keyword=gettext:1c,2,2t \
 		--keyword=ngettext:1,2,3t --keyword=ngettext:1c,2,3,4t \
@@ -42,8 +43,20 @@ po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST)
 po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST)
 	po/manifest2po src/manifest.json -o $@
 
-po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot
+po/$(PACKAGE_NAME).metainfo.pot: $(APPSTREAMFILE)
+	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ $<
+
+po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot po/$(PACKAGE_NAME).metainfo.pot
 	msgcat --sort-output --output-file=$@ $^
+
+po/LINGUAS:
+	echo $(LINGUAS) | tr ' ' '\n' > $@
+
+# Update translations against current PO template
+update-po: po/$(PACKAGE_NAME).pot
+	for lang in $(LINGUAS); do \
+		msgmerge --output-file=po/$$lang.po po/$$lang.po $<; \
+	done
 
 #
 # Build/Install/dist
@@ -67,12 +80,15 @@ watch:
 clean:
 	rm -rf dist/
 	rm -f $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
+	rm -f po/LINGUAS
 
-install: $(WEBPACK_TEST)
+install: $(WEBPACK_TEST) po/LINGUAS
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	cp -r dist/* $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	mkdir -p $(DESTDIR)/usr/share/metainfo/
-	cp org.cockpit-project.$(PACKAGE_NAME).metainfo.xml $(DESTDIR)/usr/share/metainfo/
+	msgfmt --xml -d po \
+		--template $(APPSTREAMFILE) \
+		-o $(DESTDIR)/usr/share/metainfo/$(APPSTREAMFILE)
 
 # this requires a built source tree and avoids having to install anything system-wide
 devel-install: $(WEBPACK_TEST)
