@@ -26,11 +26,18 @@ if type firewall-cmd >/dev/null 2>&1; then
     firewall-cmd --add-service=cockpit --permanent
 fi
 
+. /usr/lib/os-release
 # grab a few images to play with; tests run offline, so they cannot download images
-podman rmi --all
-podman pull quay.io/libpod/busybox
-podman pull quay.io/libpod/alpine
-podman pull quay.io/cockpit/registry:2
+if [ "$ID" = "fedora" ]; then
+    # Remove extra images for containers tests
+    podman rmi localhost/cockpit/base
+    podman rmi registry.fedoraproject.org/fedora:"$VERSION_ID"
+else
+    podman rmi --all
+    podman pull quay.io/libpod/busybox
+    podman pull quay.io/libpod/alpine
+    podman pull quay.io/cockpit/registry:2
+fi
 
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
