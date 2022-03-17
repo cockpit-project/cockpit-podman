@@ -32,18 +32,6 @@ podman pull quay.io/libpod/busybox
 podman pull quay.io/libpod/alpine
 podman pull quay.io/cockpit/registry:2
 
-# create admin user for testing
-if ! getent passwd admin >/dev/null 2>&1; then
-    useradd --create-home -g sudo admin
-    echo 'admin:foobar' | chpasswd
-    echo 'root:foobar' | chpasswd
-fi
-
-# allow test to set up things on the machine
-mkdir -p /root/.ssh
-curl https://raw.githubusercontent.com/cockpit-project/bots/main/machine/identity.pub  >> /root/.ssh/authorized_keys
-chmod 600 /root/.ssh/authorized_keys
-
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
 for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
