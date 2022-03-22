@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-02 02:59+0000\n"
-"PO-Revision-Date: 2022-01-24 14:16+0000\n"
-"Last-Translator: simmon <simmon@nplob.com>\n"
+"POT-Creation-Date: 2022-03-21 03:09+0000\n"
+"PO-Revision-Date: 2022-03-20 11:21+0000\n"
+"Last-Translator: 김인수 <simmon@nplob.com>\n"
 "Language-Team: Korean <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/ko/>\n"
 "Language: ko\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11.2\n"
 
 #: src/Images.jsx:79
 msgid "$0 container"
@@ -35,19 +35,19 @@ msgid "$0 unused image, $1"
 msgid_plural "$0 unused images, $1"
 msgstr[0] "$0 미사용 이미지, $1"
 
-#: src/ImageRunModal.jsx:1014
+#: src/ImageRunModal.jsx:1005
 msgid "Add port mapping"
 msgstr "포트 대응을 추가합니다"
 
-#: src/ImageRunModal.jsx:1033
+#: src/ImageRunModal.jsx:1024
 msgid "Add variable"
 msgstr "변수를 추가합니다"
 
-#: src/ImageRunModal.jsx:1023
+#: src/ImageRunModal.jsx:1014
 msgid "Add volume"
 msgstr "볼륨 추가"
 
-#: src/Containers.jsx:535 src/ImageRunModal.jsx:780 src/ContainerHeader.jsx:49
+#: src/Containers.jsx:535 src/ImageRunModal.jsx:778 src/ContainerHeader.jsx:49
 msgid "All"
 msgstr "모두"
 
@@ -55,7 +55,7 @@ msgstr "모두"
 msgid "All registries"
 msgstr "모든 레지스터리"
 
-#: src/ImageRunModal.jsx:980
+#: src/ImageRunModal.jsx:977
 msgid "Always"
 msgstr "항상"
 
@@ -75,15 +75,15 @@ msgstr "부트시 자동으로 podman 시작"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/ImageRunModal.jsx:936
+#: src/ImageRunModal.jsx:933
 msgid "CPU Shares help"
 msgstr "CPU 공유 도움말"
 
-#: src/ImageRunModal.jsx:934
+#: src/ImageRunModal.jsx:931
 msgid "CPU shares"
 msgstr "CPU 공유"
 
-#: src/ImageRunModal.jsx:938
+#: src/ImageRunModal.jsx:935
 msgid ""
 "CPU shares determine the priority of running containers. Default priority is "
 "1024. A higher number prioritizes this container. A lower number decreases "
@@ -93,7 +93,7 @@ msgstr ""
 "니다. 숫자가 클 수록 이 컨테이너 우선순위를 갖습니다. 낮은 번호는 우선 순위"
 "가 낮아집니다."
 
-#: src/ContainerRestoreModal.jsx:39 src/ImageRunModal.jsx:1061
+#: src/ContainerRestoreModal.jsx:39 src/ImageRunModal.jsx:1055
 #: src/PruneUnusedImagesModal.jsx:103 src/PodActions.jsx:174
 #: src/ForceRemoveModal.jsx:21 src/ContainerCommitModal.jsx:168
 #: src/ContainerDeleteModal.jsx:15 src/ContainerCheckpointModal.jsx:38
@@ -109,7 +109,11 @@ msgstr "점검점"
 msgid "Checkpoint container $0"
 msgstr "점검점 컨테이너 $0"
 
-#: src/ImageDetails.jsx:15 src/ImageRunModal.jsx:891
+#: org.cockpit-project.podman.metainfo.xml:6
+msgid "Cockpit component for Podman containers"
+msgstr "포드맨 컨테이너를 위한 cockpit 구성요소"
+
+#: src/ImageDetails.jsx:15 src/ImageRunModal.jsx:888
 #: src/ContainerDetails.jsx:61 src/ContainerCommitModal.jsx:123
 msgid "Command"
 msgstr "명령"
@@ -134,11 +138,11 @@ msgstr "콘솔"
 msgid "Container"
 msgstr "컨테이너"
 
-#: src/ImageRunModal.jsx:459
+#: src/ImageRunModal.jsx:457
 msgid "Container failed to be created"
 msgstr "컨테이너 생성에 실패했습니다"
 
-#: src/ImageRunModal.jsx:442
+#: src/ImageRunModal.jsx:440
 msgid "Container failed to be started"
 msgstr "컨테이너 시작에 실패했습니다"
 
@@ -150,7 +154,7 @@ msgstr "컨테이너가 현재 실행 중입니다."
 msgid "Container is not running"
 msgstr "컨테이너가 동작 중이 아닙니다"
 
-#: src/ImageRunModal.jsx:820
+#: src/ImageRunModal.jsx:817
 msgid "Container name"
 msgstr "컨테이너 이름"
 
@@ -166,7 +170,7 @@ msgstr "컨테이너 포트"
 msgid "Containers"
 msgstr "컨테이너들"
 
-#: src/ImageRunModal.jsx:1058
+#: src/ImageRunModal.jsx:1052
 msgid "Create"
 msgstr "생성"
 
@@ -174,12 +178,16 @@ msgstr "생성"
 msgid "Create a new image based on the current state of the $0 container."
 msgstr "$0 컨테이너의 현재 상태에서 기반된 새로운 이미지를 생성합니다."
 
-#: src/Containers.jsx:544 src/ImageRunModal.jsx:1054 src/Images.jsx:390
+#: src/ImageRunModal.jsx:1049
+msgid "Create and run"
+msgstr "생성과 실행"
+
+#: src/Containers.jsx:544 src/ImageRunModal.jsx:1045 src/Images.jsx:390
 #: src/Images.jsx:404
 msgid "Create container"
 msgstr "컨테이너 생성"
 
-#: src/ImageRunModal.jsx:1054
+#: src/ImageRunModal.jsx:1045
 msgid "Create container in $0"
 msgstr "$0에서 컨테이너 생성"
 
@@ -190,10 +198,6 @@ msgstr "포드에서 컨테이너 생성"
 #: src/ContainerDetails.jsx:89 src/Images.jsx:164 src/util.js:8 src/util.js:11
 msgid "Created"
 msgstr "생성됨"
-
-#: src/ImageRunModal.jsx:826
-msgid "Default with single selectable"
-msgstr "단일 선택 가능한 기본값"
 
 #: src/Containers.jsx:251 src/PodActions.jsx:151 src/PodActions.jsx:173
 #: src/Images.jsx:410 src/ContainerDeleteModal.jsx:14
@@ -224,7 +228,7 @@ msgstr "컨테이너를 삭제는 내부의 모든 자료도 제거됩니다."
 msgid "Deleting this pod will remove the following containers:"
 msgstr "이 pod의 삭제는 다음 컨테이너도 제거될 것입니다:"
 
-#: src/Containers.jsx:394 src/ImageRunModal.jsx:838 src/Images.jsx:140
+#: src/Containers.jsx:394 src/ImageRunModal.jsx:822 src/Images.jsx:140
 msgid "Details"
 msgstr "세부 정보"
 
@@ -254,7 +258,7 @@ msgstr "신규 이미지 내려받기"
 msgid "Entrypoint"
 msgstr "시작점"
 
-#: src/ImageRunModal.jsx:1032
+#: src/ImageRunModal.jsx:1023
 msgid "Environment variables"
 msgstr "환경 변수"
 
@@ -274,7 +278,7 @@ msgstr "오류가 콘솔 연결 중에 발생했습니다"
 msgid "Example, Your Name <yourname@example.com>"
 msgstr "예제, 당신의 이름 <yourname@example.com>"
 
-#: src/ImageRunModal.jsx:847
+#: src/ImageRunModal.jsx:844
 msgid "Example: $0"
 msgstr "예제: $0"
 
@@ -286,7 +290,7 @@ msgstr "종료됨"
 msgid "Failed to checkpoint container $0"
 msgstr "컨테이너 $0 점검점에 실패"
 
-#: src/ImageRunModal.jsx:448
+#: src/ImageRunModal.jsx:446
 msgid "Failed to clean up container"
 msgstr "컨테이너를 정리하는데 실패"
 
@@ -294,7 +298,7 @@ msgstr "컨테이너를 정리하는데 실패"
 msgid "Failed to commit container $0"
 msgstr "컨테이너 $0 수행에 실패"
 
-#: src/ImageRunModal.jsx:509
+#: src/ImageRunModal.jsx:507
 msgid "Failed to create container $0"
 msgstr "컨테이너 $0 생성에 실패"
 
@@ -330,7 +334,7 @@ msgstr "pod $0 일시정지에 실패"
 msgid "Failed to prune unused images"
 msgstr "사용하지 않는 이미지 정리 실패"
 
-#: src/ImageRunModal.jsx:515
+#: src/ImageRunModal.jsx:513
 msgid "Failed to pull image $0"
 msgstr "이미지 $0를 가져오는 데 실패"
 
@@ -362,15 +366,15 @@ msgstr "컨테이너 $0를 다시 시작 하는 데 실패"
 msgid "Failed to resume pod $0"
 msgstr "pod $0 재개에 실패"
 
-#: src/ImageRunModal.jsx:502
+#: src/ImageRunModal.jsx:500
 msgid "Failed to run container $0"
 msgstr "컨테이너 $0를 실행하는 데 실패"
 
-#: src/ImageRunModal.jsx:588 src/ImageSearchModal.jsx:109
+#: src/ImageRunModal.jsx:586 src/ImageSearchModal.jsx:109
 msgid "Failed to search for images: $0"
 msgstr "이미지를 위한 검색 실패: $0"
 
-#: src/ImageRunModal.jsx:586 src/ImageSearchModal.jsx:108
+#: src/ImageRunModal.jsx:584 src/ImageSearchModal.jsx:108
 msgid "Failed to search for new images"
 msgstr "새로운 이미지 검색 실패"
 
@@ -406,13 +410,13 @@ msgstr "강제 재시작"
 msgid "Force stop"
 msgstr "강제 멈춤"
 
+#: src/ImageRunModal.jsx:923
+msgid "GB"
+msgstr "GB"
+
 #: src/ContainerDetails.jsx:77
 msgid "Gateway"
 msgstr "게이트웨이"
-
-#: src/ImageRunModal.jsx:926
-msgid "GiB"
-msgstr "GiB"
 
 #: src/Images.jsx:282
 msgid "Hide images"
@@ -470,11 +474,11 @@ msgstr "정적인 상태라면 IP 주소 무시"
 msgid "Ignore MAC address if set statically"
 msgstr "정적인 상태라면 맥 주소 무시"
 
-#: src/ImageRunModal.jsx:840 src/ContainerDetails.jsx:57 src/Images.jsx:162
+#: src/ImageRunModal.jsx:837 src/ContainerDetails.jsx:57 src/Images.jsx:162
 msgid "Image"
 msgstr "이미지"
 
-#: src/ImageRunModal.jsx:842
+#: src/ImageRunModal.jsx:839
 msgid "Image selection help"
 msgstr "이미지 선택 도움말"
 
@@ -482,9 +486,13 @@ msgstr "이미지 선택 도움말"
 msgid "Images"
 msgstr "이미지"
 
-#: src/ImageRunModal.jsx:1008
+#: src/ImageRunModal.jsx:999
 msgid "Integration"
 msgstr "통합"
+
+#: src/ImageRunModal.jsx:921
+msgid "KB"
+msgstr "KB"
 
 #: src/ContainerRestoreModal.jsx:44 src/ContainerCheckpointModal.jsx:43
 msgid "Keep all temporary checkpoint files"
@@ -493,10 +501,6 @@ msgstr "모든 임시 점검점 파일을 유지합니다"
 #: src/ImageRunModal.jsx:150
 msgid "Key"
 msgstr "키"
-
-#: src/ImageRunModal.jsx:924
-msgid "KiB"
-msgstr "KiB"
 
 #: src/ContainerCheckpointModal.jsx:45
 msgid "Leave running after writing checkpoint to disk"
@@ -510,11 +514,11 @@ msgstr "기록 적재 중..."
 msgid "Loading..."
 msgstr "적재 중..."
 
-#: src/ImageRunModal.jsx:789
+#: src/ImageRunModal.jsx:787
 msgid "Local"
 msgstr "로컬"
 
-#: src/ImageRunModal.jsx:676
+#: src/ImageRunModal.jsx:674
 msgid "Local images"
 msgstr "로컬 이미지"
 
@@ -526,7 +530,11 @@ msgstr "기록"
 msgid "MAC address"
 msgstr "맥(mac) 주소"
 
-#: src/ImageRunModal.jsx:986
+#: src/ImageRunModal.jsx:922
+msgid "MB"
+msgstr "MB"
+
+#: src/ImageRunModal.jsx:983
 msgid "Maximum retries"
 msgstr "최대 재시도"
 
@@ -534,17 +542,13 @@ msgstr "최대 재시도"
 msgid "Memory"
 msgstr "메모리"
 
-#: src/ImageRunModal.jsx:904
+#: src/ImageRunModal.jsx:901
 msgid "Memory limit"
 msgstr "메모리 제한"
 
-#: src/ImageRunModal.jsx:919
+#: src/ImageRunModal.jsx:916
 msgid "Memory unit"
 msgstr "메모리 장치"
-
-#: src/ImageRunModal.jsx:925
-msgid "MiB"
-msgstr "MiB"
 
 #: src/ImageRunModal.jsx:185
 msgid "Mode"
@@ -554,7 +558,7 @@ msgstr "모드"
 msgid "Multiple tags exist for this image. Select the tagged images to delete."
 msgstr "다중 태그는 이 이미지에 존재합니다. 삭제에 태그된 이미지를 선택합니다."
 
-#: src/ImageRunModal.jsx:817
+#: src/ImageRunModal.jsx:814
 msgid "Name"
 msgstr "이름"
 
@@ -562,7 +566,7 @@ msgstr "이름"
 msgid "New image name"
 msgstr "새로운 이미지 이름"
 
-#: src/ImageRunModal.jsx:978
+#: src/ImageRunModal.jsx:975
 msgid "No"
 msgstr "아니오"
 
@@ -582,7 +586,7 @@ msgstr "이 포드에는 컨테이너가 없습니다"
 msgid "No containers that match the current filter"
 msgstr "현재 필터에 일치하는 컨테이너가 없습니다"
 
-#: src/ImageRunModal.jsx:1030
+#: src/ImageRunModal.jsx:1021
 msgid "No environment variables specified"
 msgstr "지정된 환경 변수가 없습니다"
 
@@ -590,7 +594,7 @@ msgstr "지정된 환경 변수가 없습니다"
 msgid "No images"
 msgstr "이미지 없음"
 
-#: src/ImageRunModal.jsx:865 src/ImageSearchModal.jsx:176
+#: src/ImageRunModal.jsx:862 src/ImageSearchModal.jsx:176
 msgid "No images found"
 msgstr "이미지를 찾지 못했습니다"
 
@@ -602,7 +606,7 @@ msgstr "현재 필터에 일치하는 이미지가 없습니다"
 msgid "No label"
 msgstr "이름표가 없습니다"
 
-#: src/ImageRunModal.jsx:1011
+#: src/ImageRunModal.jsx:1002
 msgid "No ports exposed"
 msgstr "노출된 포트가 없습니다"
 
@@ -614,11 +618,11 @@ msgstr "$0의 결과를 찾을 수 없습니다"
 msgid "No running containers"
 msgstr "실행 중인 컨테이너가 없습니다"
 
-#: src/ImageRunModal.jsx:1020
+#: src/ImageRunModal.jsx:1011
 msgid "No volumes specified"
 msgstr "지정된 볼륨이 없습니다"
 
-#: src/ImageRunModal.jsx:979
+#: src/ImageRunModal.jsx:976
 msgid "On failure"
 msgstr "실패한 경우"
 
@@ -626,16 +630,16 @@ msgstr "실패한 경우"
 msgid "Only running"
 msgstr "실행 만"
 
-#: src/ImageRunModal.jsx:1001 src/ContainerCommitModal.jsx:129
+#: src/ContainerCommitModal.jsx:129
 msgid "Options"
 msgstr "옵션"
 
-#: src/Containers.jsx:426 src/ImageRunModal.jsx:825 src/Images.jsx:163
+#: src/Containers.jsx:426 src/ImageRunModal.jsx:824 src/Images.jsx:163
 #: src/ContainerHeader.jsx:43 src/ImageSearchModal.jsx:148
 msgid "Owner"
 msgstr "소유자"
 
-#: src/ImageRunModal.jsx:1036
+#: src/ImageRunModal.jsx:1027
 msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr ""
@@ -677,6 +681,10 @@ msgstr "다른 용어를 재시도 해보세요."
 msgid "Please start typing to look for images."
 msgstr "이미지를 찾으려면 입력하기를 시작해주세요."
 
+#: org.cockpit-project.podman.metainfo.xml:5
+msgid "Podman"
+msgstr "포드맨"
+
 #: src/index.html:20 src/manifest.json:0
 msgid "Podman containers"
 msgstr "포드맨 컨테이너"
@@ -685,7 +693,7 @@ msgstr "포드맨 컨테이너"
 msgid "Podman service is not active"
 msgstr "포드맨 서비스가 동작하지 않습니다"
 
-#: src/ImageRunModal.jsx:1013
+#: src/ImageRunModal.jsx:1004
 msgid "Port mapping"
 msgstr "포트 대응"
 
@@ -713,7 +721,7 @@ msgstr "프룬 사용하지 않은 이미지"
 msgid "Pruning images"
 msgstr "프루닝 이미지"
 
-#: src/ImageRunModal.jsx:886
+#: src/ImageRunModal.jsx:883
 msgid "Pull latest image"
 msgstr "최신 이미지 가져오기"
 
@@ -734,15 +742,15 @@ msgstr "제거 중"
 msgid "Restart"
 msgstr "재시작"
 
-#: src/ImageRunModal.jsx:963
+#: src/ImageRunModal.jsx:960
 msgid "Restart policy"
 msgstr "재시작 정책"
 
-#: src/ImageRunModal.jsx:965 src/ImageRunModal.jsx:975
+#: src/ImageRunModal.jsx:962 src/ImageRunModal.jsx:972
 msgid "Restart policy help"
 msgstr "정책 도움말 재시작"
 
-#: src/ImageRunModal.jsx:967
+#: src/ImageRunModal.jsx:964
 msgid "Restart policy to follow when containers exit."
 msgstr "컨테이너를 종료 할 경우에 따라야 할 정책을 재시작 합니다."
 
@@ -774,7 +782,7 @@ msgstr "SELinux"
 msgid "Search by name or description"
 msgstr "이름 또는 설명으로 찾기"
 
-#: src/ImageRunModal.jsx:779
+#: src/ImageRunModal.jsx:777
 msgid "Search by registry"
 msgstr "레지스터리로 검색"
 
@@ -786,7 +794,7 @@ msgstr "찾기"
 msgid "Search for an image"
 msgstr "이미지로 찾기"
 
-#: src/ImageRunModal.jsx:870
+#: src/ImageRunModal.jsx:867
 msgid "Search string or container location"
 msgstr "문자열 또는 컨테이너 위치 검색"
 
@@ -794,7 +802,7 @@ msgstr "문자열 또는 컨테이너 위치 검색"
 msgid "Searching..."
 msgstr "검색 중..."
 
-#: src/ImageRunModal.jsx:848
+#: src/ImageRunModal.jsx:845
 msgid "Searching: $0"
 msgstr "검색 중: $0"
 
@@ -822,10 +830,6 @@ msgstr "더 보여주기"
 msgid "Start"
 msgstr "시작"
 
-#: src/ImageRunModal.jsx:1004
-msgid "Start after creation"
-msgstr "생성 후에 시작"
-
 #: src/app.jsx:590
 msgid "Start podman"
 msgstr "포드맨 시작"
@@ -846,7 +850,7 @@ msgstr "정지됨"
 msgid "Support preserving established TCP connections"
 msgstr "설정된 TCP 연결 유지 지원"
 
-#: src/ImageRunModal.jsx:827 src/ContainerHeader.jsx:48
+#: src/ImageRunModal.jsx:826 src/ContainerHeader.jsx:48
 msgid "System"
 msgstr "시스템"
 
@@ -865,6 +869,10 @@ msgstr "태그"
 #: src/ImageDetails.jsx:27
 msgid "Tags"
 msgstr "태그"
+
+#: org.cockpit-project.podman.metainfo.xml:10
+msgid "The Cockpit user interface for Podman containers."
+msgstr "포드맨 컨테이너를 위한 cockpit 사용자 연결장치."
 
 #: src/app.jsx:595
 msgid "Troubleshoot"
@@ -898,7 +906,7 @@ msgstr "사용자"
 msgid "User Podman service is also available"
 msgstr "사용자 포드맨 서비스가 사용 할 수 없습니다"
 
-#: src/ImageRunModal.jsx:829
+#: src/ImageRunModal.jsx:831
 msgid "User:"
 msgstr "사용자:"
 
@@ -906,11 +914,11 @@ msgstr "사용자:"
 msgid "Value"
 msgstr "값"
 
-#: src/ImageRunModal.jsx:1022
+#: src/ImageRunModal.jsx:1013
 msgid "Volumes"
 msgstr "볼륨"
 
-#: src/ImageRunModal.jsx:900
+#: src/ImageRunModal.jsx:897
 msgid "With terminal"
 msgstr "터미널 포함"
 
@@ -922,11 +930,11 @@ msgstr "쓰기 가능"
 msgid "container"
 msgstr "컨테이너"
 
-#: src/ImageRunModal.jsx:486
+#: src/ImageRunModal.jsx:484
 msgid "downloading"
 msgstr "내려받기 중"
 
-#: src/ImageRunModal.jsx:846
+#: src/ImageRunModal.jsx:843
 msgid "host[:port]/[user]/container[:tag]"
 msgstr "host[:port]/[user]/container[:tag]"
 
@@ -969,6 +977,12 @@ msgstr "미사용"
 #: src/Containers.jsx:381 src/Images.jsx:124
 msgid "user:"
 msgstr "사용자:"
+
+#~ msgid "Default with single selectable"
+#~ msgstr "단일 선택 가능한 기본값"
+
+#~ msgid "Start after creation"
+#~ msgstr "생성 후에 시작"
 
 #~ msgid "Delete unused $0 images:"
 #~ msgstr "사용하지 않는 $0 이미지 삭제:"
