@@ -131,15 +131,9 @@ rpm: $(TARFILE) $(SPEC)
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
 
-# fedora can be built offline; the rest does not pull podman containers in image-create yet
-NETWORK=--no-network
-ifeq (,$(findstring fedora,$(TEST_OS)))
-NETWORK=
-endif
-
 # build a VM with locally built distro pkgs installed
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
-	bots/image-customize --verbose --fresh $(NETWORK) --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize --verbose --fresh --no-network --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
