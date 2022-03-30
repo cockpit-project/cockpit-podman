@@ -20,6 +20,11 @@ COCKPIT_REPO_STAMP=pkg/lib/cockpit-po-plugin.js
 # common arguments for tar, mostly to make the generated tarballs reproducible
 TAR_ARGS = --sort=name --mtime "@$(shell git show --no-patch --format='%at')" --mode=go=rX,u+rw,a-s --numeric-owner --owner=0 --group=0
 
+ifeq ($(TEST_COVERAGE),yes)
+RUN_TESTS_OPTIONS+=--coverage
+NODE_ENV=development
+endif
+
 all: $(WEBPACK_TEST)
 
 # checkout common files from Cockpit repository required to build this project;
