@@ -88,6 +88,10 @@ packaging/debian/changelog: packaging/debian/changelog.in
 
 $(WEBPACK_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json webpack.config.js
 	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack
+	# In development mode terser does not run and so no LICENSE.txt.gz is generated, so we explictly create it as it is required for building rpm's
+	if [ "$$NODE_ENV" = "development" ]; then \
+		gzip </dev/null >dist/index.js.LICENSE.txt.gz; \
+	fi
 
 watch:
 	NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack --watch
@@ -129,10 +133,10 @@ TEST_NPMS = \
 dist: $(TARFILE)
 	@ls -1 $(TARFILE)
 
-# when building a distribution tarball, call webpack with a 'production' environment
+# when building a distribution tarball, call webpack with a 'production' environment by default
 # we don't ship most node_modules for license and compactness reasons, only the ones necessary for running tests
 # we ship a pre-built dist/ (so it's not necessary) and ship package-lock.json (so that node_modules/ can be reconstructed if necessary)
-$(TARFILE): export NODE_ENV=production
+$(TARFILE): export NODE_ENV ?= production
 $(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	if type appstream-util >/dev/null 2>&1; then appstream-util validate-relax --nonet *.metainfo.xml; fi
 	tar --xz $(TAR_ARGS) -cf $(TARFILE) --transform 's,^,$(RPM_NAME)/,' \
