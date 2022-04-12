@@ -53,9 +53,10 @@ class TestApplication(testlib.MachineCase):
 
         # HACK: sometimes podman leaks mounts
         self.addCleanup(m.execute, """set -eu
+            systemctl stop podman.service podman.socket
+            systemctl reset-failed podman.service podman.socket
             podman pod rm --force --all
             podman rm --force --all
-            systemctl stop podman.service
             killall -9 podman || true
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
             """)
