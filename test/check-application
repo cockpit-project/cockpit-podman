@@ -51,11 +51,10 @@ class TestApplication(testlib.MachineCase):
         # backup/restore pristine podman state, so that tests can run on existing testbeds
         self.restore_dir("/var/lib/containers", reboot_safe=True)
 
-        self.addCleanup(m.execute, "systemctl stop podman.service")
-
         # HACK: sometimes podman leaks mounts
-        self.addCleanup(m.execute, "podman rm --force --all && "
-                        "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount || true")
+        self.addCleanup(m.execute, "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount")
+        self.addCleanup(m.execute, "systemctl stop podman.service")
+        self.addCleanup(m.execute, "podman rm --force --all")
         self.addCleanup(m.execute, "podman pod rm --force --all || true")
 
         # Create admin session
