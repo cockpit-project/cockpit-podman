@@ -789,9 +789,9 @@ class Application extends React.Component {
                 <PageSection>
                     <Stack hasGutter>
                         { this.state.showStartService ? startService : null }
-                        {containerList}
-                        {volumeList}
                         {imageList}
+                        {volumeList}
+                        {containerList}
                     </Stack>
                 </PageSection>
             </Page>

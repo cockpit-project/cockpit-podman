@@ -8,7 +8,6 @@ import {
     Text, TextVariants,
     ToolbarItem, Button
 } from '@patternfly/react-core';
-import { cellWidth } from '@patternfly/react-table';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
@@ -73,10 +72,10 @@ class Volumes extends React.Component {
         const tabs = [];
 
         const columns = [
-            { title: volume.Name },
-            { title: <small>{ volume.Mountpoint }</small> },
+            { title: volume.Name.length === 64 ? utils.truncate_id(volume.Name) : volume.Name },
+            { title: <small>{ volume.Mountpoint }</small>, props: { modifier: "breakWord" } },
             { title: volume.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
-            utils.localize_date(volume.CreatedAt),
+            { title: utils.localize_date(volume.CreatedAt), props: { modifier: "nowrap" } },
             { title: volume.Driver, props: { modifier: "nowrap" } },
             {
                 title: <VolumeActions volume={volume} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable}
@@ -112,7 +111,7 @@ class Volumes extends React.Component {
     render() {
         const columnTitles = [
             _("Name"),
-            { title: _("Mountpoint"), transforms: [cellWidth(20)] },
+            _("Mountpoint"),
             _("Owner"),
             _("Created"),
             _("Driver"),

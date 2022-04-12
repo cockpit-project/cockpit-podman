@@ -6,7 +6,7 @@ import {
     Form, FormGroup, FormFieldGroup, FormFieldGroupHeader,
     HelperText, HelperTextItem,
     Modal, Radio,
-    TextInput, Tabs, Tab, TabTitleText
+    TextInput
 } from '@patternfly/react-core';
 import * as dockerNames from 'docker-names';
 
@@ -189,7 +189,7 @@ export class VolumeCreateModal extends React.Component {
 
     render() {
         const dialogValues = this.state;
-        const { activeTabKey, owner } = this.state;
+        const { owner } = this.state;
 
         const defaultBody = (
             <Form>
@@ -200,25 +200,20 @@ export class VolumeCreateModal extends React.Component {
                            value={dialogValues.volumeName}
                            onChange={value => this.onValueChanged('volumeName', value)} />
                 </FormGroup>
-                <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
-                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-c-form pf-m-horizontal">
-                        { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
-                        <FormGroup isInline hasNoPaddingTop fieldId='create-container-dialog-owner' label={_("Owner")}>
-                            <Radio value="system"
-                                   label={_("System")}
-                                   id="create-container-dialog-owner-system"
-                                   isChecked={owner === "system"}
-                                   onChange={this.handleOwnerSelect} />
-                            <Radio value={this.props.user}
-                                   label={cockpit.format("$0 $1", _("User:"), this.props.user)}
-                                   id="create-container-dialog-owner-user"
-                                   isChecked={owner === this.props.user}
-                                   onChange={this.handleOwnerSelect} />
-                        </FormGroup>
-                        }
-
-                    </Tab>
-                </Tabs>
+                { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
+                <FormGroup isInline hasNoPaddingTop fieldId='create-container-dialog-owner' label={_("Owner")}>
+                    <Radio value="system"
+                            label={_("System")}
+                            id="create-container-dialog-owner-system"
+                            isChecked={owner === "system"}
+                            onChange={this.handleOwnerSelect} />
+                    <Radio value={this.props.user}
+                            label={cockpit.format("$0 $1", _("User:"), this.props.user)}
+                            id="create-container-dialog-owner-user"
+                            isChecked={owner === this.props.user}
+                            onChange={this.handleOwnerSelect} />
+                </FormGroup>
+                }
             </Form>
         );
         return (
@@ -228,7 +223,7 @@ export class VolumeCreateModal extends React.Component {
                    onEscapePress={() => {
                        this.props.close();
                    }}
-                   title={_("Create container")}
+                   title={_("Create volume")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                        <Button variant='primary' id="create-volume-create-btn" onClick={() => this.onCreateClicked(false)}>

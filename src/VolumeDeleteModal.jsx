@@ -14,7 +14,7 @@ export class VolumeDeleteModal extends React.Component {
                    footer={<>
                        <Button id="btn-vol-delete" variant="danger"
                                onClick={() => this.props.handleRemoveVolume()}>
-                           {_("Delete volume")}
+                           {_("Delete")}
                        </Button>
                        <Button variant="link" onClick={this.props.handleCancelVolumeDeleteModal}>{_("Cancel")}</Button>
                    </>}
