@@ -52,11 +52,13 @@ class TestApplication(testlib.MachineCase):
         self.restore_dir("/var/lib/containers", reboot_safe=True)
 
         # HACK: sometimes podman leaks mounts
-        self.addCleanup(m.execute, "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount")
-        self.addCleanup(m.execute, "killall -9 podman || true")
-        self.addCleanup(m.execute, "systemctl stop podman.service")
-        self.addCleanup(m.execute, "podman rm --force --all")
-        self.addCleanup(m.execute, "podman pod rm --force --all || true")
+        self.addCleanup(m.execute, """set -eu
+            podman pod rm --force --all
+            podman rm --force --all
+            systemctl stop podman.service
+            killall -9 podman || true
+            findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
+            """)
 
         # Create admin session
         m.execute("""
