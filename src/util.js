@@ -24,6 +24,11 @@ export function localize_time(unix_timestamp) {
     return formatRelative(unix_timestamp * 1000, Date.now(), { locale });
 }
 
+export function localize_date(timestamp_string) {
+    const date = new Date(timestamp_string);
+    return date.toLocaleString(cockpit.language);
+}
+
 export function format_memory_and_limit(usage, limit) {
     if (usage === undefined || isNaN(usage))
         return "";

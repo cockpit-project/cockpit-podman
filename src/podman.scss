@@ -15,6 +15,13 @@
     }
 }
 
+#containers-volumes, #containers-containers {
+    // Decrease padding for the volume/container toggle button list
+    .pf-c-table.pf-m-compact .pf-c-table__toggle {
+        padding-left: 0px;
+    }
+}
+
 @media screen and (max-width: 768px) {
     // Badges should not stretch in mobile mode
     .pf-c-table [data-label] > .pf-c-badge {
@@ -61,13 +68,19 @@
     display: none;
 }
 
+// Hide the header nav from the expandable rows - this should be better done with JS but the current cockpit-listing-panel implementation does not support this variant
+#containers-volumes .ct-listing-panel-head {
+    display: none;
+}
+
 .ct-grey-text {
    color: var(--pf-global--Color--200);
 }
 
 // Add  borders to no pod containers list and images list
 .container-section.pf-m-plain tbody,
-.containers-images tbody {
+.containers-images tbody,
+.containers-volumes tbody {
     border: var(--pf-c-card--m-flat--BorderWidth) solid var(--pf-c-card--m-flat--BorderColor);
 }
 
@@ -76,7 +89,7 @@
     white-space: nowrap !important;
 }
 
-@media ( max-width: $pf-global--breakpoint--md - 1 ) {
+@media ( max-width: $pf-global--breakpoint--md ) {
     .show-only-when-wide {
         display: none;
     }

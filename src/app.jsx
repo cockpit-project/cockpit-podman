@@ -32,6 +32,7 @@ import { superuser } from "superuser";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
+import Volumes from './Volumes.jsx';
 import * as client from './client.js';
 
 const _ = cockpit.gettext;
@@ -50,6 +51,9 @@ class Application extends React.Component {
             containersFilter: "running",
             containersStats: {},
             containersDetails: {},
+            volumes: null,
+            userVolumesLoaded: false,
+            systemVolumesLoaded: false,
             userContainersLoaded: null,
             systemContainersLoaded: null,
             userPodsLoaded: null,
@@ -72,11 +76,13 @@ class Application extends React.Component {
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
+        this.updateVolumesAfterEvent = this.updateVolumesAfterEvent.bind(this);
         this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
         this.updateContainerStats = this.updateContainerStats.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
         this.handleImageEvent = this.handleImageEvent.bind(this);
+        this.handleVolumeEvent = this.handleVolumeEvent.bind(this);
         this.handleContainerEvent = this.handleContainerEvent.bind(this);
         this.checkUserService = this.checkUserService.bind(this);
     }
@@ -190,11 +196,9 @@ class Application extends React.Component {
                             [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
                         };
                     });
-                    if (init) {
-                        this.updateContainerStats(system);
-                        for (const container of reply || []) {
-                            this.inspectContainerDetail(container.Id, system);
-                        }
+                    this.updateContainerStats(system);
+                    for (const container of reply || []) {
+                        this.inspectContainerDetail(container.Id, system);
                     }
                 })
                 .catch(console.log);
@@ -224,6 +228,33 @@ class Application extends React.Component {
                 })
                 .catch(ex => {
                     console.warn("Failed to do Update Images:", JSON.stringify(ex));
+                });
+    }
+
+    updateVolumesAfterEvent(system) {
+        client.getVolumes(system)
+                .then(reply => {
+                    this.setState(prevState => {
+                        // Copy only volumes that could not be deleted with this event
+                        // So when event from system come, only copy user volumes and vice versa
+                        const copyVolumes = {};
+                        Object.entries(prevState.volumes || {}).forEach(([Id, volume]) => {
+                            if (volume.isSystem !== system)
+                                copyVolumes[Id] = volume;
+                        });
+                        Object.entries(reply).forEach(([Id, volume]) => {
+                            volume.isSystem = system;
+                            copyVolumes[volume.Name + system.toString()] = volume;
+                        });
+
+                        return {
+                            volumes: copyVolumes,
+                            [system ? "systemVolumesLoaded" : "userVolumesLoaded"]: true
+                        };
+                    });
+                })
+                .catch(ex => {
+                    console.warn("Failed to do Update Volumes:", JSON.stringify(ex));
                 });
     }
 
@@ -334,6 +365,18 @@ class Application extends React.Component {
         }
     }
 
+    handleVolumeEvent(event, system) {
+        switch (event.Action) {
+        case 'remove':
+        case 'prune':
+        case 'create':
+            this.updateVolumesAfterEvent(system);
+            break;
+        default:
+            console.warn('Unhandled event type ', event.Type, event.Action);
+        }
+    }
+
     handleContainerEvent(event, system) {
         switch (event.Action) {
         /* The following events do not need to trigger any state updates */
@@ -408,6 +451,9 @@ class Application extends React.Component {
         case 'image':
             this.handleImageEvent(event, system);
             break;
+        case 'volume':
+            this.handleVolumeEvent(event, system);
+            break;
         case 'pod':
             this.handlePodEvent(event, system);
             break;
@@ -417,7 +463,7 @@ class Application extends React.Component {
     }
 
     cleanupAfterService(system, key) {
-        ["images", "containers", "pods"].forEach(t => {
+        ["images", "volumes", "containers", "pods"].forEach(t => {
             if (this.state[t])
                 this.setState(prevState => {
                     const copy = {};
@@ -440,6 +486,7 @@ class Application extends React.Component {
                         cgroupVersion: reply.host.cgroupVersion,
                     });
                     this.updateImagesAfterEvent(system);
+                    this.updateVolumesAfterEvent(system);
                     this.updateContainersAfterEvent(system, true);
                     this.updatePodsAfterEvent(system);
                     client.streamEvents(system,
@@ -468,6 +515,7 @@ class Application extends React.Component {
                         [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
                         [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
                         [system ? "systemImagesLoaded" : "userImagesLoaded"]: true,
+                        [system ? "systemVolumesLoaded" : "userVolumesLoaded"]: true,
                         [system ? "systemPodsLoaded" : "userPodsLoaded"]: true
                     });
                 });
@@ -485,6 +533,7 @@ class Application extends React.Component {
                     } else {
                         this.setState({
                             userImagesLoaded: true,
+                            userVolumesLoaded: true,
                             userContainersLoaded: true,
                             userPodsLoaded: true,
                             userServiceExists: false
@@ -542,7 +591,8 @@ class Application extends React.Component {
                     this.setState({
                         systemServiceAvailable: false,
                         systemContainersLoaded: true,
-                        systemImagesLoaded: true
+                        systemImagesLoaded: true,
+                        systemVolumesLoaded: true
                     });
                     console.warn("Failed to start system podman.socket:", JSON.stringify(err));
                 });
@@ -559,7 +609,8 @@ class Application extends React.Component {
                         userServiceAvailable: false,
                         userContainersLoaded: true,
                         userPodsLoaded: true,
-                        userImagesLoaded: true
+                        userImagesLoaded: true,
+                        userVolumesLoaded: true
                     });
                     console.warn("Failed to start user podman.socket:", JSON.stringify(err));
                 });
@@ -620,6 +671,23 @@ class Application extends React.Component {
         } else
             imageContainerList = null;
 
+        let volumeContainerList = {};
+        if (this.state.volumes !== null) {
+            Object.keys(this.state.volumes).forEach(c => {
+                const volume = this.state.volumes[c];
+                if (volumeContainerList[volume]) {
+                    volumeContainerList[volume].push({
+                        stats: this.state.volumes[volume.Name + volume.isSystem.toString()],
+                    });
+                } else {
+                    volumeContainerList[volume] = [{
+                        stats: this.state.volumes[volume.Name + volume.isSystem.toString()]
+                    }];
+                }
+            });
+        } else
+            volumeContainerList = null;
+
         let startService = "";
         const action = (<>
             <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
@@ -652,11 +720,28 @@ class Application extends React.Component {
                 selinuxAvailable={this.state.selinuxAvailable}
                 podmanRestartAvailable={this.state.podmanRestartAvailable}
             />;
+        const volumeList =
+            <Volumes
+                key="volumeList"
+                volumes={this.state.systemVolumesLoaded && this.state.userVolumesLoaded ? this.state.volumes : null}
+                volumeContainerList={volumeContainerList}
+                onAddNotification={this.onAddNotification}
+                textFilter={this.state.textFilter}
+                ownerFilter={this.state.ownerFilter}
+                showAll={ () => this.setState({ containersFilter: "all" }) }
+                user={this.state.currentUser}
+                userServiceAvailable={this.state.userServiceAvailable}
+                systemServiceAvailable={this.state.systemServiceAvailable}
+                registries={this.state.registries}
+                selinuxAvailable={this.state.selinuxAvailable}
+                podmanRestartAvailable={this.state.podmanRestartAvailable}
+            />;
         const containerList =
             <Containers
                 key="containerList"
                 version={this.state.version}
                 images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
+                volumes={this.state.systemVolumesLoaded && this.state.userVolumesLoaded ? this.state.volumes : null}
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
                 pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
                 containersStats={this.state.containersStats}
@@ -704,8 +789,9 @@ class Application extends React.Component {
                 <PageSection>
                     <Stack hasGutter>
                         { this.state.showStartService ? startService : null }
-                        {imageList}
                         {containerList}
+                        {volumeList}
+                        {imageList}
                     </Stack>
                 </PageSection>
             </Page>

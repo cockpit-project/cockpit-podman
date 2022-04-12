@@ -33,15 +33,56 @@ const render_container_published_ports = (ports) => {
     return <List isPlain>{result}</List>;
 };
 
+const render_container_mounts = (mounts) => {
+    if (!mounts)
+        return null;
+
+    const result = mounts.map(mount => {
+        const name = mount.Name;
+        const type = mount.Type;
+        const driver = mount.Driver;
+        const source = mount.Source;
+        const destination = mount.Destination;
+        return (
+            <ListItem key={ name }>
+                { name } &rarr; { destination } <br />
+                <small> { driver } { type }: <br />
+                    { source }</small>
+            </ListItem>
+        );
+    });
+
+    return <List isPlain>{result}</List>;
+};
+
+const render_container_env = (env) => {
+    if (!env)
+        return null;
+
+    const result = env.map(value => {
+        const keyvalue = value.split("=");
+        return (
+            <ListItem key={ keyvalue[0] }>
+                { keyvalue[0] } = <small>{ keyvalue[1] }</small>
+            </ListItem>
+        );
+    });
+
+    return <List isPlain>{result}</List>;
+};
+
 const ContainerDetails = ({ container, containerDetail }) => {
     const ports = render_container_published_ports(container.Ports);
+    const mounts = (containerDetail && containerDetail.Mounts.length !== 0) ? render_container_mounts(containerDetail.Mounts) : null;
+    const env = (containerDetail && containerDetail.Config) ? render_container_env(containerDetail.Config.Env) : null;
     const networkOptions = (
         containerDetail &&
         [
             containerDetail.NetworkSettings.IPAddress,
             containerDetail.NetworkSettings.Gateway,
             containerDetail.NetworkSettings.MacAddress,
-            ports
+            ports,
+            mounts
         ].some(itm => !!itm)
     );
 
@@ -64,7 +105,7 @@ const ContainerDetails = ({ container, containerDetail }) => {
                 </DescriptionList>
             </FlexItem>
             <FlexItem>
-                {networkOptions && <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
+                {networkOptions && <DescriptionList className='container-details-networking'>
                     {ports && <DescriptionListGroup>
                         <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
                         <DescriptionListDescription>{ports}</DescriptionListDescription>
@@ -82,6 +123,22 @@ const ContainerDetails = ({ container, containerDetail }) => {
                         <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
                     </DescriptionListGroup>}
                 </DescriptionList>}
+            </FlexItem>
+            <FlexItem>
+                <DescriptionList className='container-details-mounts'>
+                    {mounts && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Mounts")}</DescriptionListTerm>
+                        <DescriptionListDescription>{mounts}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                </DescriptionList>
+            </FlexItem>
+            <FlexItem>
+                <DescriptionList className='container-details-env'>
+                    {env && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("ENV")}</DescriptionListTerm>
+                        <DescriptionListDescription>{env}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                </DescriptionList>
             </FlexItem>
             <FlexItem>
                 <DescriptionList className='container-details-state'>

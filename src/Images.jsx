@@ -267,7 +267,7 @@ class Images extends React.Component {
                         <FlexItem grow={{ default: 'grow' }}>
                             <Flex>
                                 <Text className="images-title" component={TextVariants.h3}>{_("Images")}</Text>
-                                <Flex style={{ "row-gap": "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
+                                <Flex style={{ rowGap: "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
                         </FlexItem>
                         <FlexItem>
