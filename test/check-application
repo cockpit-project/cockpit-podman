@@ -53,6 +53,7 @@ class TestApplication(testlib.MachineCase):
 
         # HACK: sometimes podman leaks mounts
         self.addCleanup(m.execute, "findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount")
+        self.addCleanup(m.execute, "killall -9 podman || true")
         self.addCleanup(m.execute, "systemctl stop podman.service")
         self.addCleanup(m.execute, "podman rm --force --all")
         self.addCleanup(m.execute, "podman pod rm --force --all || true")
@@ -80,8 +81,6 @@ class TestApplication(testlib.MachineCase):
 
         # But disable it globally so that "systemctl --user disable" does what we expect
         m.execute("systemctl --global disable podman.socket")
-
-        self.addCleanup(m.execute, "killall -9 podman || true")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
