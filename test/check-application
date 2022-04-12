@@ -55,8 +55,7 @@ class TestApplication(testlib.MachineCase):
         self.addCleanup(m.execute, """set -eu
             systemctl stop podman.service podman.socket
             systemctl reset-failed podman.service podman.socket
-            podman pod rm --force --all
-            podman rm --force --all
+            podman system reset --force
             killall -9 podman || true
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
             """)
