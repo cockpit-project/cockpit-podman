@@ -1,7 +1,7 @@
-name: npm-update
+name: npm-update-pf
 on:
   schedule:
-    - cron: '0 2 * * 2,4,6'
+    - cron: '0 2 * * 1'
   # can be run manually on https://github.com/cockpit-project/cockpit-podman/actions
   workflow_dispatch:
 jobs:
@@ -24,4 +24,4 @@ jobs:
       - name: Run npm-update bot
         run: |
           make bots
-          bots/npm-update ~@patternfly
+          bots/npm-update @patternfly
