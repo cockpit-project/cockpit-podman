@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # image-customize script to prepare a bots VM for cockpit-podman testing
 set -eu
 
@@ -35,12 +35,21 @@ if [ "$ID" = "fedora" ]; then
     fi
 fi
 
+images=(quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2)
+podman_version=$(podman -v | awk '{ print substr($3, 1, 1) }')
+echo $podman_version
+
+# Since 4.0 podman now ships the pause image
+if [ "${podman_version}" -lt 4 ]; then
+	images+=("k8s.gcr.io/pause:3.5")
+fi
+
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
-for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
-    podman save  $img | sudo -i -u admin podman load
+for img in "${images[@]}"; do
+	podman save  $img | sudo -i -u admin podman load
 done
-loginctl disable-linger $(id -u admin)
+	loginctl disable-linger $(id -u admin)
 
 # 15minutes after boot tmp files are removed and podman stores some tmp lock files
 systemctl disable --now systemd-tmpfiles-clean.timer

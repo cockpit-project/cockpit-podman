@@ -1,34 +1,5 @@
 @import "global-variables";
 
-.dynamic-form-group {
-    .pf-c-empty-state {
-        padding: 0;
-    }
-
-    .pf-c-form__label {
-        // Don't allow labels to wrap
-        white-space: nowrap;
-    }
-
-    .remove-button-group {
-        // Move 'Remove' button the the end of the row
-        grid-column: -1;
-        // Move 'Remove' button to the bottom of the line so as to align with the other form fields
-        display: flex;
-        align-items: flex-end;
-    }
-
-    // Set check to the same height as input widgets and vertically align
-    .pf-c-form__group-control > .pf-c-check {
-        // Set height to the same as inputs
-        // Font height is font size * line height (1rem * 1.5)
-        // Widgets have 5px padding, 1px border (top & bottom): (5 + 1) * 2 = 12
-        // This all equals to 36px
-        height: calc(var(--pf-global--FontSize--md) * var(--pf-global--LineHeight--md) + 12px);
-        align-content: center;
-    }
-}
-
 // Ensure the width fits within the screen boundaries (with padding on the sides)
 .pf-c-select__menu {
     // 3xl is the left+right padding for an iPhone SE;
@@ -63,15 +34,6 @@
     > .pf-c-select, .pf-c-form-control:not(.pf-c-select__toggle-typeahead) {
       max-width: 8ch;
     }
-}
-
-// We use FormFieldGroup PF component for the nested look and for ability to add buttons to the header
-// However we want to save space and not add indent to the left so we need to override it
-.dynamic-form-group .pf-c-form__field-group-body {
-    // Stretch content fully
-    --pf-c-form__field-group-body--GridColumn: 1 / -1;
-    // Reduce padding at the top
-    --pf-c-form__field-group-body--PaddingTop: var(--pf-global--spacer--xs);
 }
 
 // HACK: A local copy of pf-m-horizontal (as ct-m-horizontal),

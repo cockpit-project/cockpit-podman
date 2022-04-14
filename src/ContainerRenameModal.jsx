@@ -7,6 +7,7 @@ import {
 import cockpit from 'cockpit';
 
 import * as client from './client.js';
+import * as utils from './util.js';
 import { ErrorNotification } from './Notification.jsx';
 import { useDialogs } from "dialogs.jsx";
 
@@ -24,7 +25,7 @@ const ContainerRenameModal = ({ container, version, updateContainerAfterEvent })
             setName(value);
             if (value === "") {
                 setNameError(_("Container name is required."));
-            } else if (/^[a-zA-Z0-9][a-zA-Z0-9_\\.-]*$/.test(value)) {
+            } else if (utils.is_valid_container_name(value)) {
                 setNameError(null);
             } else {
                 setNameError(_("Invalid characters. Name can only contain letters, numbers, and certain punctuation (_ . -)."));

@@ -37,6 +37,7 @@ import './Containers.scss';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { PodActions } from './PodActions.jsx';
+import { PodCreateModal } from './PodCreateModal.jsx';
 
 const _ = cockpit.gettext;
 
@@ -668,6 +669,16 @@ class Containers extends React.Component {
                                             onAddNotification={this.props.onAddNotification} />);
         };
 
+        const createPod = () => {
+            Dialogs.show(<PodCreateModal
+                user={this.props.user}
+                selinuxAvailable={this.props.selinuxAvailable}
+                systemServiceAvailable={this.props.systemServiceAvailable}
+                userServiceAvailable={this.props.userServiceAvailable}
+                onAddNotification={this.props.onAddNotification}
+                version={this.props.version} />);
+        };
+
         const filterRunning =
             <Toolbar>
                 <ToolbarContent>
@@ -681,6 +692,13 @@ class Containers extends React.Component {
                         </FormSelect>
                     </ToolbarItem>
                     <Divider isVertical />
+                    <ToolbarItem>
+                        <Button variant="secondary" key="create-new-pod-action"
+                                id="containers-containers-create-pod-btn"
+                                onClick={() => createPod(null)}>
+                            {_("Create pod")}
+                        </Button>
+                    </ToolbarItem>
                     <ToolbarItem>
                         <Button variant="primary" key="get-new-image-action"
                                 id="containers-containers-create-container-btn"
@@ -720,7 +738,7 @@ class Containers extends React.Component {
                                         const tableProps = {};
                                         const rows = partitionedContainers[section].map(container => {
                                             return this.renderRow(this.props.containersStats, container,
-                                                                  this.props.containersDetails[container.Id + container.isSystem.toString()],
+                                                                  this.props.containersDetails[container.Id + container.isSystem.toString()] || null,
                                                                   localImages);
                                         });
                                         let caption;
