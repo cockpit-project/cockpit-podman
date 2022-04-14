@@ -4,6 +4,7 @@
 # "class Browser" and "class MachineCase" for the available API.
 
 import os
+import json
 import sys
 
 # import Cockpit's machinery for test VMs and its browser test API
@@ -26,6 +27,7 @@ NOT_RUNNING = ["Exited", "Stopped"]
 
 # Ubuntu 2204 lacks user systemd units https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
 DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
+DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-testing', 'fedora-35']
 
 
 def showImages(browser):
@@ -178,10 +180,10 @@ class TestApplication(testlib.MachineCase):
         else:
             self.browser.wait_not_present("#table-" + podName)
 
-    def waitPodContainer(self, podName, containerList):
+    def waitPodContainer(self, podName, containerList, system=True):
         if len(containerList):
             for container in containerList:
-                self.waitContainer(container["id"], True, name=container["name"], image=container["image"],
+                self.waitContainer(container["id"], system, name=container["name"], image=container["image"],
                                    cmd=container["command"], state=container["state"], pod=podName)
         else:
             if self.browser.val("#containers-containers-filter") == "all":
@@ -1459,6 +1461,9 @@ class TestApplication(testlib.MachineCase):
         # Just drop user images so we can use simpler selectors
         if auth:
             self.execute(False, "podman rmi alpine busybox registry:2")
+            _, _, version = self.execute(False, "podman -v").split(' ')
+            if int(version[0]) < 4:
+                self.execute(False, "podman rmi pause:3.5")
 
         self.login(auth)
 
@@ -2273,6 +2278,101 @@ class TestApplication(testlib.MachineCase):
         # Generic cleanup takes too long and timeouts, so remove these container manually one by one
         for i in range(31):
             self.execute(True, f"podman rm -f container{i}")
+
+    def testCreatePodSystem(self):
+        self._createPod(True)
+
+    # HACK: give podman time to kill the pod containers, can be removed if we
+    # have podman 4.0 everywhere and can use podman pod rm -t0
+    @testlib.timeout(300)
+    def testCreatePodUser(self):
+        self._createPod(False)
+
+    def _createPod(self, auth):
+        b = self.browser
+        m = self.machine
+        pod_name = "testpod1"
+
+        self.login(auth)
+
+        b.click("#containers-containers-create-pod-btn")
+        b.set_input_text("#create-pod-dialog-name", pod_name)
+
+        if auth:
+            b.wait_visible("#create-pod-dialog-owner-system:checked")
+        else:
+            b.wait_not_present("#create-pod-dialog-owner-system")
+
+        # Ports
+        b.click('.publish-port-form .btn-add')
+        b.set_input_text('#create-pod-dialog-publish-0-host-port', '6000')
+        b.set_input_text('#create-pod-dialog-publish-0-container-port', '5000')
+        b.click('.publish-port-form .btn-add')
+        b.set_input_text('#create-pod-dialog-publish-1-ip-address', '127.0.0.1')
+        b.set_input_text('#create-pod-dialog-publish-1-host-port', '6001')
+        b.set_input_text('#create-pod-dialog-publish-1-container-port', '5001')
+        b.set_val('#create-pod-dialog-publish-1-protocol', "udp")
+        b.click('.publish-port-form .btn-add')
+        b.set_input_text('#create-pod-dialog-publish-2-ip-address', '127.0.0.2')
+        b.set_input_text('#create-pod-dialog-publish-2-container-port', '9001')
+
+        # Volumes
+        if self.machine.image not in DISTROS_WITHOUT_PODMAN_POD_VOLUMES:
+            b.click('.volume-form .btn-add')
+            rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
+            m.execute(f"chown admin:admin {rodir}")
+            m.execute(f"chown admin:admin {rwdir}")
+
+            if self.has_selinux:
+                b.set_val('#create-pod-dialog-volume-0-selinux', "z")
+            else:
+                b.wait_not_present('#create-pod-dialog-volume-0-selinux')
+
+            b.set_file_autocomplete_val("#create-pod-dialog-volume-0 .pf-c-select", rodir)
+            b.set_input_text('#create-pod-dialog-volume-0-container-path', '/tmp/ro')
+            b.click('.volume-form .btn-add')
+
+            b.set_file_autocomplete_val("#create-pod-dialog-volume-1 .pf-c-select", rwdir)
+            b.set_input_text('#create-pod-dialog-volume-1-container-path', '/tmp/rw')
+
+        b.click("#create-pod-create-btn")
+        b.set_val("#containers-containers-filter", "all")
+        self.waitPodContainer(pod_name, [])
+
+        container_name = 'test-pod-1-system' if auth else 'test-pod-1'
+        containerId = self.execute(auth, f"podman run -d --pod {pod_name} --name {container_name} alpine sleep 500").strip()
+        self.waitPodContainer(pod_name, [{"name": container_name, "image": "alpine", "command": "sleep 500", "state": "Running", "id": containerId}], auth)
+
+        self.toggleExpandedContainer(container_name)
+        b.click(".pf-m-expanded button:contains('Integration')")
+        if self.machine.image not in DISTROS_WITHOUT_PODMAN_POD_VOLUMES:
+            b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Volumes") + dd', f"{rodir} \u2194 /tmp/ro")
+            b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Volumes") + dd', f"{rwdir} \u2194 /tmp/rw")
+
+        b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Ports") + dd', '0.0.0.0:6000 \u2192 5000/tcp')
+        b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Ports") + dd', '127.0.0.1:6001 \u2192 5001/udp')
+        b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Ports") + dd', ' \u2192 9001/tcp')
+
+        # Validate ports via inspect as we do not show them in the UI yet
+        pod_info = json.loads(self.execute(auth, f"podman pod inspect {pod_name}").strip())
+        port_bindings = pod_info['InfraConfig']['PortBindings']
+        self.assertEqual(port_bindings['5000/tcp'], [{'HostIp': '', 'HostPort': '6000'}])
+        self.assertEqual(port_bindings['5001/udp'], [{'HostIp': '127.0.0.1', 'HostPort': '6001'}])
+        # Host port is randomized as not provided
+        self.assertTrue(port_bindings['9001/tcp'])
+        # Force stop, so tearDown does not hang
+        self.execute(auth, f"podman pod stop -t0 {pod_name} || true")
+
+        # Create pod as admin
+        if auth:
+            pod_name = 'testpod2'
+            b.click("#containers-containers-create-pod-btn")
+            b.set_input_text("#create-pod-dialog-name", pod_name)
+            b.click("#create-pod-dialog-owner-user")
+            b.click("#create-pod-create-btn")
+
+            b.set_val("#containers-containers-filter", "all")
+            self.waitPodContainer(pod_name, [])
 
 
 if __name__ == '__main__':

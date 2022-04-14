@@ -140,3 +140,7 @@ export function unquote_cmdline(text) {
 export function image_name(image) {
     return image.RepoTags ? image.RepoTags[0] : "<none>:<none>";
 }
+
+export function is_valid_container_name(name) {
+    return /^[a-zA-Z0-9][a-zA-Z0-9_\\.-]*$/.test(name);
+}
