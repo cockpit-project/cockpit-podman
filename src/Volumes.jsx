@@ -135,6 +135,11 @@ class Volumes extends React.Component {
             });
         }
 
+        if (this.props.textFilter.length > 0) {
+            const lcf = this.props.textFilter.toLowerCase();
+            filtered = filtered.filter(id => this.props.volumes[id].Name.toLowerCase().indexOf(lcf) >= 0);
+        }
+
         filtered.sort((a, b) => {
             // User volumes are in front of system ones
             if (this.props.volumes[a].isSystem !== this.props.volumes[b].isSystem)
