@@ -45,7 +45,7 @@ const render_container_mounts = (mounts) => {
         const destination = mount.Destination;
         const RW = mount.RW;
 
-        if (type == "local")
+        if (type == "volume")
             return (
                 <ListItem key={ name }>
                     { name } &rarr; { destination } <br />
