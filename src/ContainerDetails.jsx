@@ -43,13 +43,23 @@ const render_container_mounts = (mounts) => {
         const driver = mount.Driver;
         const source = mount.Source;
         const destination = mount.Destination;
-        return (
-            <ListItem key={ name }>
-                { name } &rarr; { destination } <br />
-                <small> { driver } { type }: <br />
-                    { source }</small>
-            </ListItem>
-        );
+        const RW = mount.RW;
+
+        if (type == "local")
+            return (
+                <ListItem key={ name }>
+                    { name } &rarr; { destination } <br />
+                    <small> { driver } { type } { RW ? "RW" : "RO" }: <br />
+                        { source }</small>
+                </ListItem>
+            );
+        else
+            return (
+                <ListItem key={ source }>
+                    <small>{ source }</small> &rarr; { destination } <br />
+                    <small>{ type } { RW ? "RW" : "RO" }</small>
+                </ListItem>
+            );
     });
 
     return <List isPlain>{result}</List>;
