@@ -167,9 +167,18 @@ export function getImages(system, id) {
                                     images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
                                     images[info.Id].isSystem = system;
                                 }
-                                resolve(images);
                             })
                             .catch(reject);
+
+                    for (const image of immages || []) {
+                        podmanCall("libpod/images/" + image.Id + "/history", "GET", {}, system)
+                                .then(reply => {
+                                    images[image.Id].History = JSON.parse(reply);
+                                })
+                                .catch(reject);
+                    }
+
+                    resolve(images);
                 })
                 .catch(reject);
     });

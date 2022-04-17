@@ -1,0 +1,47 @@
+@import "global-variables";
+
+.containers-images .download-in-progress {
+    color: var(--pf-global--palette--black-500);
+    font-weight: bold;
+}
+
+/* Danger dropdown items should be red */
+.pf-c-dropdown__menu-item.pf-m-danger:not(.pf-m-disabled):not(.pf-m-aria-disabled) {
+    color: var(--pf-global--danger-color--200);
+}
+
+.containers-images .pf-c-table.pf-m-compact .pf-c-table__action {
+    --pf-c-table__action--PaddingTop: var(--pf-global--spacer--sm);
+    --pf-c-table__action--PaddingBottom: var(--pf-global--spacer--sm);
+}
+
+.containers-images .pf-c-expandable-section__content {
+    margin-top: 0;
+}
+
+.ct-code {
+    font-size: 12;
+    font-family: RedHatMono Consolas, monospace;
+}
+
+.ct-image-history {
+    margin: 0;
+    max-height: var(--pf-global--breakpoint--sm);
+    overflow: auto;
+}
+
+.ct-image-history table tbody {
+    border: none;
+}
+
+@media ( max-width: $pf-global--breakpoint--md ) {
+
+    .pf-m-grid-md.pf-c-table [data-label] > .ct-code {
+        grid-column: 1 / span 2;
+    }
+
+    .ct-image-history table tbody tr {
+        padding-left: 0;
+        padding-top: 0;
+    }
+}
