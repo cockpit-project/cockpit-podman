@@ -10,7 +10,7 @@ const render_map = (labels) => {
     if (!labels)
         return null;
 
-    const result = Object.keys(labels).map((key, value) => {
+    const result = Object.entries(labels).map(([key, value]) => {
         return (
             <ListItem key={ key }>
                 { key }: { value }
@@ -23,25 +23,19 @@ const render_map = (labels) => {
 
 const VolumeDetails = ({ volume, containers, showAll }) => {
     const labels = volume.Labels && render_map(volume.Labels);
-    const options = volume.Options && render_map(volume.Options);
+    const options = volume.Options && Object.keys(volume.Options || {}).join(', ');
 
     return (
         <DescriptionList className='volume-details' isAutoFit>
-            {volume.Labels.length &&
+            {Object.entries(volume.Labels).length !== 0 &&
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("Labels")}</DescriptionListTerm>
                 <DescriptionListDescription>{labels}</DescriptionListDescription>
             </DescriptionListGroup>
             }
-            {volume.Scope &&
+            {options &&
             <DescriptionListGroup>
-                <DescriptionListTerm>{_("Scope")}</DescriptionListTerm>
-                <DescriptionListDescription>{volume.Scope}</DescriptionListDescription>
-            </DescriptionListGroup>
-            }
-            {volume.Options.length &&
-            <DescriptionListGroup>
-                <DescriptionListTerm>{_("Options")}</DescriptionListTerm>
+                <DescriptionListTerm>{_("Mount options")}</DescriptionListTerm>
                 <DescriptionListDescription>{options}</DescriptionListDescription>
             </DescriptionListGroup>
             }
