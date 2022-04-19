@@ -3,7 +3,9 @@ upstream_package_name: cockpit-podman
 downstream_package_name: cockpit-podman
 actions:
   post-upstream-clone: make cockpit-podman.spec
-  create-archive: make dist
+  create-archive:
+    - make dist
+    - rm -f test/common/sizzle.js
 srpm_build_deps:
   - make
   - npm
