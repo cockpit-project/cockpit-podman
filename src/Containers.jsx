@@ -25,6 +25,7 @@ import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
+import ContainerRenameModal from './ContainerRenameModal.jsx';
 
 import './Containers.scss';
 import { ImageRunModal } from './ImageRunModal.jsx';
@@ -32,7 +33,7 @@ import { PodActions } from './PodActions.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, onAddNotification, version, localImages }) => {
+const ContainerActions = ({ container, onAddNotification, version, localImages, updateContainerAfterEvent }) => {
     const [removeErrorModal, setRemoveErrorModal] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
     const [checkpointInProgress, setCheckpointInProgress] = useState(false);
@@ -40,6 +41,7 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
     const [restoreInProgress, setRestoreInProgress] = useState(false);
     const [restoreModal, setRestoreModal] = useState(false);
     const [commitModal, setCommitModal] = useState(false);
+    const [renameModal, setRenameModal] = useState(false);
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State == "running";
     const isPaused = container.State === "paused";
@@ -112,6 +114,11 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
                 });
     };
 
+    const renameContainer = () => {
+        setRenameModal(container.State !== "running" || version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0);
+        setActionsKebabOpen(false);
+    };
+
     const handleRemoveContainer = () => {
         const id = container ? container.Id : "";
 
@@ -170,6 +177,15 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
                 });
     };
 
+    const addRenameAction = () => {
+        actions.push(
+            <DropdownItem key="rename"
+                        onClick={() => renameContainer()}>
+                {_("Rename")}
+            </DropdownItem>
+        );
+    };
+
     const actions = [];
     if (isRunning || isPaused) {
         actions.push(
@@ -225,6 +241,9 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
                 {_("Start")}
             </DropdownItem>
         );
+        if (version.localeCompare("3", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
+            addRenameAction();
+        }
         if (container.isSystem && container.hasCheckpoint) {
             actions.push(
                 <DropdownSeparator key="separator-0" />,
@@ -233,6 +252,10 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
                     {_("Restore")}
                 </DropdownItem>
             );
+        }
+    } else { // running or paused
+        if (version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
+            addRenameAction();
         }
     }
 
@@ -296,10 +319,19 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
             localImages={localImages}
         />;
 
+    const containerRenameModal =
+        <ContainerRenameModal
+            container={container}
+            version={version}
+            onHide={() => setRenameModal(false)}
+            updateContainerAfterEvent={updateContainerAfterEvent}
+        />;
+
     return (
         <>
             {kebab}
             {deleteModal && containerDeleteModal}
+            {renameModal && containerRenameModal}
             {checkpointModal && containerCheckpointModal}
             {restoreModal && containerRestoreModal}
             {removeErrorModal && containerRemoveErrorModal}
@@ -385,7 +417,7 @@ class Containers extends React.Component {
         ];
 
         if (!container.isDownloading) {
-            columns.push({ title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} localImages={localImages} />, props: { className: "pf-c-table__action" } });
+            columns.push({ title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} localImages={localImages} updateContainerAfterEvent={this.props.updateContainerAfterEvent} />, props: { className: "pf-c-table__action" } });
         }
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;

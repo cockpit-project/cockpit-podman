@@ -1949,6 +1949,36 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction(container_name, "Resume")
         b.wait(lambda: self.getContainerAttr(container_name, "State") == "Running")
 
+    def testRenameContainerSystem(self):
+        self._testRenameContainer(True)
+
+    def testRenameContainerUser(self):
+        self._testRenameContainer(False)
+
+    def _testRenameContainer(self, auth):
+        b = self.browser
+        container_name = "rename"
+        container_name_new = "rename-new"
+
+        self.execute(auth, f"podman container create -t --name {container_name} quay.io/libpod/busybox:latest")
+        self.login(auth)
+
+        self.filter_containers('all')
+
+        self.waitContainerRow(container_name)
+        self.toggleExpandedContainer(container_name)
+        self.performContainerAction(container_name, "Rename")
+
+        # the container name should be in the "Rename container" header
+        b.wait_in_text("#pf-modal-part-1", container_name)
+
+        b.set_input_text("#rename-dialog-container-name", container_name_new)
+        b.click('#btn-rename-dialog-container')
+        b.wait_not_present("#rename-dialog-container-name")
+
+        self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
+        self.waitContainerRow(container_name_new)
+
 
 if __name__ == '__main__':
     testlib.test_main()

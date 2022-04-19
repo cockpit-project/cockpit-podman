@@ -81,6 +81,8 @@ export function inspectContainer(system, id) {
 
 export const delContainer = (system, id, force) => podmanCall("libpod/containers/" + id, "DELETE", { force }, system);
 
+export const renameContainer = (system, id, config) => podmanCall("libpod/containers/" + id + "/rename", "POST", config, system);
+
 export function createContainer(system, config) {
     return new Promise((resolve, reject) => {
         podmanCall("libpod/containers/create", "POST", {}, system, JSON.stringify(config))
