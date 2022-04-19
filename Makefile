@@ -159,13 +159,8 @@ codecheck:
 check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common test/reference
 	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests ${RUN_TESTS_OPTIONS}
 
-# checkout Cockpit's bots for standard test VM images and API to launch them
-# must be from main, as only that has current and existing images; but testvm.py API is stable
-# support CI testing against a bots change
-bots:
-	git clone --quiet --reference-if-able $${XDG_CACHE_HOME:-$$HOME/.cache}/cockpit-project/bots https://github.com/cockpit-project/bots.git
-	if [ -n "$$COCKPIT_BOTS_REF" ]; then git -C bots fetch --quiet --depth=1 origin "$$COCKPIT_BOTS_REF"; git -C bots checkout --quiet FETCH_HEAD; fi
-	@echo "checked out bots/ ref $$(git -C bots rev-parse HEAD)"
+bots: tools/make-bots
+	tools/make-bots
 
 test/reference: test/common
 	test/common/pixel-tests pull
@@ -185,6 +180,8 @@ $(NODE_MODULES_TEST): package.json
 COCKPIT_REPO_FILES = \
 	pkg/lib \
 	test/common \
+	tools/git-utils.sh \
+	tools/make-bots \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
