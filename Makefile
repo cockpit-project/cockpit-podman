@@ -37,11 +37,11 @@ po/$(PACKAGE_NAME).js.pot:
 		--keyword=gettextCatalog.getString:1,3c --keyword=gettextCatalog.getPlural:2,3,4c \
 		--from-code=UTF-8 $$(find src/ -name '*.js' -o -name '*.jsx')
 
-po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST)
-	po/html2po -o $@ $$(find src -name '*.html')
+po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST) $(COCKPIT_REPO_STAMP)
+	pkg/lib/html2po -o $@ $$(find src -name '*.html')
 
-po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST)
-	po/manifest2po src/manifest.json -o $@
+po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST) $(COCKPIT_REPO_STAMP)
+	pkg/lib/manifest2po src/manifest.json -o $@
 
 po/$(PACKAGE_NAME).metainfo.pot: $(APPSTREAMFILE)
 	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ $<
