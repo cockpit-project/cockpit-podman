@@ -94,6 +94,22 @@ class TestApplication(testlib.MachineCase):
         # HACK: older c-ws versions always log an assertion, fixed in PR cockpit#16765
         self.allow_journal_messages("json_object_get_string_member: assertion 'node != NULL' failed")
 
+    def waitNumImages(self, expected, auth):
+        if auth and self.machine.ostree_image:
+            extra = 1  # cockpit/ws
+        else:
+            extra = 0
+
+        self.browser.wait_js_func("ph_count_check", "#containers-images tbody", expected + extra)
+
+    def waitNumContainers(self, expected, auth):
+        if auth and self.machine.ostree_image:
+            extra = 1  # cockpit/ws
+        else:
+            extra = 0
+
+        self.browser.wait_js_func("ph_count_check", "#containers-containers tbody", expected + extra)
+
     def performContainerAction(self, container, cmd):
         b = self.browser
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-c-dropdown__toggle")
@@ -182,7 +198,8 @@ class TestApplication(testlib.MachineCase):
 
         self.login()
 
-        self.browser.wait_in_text("#containers-containers .pf-c-empty-state", "No running containers")
+        if not self.machine.ostree_image:
+            b.wait_in_text("#containers-containers", "No running containers")
 
         # Run a pods as system
         self.machine.execute("podman pod create --infra=false --name pod-1")
@@ -345,7 +362,7 @@ class TestApplication(testlib.MachineCase):
         # `User Service is also available` banner should not be present
         b.wait_not_present("#overview div.pf-c-alert")
         # There should not be any duplicate images listed
-        b.wait_js_func("ph_count_check", "#containers-images tbody", 1)
+        self.waitNumImages(1, True)
         # There should not be 'owner' selector
         b.wait_not_present("#containers-containers-owner")
 
@@ -363,6 +380,10 @@ class TestApplication(testlib.MachineCase):
 
         if not auth:
             self.allow_browser_errors("Failed to start system podman.socket.*")
+
+        expected_ws = ""
+        if auth and self.machine.ostree_image:
+            expected_ws += "ws"
 
         self.login(auth)
 
@@ -403,9 +424,12 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Commandsh")
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
-        # make sure no running containers shown
+        # make sure no running containers shown; on CoreOS there's the cockpit/ws container
         self.filter_containers('running')
-        b.wait_in_text("#containers-containers", "No running containers")
+        if auth and self.machine.ostree_image:
+            self.waitContainerRow("ws")
+        else:
+            b.wait_in_text("#containers-containers", "No running containers")
 
         if auth:
             # Run two containers as system (first exits immediately)
@@ -418,24 +442,24 @@ class TestApplication(testlib.MachineCase):
 
         # Test owner filtering
         if auth:
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 6)
-            b.wait_js_func("ph_count_check", "#containers-containers tbody", 2)
+            self.waitNumImages(6, True)
+            self.waitNumContainers(2, True)
 
             b.set_val("#containers-containers-owner", "system")
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 3)
+            self.waitNumImages(3, True)
             b.wait_in_text("#containers-images", "system")
-            b.wait_js_func("ph_count_check", "#containers-containers tbody", 1)
+            self.waitNumContainers(1, True)
             b.wait_in_text("#containers-containers", "system")
 
             b.set_val("#containers-containers-owner", "user")
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 3)
+            self.waitNumImages(3, False)
             b.wait_in_text("#containers-images", "admin")
-            b.wait_js_func("ph_count_check", "#containers-containers tbody", 1)
+            self.waitNumContainers(1, False)
             b.wait_in_text("#containers-containers", "admin")
 
             b.set_val("#containers-containers-owner", "all")
-            b.wait_js_func("ph_count_check", "#containers-images tbody", 6)
-            b.wait_js_func("ph_count_check", "#containers-containers tbody", 2)
+            self.waitNumImages(6, True)
+            self.waitNumContainers(2, True)
         else:  # No 'owner' selector when not privileged
             b.wait_not_present("#containers-containers-owner")
 
@@ -483,10 +507,10 @@ class TestApplication(testlib.MachineCase):
             self.confirm_modal("Cancel")
 
         # Checked order of containers
+        expected = "swamped-crate-usertest-sh-user"
         if auth:
-            b.wait_collected_text("#containers-containers .container-name", "swamped-crate-usertest-sh-userswamped-crate-systemtest-sh-system")
-        else:
-            b.wait_collected_text("#containers-containers .container-name", "swamped-crate-usertest-sh-user")
+            expected += "swamped-crate-systemtest-sh-system"
+        b.wait_collected_text("#containers-containers .container-name", expected + expected_ws)
 
         # show running container
         self.filter_containers('running')
@@ -562,9 +586,9 @@ class TestApplication(testlib.MachineCase):
         if auth:
             self.execute(auth, "podman run -dt --name net_check alpine")
             self.toggleExpandedContainer("net_check")
-            b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
-            b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
-            b.wait_in_text(".container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
+            b.wait_in_text(".pf-m-expanded .container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
+            b.wait_in_text(".pf-m-expanded .container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
+            b.wait_in_text(".pf-m-expanded .container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
             self.execute(auth, "podman stop net_check")
             b.wait(lambda: self.execute(True, "podman ps --all | grep -e net_check -e Exited"))
             self.toggleExpandedContainer("net_check")
@@ -583,17 +607,17 @@ class TestApplication(testlib.MachineCase):
         self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-images", alpine_sel)
 
-        b.wait_collected_text("#containers-containers .container-name", "")
+        b.wait_collected_text("#containers-containers .container-name", expected_ws)
         self.execute(auth, "podman run -d --name c registry:2 sh")
-        b.wait_collected_text("#containers-containers .container-name", "c")
+        b.wait_collected_text("#containers-containers .container-name", "c" + expected_ws)
         self.execute(auth, "podman run -d --name a registry:2 sh")
-        b.wait_collected_text("#containers-containers .container-name", "ac")
+        b.wait_collected_text("#containers-containers .container-name", "ac" + expected_ws)
 
         self.execute(False, "podman run -d --name b registry:2 sh")
         if auth:
-            b.wait_collected_text("#containers-containers .container-name", "bac")
+            b.wait_collected_text("#containers-containers .container-name", "bac" + expected_ws)
             self.execute(False, "podman run -d --name doremi registry:2 sh")
-            b.wait_collected_text("#containers-containers .container-name", "bdoremiac")
+            b.wait_collected_text("#containers-containers .container-name", "bdoremiac" + expected_ws)
             b.wait(lambda: self.getContainerAttr("doremi", "State") in NOT_RUNNING)
         else:
             b.wait_collected_text("#containers-containers .container-name", "abc")
@@ -677,7 +701,16 @@ class TestApplication(testlib.MachineCase):
         b.click("button:contains(Commit)")
         self.confirm_modal("Force commit")
 
-        b.wait_in_text("#containers-images", "7 images" if auth else "4 images")
+        # don't use waitNumImages() here, as we want to include anonymous images
+        def waitImageCount(expected):
+            if auth:
+                expected += 3
+                if self.machine.ostree_image:
+                    expected += 1  # cockpit/ws
+
+            b.wait_in_text("#containers-images", f"{expected} images")
+
+        waitImageCount(4)
         image_id = self.execute(auth, "podman images --sort created --format '{{.Id}}' | head -n 1").strip()
         manifest_type = self.execute(auth, "podman inspect --format '{{.ManifestType}}' " + image_id).strip()
         cmd = self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' " + image_id).strip()
@@ -697,7 +730,7 @@ class TestApplication(testlib.MachineCase):
 
         self.confirm_modal("Commit")
 
-        b.wait_in_text("#containers-images", "8 images" if auth else "5 images")
+        waitImageCount(5)
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Author}}' newname:24").strip(), "MM")
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:24").strip(), "[sh -c ps]")
         self.assertIn("vnd.oci.image.manifest", self.execute(auth, "podman inspect --format '{{.ManifestType}}' newname:24").strip())
@@ -708,7 +741,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(".pf-c-modal-box")
         b.set_input_text("#commit-dialog-image-name", "newname")
         self.confirm_modal("Commit")
-        b.wait_in_text("#containers-images", "9 images" if auth else "6 images")
+        waitImageCount(6)
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:latest").strip(), "[sleep 1000]")
 
         # Test commit of running container with pause (also conflicting name through :latest)
@@ -720,7 +753,7 @@ class TestApplication(testlib.MachineCase):
             b.set_checked("#commit-dialog-pause", True)
             b.click("button:contains(Commit)")
             self.confirm_modal("Force commit")
-            b.wait_in_text("#containers-images", "10 images" if auth else "7 images")
+            waitImageCount(7)
 
     @testlib.nondestructive
     def testDownloadImage(self):
@@ -1005,6 +1038,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
 
     @testlib.skipImage("Arch Linux has cgroups v1 by default", "arch")
+    @testlib.skipImage("cgroupsv1 not supported", "fedora-coreos")
     def testCheckpointRestoreCGroupsV1(self):
         m = self.machine
 
@@ -1186,7 +1220,7 @@ class TestApplication(testlib.MachineCase):
         # no Troubleshoot action without cockpit-system package
         disable_system()
         disable_user()
-        self.restore_file("/usr/share/cockpit/systemd/manifest.json")
+        self.restore_dir("/usr/share/cockpit/systemd")
         self.machine.execute("rm /usr/share/cockpit/systemd/manifest.json")
         self.login_and_go("/podman")
         b.wait_visible("#app .pf-c-empty-state button.pf-m-primary")
@@ -1543,14 +1577,14 @@ class TestApplication(testlib.MachineCase):
             except ValueError:
                 return 0
 
-        b.click("button:contains('Logs')")
-        b.wait_text(".container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
+        b.click(".pf-m-expanded button:contains('Logs')")
+        b.wait_text(".pf-m-expanded .container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
         # firefox optimizes these out when not visible
-        b.eval_js("document.querySelector('.container-logs .xterm-accessibility-tree').scrollIntoView()")
-        b.wait_in_text(".container-logs .xterm-accessibility-tree", "6")
+        b.eval_js("document.querySelector('.pf-m-expanded .container-logs .xterm-accessibility-tree').scrollIntoView()")
+        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "6")
 
-        b.click("button:contains('Console')")
-        b.wait(lambda: get_int(b.text(".container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
+        b.click(".pf-m-expanded button:contains('Console')")
+        b.wait(lambda: get_int(b.text(".pf-m-expanded .container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
 
         # Create another instance without port publishing
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
@@ -1661,11 +1695,13 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')
         b.wait_in_text('#containers-images .pf-c-empty-state', 'No images that match the current filter')
         b.set_input_text('#containers-filter', '')
-        self.execute(auth, "podman rmi -af")
-        b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers')
-        b.set_val("#containers-containers-filter", "running")
-        b.wait_in_text('#containers-containers .pf-c-empty-state', 'No running containers')
-        b.wait_in_text('#containers-images .pf-c-empty-state', 'No images')
+
+        if not auth or not self.machine.ostree_image:  # don't kill ws container
+            self.execute(auth, "podman rmi -af")
+            b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers')
+            b.set_val("#containers-containers-filter", "running")
+            b.wait_in_text('#containers-containers .pf-c-empty-state', 'No running containers')
+            b.wait_in_text('#containers-images .pf-c-empty-state', 'No images')
 
     def check_content(self, type, present, not_present):
         b = self.browser
@@ -1739,10 +1775,10 @@ class TestApplication(testlib.MachineCase):
 
         # When being superuser, admin images are also removed
         if auth:
-            b.wait_js_func("ph_count_check", "#containers-images table tbody", 1)
+            self.waitNumImages(1, True)
             checkImage(b, "quay.io/libpod/alpine:latest", "system")
         else:
-            b.wait_js_func("ph_count_check", "#containers-images table tbody", 1)
+            self.waitNumImages(1, False)
             # Two images removed, one in use kept
             b.wait_not_present("#containers-images:contains('quay.io/libpod/busybox:latest')")
             b.wait_not_present("#containers-images:contains('quay.io/cockpit/registry:2')")
@@ -1772,7 +1808,7 @@ class TestApplication(testlib.MachineCase):
         b.click(".pf-c-modal-box button:contains(Prune)")
 
         # System images are left over
-        b.wait_js_func("ph_count_check", "#containers-images table tbody", 3)
+        self.waitNumImages(3, True)
         checkImage(b, "quay.io/libpod/alpine:latest", "system")
         checkImage(b, "quay.io/cockpit/registry:2", "system")
         checkImage(b, "quay.io/libpod/busybox:latest", "system")
@@ -1782,7 +1818,7 @@ class TestApplication(testlib.MachineCase):
         b.click("button:contains(Prune unused images)")
         b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 3)
         b.click(".pf-c-modal-box button:contains(Prune)")
-        b.wait_js_func("ph_count_check", "#containers-images table tbody", 0)
+        self.waitNumImages(0, True)
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
