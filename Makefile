@@ -132,8 +132,15 @@ rpm: $(TARFILE) $(SPEC)
 	rm -r "`pwd`/output" "`pwd`/build"
 
 # build a VM with locally built distro pkgs installed
+# HACK for fedora-coreos: with network as the image does not have our expected containers, and we skip the rpm build/install
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
-	bots/image-customize --verbose --fresh --no-network --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS)
+	if [ "$$TEST_OS" = "fedora-coreos" ]; then \
+	    bots/image-customize --verbose --fresh --run-command 'mkdir -p /usr/local/share/cockpit' \
+	                         --upload dist:/usr/local/share/cockpit/podman \
+	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
+	else \
+	    bots/image-customize --verbose --fresh --no-network --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
+	fi
 
 # convenience target for the above
 vm: $(VM_IMAGE)
