@@ -17,8 +17,6 @@ if grep -q ID.*debian /usr/lib/os-release; then
     systemctl disable tuned
 fi
 
-systemctl enable cockpit.socket
-
 # don't force https:// (self-signed cert)
 printf "[WebService]\\nAllowUnencrypted=true\\n" > /etc/cockpit/cockpit.conf
 
