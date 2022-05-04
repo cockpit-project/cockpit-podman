@@ -39,12 +39,14 @@ code, run, and test it.
 # Automated release
 
 Releases are automated using [Cockpituous release](https://github.com/cockpit-project/cockpituous/tree/main/release)
-which aims to fully automate project releases to GitHub, Fedora, Ubuntu, COPR, Docker
-Hub, and other places. The intention is that the only manual step for releasing
-a project is to create a signed tag for the version number.
+and [Packit](https://packit.dev/) which aim to fully automate project releases
+to GitHub, Fedora, Ubuntu, COPR, Docker Hub, and other places. The intention is
+that the only manual step for releasing a project is to create a signed tag for
+the version number.
 
 The release steps are controlled by the
-[cockpituous-release](./cockpituous-release) script.
+[cockpituous-release](./cockpituous-release) script and the [packit.yaml](./packit.yaml)
+control file.
 
 Pushing the release tag triggers the [release.yml](.github/workflows/release.yml)
 [GitHub action](https://github.com/features/actions) workflow. This uses the
