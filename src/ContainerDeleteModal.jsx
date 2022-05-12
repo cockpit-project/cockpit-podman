@@ -8,6 +8,7 @@ const ContainerDeleteModal = (props) => {
     return (
         <Modal isOpen
                position="top" variant="medium"
+               titleIconVariant="warning"
                onClose={props.handleCancelContainerDeleteModal}
                title={cockpit.format(_("Confirm deletion of $0"), props.containerWillDelete.Names)}
                footer={<>

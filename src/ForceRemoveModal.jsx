@@ -10,6 +10,7 @@ const ForceRemoveModal = (props) => {
         <Modal isOpen
                showClose={false}
                position="top" variant="medium"
+               titleIconVariant="warning"
                onClose={props.handleCancel}
                title={cockpit.format(_("Confirm forced deletion of $0"), props.name)}
                footer={<>
