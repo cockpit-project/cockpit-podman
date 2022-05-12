@@ -66,15 +66,7 @@ export function getContainers(system, id) {
     });
 }
 
-export function getContainerStats(system, callback) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            stream: true,
-        };
-        podmanMonitor("libpod/containers/stats", "GET", options, callback, system)
-                .then(resolve, reject);
-    });
-}
+export const getContainerStats = (system, callback) => podmanMonitor("libpod/containers/stats", "GET", { stream: true }, callback, system);
 
 export function inspectContainer(system, id) {
     return new Promise((resolve, reject) => {
@@ -87,16 +79,7 @@ export function inspectContainer(system, id) {
     });
 }
 
-export function delContainer(system, id, force) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            force: force,
-        };
-        podmanCall("libpod/containers/" + id, "DELETE", options, system)
-                .then(resolve)
-                .catch(reject);
-    });
-}
+export const delContainer = (system, id, force) => podmanCall("libpod/containers/" + id, "DELETE", { force }, system);
 
 export function createContainer(system, config) {
     return new Promise((resolve, reject) => {
@@ -106,40 +89,13 @@ export function createContainer(system, config) {
     });
 }
 
-export function commitContainer(system, commitData) {
-    return new Promise((resolve, reject) => {
-        podmanCall("libpod/commit", "POST", commitData, system)
-                .then(resolve)
-                .catch(reject);
-    });
-}
+export const commitContainer = (system, commitData) => podmanCall("libpod/commit", "POST", commitData, system);
 
-export function postContainer(system, action, id, args) {
-    return new Promise((resolve, reject) => {
-        podmanCall("libpod/containers/" + id + "/" + action, "POST", args, system)
-                .then(resolve)
-                .catch(reject);
-    });
-}
+export const postContainer = (system, action, id, args) => podmanCall("libpod/containers/" + id + "/" + action, "POST", args, system);
 
-export function postPod(system, action, id, args) {
-    return new Promise((resolve, reject) => {
-        podmanCall("libpod/pods/" + id + "/" + action, "POST", args, system)
-                .then(resolve)
-                .catch(reject);
-    });
-}
+export const postPod = (system, action, id, args) => podmanCall("libpod/pods/" + id + "/" + action, "POST", args, system);
 
-export function delPod(system, id, force) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            force: force,
-        };
-        podmanCall("libpod/pods/" + id, "DELETE", options, system)
-                .then(resolve)
-                .catch(reject);
-    });
-}
+export const delPod = (system, id, force) => podmanCall("libpod/pods/" + id, "DELETE", { force }, system);
 
 export function execContainer(system, id) {
     const args = {
@@ -167,11 +123,7 @@ export function resizeContainersTTY(system, id, exec, width, height) {
     if (!exec)
         point = "exec/";
 
-    return new Promise((resolve, reject) => {
-        podmanCall("libpod/" + point + id + "/resize", "POST", args, system)
-                .then(resolve)
-                .catch(reject);
-    });
+    return podmanCall("libpod/" + point + id + "/resize", "POST", args, system);
 }
 
 function parseImageInfo(info) {
@@ -240,17 +192,7 @@ export function delImage(system, id, force) {
     });
 }
 
-export function untagImage(system, id, repo, tag) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            repo: repo,
-            tag: tag
-        };
-        podmanCall("libpod/images/" + id + "/untag", "POST", options, system)
-                .then(resolve)
-                .catch(reject);
-    });
-}
+export const untagImage = (system, id, repo, tag) => podmanCall("libpod/images/" + id + "/untag", "POST", { repo, tag }, system);
 
 export function pullImage(system, reference) {
     return new Promise((resolve, reject) => {
@@ -282,6 +224,4 @@ export function pruneUnusedImages(system) {
     });
 }
 
-export function imageExists(system, id) {
-    return podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
-}
+export const imageExists = (system, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
