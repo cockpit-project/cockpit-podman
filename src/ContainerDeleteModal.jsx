@@ -9,7 +9,7 @@ const ContainerDeleteModal = (props) => {
         <Modal isOpen
                position="top" variant="medium"
                onClose={props.handleCancelContainerDeleteModal}
-               title={cockpit.format(_("Please confirm deletion of $0"), props.containerWillDelete.Names)}
+               title={cockpit.format(_("Confirm deletion of $0"), props.containerWillDelete.Names)}
                footer={<>
                    <Button variant="danger" className="btn-ctr-delete" onClick={props.handleRemoveContainer}>{_("Delete")}</Button>{' '}
                    <Button variant="link" onClick={props.handleCancelContainerDeleteModal}>{_("Cancel")}</Button>

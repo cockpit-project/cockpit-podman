@@ -167,7 +167,7 @@ export class PodActions extends React.Component {
                           dropdownItems={dropdownItems} />
                 {(this.state.deleteModalOpen || this.state.forceDeleteModalOpen) && <Modal isOpen
                     position="top" variant="medium"
-                    title={this.state.forceDeleteModalOpen ? cockpit.format(_("Please confirm force deletion of pod $0"), pod.Name) : cockpit.format(_("Please confirm deletion of pod $0"), pod.Name)}
+                    title={this.state.forceDeleteModalOpen ? cockpit.format(_("Confirm force deletion of pod $0"), pod.Name) : cockpit.format(_("Confirm deletion of pod $0"), pod.Name)}
                     onClose={() => this.setState({ deleteModalOpen: false, forceDeleteModalOpen: false, deleteError: false })}
                     footer={<>
                         <Button variant="danger" onClick={() => this.handlePodDelete(this.state.forceDeleteModalOpen)}>{this.state.forceDeleteModalOpen ? _("Force delete") : _("Delete")}</Button>{' '}

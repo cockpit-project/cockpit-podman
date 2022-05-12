@@ -173,12 +173,12 @@ export class ImageSearchModal extends React.Component {
 
                 {this.state.searchInProgress && <EmptyStatePanel loading title={_("Searching...")} /> }
 
-                {((!this.state.searchInProgress && !this.state.searchFinished) || this.state.imageIdentifier == "") && <EmptyStatePanel title={_("No images found")} paragraph={_("Please start typing to look for images.")} /> }
+                {((!this.state.searchInProgress && !this.state.searchFinished) || this.state.imageIdentifier == "") && <EmptyStatePanel title={_("No images found")} paragraph={_("Start typing to look for images.")} /> }
 
                 {this.state.searchFinished && this.state.imageIdentifier !== '' && <>
                     {this.state.imageList.length == 0 && <EmptyStatePanel icon={ExclamationCircleIcon}
                                                                           title={cockpit.format(_("No results for $0"), this.state.imageIdentifier)}
-                                                                          paragraph={_("Please retry another term.")}
+                                                                          paragraph={_("Retry another term.")}
                     />}
                     {this.state.imageList.length > 0 &&
                     <DataList isCompact
