@@ -3,15 +3,7 @@ upstream_package_name: cockpit-podman
 downstream_package_name: cockpit-podman
 actions:
   post-upstream-clone: make cockpit-podman.spec
-  # build in development mode; production mode uses too much memory for limited
-  # sandcastle containers; also reduce memory consumption of webpack
-  # https://github.com/packit/sandcastle/pull/92
-  # https://medium.com/the-node-js-collection/node-js-memory-management-in-container-environments-7eb8409a74e8
-  create-archive:
-    - make NODE_ENV=development NODE_OPTIONS=--max-old-space-size=500
-    # dummy LICENSE.txt, as terser did not run
-    - touch dist/index.js.LICENSE.txt.gz
-    - make dist
+  create-archive: make dist
 srpm_build_deps:
   - make
   - npm
