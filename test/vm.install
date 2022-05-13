@@ -25,11 +25,22 @@ if type firewall-cmd >/dev/null 2>&1; then
 fi
 
 . /usr/lib/os-release
-# grab a few images to play with; tests run offline, so they cannot download images
+# Remove extra images for containers tests
 if [ "$ID" = "fedora" ]; then
-    # Remove extra images for containers tests
-    podman rmi localhost/cockpit/base
-    podman rmi registry.fedoraproject.org/fedora:"$VERSION_ID"
+    if [ "${VARIANT_ID:-}" = "coreos" ]; then
+        podman rmi quay.io/jitesoft/nginx:latest
+    else
+        podman rmi localhost/cockpit/base
+        podman rmi registry.fedoraproject.org/fedora:"$VERSION_ID"
+    fi
+fi
+
+# grab a few images to play with; tests run offline, so they cannot download images
+# FIXME: put these images onto fedora-coreos image, and enable image-customize --no-network
+if [ "${VARIANT_ID:-}" = "coreos" ]; then
+    for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
+        podman pull $img
+    done
 fi
 
 # copy images for user podman tests; podman insists on user session
