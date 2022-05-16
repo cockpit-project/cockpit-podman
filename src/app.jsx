@@ -65,12 +65,14 @@ class Application extends React.Component {
             podmanRestartAvailable: false,
             currentUser: _("User"),
             privileged: false,
+            location: {},
         };
         this.onAddNotification = this.onAddNotification.bind(this);
         this.updateState = this.updateState.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
+        this.onContainerFilterChanged = this.onContainerFilterChanged.bind(this);
         this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
         this.updateContainerStats = this.updateContainerStats.bind(this);
@@ -79,6 +81,7 @@ class Application extends React.Component {
         this.handleImageEvent = this.handleImageEvent.bind(this);
         this.handleContainerEvent = this.handleContainerEvent.bind(this);
         this.checkUserService = this.checkUserService.bind(this);
+        this.onNavigate = this.onNavigate.bind(this);
     }
 
     onAddNotification(notification) {
@@ -102,16 +105,50 @@ class Application extends React.Component {
         }
     }
 
+    updateUrl(options) {
+        cockpit.location.go([], options);
+    }
+
     onFilterChanged(value) {
         this.setState({
             textFilter: value
         });
+
+        const options = this.state.location;
+        if (value === "") {
+            delete options.name;
+            this.updateUrl(Object.assign(options));
+        } else {
+            this.updateUrl(Object.assign(this.state.location, { name: value }));
+        }
     }
 
     onOwnerChanged(value) {
         this.setState({
             ownerFilter: value
         });
+
+        const options = this.state.location;
+        if (value == "all") {
+            delete options.owner;
+            this.updateUrl(Object.assign(options));
+        } else {
+            this.updateUrl(Object.assign(options, { owner: value }));
+        }
+    }
+
+    onContainerFilterChanged(value) {
+        this.setState({
+            containersFilter: value
+        });
+
+        const options = this.state.location;
+        if (value == "running") {
+            delete options.container;
+            this.updateUrl(Object.assign(options));
+        } else {
+            this.updateUrl(Object.assign(options, { container: value }));
+        }
     }
 
     updateState(state, id, newValue) {
@@ -512,6 +549,32 @@ class Application extends React.Component {
         cockpit.user().then(user => {
             this.setState({ currentUser: user.name || _("User") });
         });
+
+        cockpit.addEventListener("locationchanged", this.onNavigate);
+        this.onNavigate();
+    }
+
+    componentWillUnmount() {
+        cockpit.removeEventListener("locationchanged", this.onNavigate);
+    }
+
+    onNavigate() {
+        // HACK: Use usePageLocation when this is rewritten into a functional component
+        const { options, path } = cockpit.location;
+        this.setState({ location: options });
+        // only use the root path
+        if (path.length === 0) {
+            if (options.name) {
+                this.onFilterChanged(options.name);
+            }
+            if (options.container) {
+                this.onContainerFilterChanged(options.container);
+            }
+            const owners = ["user", "system", "all"];
+            if (owners.indexOf(options.owner) !== -1) {
+                this.onOwnerChanged(options.owner);
+            }
+        }
     }
 
     checkUserService() {
@@ -663,7 +726,7 @@ class Application extends React.Component {
                 containersStats={this.state.containersStats}
                 containersDetails={this.state.containersDetails}
                 filter={this.state.containersFilter}
-                handleFilterChange={ value => this.setState({ containersFilter: value }) }
+                handleFilterChange={this.onContainerFilterChanged}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
                 user={this.state.currentUser}
@@ -697,8 +760,10 @@ class Application extends React.Component {
                 <PageSection className="content-filter" padding={{ default: 'noPadding' }}
                              variant={PageSectionVariants.light}>
                     <ContainerHeader
-                        onFilterChanged={this.onFilterChanged}
-                        onOwnerChanged={this.onOwnerChanged}
+                        handleFilterChanged={this.onFilterChanged}
+                        handleOwnerChanged={this.onOwnerChanged}
+                        ownerFilter={this.state.ownerFilter}
+                        textFilter={this.state.textFilter}
                         twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
                         user={this.state.currentUser}
                     />

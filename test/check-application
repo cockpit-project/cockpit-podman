@@ -445,17 +445,29 @@ class TestApplication(testlib.MachineCase):
             self.waitNumImages(6, True)
             self.waitNumContainers(2, True)
 
+            def verify_system():
+                self.waitNumImages(3, True)
+                b.wait_in_text("#containers-images", "system")
+                self.waitNumContainers(1, True)
+                b.wait_in_text("#containers-containers", "system")
+
             b.set_val("#containers-containers-owner", "system")
-            self.waitNumImages(3, True)
-            b.wait_in_text("#containers-images", "system")
-            self.waitNumContainers(1, True)
-            b.wait_in_text("#containers-containers", "system")
+            verify_system()
+            b.set_val("#containers-containers-owner", "all")
+            b.go("#/?owner=system")
+            verify_system()
+
+            def verify_user():
+                self.waitNumImages(3, False)
+                b.wait_in_text("#containers-images", "admin")
+                self.waitNumContainers(1, False)
+                b.wait_in_text("#containers-containers", "admin")
 
             b.set_val("#containers-containers-owner", "user")
-            self.waitNumImages(3, False)
-            b.wait_in_text("#containers-images", "admin")
-            self.waitNumContainers(1, False)
-            b.wait_in_text("#containers-containers", "admin")
+            verify_user()
+            b.set_val("#containers-containers-owner", "all")
+            b.go("#/?owner=user")
+            verify_user()
 
             b.set_val("#containers-containers-owner", "all")
             self.waitNumImages(6, True)
@@ -488,7 +500,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-containers", "alpine:latest")
 
         # show all containers and check status
-        self.filter_containers('all')
+        b.go("#/?container=all")
 
         # exited alpine under everything list
         b.wait_visible("#containers-containers")
@@ -1634,18 +1646,26 @@ class TestApplication(testlib.MachineCase):
         self.waitContainer(sha, auth, state=NOT_RUNNING)
         b.click('#containers-containers tr:contains("busybox-without-publish")')
 
+        b.go("#/?name=tty")
+        self.check_containers(["busybox-with-tty"], ["busybox-without-publish"])
+        b.go("#/?name=busy")
+        self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
+
         b.set_input_text('#containers-filter', 'tty')
         self.check_containers(["busybox-with-tty"], ["busybox-without-publish"])
         self.check_images([], ["busybox:latest", "alpine:latest", "registry:2"])
         b.set_input_text('#containers-filter', 'busy')
+        b.wait_js_cond('window.location.hash === "#/?name=busy"')
         self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
         self.check_images(["busybox:latest"], ["alpine:latest", "registry:2"])
         b.set_input_text('#containers-filter', 'alpine')
+        b.wait_js_cond('window.location.hash === "#/?name=alpine"')
         self.check_containers([], ["busybox-with-tty", "busybox-without-publish"])
         self.check_images(["alpine:latest"], ["busybox:latest", "registry:2"])
         b.set_input_text('#containers-filter', '')
         self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
         self.check_images(["busybox:latest", "alpine:latest", "registry:2"], [])
+        b.wait_js_cond('window.location.hash === "#/"')
 
         b.set_val("#containers-containers-filter", "all")
         self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
