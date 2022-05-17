@@ -48,17 +48,6 @@ export function format_memory_and_limit(usage, limit) {
     }
 }
 
-export function getCommitArr(arr, cmd) {
-    const ret = [];
-    if (cmd === "ONBUILD") {
-        for (let i = 0; i < arr.length; i++) {
-            const temp = "ONBUILD=" + arr[i];
-            ret.push(temp);
-        }
-    }
-    return ret;
-}
-
 /*
  * The functions quote_cmdline and unquote_cmdline implement
  * a simple shell-like quoting syntax.  They are used when letting the
@@ -146,29 +135,6 @@ export function unquote_cmdline(text) {
     }
 
     return words;
-}
-
-/*
- * Return 1 if first argument is newer version, 0 if they are equal and -1 otherwise.
- * Both arguments are required to be strings, in form `\d(\.\d)*`.
- * Taken from cockpit `pkg/storaged/utils.js`.
- */
-export function compare_versions(a, b) {
-    function to_ints(str) {
-        return str.split(".").map(function (s) { return s ? parseInt(s, 10) : 0 });
-    }
-
-    const a_ints = to_ints(a);
-    const b_ints = to_ints(b);
-    const len = Math.min(a_ints.length, b_ints.length);
-
-    for (let i = 0; i < len; i++) {
-        if (a_ints[i] == b_ints[i])
-            continue;
-        return a_ints[i] - b_ints[i];
-    }
-
-    return a_ints.length - b_ints.length;
 }
 
 export function image_name(image) {
