@@ -133,6 +133,7 @@ rpm: $(TARFILE) $(SPEC)
 
 # build a VM with locally built distro pkgs installed
 # HACK for fedora-coreos: with network as the image does not have our expected containers, and we skip the rpm build/install
+# HACK for rhel-8-7: https://bugzilla.redhat.com/show_bug.cgi?id=2086757
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	if [ "$$TEST_OS" = "fedora-coreos" ]; then \
 	    bots/image-customize --verbose --fresh --run-command 'mkdir -p /usr/local/share/cockpit' \
@@ -140,6 +141,9 @@ $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packagin
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	else \
 	    bots/image-customize --verbose --fresh --no-network --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
+	fi
+	if [ "$$TEST_OS" = "rhel-8-7" ]; then \
+	    bots/image-customize --verbose --install containernetworking-cni $$TEST_OS; \
 	fi
 
 # convenience target for the above
