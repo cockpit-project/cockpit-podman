@@ -144,7 +144,7 @@ class ContainerCommitModal extends React.Component {
                    showClose={false}
                    position="top" variant="medium"
                    title={_("Commit container")}
-                   description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{this.props.container.Names}</b>)}
+                   description={fmt_to_fragments(_("Create a new image based on the state of the $0 container."), <b>{this.props.container.Names}</b>)}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} onDismiss={() => this.setState({ dialogError: undefined })} />}
                        <Button variant="primary"
