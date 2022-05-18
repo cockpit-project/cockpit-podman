@@ -354,8 +354,14 @@ class TestApplication(testlib.MachineCase):
         # Checking images is harder but if there would be more than one this would fail
         b.wait_visible("#containers-images:contains('quay.io/cockpit/registry:2')")
 
-        # Test that when root is logged in we don't present "user" and "system"
         b.logout()
+
+        if self.machine.ostree_image:
+            self.write_file("/etc/ssh/sshd_config.d/99-root-password.conf", "PermitRootLogin yes",
+                            "systemctl try-restart sshd")
+            self.machine.execute("systemctl try-restart sshd")
+
+        # Test that when root is logged in we don't present "user" and "system"
         self.login_and_go("/podman", user="root")
         b.wait_visible("#app")
 
