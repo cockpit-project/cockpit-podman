@@ -769,7 +769,7 @@ class Application extends React.Component {
                         user={this.state.currentUser}
                     />
                 </PageSection>
-                <PageSection>
+                <PageSection className='ct-pagesection-mobile'>
                     <Stack hasGutter>
                         { this.state.showStartService ? startService : null }
                         {imageList}
