@@ -126,11 +126,11 @@ rpm: $(TARFILE) $(SPEC)
 	rm -r "`pwd`/output" "`pwd`/build"
 
 # build a VM with locally built distro pkgs installed
-# HACK for fedora-coreos: with network as the image does not have our expected containers, and we skip the rpm build/install
+# HACK for fedora-coreos: skip the rpm build/install
 # HACK for rhel-8-7: https://bugzilla.redhat.com/show_bug.cgi?id=2086757
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	if [ "$$TEST_OS" = "fedora-coreos" ]; then \
-	    bots/image-customize --verbose --fresh --run-command 'mkdir -p /usr/local/share/cockpit' \
+	    bots/image-customize --verbose --fresh --no-network --run-command 'mkdir -p /usr/local/share/cockpit' \
 	                         --upload dist:/usr/local/share/cockpit/podman \
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	else \
