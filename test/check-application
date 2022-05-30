@@ -1451,7 +1451,7 @@ class TestApplication(testlib.MachineCase):
         if auth and m.image not in DISTROS_WITHOUT_PODMAN_RESTART:
             # Set restart policy to 3 retries
             b.set_val("#run-image-dialog-restart-policy", "on-failure")
-            b.set_input_text('#run-image-dialog-restart-retries', '3')
+            b.set_input_text('#run-image-dialog-restart-retries input', '3')
         else:
             b.wait_not_present("#run-image-dialog-restart-policy")
 
