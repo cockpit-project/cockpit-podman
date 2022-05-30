@@ -1626,7 +1626,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#run-image-dialog-name", "busybox-without-publish")
 
         # Set up command line
-        b.set_input_text('#run-image-dialog-command', '/bin/sh -c "sleep 1000m"')
+        b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do echo $i; sleep 3; done; sleep infinity'")
 
         # Run without tty, console should be able to `exec`
         b.set_checked("#run-image-dialog-tty", False)
@@ -1660,8 +1660,17 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("busybox-without-publish", "Start")
         self.waitContainer(sha, auth, state='Running')
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+
+        # Check that logs reconnect when container starts
+        b.click(".pf-m-expanded button:contains('Logs')")
+        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "2")
         self.performContainerAction("busybox-without-publish", "Stop")
         self.waitContainer(sha, auth, state=NOT_RUNNING)
+        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected")
+        self.performContainerAction("busybox-without-publish", "Start")
+        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected1")
+
+        self.performContainerAction("busybox-without-publish", "Stop")
         b.click('#containers-containers tr:contains("busybox-without-publish")')
 
         b.go("#/?name=tty")
@@ -1708,7 +1717,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_val("#containers-containers-filter", "all")
         b.wait_in_text("#containers-containers", "busybox-without-publish")
         # auto-expands container details
-        b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details-basic", "sleep 1000m")
+        b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details-basic", "sleep infinity")
 
         b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
         b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') td[data-label='Used by']", 'unused')
