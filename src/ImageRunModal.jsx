@@ -387,8 +387,8 @@ export class ImageRunModal extends React.Component {
             resourceLimit.memory = { limit: memorySize };
             createConfig.resource_limits = resourceLimit;
         }
-        if (this.state.cpuSharesConfigure && this.state.cpuShares !== 0) {
-            resourceLimit.cpu = { shares: this.state.cpuShares };
+        if (this.state.cpuSharesConfigure && parseInt(this.state.cpuShares) !== 0) {
+            resourceLimit.cpu = { shares: parseInt(this.state.cpuShares) };
             createConfig.resource_limits = resourceLimit;
         }
         createConfig.terminal = this.state.hasTTY;
@@ -543,11 +543,11 @@ export class ImageRunModal extends React.Component {
     }
 
     onPlusOne(key) {
-        this.setState(state => ({ [key]: state[key] + 1 }));
+        this.setState(state => ({ [key]: parseInt(state[key]) + 1 }));
     }
 
     onMinusOne(key) {
-        this.setState(state => ({ [key]: state[key] - 1 }));
+        this.setState(state => ({ [key]: parseInt(state[key]) - 1 }));
     }
 
     handleTabClick = (event, tabIndex) => {
@@ -935,15 +935,17 @@ export class ImageRunModal extends React.Component {
                                 <Checkbox id="run-image-dialog-memory-limit-checkbox"
                                   isChecked={this.state.memoryConfigure}
                                   onChange={checked => this.onValueChanged('memoryConfigure', checked)} />
-                                <TextInput type='number'
+                                <NumberInput
                                    value={dialogValues.memory}
                                    id="run-image-dialog-memory"
-                                   className="dialog-run-form-input"
-                                   step={1}
                                    min={0}
-                                   isReadOnly={!this.state.memoryConfigure}
+                                   isDisabled={!this.state.memoryConfigure}
                                    onClick={() => !this.state.memoryConfigure && this.onValueChanged('memoryConfigure', true)}
-                                   onChange={value => this.onValueChanged('memory', value)} />
+                                   onPlus={() => this.onPlusOne('memory')}
+                                   onMinus={() => this.onMinusOne('memory')}
+                                   minusBtnAriaLabel={_("Decrease memory")}
+                                   plusBtnAriaLabel={_("Increase memory")}
+                                   onChange={ev => this.onValueChanged('memory', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                                 <FormSelect id='memory-unit-select'
                                     aria-label={_("Memory unit")}
                                     value={this.state.memoryUnit}
@@ -974,15 +976,18 @@ export class ImageRunModal extends React.Component {
                                     <Checkbox id="run-image-dialog-cpu-priority-checkbox"
                                         isChecked={this.state.cpuSharesConfigure}
                                         onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
-                                    <TextInput type='number'
+                                    <NumberInput
                                         id="run-image-cpu-priority"
                                         value={dialogValues.cpuShares}
                                         onClick={() => !this.state.cpuSharesConfigure && this.onValueChanged('cpuSharesConfigure', true)}
-                                        step={1}
                                         min={2}
                                         max={262144}
-                                        isReadOnly={!this.state.cpuSharesConfigure}
-                                        onChange={value => this.onValueChanged('cpuShares', parseInt(value))} />
+                                        isDisabled={!this.state.cpuSharesConfigure}
+                                        onPlus={() => this.onPlusOne('cpuShares')}
+                                        onMinus={() => this.onMinusOne('cpuShares')}
+                                        minusBtnAriaLabel={_("Decrease CPU shares")}
+                                        plusBtnAriaLabel={_("Increase CPU shares")}
+                                        onChange={ev => this.onValueChanged('cpuShares', parseInt(ev.target.value) < 2 ? 2 : ev.target.value)} />
                                 </Flex>
                             </FormGroup>
                         }
@@ -1013,15 +1018,17 @@ export class ImageRunModal extends React.Component {
                             {dialogValues.restartPolicy === "on-failure" &&
                                 <FormGroup fieldId='run-image-dialog-restart-retries'
                                   label={_("Maximum retries")}>
-                                    <TextInput
-                              type="number"
+                                    <NumberInput
                               id="run-image-dialog-restart-retries"
-                              className="run-image-dialog-restart-retries"
                               value={dialogValues.restartTries}
-                              step={1}
                               min={1}
                               max={65535}
-                              onChange={value => this.onValueChanged('restartTries', value)}
+                              widthChars={5}
+                              minusBtnAriaLabel={_("Decrease maximum retries")}
+                              plusBtnAriaLabel={_("Increase maximum retries")}
+                              onMinus={() => this.onMinusOne('restartTries')}
+                              onPlus={() => this.onPlusOne('restartTries')}
+                              onChange={ev => this.onValueChanged('restartTries', parseInt(ev.target.value) < 1 ? 1 : ev.target.value)}
                                     />
                                 </FormGroup>
                             }
@@ -1083,11 +1090,11 @@ export class ImageRunModal extends React.Component {
                                         min={0}
                                         max={262144}
                                         widthChars={6}
-                                        minutBtnAriaLabel={_("Decrease interval by one")}
-                                        plusBtnAriaLabel={_("Increase interval by one")}
+                                        minusBtnAriaLabel={_("Decrease interval")}
+                                        plusBtnAriaLabel={_("Increase interval")}
                                         onMinus={() => this.onMinusOne('healthcheck_interval')}
                                         onPlus={() => this.onPlusOne('healthcheck_interval')}
-                                        onChange={ev => this.onValueChanged('healthcheck_interval', parseInt(ev.target.value))} />
+                                        onChange={ev => this.onValueChanged('healthcheck_interval', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                                 <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
                             </InputGroup>
                         </FormGroup>
@@ -1108,11 +1115,11 @@ export class ImageRunModal extends React.Component {
                                         min={0}
                                         max={262144}
                                         widthChars={6}
-                                        minutBtnAriaLabel={_("Decrease timeout by one")}
-                                        plusBtnAriaLabel={_("Increase timeout by one")}
+                                        minusBtnAriaLabel={_("Decrease timeout")}
+                                        plusBtnAriaLabel={_("Increase timeout")}
                                         onMinus={() => this.onMinusOne('healthcheck_timeout')}
                                         onPlus={() => this.onPlusOne('healthcheck_timeout')}
-                                        onChange={ev => this.onValueChanged('healthcheck_timeout', parseInt(ev.target.value))} />
+                                        onChange={ev => this.onValueChanged('healthcheck_timeout', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                                 <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
                             </InputGroup>
                         </FormGroup>
@@ -1133,11 +1140,11 @@ export class ImageRunModal extends React.Component {
                                         min={0}
                                         max={262144}
                                         widthChars={6}
-                                        minutBtnAriaLabel={_("Decrease start period by one")}
-                                        plusBtnAriaLabel={_("Increase start period by one")}
+                                        minusBtnAriaLabel={_("Decrease start period")}
+                                        plusBtnAriaLabel={_("Increase start period")}
                                         onMinus={() => this.onMinusOne('healthcheck_start_period')}
                                         onPlus={() => this.onPlusOne('healthcheck_start_period')}
-                                        onChange={ev => this.onValueChanged('healthcheck_start_period', parseInt(ev.target.value))} />
+                                        onChange={ev => this.onValueChanged('healthcheck_start_period', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                                 <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
                             </InputGroup>
                         </FormGroup>
@@ -1157,11 +1164,11 @@ export class ImageRunModal extends React.Component {
                                     min={0}
                                     max={999}
                                     widthChars={3}
-                                    minutBtnAriaLabel={_("Decrease retries by one")}
-                                    plusBtnAriaLabel={_("Increase retries by one")}
+                                    minusBtnAriaLabel={_("Decrease retries")}
+                                    plusBtnAriaLabel={_("Increase retries")}
                                     onMinus={() => this.onMinusOne('healthcheck_retries')}
                                     onPlus={() => this.onPlusOne('healthcheck_retries')}
-                                    onChange={ev => this.onValueChanged('healthcheck_retries', parseInt(ev.target.value))} />
+                                    onChange={ev => this.onValueChanged('healthcheck_retries', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                         </FormGroup>
                     </Tab>
                 </Tabs>
