@@ -68,6 +68,9 @@ class ContainerLogs extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        // Connect channel when there is none and container started
+        if (!this.state.streamer && this.props.containerStatus === "running" && prevProps.containerStatus !== "running")
+            this.connectStream();
         if (prevProps.width !== this.props.width) {
             this.resize(this.props.width);
         }
