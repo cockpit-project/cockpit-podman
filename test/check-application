@@ -647,18 +647,15 @@ class TestApplication(testlib.MachineCase):
             b.wait_collected_text("#containers-containers .container-name", "abc")
 
         # Test intermediate images
-        # fedora-coreos contains intermediate image already
-        if not auth or self.machine.image != "fedora-coreos":
-            b.wait_not_present(".listing-action")
-            tmpdir = self.execute(auth, "mktemp -d").strip()
-            self.execute(auth, f"echo 'FROM quay.io/cockpit/registry:2\nRUN ls' > {tmpdir}/Dockerfile")
-            self.execute(auth, f"podman build {tmpdir}")
-            b.wait_not_in_text("#containers-images", "<none>:<none>")
+        b.wait_not_present(".listing-action")
+        tmpdir = self.execute(auth, "mktemp -d").strip()
+        self.execute(auth, f"echo 'FROM quay.io/cockpit/registry:2\nRUN ls' > {tmpdir}/Dockerfile")
+        self.execute(auth, f"podman build {tmpdir}")
 
+        b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
         b.wait_in_text("#containers-images", "<none>:<none>")
-        if not auth or self.machine.image != "fedora-coreos":
-            b.wait_in_text("#containers-images tbody:last-child td[data-label=Created]", "today at")
+        b.wait_in_text("#containers-images tbody:last-child td[data-label=Created]", "today at")
 
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
@@ -733,7 +730,7 @@ class TestApplication(testlib.MachineCase):
             if auth:
                 expected += 3
                 if self.machine.ostree_image:
-                    expected += 2  # cockpit/ws + intermediate one
+                    expected += 1  # cockpit/ws
 
             b.wait_in_text("#containers-images", f"{expected} images")
 
@@ -1809,10 +1806,7 @@ class TestApplication(testlib.MachineCase):
         b.click("button:contains(Prune unused images)")
 
         if auth:
-            if self.machine.image == "fedora-coreos":
-                b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 6)
-            else:
-                b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 5)
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 5)
         else:
             b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 2)
         b.click(".pf-c-modal-box button:contains(Prune)")
@@ -1846,10 +1840,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(".pf-c-modal-box button:contains(Prune):disabled")
 
         # Admin / user images are selected
-        if self.machine.image == "fedora-coreos":
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 7)
-        else:
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 6)
+        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 6)
         # Select user images
         b.click("#deleteUserImages")
         b.click(".pf-c-modal-box button:contains(Prune)")
@@ -1863,10 +1854,7 @@ class TestApplication(testlib.MachineCase):
         # Pruning again, should delete all system images
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
-        if self.machine.image == "fedora-coreos":
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 4)
-        else:
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 3)
+        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 3)
         b.click(".pf-c-modal-box button:contains(Prune)")
         self.waitNumImages(0, True)
 
