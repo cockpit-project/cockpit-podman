@@ -304,6 +304,10 @@ export class ImageRunModal extends React.Component {
             selectedImage = utils.image_name(this.props.image);
         }
 
+        let default_owner = this.props.systemServiceAvailable ? systemOwner : this.props.user;
+        if (this.props.pod)
+            default_owner = this.props.pod.isSystem ? systemOwner : this.props.user;
+
         this.state = {
             command,
             containerName: dockerNames.getRandomName(),
@@ -322,7 +326,7 @@ export class ImageRunModal extends React.Component {
             restartTries: 5,
             pullLatestImage: false,
             activeTabKey: 0,
-            owner: this.props.systemServiceAvailable ? systemOwner : this.props.user,
+            owner: default_owner,
             /* image select */
             selectedImage,
             searchFinished: false,
@@ -852,10 +856,12 @@ export class ImageRunModal extends React.Component {
                                    label={_("System")}
                                    id="run-image-dialog-owner-system"
                                    isChecked={owner === "system"}
+                                   isDisabled={this.props.pod}
                                    onChange={this.handleOwnerSelect} />
                             <Radio value={this.props.user}
                                    label={cockpit.format("$0 $1", _("User:"), this.props.user)}
                                    id="run-image-dialog-owner-user"
+                                   isDisabled={this.props.pod}
                                    isChecked={owner === this.props.user}
                                    onChange={this.handleOwnerSelect} />
                         </FormGroup>
