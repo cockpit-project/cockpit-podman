@@ -1,12 +1,29 @@
+upstream_project_url: https://github.com/cockpit-project/cockpit-podman
 specfile_path: cockpit-podman.spec
 upstream_package_name: cockpit-podman
 downstream_package_name: cockpit-podman
+# use the nicely formatted release description from our upstream release, instead of git shortlog
+copy_upstream_release_description: true
+
 actions:
-  post-upstream-clone: make cockpit-podman.spec
+  post-upstream-clone:
+    - make cockpit-podman.spec
+    # HACK: until FMF uses tests from dist-git source tarball: https://github.com/teemtee/tmt/issues/585
+    - sh -exc 'mkdir -p tmp; curl --silent --fail https://src.fedoraproject.org/rpms/cockpit-podman/raw/rawhide/f/plans/upstream.fmf | sed -r "/ref:/ s/[0-9.]+/$(git describe --abbrev=0)/" > tmp/upstream.fmf'
+
   create-archive: make dist
+
+# HACK: packit.yml and spec get synced by default; drop this when the plans/upstream.fmf HACK above gets dropped
+files_to_sync:
+  - packit.yaml
+  - cockpit-podman.spec
+  - src: tmp/upstream.fmf
+    dest: plans/upstream.fmf
+
 srpm_build_deps:
   - make
   - npm
+
 jobs:
   - job: tests
     trigger: pull_request
@@ -36,3 +53,27 @@ jobs:
       create-archive:
         - sh -exc "curl -L -O https://github.com/cockpit-project/cockpit-podman/releases/download/${PACKIT_PROJECT_VERSION}/${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
         - sh -exc "ls ${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
+
+  - job: propose_downstream
+    trigger: release
+    metadata:
+      dist_git_branches:
+        - fedora-development
+        - fedora-35
+        - fedora-36
+
+  - job: koji_build
+    trigger: commit
+    metadata:
+      dist_git_branches:
+        - fedora-development
+        - fedora-35
+        - fedora-36
+
+  - job: bodhi_update
+    trigger: commit
+    metadata:
+      dist_git_branches:
+        # rawhide updates are created automatically
+        - fedora-35
+        - fedora-36
