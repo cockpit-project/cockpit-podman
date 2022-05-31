@@ -11,8 +11,6 @@ NODE_CACHE=cockpit-$(PACKAGE_NAME)-node-$(VERSION).tar.xz
 SPEC=$(RPM_NAME).spec
 APPSTREAMFILE=org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
-# stamp file to check if/when npm install ran
-NODE_MODULES_TEST=package-lock.json
 # one example file in dist/ from webpack to check if that already ran
 WEBPACK_TEST=dist/manifest.json
 # one example file in pkg/lib to check if it was already checked out
@@ -37,10 +35,10 @@ po/$(PACKAGE_NAME).js.pot:
 		--keyword=gettextCatalog.getString:1,3c --keyword=gettextCatalog.getPlural:2,3,4c \
 		--from-code=UTF-8 $$(find src/ -name '*.js' -o -name '*.jsx')
 
-po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST) $(COCKPIT_REPO_STAMP)
+po/$(PACKAGE_NAME).html.pot: package-lock.json $(COCKPIT_REPO_STAMP)
 	pkg/lib/html2po -o $@ $$(find src -name '*.html')
 
-po/$(PACKAGE_NAME).manifest.pot: $(NODE_MODULES_TEST) $(COCKPIT_REPO_STAMP)
+po/$(PACKAGE_NAME).manifest.pot: package-lock.json $(COCKPIT_REPO_STAMP)
 	pkg/lib/manifest2po src/manifest.json -o $@
 
 po/$(PACKAGE_NAME).metainfo.pot: $(APPSTREAMFILE)
@@ -65,8 +63,8 @@ packaging/arch/PKGBUILD: packaging/arch/PKGBUILD.in
 packaging/debian/changelog: packaging/debian/changelog.in
 	sed 's/VERSION/$(VERSION)/' $< > $@
 
-$(WEBPACK_TEST): $(NODE_MODULES_TEST) $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json webpack.config.js
-	NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack
+$(WEBPACK_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json webpack.config.js
+	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack
 
 watch:
 	NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack --watch
@@ -98,16 +96,9 @@ dist: $(TARFILE)
 # node_modules/ can be reconstructed if necessary)
 $(TARFILE): export NODE_ENV=production
 $(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
-	touch -r package.json $(NODE_MODULES_TEST)
-	touch dist/*
 	tar --xz -cf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
 		--exclude '*.in' --exclude test/reference \
 		$$(git ls-files) pkg/lib/ package-lock.json $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
-
-$(NODE_CACHE): $(NODE_MODULES_TEST)
-	tar --xz -cf $@ node_modules
-
-node-cache: $(NODE_CACHE)
 
 # convenience target for developers
 rpm: $(TARFILE) $(SPEC)
@@ -150,8 +141,8 @@ codecheck:
 	python3 -m pycodestyle --max-line-length=195 $(PYEXEFILES) # TODO: Fix long lines
 
 # run the browser integration tests; skip check for SELinux denials
-check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common test/reference
-	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests ${RUN_TESTS_OPTIONS}
+check: package-lock.json $(VM_IMAGE) test/common test/reference
+	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests $(RUN_TESTS_OPTIONS)
 
 bots: tools/make-bots
 	tools/make-bots
@@ -159,14 +150,13 @@ bots: tools/make-bots
 test/reference: test/common
 	test/common/pixel-tests pull
 
-$(NODE_MODULES_TEST): package.json
-	# if it exists already, npm install won't update it; force that so that we always get up-to-date packages
-	rm -f package-lock.json
-	# unset NODE_ENV, skips devDependencies otherwise
-	env -u NODE_ENV npm install
-	env -u NODE_ENV npm prune
+# We want tools/node-modules to run every time package-lock.json is requested
+# See https://www.gnu.org/software/make/manual/html_node/Force-Targets.html
+FORCE:
+package-lock.json: FORCE tools/node-modules
+	tools/node-modules make_package_lock_json
 
-.PHONY: all clean install devel-install dist node-cache rpm check vm
+.PHONY: all clean install devel-install dist rpm check vm
 
 # checkout common files from Cockpit repository required to build this project;
 # this has no API stability guarantee, so check out a stable tag when you start
@@ -176,6 +166,7 @@ COCKPIT_REPO_FILES = \
 	test/common \
 	tools/git-utils.sh \
 	tools/make-bots \
+	tools/node-modules \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
