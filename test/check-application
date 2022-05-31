@@ -621,7 +621,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, "podman run -d --name test-sh4 alpine sh")
         self.waitContainerRow("test-sh4")
         if auth:
-            b.assert_pixels('#app', "overview")
+            b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"])
         alpine_sel = f"#containers-images tbody tr[data-row-id={images['quay.io/libpod/alpine:latest']}{auth}]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
