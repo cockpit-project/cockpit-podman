@@ -121,11 +121,11 @@ class Images extends React.Component {
 
         const columns = [
             { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
-            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
-            utils.localize_time(image.Created),
-            utils.truncate_id(image.Id),
-            { title: cockpit.format_bytes(image.Size, 1000), props: { modifier: "nowrap" } },
-            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { modifier: "nowrap" } },
+            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
+            { title: utils.localize_time(image.Created), props: { className: "ignore-pixels" } },
+            { title: utils.truncate_id(image.Id), props: { className: "ignore-pixels" } },
+            { title: cockpit.format_bytes(image.Size, 1000), props: { className: "ignore-pixels", modifier: "nowrap" } },
+            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" } },
             {
                 title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable}
                                      registries={this.props.registries} user={this.props.user}
@@ -160,11 +160,11 @@ class Images extends React.Component {
     render() {
         const columnTitles = [
             { title: _("Image"), transforms: [cellWidth(20)] },
-            _("Owner"),
-            _("Created"),
-            _("ID"),
-            _("Disk space"),
-            _("Used by")
+            { title: _("Owner"), props: { className: "ignore-pixels" } },
+            { title: _("Created"), props: { className: "ignore-pixels" } },
+            { title: _("ID"), props: { className: "ignore-pixels" } },
+            { title: _("Disk space"), props: { className: "ignore-pixels" } },
+            { title: _("Used by"), props: { className: "ignore-pixels" } },
         ];
         let emptyCaption = _("No images");
         if (this.props.images === null)
@@ -267,7 +267,7 @@ class Images extends React.Component {
                         <FlexItem grow={{ default: 'grow' }}>
                             <Flex>
                                 <Text className="images-title" component={TextVariants.h3}>{_("Images")}</Text>
-                                <Flex style={{ "row-gap": "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
+                                <Flex className="ignore-pixels" style={{ "row-gap": "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
                         </FlexItem>
                         <FlexItem>
