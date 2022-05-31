@@ -2049,6 +2049,14 @@ class TestApplication(testlib.MachineCase):
         self.waitContainer(container_sha, auth, name=container_name, image='busybox:latest', cmd='sh',
                            state='Running', owner="system" if auth else "admin", pod=podname)
 
+        # Check that we correctly preselect owner
+        if auth:
+            self.execute(False, "podman pod create --infra=false --name=system_pod")
+            b.click("#table-system_pod .create-container-in-pod")
+            b.wait_visible("#run-image-dialog-owner-user:checked")
+            b.wait_visible("#run-image-dialog-owner-user:disabled")
+            b.wait_visible("#run-image-dialog-owner-system:disabled")
+
     def testCreateContainerInPodSystem(self):
         self._testCreateContainerInPod(True)
 
