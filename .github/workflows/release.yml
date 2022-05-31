@@ -5,26 +5,27 @@ on:
       # this is a glob, not a regexp
       - '[0-9]*'
 jobs:
-  cockpituous:
+  source:
     runs-on: ubuntu-latest
-    environment: release
     container:
-      image: ghcr.io/cockpit-project/release
+      image: ghcr.io/cockpit-project/unit-tests
+      options: --user root
+    permissions:
+      # create GitHub release
+      contents: write
     steps:
-      - name: Set up configuration and secrets
-        run: |
-          # override GitHub's bind mount from host, we don't want anything from there and it interferes with ssh
-          export HOME=$(getent passwd $(id -u) | cut -f6 -d:)
+      - name: Clone repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-          echo '${{ secrets.SSH_KNOWN_HOSTS }}' > ~/.ssh/known_hosts
-          echo '${{ secrets.FEDPKG_SSH_PUBLIC }}' > ~/.ssh/id_rsa.pub
-          echo '${{ secrets.FEDPKG_SSH_PRIVATE }}' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo '${{ secrets.GITHUB_TOKEN }}' > ~/.config/github-token
+      - name: Workaround for https://github.com/actions/checkout/pull/697
+        run: git fetch --force origin $(git describe --tags):refs/tags/$(git describe --tags)
 
-      - name: Run cockpituous
-        run: |
-          # override GitHub's bind mount from host, we don't want anything from there and it interferes with ssh
-          export HOME=$(getent passwd $(id -u) | cut -f6 -d:)
-          cd /build
-          release-runner -r https://github.com/$GITHUB_REPOSITORY -t $(basename $GITHUB_REF) ./cockpituous-release
+      - name: Build release
+        run: make dist
+
+      - name: Publish GitHub release
+        uses: cockpit-project/action-release@62db9d9850a1adec300500d84035c4f523fd5290
+        with:
+          filename: "cockpit-podman-${{ github.ref_name }}.tar.xz"
