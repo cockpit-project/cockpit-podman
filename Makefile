@@ -145,7 +145,7 @@ check: package-lock.json $(VM_IMAGE) test/common test/reference
 	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests $(RUN_TESTS_OPTIONS)
 
 bots: tools/make-bots
-	tools/make-bots
+	COCKPIT_BOTS_REF=15f7357c9192c2d60ab069d428933660619f2684 tools/make-bots
 
 test/reference: test/common
 	test/common/pixel-tests pull
