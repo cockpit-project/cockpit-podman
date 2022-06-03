@@ -25,7 +25,7 @@ const render_image_history = (history) => {
             count--,
             { title: utils.localize_time(record.Created), props: { modifier: "nowrap" } },
             { title: cockpit.format_bytes(record.Size, 1000), props: { modifier: "nowrap" } },
-            { title: <span className="ct-code">{record.CreatedBy}</span>, props: { modifier: "breakWord" } },
+            { title: <span className="content-code">{record.CreatedBy}</span>, props: { modifier: "breakWord" } },
         ];
 
         return (
@@ -37,7 +37,7 @@ const render_image_history = (history) => {
 const ImageHistory = ({ image }) => {
     const history = (image && image.History.length !== 0) ? render_image_history(image.History) : null;
     return (
-        <div className='ct-image-history'>
+        <div className='container-image-history'>
             <ListingTable
                 variant='compact'
                 isStickyHeader
