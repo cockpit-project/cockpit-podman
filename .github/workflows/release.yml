@@ -51,6 +51,7 @@ jobs:
           set -eux
           # this is a shared repo, prefix with project name
           TAG="${GITHUB_REPOSITORY#*/}-$(basename $GITHUB_REF)"
+          make tools/node-modules
           tools/node-modules checkout
           cd node_modules
           git tag "$TAG"
