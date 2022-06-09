@@ -20,6 +20,28 @@ PYEXEFILES=$(shell git grep -lI '^#!.*python')
 
 all: $(WEBPACK_TEST)
 
+# checkout common files from Cockpit repository required to build this project;
+# this has no API stability guarantee, so check out a stable tag when you start
+# a new project, use the latest release, and update it from time to time
+COCKPIT_REPO_FILES = \
+	pkg/lib \
+	test/common \
+	tools/git-utils.sh \
+	tools/make-bots \
+	tools/node-modules \
+	$(NULL)
+
+COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
+# 270 + https://github.com/cockpit-project/cockpit/pull/17429
+COCKPIT_REPO_COMMIT = 80483286d5e7bffd1b7583a499e1b7e04d55f1f3
+
+$(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
+COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
+$(COCKPIT_REPO_STAMP): Makefile
+	@git rev-list --quiet --objects $(COCKPIT_REPO_TREE) -- 2>/dev/null || \
+	    git fetch --no-tags --no-write-fetch-head --depth=1 $(COCKPIT_REPO_URL) $(COCKPIT_REPO_COMMIT)
+	git archive $(COCKPIT_REPO_TREE) -- tools/git-utils.sh $(COCKPIT_REPO_FILES) | tar x
+
 #
 # i18n
 #
@@ -98,7 +120,7 @@ $(TARFILE): export NODE_ENV=production
 $(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	tar --xz -cf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
 		--exclude '*.in' --exclude test/reference --exclude node_modules \
-		$$(git ls-files) pkg/lib/ package-lock.json $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
+		$$(git ls-files) $(COCKPIT_REPO_FILES) package-lock.json $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
 
 # convenience target for developers
 rpm: $(TARFILE) $(SPEC)
@@ -157,25 +179,3 @@ package-lock.json: FORCE tools/node-modules
 	tools/node-modules make_package_lock_json
 
 .PHONY: all clean install devel-install dist rpm check vm
-
-# checkout common files from Cockpit repository required to build this project;
-# this has no API stability guarantee, so check out a stable tag when you start
-# a new project, use the latest release, and update it from time to time
-COCKPIT_REPO_FILES = \
-	pkg/lib \
-	test/common \
-	tools/git-utils.sh \
-	tools/make-bots \
-	tools/node-modules \
-	$(NULL)
-
-COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-# 270 + https://github.com/cockpit-project/cockpit/pull/17429
-COCKPIT_REPO_COMMIT = 80483286d5e7bffd1b7583a499e1b7e04d55f1f3
-
-$(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
-COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
-$(COCKPIT_REPO_STAMP): Makefile
-	@git rev-list --quiet --objects $(COCKPIT_REPO_TREE) -- 2>/dev/null || \
-	    git fetch --no-tags --no-write-fetch-head --depth=1 $(COCKPIT_REPO_URL) $(COCKPIT_REPO_COMMIT)
-	git archive $(COCKPIT_REPO_TREE) -- tools/git-utils.sh $(COCKPIT_REPO_FILES) | tar x
