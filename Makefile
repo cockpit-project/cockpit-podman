@@ -97,7 +97,7 @@ dist: $(TARFILE)
 $(TARFILE): export NODE_ENV=production
 $(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	tar --xz -cf $(TARFILE) --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
-		--exclude '*.in' --exclude test/reference \
+		--exclude '*.in' --exclude test/reference --exclude node_modules \
 		$$(git ls-files) pkg/lib/ package-lock.json $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
 
 # convenience target for developers
