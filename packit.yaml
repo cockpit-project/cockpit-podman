@@ -6,19 +6,8 @@ downstream_package_name: cockpit-podman
 copy_upstream_release_description: true
 
 actions:
-  post-upstream-clone:
-    - make cockpit-podman.spec
-    # HACK: until FMF uses tests from dist-git source tarball: https://github.com/teemtee/tmt/issues/585
-    - sh -exc 'mkdir -p tmp; curl --silent --fail https://src.fedoraproject.org/rpms/cockpit-podman/raw/rawhide/f/plans/upstream.fmf | sed -r "/ref:/ s/[0-9.]+/$(git describe --abbrev=0)/" > tmp/upstream.fmf'
-
+  post-upstream-clone: make cockpit-podman.spec
   create-archive: make dist
-
-# HACK: packit.yml and spec get synced by default; drop this when the plans/upstream.fmf HACK above gets dropped
-files_to_sync:
-  - packit.yaml
-  - cockpit-podman.spec
-  - src: tmp/upstream.fmf
-    dest: plans/upstream.fmf
 
 srpm_build_deps:
   - make
