@@ -2,7 +2,7 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
-import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, Flex, List, FlexItem, ListItem } from "@patternfly/react-core";
+import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, Flex, FlexItem } from "@patternfly/react-core";
 
 const _ = cockpit.gettext;
 
@@ -13,35 +13,13 @@ const render_container_state = (container) => {
     return cockpit.format(_("Exited"));
 };
 
-const render_container_published_ports = (ports) => {
-    if (!ports)
-        return null;
-
-    const result = ports.map(port => {
-        // podman v4 has different names than v3
-        const protocol = port.protocol;
-        const host_port = port.hostPort || port.host_port;
-        const container_port = port.containerPort || port.container_port;
-        const host_ip = port.hostIP || port.host_ip || '0.0.0.0';
-        return (
-            <ListItem key={ protocol + host_port + container_port }>
-                { host_ip }:{ host_port } &rarr; { container_port }/{ protocol }
-            </ListItem>
-        );
-    });
-
-    return <List isPlain>{result}</List>;
-};
-
 const ContainerDetails = ({ container, containerDetail }) => {
-    const ports = render_container_published_ports(container.Ports);
     const networkOptions = (
         containerDetail &&
         [
             containerDetail.NetworkSettings.IPAddress,
             containerDetail.NetworkSettings.Gateway,
             containerDetail.NetworkSettings.MacAddress,
-            ports
         ].some(itm => !!itm)
     );
 
@@ -65,10 +43,6 @@ const ContainerDetails = ({ container, containerDetail }) => {
             </FlexItem>
             <FlexItem>
                 {networkOptions && <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
-                    {ports && <DescriptionListGroup>
-                        <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
-                        <DescriptionListDescription>{ports}</DescriptionListDescription>
-                    </DescriptionListGroup>}
                     {containerDetail && containerDetail.NetworkSettings.IPAddress && <DescriptionListGroup>
                         <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
                         <DescriptionListDescription>{containerDetail.NetworkSettings.IPAddress}</DescriptionListDescription>

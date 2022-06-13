@@ -17,6 +17,7 @@ import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
 import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
+import ContainerIntegration from './ContainerIntegration.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
 import ContainerHealthLogs from './ContainerHealthLogs.jsx';
@@ -403,6 +404,10 @@ class Containers extends React.Component {
             name: _("Details"),
             renderer: ContainerDetails,
             data: { container: container, containerDetail: containerDetail }
+        }, {
+            name: _("Integration"),
+            renderer: ContainerIntegration,
+            data: { container: container, containerDetail: containerDetail, localImages: localImages }
         }, {
             name: _("Logs"),
             renderer: ContainerLogs,
