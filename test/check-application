@@ -1497,6 +1497,10 @@ class TestApplication(testlib.MachineCase):
         # set_val does not trigger onChange so append a space.
         b.set_input_text('#run-image-dialog-env-2-value', ' ', append=True, value_check=False)
 
+        b.click('.env-form .btn-add')
+        b.set_input_text('#run-image-dialog-env-4-key', 'HOSTNAME')
+        b.set_input_text('#run-image-dialog-env-4-value', 'busybox')
+
         # Configure volumes
         b.click('.volume-form .btn-add')
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
@@ -1562,27 +1566,55 @@ class TestApplication(testlib.MachineCase):
 
         self.toggleExpandedContainer("busybox:latest")
 
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Created") + dd', 'today at')
+
+        b.click(".pf-m-expanded button:contains('Integration')")
+
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '0.0.0.0:6000 \u2192 5000/tcp')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '127.0.0.1:6001 \u2192 5001/udp')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '127.0.0.2:')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', ' \u2192 8001/tcp')
         b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Ports") + dd', '7001/tcp')
+
         ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
-
-        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Created") + dd', 'today at')
-
         self.assertIn('5000/tcp:[{ 6000}]', ports)
         self.assertIn('5001/udp:[{127.0.0.1 6001}]', ports)
         self.assertIn('8001/tcp:[{ ', ports)
         self.assertIn('9001/tcp:[{127.0.0.2 ', ports)
         self.assertNotIn('7001/tcp', ports)
 
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'APPLE=ORANGE')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'PEAR=BANANA')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'RHUBARB=STRAWBERRY')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'DURIAN=LEMON')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'HOSTNAME=busybox')
+        # variables are present in env but are not displayed in the UI
+        b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'container=podman')
+        b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'TERM=xterm')
+        b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'HOME=/root')
+        b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
+
+        b.click(".container-integration button:contains('Show more')")
+        # previously hidden variables are now visible
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'container=podman')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'TERM=xterm')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'HOME=/root')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
+
         env = self.execute(auth, "podman exec busybox-with-tty env")
         self.assertIn('APPLE=ORANGE', env)
         self.assertIn('PEAR=BANANA', env)
         self.assertIn('RHUBARB=STRAWBERRY', env)
         self.assertIn('DURIAN=LEMON', env)
+        self.assertIn('HOSTNAME=busybox', env)
+        self.assertIn('container=podman', env)
+        self.assertIn('TERM=xterm', env)
+        self.assertIn('HOME=/root', env)
+        self.assertIn('PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', env)
         self.assertNotIn('MELON=GRAPE', env)
+
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Volumes") + dd', f"{rodir} \u2192 /tmp/ro")
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Volumes") + dd', f"{rwdir} \u2192 /tmp/rw")
 
         romnt = self.execute(auth, "podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro")
         self.assertIn('ro', romnt)
