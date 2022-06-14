@@ -8,7 +8,6 @@ endif
 export TEST_OS
 TARFILE=$(RPM_NAME)-$(VERSION).tar.xz
 NODE_CACHE=$(RPM_NAME)-node-$(VERSION).tar.xz
-SPEC=$(RPM_NAME).spec
 APPSTREAMFILE=org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check for node_modules/
@@ -82,9 +81,6 @@ po/LINGUAS:
 # Build/Install/dist
 #
 
-%.spec: packaging/%.spec.in
-	sed -e 's/%{VERSION}/$(VERSION)/g' $< > $@
-
 packaging/arch/PKGBUILD: packaging/arch/PKGBUILD.in
 	sed 's/VERSION/$(VERSION)/; s/SOURCE/$(TARFILE)/' $< > $@
 
@@ -103,7 +99,7 @@ watch:
 
 clean:
 	rm -rf dist/
-	rm -f $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
+	rm -f packaging/arch/PKGBUILD packaging/debian/changelog
 	rm -f po/LINGUAS
 
 install: $(WEBPACK_TEST) po/LINGUAS
@@ -142,13 +138,16 @@ dist: $(TARFILE)
 # we don't ship most node_modules for license and compactness reasons, only the ones necessary for running tests
 # we ship a pre-built dist/ (so it's not necessary) and ship package-lock.json (so that node_modules/ can be reconstructed if necessary)
 $(TARFILE): export NODE_ENV ?= production
-$(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
+$(TARFILE): $(WEBPACK_TEST) packaging/arch/PKGBUILD packaging/debian/changelog
+	sed -e '/^Version:/ s/0/$(VERSION)/g' packaging/cockpit-podman.spec > cockpit-podman.spec
 	if type appstream-util >/dev/null 2>&1; then appstream-util validate-relax --nonet *.metainfo.xml; fi
 	tar --xz $(TAR_ARGS) -cf $(TARFILE) --transform 's,^,$(RPM_NAME)/,' \
-		--exclude '*.in' --exclude test/reference \
+		--transform 's,cockpit-podman.spec,packaging/cockpit-podman.spec,' \
+		--exclude '*.in' --exclude test/reference packaging/cockpit-podman.spec \
 		$$(git ls-files | grep -v node_modules) \
-		$(COCKPIT_REPO_FILES) $(NODE_MODULES_TEST) $(SPEC) $(TEST_NPMS) \
+		$(COCKPIT_REPO_FILES) $(NODE_MODULES_TEST) $(TEST_NPMS) \
 		packaging/arch/PKGBUILD packaging/debian/changelog dist/
+	rm cockpit-podman.spec
 
 # convenience target for developers
 rpm: $(TARFILE)

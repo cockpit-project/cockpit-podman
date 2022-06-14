@@ -1,14 +1,11 @@
 upstream_project_url: https://github.com/cockpit-project/cockpit-podman
 # enable notification of failed downstream jobs as issues
 issue_repository: https://github.com/cockpit-project/cockpit-podman
-specfile_path: cockpit-podman.spec
-upstream_package_name: cockpit-podman
-downstream_package_name: cockpit-podman
+specfile_path: packaging/cockpit-podman.spec
 # use the nicely formatted release description from our upstream release, instead of git shortlog
 copy_upstream_release_description: true
 
 actions:
-  post-upstream-clone: make cockpit-podman.spec
   create-archive: make dist
 
 srpm_build_deps:
@@ -30,7 +27,6 @@ jobs:
     project: "cockpit-preview"
     preserve_project: True
     actions:
-      post-upstream-clone: make cockpit-podman.spec
       # HACK: tarball for releases (copr_build, koji, etc.), copying spec's Source0; this
       # really should be the default, see https://github.com/packit/packit-service/issues/1505
       create-archive:
