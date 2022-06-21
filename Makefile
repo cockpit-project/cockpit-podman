@@ -133,20 +133,10 @@ $(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/cha
 		$$(git ls-files) $(COCKPIT_REPO_FILES) $(NODE_MODULES_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
 
 # convenience target for developers
-rpm: $(TARFILE) $(SPEC)
-	mkdir -p "`pwd`/output"
-	mkdir -p "`pwd`/rpmbuild"
-	rpmbuild -bb \
-	  --define "_sourcedir `pwd`" \
-	  --define "_specdir `pwd`" \
-	  --define "_builddir `pwd`/rpmbuild" \
-	  --define "_srcrpmdir `pwd`" \
-	  --define "_rpmdir `pwd`/output" \
-	  --define "_buildrootdir `pwd`/build" \
-	  $(SPEC)
-	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
-	rm -r "`pwd`/rpmbuild"
-	rm -r "`pwd`/output" "`pwd`/build"
+rpm: $(TARFILE)
+	rpmbuild -tb --define "_topdir $(CURDIR)/tmp/rpmbuild" $(TARFILE)
+	find tmp/rpmbuild -name '*.rpm' -printf '%f\n' -exec mv {} . \;
+	rm -r tmp/rpmbuild
 
 # build a VM with locally built distro pkgs installed
 # HACK for fedora-coreos: skip the rpm build/install
