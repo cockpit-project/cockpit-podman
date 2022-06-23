@@ -25,6 +25,7 @@ import * as client from './client.js';
 import rest from './rest.js';
 import cockpit from 'cockpit';
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
+import { DialogsContext } from "dialogs.jsx";
 
 import { debounce } from 'throttle-debounce';
 
@@ -293,6 +294,8 @@ DynamicListForm.propTypes = {
 };
 
 export class ImageRunModal extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         let command = "sh";
@@ -448,11 +451,12 @@ export class ImageRunModal extends React.Component {
     }
 
     createContainer = (isSystem, createConfig, runImage) => {
+        const Dialogs = this.context;
         client.createContainer(isSystem, createConfig)
                 .then(reply => {
                     if (runImage) {
                         client.postContainer(isSystem, "start", reply.Id, {})
-                                .then(() => this.props.close())
+                                .then(() => Dialogs.close())
                                 .catch(ex => {
                                     // If container failed to start remove it, so a user can fix the settings and retry and
                                     // won't get another error that the container name is already taken.
@@ -471,7 +475,7 @@ export class ImageRunModal extends React.Component {
                                             });
                                 });
                     } else {
-                        this.props.close();
+                        Dialogs.close();
                     }
                 })
                 .catch(ex => {
@@ -483,6 +487,7 @@ export class ImageRunModal extends React.Component {
     }
 
     async onCreateClicked(runImage = false) {
+        const Dialogs = this.context;
         const createConfig = this.getCreateConfig();
         const { pullLatestImage } = this.state;
         const isSystem = this.isSystem();
@@ -497,7 +502,7 @@ export class ImageRunModal extends React.Component {
         if (imageExists && !pullLatestImage) {
             this.createContainer(isSystem, createConfig, runImage);
         } else {
-            this.props.close();
+            Dialogs.close();
             const tempImage = { ...createConfig };
 
             // Assign temporary properties to allow rendering
@@ -790,6 +795,7 @@ export class ImageRunModal extends React.Component {
     }
 
     render() {
+        const Dialogs = this.context;
         const { image } = this.props;
         const dialogValues = this.state;
         const { activeTabKey, owner, selectedImage } = this.state;
@@ -1177,13 +1183,13 @@ export class ImageRunModal extends React.Component {
         return (
             <Modal isOpen
                    position="top" variant="medium"
-                   onClose={this.props.close}
+                   onClose={Dialogs.close}
                    // TODO: still not ideal on chromium https://github.com/patternfly/patternfly-react/issues/6471
                    onEscapePress={() => {
                        if (this.state.isImageSelectOpen) {
                            this.onImageSelectToggle(!this.state.isImageSelectOpen);
                        } else {
-                           this.props.close();
+                           Dialogs.close();
                        }
                    }}
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
@@ -1195,7 +1201,7 @@ export class ImageRunModal extends React.Component {
                        <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={!image && selectedImage === ""}>
                            {_("Create")}
                        </Button>
-                       <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                       <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
                            {_("Cancel")}
                        </Button>
                    </>}

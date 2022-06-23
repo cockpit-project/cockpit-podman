@@ -21,6 +21,7 @@ import PruneUnusedImagesModal from './PruneUnusedImagesModal.jsx';
 import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
+import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import './Images.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
@@ -28,6 +29,8 @@ import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 const _ = cockpit.gettext;
 
 class Images extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -62,7 +65,12 @@ class Images extends React.Component {
     }
 
     onOpenNewImagesDialog = () => {
-        this.setState({ showSearchImageModal: true });
+        const Dialogs = this.context;
+        Dialogs.show(<ImageSearchModal downloadImage={this.downloadImage}
+                                       user={this.props.user}
+                                       registries={this.props.registries}
+                                       userServiceAvailable={this.props.userServiceAvailable}
+                                       systemServiceAvailable={this.props.systemServiceAvailable} />);
     }
 
     onOpenPruneUnusedImagesDialog = () => {
@@ -286,14 +294,14 @@ class Images extends React.Component {
                         </ExpandableSection>
                         : cardBody}
                 </CardBody>
-                {this.state.showSearchImageModal &&
-                <ImageSearchModal
-                    close={() => this.setState({ showSearchImageModal: false })}
-                    downloadImage={this.downloadImage}
-                    user={this.props.user}
-                    registries={this.props.registries}
-                    userServiceAvailable={this.props.userServiceAvailable}
-                    systemServiceAvailable={this.props.systemServiceAvailable} /> }
+                {/* The PruneUnusedImagesModal dialog needs to keep
+                  * its list of unused images in sync with reality at
+                  * all times since the API call will delete whatever
+                  * is unused at the exact time of call, and the
+                  * dialog better be showing the correct list of
+                  * unused images at that time.  Thus, we can't use
+                  * Dialog.show for it but include it here in the
+                  * DOM. */}
                 {this.state.showPruneUnusedImagesModal &&
                 <PruneUnusedImagesModal
                   close={() => this.setState({ showPruneUnusedImagesModal: false })}
@@ -320,14 +328,20 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
                   dropdownItems={[
                       <DropdownItem key="download-new-image"
                                     component="button"
-                                    onClick={handleDownloadNewImage}>
+                                    onClick={() => {
+                                        setIsActionsKebabOpen(false);
+                                        handleDownloadNewImage();
+                                    }}>
                           {_("Download new image")}
                       </DropdownItem>,
                       <DropdownItem key="prune-unused-images"
                                     id="prune-unused-images-button"
                                     component="button"
                                     className="pf-m-danger btn-delete"
-                                    onClick={handlePruneUsedImages}
+                                    onClick={() => {
+                                        setIsActionsKebabOpen(false);
+                                        handlePruneUsedImages();
+                                    }}
                                     isDisabled={unusedImages.length === 0}
                                     isAriaDisabled={unusedImages.length === 0}>
                           {_("Prune unused images")}
@@ -337,19 +351,35 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
 };
 
 const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, user, systemServiceAvailable, userServiceAvailable, podmanRestartAvailable }) => {
-    const [showRunImageModal, setShowImageRunModal] = useState(false);
-    const [showImageDeleteModal, setShowImageDeleteModal] = useState(false);
-    const [showImageDeleteErrorModal, setShowImageDeleteErrorModal] = useState(false);
-    const [imageDeleteErrorMsg, setImageDeleteErrorMsg] = useState();
+    const Dialogs = useDialogs();
     const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
 
+    const runImage = () => {
+        setIsActionsKebabOpen(false);
+        Dialogs.show(<ImageRunModal registries={registries}
+                                    selinuxAvailable={selinuxAvailable}
+                                    podmanRestartAvailable={podmanRestartAvailable}
+                                    systemServiceAvailable={systemServiceAvailable}
+                                    userServiceAvailable={userServiceAvailable}
+                                    user={user}
+                                    image={image}
+                                    onAddNotification={onAddNotification} />);
+    };
+
+    const removeImage = () => {
+        setIsActionsKebabOpen(false);
+        Dialogs.show(<ImageDeleteModal imageWillDelete={image}
+                                       handleRemoveImage={handleRemoveImage} />);
+    };
+
     const handleRemoveImage = (tags, all) => {
-        setShowImageDeleteModal(false);
+        Dialogs.close();
         if (all)
             client.delImage(image.isSystem, image.Id, false)
                     .catch(ex => {
-                        setImageDeleteErrorMsg(ex.message);
-                        setShowImageDeleteErrorModal(true);
+                        Dialogs.show(<ForceRemoveModal name={image.RepoTags[0]}
+                                                       handleForceRemove={handleForceRemoveImage}
+                                                       reason={ex.Message} />);
                     });
         else {
             // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
@@ -369,21 +399,21 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
 
     const handleForceRemoveImage = () => {
         return client.delImage(image.isSystem, image.Id, true)
-                .then(reply => setShowImageDeleteErrorModal(false))
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to force remove image $0"), image.RepoTags[0]);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                     throw ex;
-                });
+                })
+                .finally(Dialogs.close);
     };
 
-    const runImage = (
+    const runImageAction = (
         <Button key={image.Id + "create"}
                 className="ct-container-create show-only-when-wide"
                 variant='secondary'
                 onClick={ e => {
                     e.stopPropagation();
-                    setShowImageRunModal(true);
+                    runImage();
                 }}
                 isSmall
                 data-image={image.Id}>
@@ -400,13 +430,13 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
                       <DropdownItem key={image.Id + "create-menu"}
                                     component="button"
                                     className="show-only-when-narrow"
-                                    onClick={() => setShowImageRunModal(true)}>
+                                    onClick={runImage}>
                           {_("Create container")}
                       </DropdownItem>,
                       <DropdownItem key={image.Id + "delete"}
                                     component="button"
                                     className="pf-m-danger btn-delete"
-                                    onClick={() => setShowImageDeleteModal(true)}>
+                                    onClick={removeImage}>
                           {_("Delete")}
                       </DropdownItem>
                   ]} />
@@ -414,31 +444,8 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
 
     return (
         <>
-            {runImage}
+            {runImageAction}
             {extraActions}
-            {showImageDeleteErrorModal &&
-                <ForceRemoveModal
-                        name={image.RepoTags[0]}
-                        handleCancel={() => setShowImageDeleteErrorModal(false)}
-                        handleForceRemove={handleForceRemoveImage}
-                        reason={imageDeleteErrorMsg} /> }
-            {showImageDeleteModal &&
-            <ImageDeleteModal
-                imageWillDelete={image}
-                handleCancelImageDeleteModal={() => setShowImageDeleteModal(false)}
-                handleRemoveImage={handleRemoveImage} /> }
-            {showRunImageModal &&
-            <ImageRunModal
-                close={() => setShowImageRunModal(false)}
-                registries={registries}
-                selinuxAvailable={selinuxAvailable}
-                podmanRestartAvailable={podmanRestartAvailable}
-                systemServiceAvailable={systemServiceAvailable}
-                userServiceAvailable={userServiceAvailable}
-                user={user}
-                image={image}
-                onAddNotification={onAddNotification}
-            /> }
         </>
     );
 };

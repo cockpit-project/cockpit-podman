@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button, Checkbox, Modal, Stack, StackItem } from '@patternfly/react-core';
+import { DialogsContext } from "dialogs.jsx";
+
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -13,6 +15,8 @@ function sortTags(a, b) {
 }
 
 export class ImageDeleteModal extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
 
@@ -47,19 +51,21 @@ export class ImageDeleteModal extends React.Component {
     }
 
     render() {
+        const Dialogs = this.context;
+
         const repoTags = Object.keys(this.state.tags).sort(sortTags);
         const checkedTags = repoTags.filter(x => this.state.tags[x]);
         return (
             <Modal isOpen
                    position="top" variant="medium"
-                   onClose={this.props.handleCancelImageDeleteModal}
+                   onClose={Dialogs.close}
                    title={cockpit.format(_("Delete $0"), repoTags ? repoTags[0] : "")}
                    footer={<>
                        <Button id="btn-img-delete" variant="danger" isDisabled={checkedTags.length === 0}
                                onClick={() => this.props.handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
                            {_("Delete tagged images")}
                        </Button>
-                       <Button variant="link" onClick={this.props.handleCancelImageDeleteModal}>{_("Cancel")}</Button>
+                       <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
                    </>}
             >
                 <Stack hasGutter>

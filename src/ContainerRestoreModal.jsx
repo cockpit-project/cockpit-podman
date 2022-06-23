@@ -1,13 +1,17 @@
 import React from 'react';
 import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
+import { DialogsContext } from "dialogs.jsx";
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
 
 class ContainerRestoreModal extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
+            inProgress: false,
             keep: false,
             tcpEstablished: false,
             ignoreRootFS: false,
@@ -23,19 +27,28 @@ class ContainerRestoreModal extends React.Component {
     }
 
     render() {
+        const Dialogs = this.context;
         return (
             <Modal isOpen
                    showClose={false}
                    position="top" variant="medium"
                    title={cockpit.format(_("Restore container $0"), this.props.containerWillCheckpoint.Names)}
                    footer={<>
-                       <Button variant="primary" isDisabled={this.props.restoreInProgress}
-                               isLoading={this.props.restoreInProgress}
-                               onClick={() => this.props.handleRestoreContainer(this.state)}>
+                       <Button variant="primary" isDisabled={this.state.inProgress}
+                               isLoading={this.state.inProgress}
+                               onClick={() => {
+                                   this.setState({ inProgress: true });
+                                   this.props.handleRestoreContainer({
+                                       keep: this.state.keep,
+                                       leaveRunning: this.state.leaveRunning,
+                                       tcpEstablished: this.state.tcpEstablished,
+                                       ignoreRootFS: this.state.ignoreRootFS
+                                   });
+                               }}>
                            {_("Restore")}
                        </Button>
-                       <Button variant="link" isDisabled={this.props.restoreInProgress}
-                               onClick={this.props.handleRestoreContainerDeleteModal}>
+                       <Button variant="link" isDisabled={this.state.inProgress}
+                               onClick={Dialogs.close}>
                            {_("Cancel")}
                        </Button>
                    </>}
