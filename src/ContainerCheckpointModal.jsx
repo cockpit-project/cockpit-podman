@@ -1,13 +1,17 @@
 import React from 'react';
 import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
+import { DialogsContext } from "dialogs.jsx";
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
 
 class ContainerCheckpointModal extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
+            inProgress: false,
             keep: false,
             leaveRunning: false,
             tcpEstablished: false,
@@ -22,19 +26,28 @@ class ContainerCheckpointModal extends React.Component {
     }
 
     render() {
+        const Dialogs = this.context;
         return (
             <Modal isOpen
                    showClose={false}
                    position="top" variant="medium"
                    title={cockpit.format(_("Checkpoint container $0"), this.props.containerWillCheckpoint.Names)}
                    footer={<>
-                       <Button variant="primary" isDisabled={this.props.checkpointInProgress}
-                               isLoading={this.props.checkpointInProgress}
-                               onClick={() => this.props.handleCheckpointContainer(this.state)}>
+                       <Button variant="primary" isDisabled={this.state.inProgress}
+                               isLoading={this.state.inProgress}
+                               onClick={() => {
+                                   this.setState({ inProgress: true });
+                                   this.props.handleCheckpointContainer({
+                                       keep: this.state.keep,
+                                       leaveRunning: this.state.leaveRunning,
+                                       tcpEstablished: this.state.tcpEstablished,
+                                       ignoreRootFS: this.state.ignoreRootFS
+                                   });
+                               }}>
                            {_("Checkpoint")}
                        </Button>
-                       <Button variant="link" isDisabled={this.props.checkpointInProgress}
-                               onClick={this.props.handleCheckpointContainerDeleteModal}>
+                       <Button variant="link" isDisabled={this.state.inProgress}
+                               onClick={Dialogs.close}>
                            {_("Cancel")}
                        </Button>
                    </>}

@@ -11,12 +11,15 @@ import cockpit from 'cockpit';
 import rest from './rest.js';
 import * as client from './client.js';
 import { fallbackRegistries } from './util.js';
+import { DialogsContext } from "dialogs.jsx";
 
 import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
 
 export class ImageSearchModal extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -51,9 +54,10 @@ export class ImageSearchModal extends React.Component {
     }
 
     onDownloadClicked() {
+        const Dialogs = this.context;
         const selectedImageName = this.state.imageList[this.state.selected].Name;
 
-        this.props.close();
+        Dialogs.close();
         this.props.downloadImage(selectedImageName, this.state.imageTag, this.state.isSystem);
     }
 
@@ -141,6 +145,8 @@ export class ImageSearchModal extends React.Component {
     }
 
     render() {
+        const Dialogs = this.context;
+
         const defaultBody = (
             <>
                 <Form isHorizontal>
@@ -210,7 +216,7 @@ export class ImageSearchModal extends React.Component {
         return (
             <Modal isOpen className="podman-search"
                    position="top" variant="large"
-                   onClose={this.props.close}
+                   onClose={Dialogs.close}
                    title={_("Search for an image")}
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
@@ -227,7 +233,7 @@ export class ImageSearchModal extends React.Component {
                        <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
                            {_("Download")}
                        </Button>
-                       <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                       <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
                            {_("Cancel")}
                        </Button>
                    </>}

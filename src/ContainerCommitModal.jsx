@@ -10,10 +10,13 @@ import * as utils from './util.js';
 import * as client from './client.js';
 import { ErrorNotification } from './Notification.jsx';
 import { fmt_to_fragments } from 'utils.jsx';
+import { DialogsContext } from "dialogs.jsx";
 
 const _ = cockpit.gettext;
 
 class ContainerCommitModal extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -42,6 +45,8 @@ class ContainerCommitModal extends React.Component {
     }
 
     handleCommit(force) {
+        const Dialogs = this.context;
+
         if (!force && !this.state.imageName) {
             this.setState({ nameError: "Image name is required" });
             return;
@@ -84,7 +89,7 @@ class ContainerCommitModal extends React.Component {
 
         this.setState({ commitInProgress: true, nameError: "", dialogError: "" });
         client.commitContainer(this.props.container.isSystem, commitData)
-                .then(() => this.props.onHide())
+                .then(() => Dialogs.close())
                 .catch(ex => {
                     this.setState({
                         dialogError: cockpit.format(_("Failed to commit container $0"), this.props.container.Names),
@@ -95,6 +100,8 @@ class ContainerCommitModal extends React.Component {
     }
 
     render() {
+        const Dialogs = this.context;
+
         const commitContent =
             <Form isHorizontal>
                 <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}
@@ -164,7 +171,7 @@ class ContainerCommitModal extends React.Component {
                        <Button variant="link"
                                className="btn-ctr-cancel-commit"
                                isDisabled={this.state.commitInProgress}
-                               onClick={this.props.onHide}>
+                               onClick={Dialogs.close}>
                            {_("Cancel")}
                        </Button>
                    </>}

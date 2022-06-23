@@ -28,6 +28,7 @@ import * as utils from './util.js';
 import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
 import ContainerRenameModal from './ContainerRenameModal.jsx';
+import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import './Containers.scss';
 import { ImageRunModal } from './ImageRunModal.jsx';
@@ -36,26 +37,47 @@ import { PodActions } from './PodActions.jsx';
 const _ = cockpit.gettext;
 
 const ContainerActions = ({ container, healthcheck, onAddNotification, version, localImages, updateContainerAfterEvent }) => {
-    const [removeErrorModal, setRemoveErrorModal] = useState(false);
-    const [deleteModal, setDeleteModal] = useState(false);
-    const [checkpointInProgress, setCheckpointInProgress] = useState(false);
-    const [checkpointModal, setCheckpointModal] = useState(false);
-    const [restoreInProgress, setRestoreInProgress] = useState(false);
-    const [restoreModal, setRestoreModal] = useState(false);
-    const [commitModal, setCommitModal] = useState(false);
-    const [renameModal, setRenameModal] = useState(false);
+    const Dialogs = useDialogs();
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State == "running";
     const isPaused = container.State === "paused";
 
     const deleteContainer = (event) => {
-        if (container.State == "running") {
-            setRemoveErrorModal(true);
-            setDeleteModal(false);
-        } else {
-            setDeleteModal(true);
-        }
         setActionsKebabOpen(false);
+
+        if (container.State == "running") {
+            const handleForceRemoveContainer = () => {
+                const id = container ? container.Id : "";
+
+                return client.delContainer(container.isSystem, id, true)
+                        .catch(ex => {
+                            const error = cockpit.format(_("Failed to force remove container $0"), container.Names);
+                            onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                            throw ex;
+                        })
+                        .finally(() => {
+                            Dialogs.close();
+                        });
+            };
+
+            Dialogs.show(<ForceRemoveModal name={container.Names}
+                                           handleForceRemove={handleForceRemoveContainer}
+                                           reason={_("Container is currently running.")} />);
+        } else {
+            const handleRemoveContainer = () => {
+                const id = container ? container.Id : "";
+
+                Dialogs.close();
+                client.delContainer(container.isSystem, id, false)
+                        .catch(ex => {
+                            const error = cockpit.format(_("Failed to remove container $0"), container.Names);
+                            onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                        });
+            };
+
+            Dialogs.show(<ContainerDeleteModal containerWillDelete={container}
+                                               handleRemoveContainer={handleRemoveContainer} />);
+        }
     };
 
     const stopContainer = (force) => {
@@ -102,6 +124,14 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
                 });
     };
 
+    const commitContainer = () => {
+        setActionsKebabOpen(false);
+
+        Dialogs.show(<ContainerCommitModal container={container}
+                                           version={version}
+                                           localImages={localImages} />);
+    };
+
     const runHealthcheck = () => {
         setActionsKebabOpen(false);
 
@@ -127,66 +157,49 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
     };
 
     const renameContainer = () => {
-        setRenameModal(container.State !== "running" || version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0);
         setActionsKebabOpen(false);
+        if (container.State !== "running" ||
+            version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
+            Dialogs.show(<ContainerRenameModal container={container}
+                                               version={version}
+                                               updateContainerAfterEvent={updateContainerAfterEvent} />);
+        }
     };
 
-    const handleRemoveContainer = () => {
-        const id = container ? container.Id : "";
-
-        setDeleteModal(false);
+    const checkpointContainer = () => {
         setActionsKebabOpen(false);
 
-        client.delContainer(container.isSystem, id, false)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to remove container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                });
+        const handleCheckpointContainer = (args) => {
+            client.postContainer(container.isSystem, "checkpoint", container.Id, args)
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to checkpoint container $0"), container.Names);
+                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    })
+                    .finally(() => {
+                        Dialogs.close();
+                    });
+        };
+
+        Dialogs.show(<ContainerCheckpointModal handleCheckpointContainer={handleCheckpointContainer}
+                                               containerWillCheckpoint={container} />);
     };
 
-    const handleCheckpointContainer = (args) => {
-        setCheckpointInProgress(true);
+    const restoreContainer = () => {
         setActionsKebabOpen(false);
 
-        client.postContainer(container.isSystem, "checkpoint", container.Id, args)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to checkpoint container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                })
-                .finally(() => {
-                    setCheckpointInProgress(false);
-                    setCheckpointModal(false);
-                });
-    };
+        const handleRestoreContainer = (args) => {
+            client.postContainer(container.isSystem, "restore", container.Id, args)
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to restore container $0"), container.Names);
+                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    })
+                    .finally(() => {
+                        Dialogs.close();
+                    });
+        };
 
-    const handleRestoreContainer = (args) => {
-        setRestoreInProgress(true);
-        setActionsKebabOpen(false);
-
-        client.postContainer(container.isSystem, "restore", container.Id, args)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to restore container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                })
-                .finally(() => {
-                    setRestoreInProgress(false);
-                    setRestoreModal(false);
-                });
-    };
-
-    const handleForceRemoveContainer = () => {
-        const id = container ? container.Id : "";
-
-        setActionsKebabOpen(false);
-
-        return client.delContainer(container.isSystem, id, true)
-                .then(() => {
-                    setRemoveErrorModal(false);
-                }, ex => {
-                    const error = cockpit.format(_("Failed to force remove container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    throw ex;
-                });
+        Dialogs.show(<ContainerRestoreModal handleRestoreContainer={handleRestoreContainer}
+                                            containerWillCheckpoint={container} />);
     };
 
     const addRenameAction = () => {
@@ -239,7 +252,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
             actions.push(
                 <DropdownSeparator key="separator-0" />,
                 <DropdownItem key="checkpoint"
-                              onClick={() => setCheckpointModal(true)}>
+                              onClick={() => checkpointContainer()}>
                     {_("Checkpoint")}
                 </DropdownItem>
             );
@@ -260,7 +273,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
             actions.push(
                 <DropdownSeparator key="separator-0" />,
                 <DropdownItem key="restore"
-                              onClick={() => setRestoreModal(true)}>
+                              onClick={() => restoreContainer()}>
                     {_("Restore")}
                 </DropdownItem>
             );
@@ -274,7 +287,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
     actions.push(<DropdownSeparator key="separator-1" />);
     actions.push(
         <DropdownItem key="commit"
-                      onClick={() => setCommitModal(true)}>
+                      onClick={() => commitContainer()}>
             {_("Commit")}
         </DropdownItem>
     );
@@ -306,61 +319,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
                   dropdownItems={actions} />
     );
 
-    const containerDeleteModal =
-        <ContainerDeleteModal
-            containerWillDelete={container}
-            handleCancelContainerDeleteModal={() => setDeleteModal(false)}
-            handleRemoveContainer={handleRemoveContainer}
-        />;
-    const containerCheckpointModal =
-        <ContainerCheckpointModal
-            handleCheckpointContainer={handleCheckpointContainer}
-            handleCheckpointContainerDeleteModal={() => setCheckpointModal(false)}
-            containerWillCheckpoint={container}
-            checkpointInProgress={checkpointInProgress}
-        />;
-    const containerRestoreModal =
-        <ContainerRestoreModal
-            handleRestoreContainer={handleRestoreContainer}
-            handleRestoreContainerDeleteModal={() => setRestoreModal(false)}
-            containerWillCheckpoint={container}
-            restoreInProgress={restoreInProgress}
-        />;
-    const containerRemoveErrorModal =
-        <ForceRemoveModal
-            name={container.Names}
-            handleCancel={() => setRemoveErrorModal(false)}
-            handleForceRemove={handleForceRemoveContainer}
-            reason={_("Container is currently running.")}
-        />;
-
-    const containerCommitModal =
-        <ContainerCommitModal
-            onHide={() => setCommitModal(false)}
-            container={container}
-            version={version}
-            localImages={localImages}
-        />;
-
-    const containerRenameModal =
-        <ContainerRenameModal
-            container={container}
-            version={version}
-            onHide={() => setRenameModal(false)}
-            updateContainerAfterEvent={updateContainerAfterEvent}
-        />;
-
-    return (
-        <>
-            {kebab}
-            {deleteModal && containerDeleteModal}
-            {renameModal && containerRenameModal}
-            {checkpointModal && containerCheckpointModal}
-            {restoreModal && containerRestoreModal}
-            {removeErrorModal && containerRemoveErrorModal}
-            {commitModal && containerCommitModal}
-        </>
-    );
+    return kebab;
 };
 
 export let onDownloadContainer = function funcOnDownloadContainer(container) {
@@ -388,12 +347,12 @@ const localize_health = (state) => {
 };
 
 class Containers extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
             width: 0,
-            showCreateContainerModal: false,
-            createPod: null,
             downloadingContainers: [],
         };
         this.renderRow = this.renderRow.bind(this);
@@ -511,6 +470,7 @@ class Containers extends React.Component {
     }
 
     render() {
+        const Dialogs = this.context;
         const columnTitles = [
             { title: _("Container"), transforms: [cellWidth(20)] },
             _("Owner"),
@@ -624,6 +584,19 @@ class Containers extends React.Component {
             });
         }
 
+        const createContainer = (inPod) => {
+            if (localImages)
+                Dialogs.show(<ImageRunModal user={this.props.user}
+                                            localImages={localImages}
+                                            pod={inPod}
+                                            registries={this.props.registries}
+                                            selinuxAvailable={this.props.selinuxAvailable}
+                                            podmanRestartAvailable={this.props.podmanRestartAvailable}
+                                            systemServiceAvailable={this.props.systemServiceAvailable}
+                                            userServiceAvailable={this.props.userServiceAvailable}
+                                            onAddNotification={this.props.onAddNotification} />);
+        };
+
         const filterRunning =
             <Toolbar>
                 <ToolbarContent>
@@ -639,26 +612,13 @@ class Containers extends React.Component {
                     <Divider isVertical />
                     <ToolbarItem>
                         <Button variant="primary" key="get-new-image-action"
-                        id="containers-containers-create-container-btn"
-                        isDisabled={localImages === null}
-                        onClick={() => this.setState({ showCreateContainerModal: true })}>
+                                id="containers-containers-create-container-btn"
+                                isDisabled={localImages === null}
+                                onClick={() => createContainer(null)}>
                             {_("Create container")}
                         </Button>
                     </ToolbarItem>
                 </ToolbarContent>
-                {this.state.showCreateContainerModal && localImages &&
-                <ImageRunModal
-                user={this.props.user}
-                localImages={localImages}
-                close={() => this.setState({ showCreateContainerModal: false, createPod: null })}
-                pod={this.state.createPod}
-                registries={this.props.registries}
-                selinuxAvailable={this.props.selinuxAvailable}
-                podmanRestartAvailable={this.props.podmanRestartAvailable}
-                systemServiceAvailable={this.props.systemServiceAvailable}
-                userServiceAvailable={this.props.userServiceAvailable}
-                onAddNotification={this.props.onAddNotification}
-                /> }
             </Toolbar>;
 
         const card = (
@@ -714,10 +674,10 @@ class Containers extends React.Component {
                                                     </CardTitle>
                                                     <CardActions className='panel-actions'>
                                                         <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
-                                                        <Button
-                                                          variant="primary"
-                                                          className="create-container-in-pod"
-                                                          onClick={() => this.setState({ showCreateContainerModal: true, createPod: this.props.pods[section] })}>
+                                                        <Button variant="primary"
+                                                                className="create-container-in-pod"
+                                                                isDisabled={localImages === null}
+                                                                onClick={() => createContainer(this.props.pods[section])}>
                                                             {_("Create container in pod")}
                                                         </Button>
                                                         <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />

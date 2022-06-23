@@ -26,6 +26,7 @@ import {
     Stack,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { WithDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
 import { superuser } from "superuser";
@@ -756,27 +757,29 @@ class Application extends React.Component {
         );
 
         return (
-            <Page id="overview" key="overview">
-                {notificationList}
-                <PageSection className="content-filter" padding={{ default: 'noPadding' }}
-                             variant={PageSectionVariants.light}>
-                    <ContainerHeader
-                        handleFilterChanged={this.onFilterChanged}
-                        handleOwnerChanged={this.onOwnerChanged}
-                        ownerFilter={this.state.ownerFilter}
-                        textFilter={this.state.textFilter}
-                        twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
-                        user={this.state.currentUser}
-                    />
-                </PageSection>
-                <PageSection className='ct-pagesection-mobile'>
-                    <Stack hasGutter>
-                        { this.state.showStartService ? startService : null }
-                        {imageList}
-                        {containerList}
-                    </Stack>
-                </PageSection>
-            </Page>
+            <WithDialogs>
+                <Page id="overview" key="overview">
+                    {notificationList}
+                    <PageSection className="content-filter" padding={{ default: 'noPadding' }}
+                                 variant={PageSectionVariants.light}>
+                        <ContainerHeader
+                            handleFilterChanged={this.onFilterChanged}
+                            handleOwnerChanged={this.onOwnerChanged}
+                            ownerFilter={this.state.ownerFilter}
+                            textFilter={this.state.textFilter}
+                            twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
+                            user={this.state.currentUser}
+                        />
+                    </PageSection>
+                    <PageSection className='ct-pagesection-mobile'>
+                        <Stack hasGutter>
+                            { this.state.showStartService ? startService : null }
+                            {imageList}
+                            {containerList}
+                        </Stack>
+                    </PageSection>
+                </Page>
+            </WithDialogs>
         );
     }
 }
