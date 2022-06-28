@@ -64,19 +64,8 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
                                            handleForceRemove={handleForceRemoveContainer}
                                            reason={_("Container is currently running.")} />);
         } else {
-            const handleRemoveContainer = () => {
-                const id = container ? container.Id : "";
-
-                Dialogs.close();
-                client.delContainer(container.isSystem, id, false)
-                        .catch(ex => {
-                            const error = cockpit.format(_("Failed to remove container $0"), container.Names);
-                            onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                        });
-            };
-
             Dialogs.show(<ContainerDeleteModal containerWillDelete={container}
-                                               handleRemoveContainer={handleRemoveContainer} />);
+                                               onAddNotification={onAddNotification} />);
         }
     };
 
@@ -158,6 +147,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
 
     const renameContainer = () => {
         setActionsKebabOpen(false);
+
         if (container.State !== "running" ||
             version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
             Dialogs.show(<ContainerRenameModal container={container}
@@ -169,37 +159,15 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
     const checkpointContainer = () => {
         setActionsKebabOpen(false);
 
-        const handleCheckpointContainer = (args) => {
-            client.postContainer(container.isSystem, "checkpoint", container.Id, args)
-                    .catch(ex => {
-                        const error = cockpit.format(_("Failed to checkpoint container $0"), container.Names);
-                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    })
-                    .finally(() => {
-                        Dialogs.close();
-                    });
-        };
-
-        Dialogs.show(<ContainerCheckpointModal handleCheckpointContainer={handleCheckpointContainer}
-                                               containerWillCheckpoint={container} />);
+        Dialogs.show(<ContainerCheckpointModal containerWillCheckpoint={container}
+                                               onAddNotification={onAddNotification} />);
     };
 
     const restoreContainer = () => {
         setActionsKebabOpen(false);
 
-        const handleRestoreContainer = (args) => {
-            client.postContainer(container.isSystem, "restore", container.Id, args)
-                    .catch(ex => {
-                        const error = cockpit.format(_("Failed to restore container $0"), container.Names);
-                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    })
-                    .finally(() => {
-                        Dialogs.close();
-                    });
-        };
-
-        Dialogs.show(<ContainerRestoreModal handleRestoreContainer={handleRestoreContainer}
-                                            containerWillCheckpoint={container} />);
+        Dialogs.show(<ContainerRestoreModal containerWillRestore={container}
+                                            onAddNotification={onAddNotification} />);
     };
 
     const addRenameAction = () => {

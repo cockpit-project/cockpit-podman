@@ -3,6 +3,8 @@ import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
 import { DialogsContext } from "dialogs.jsx";
 import cockpit from 'cockpit';
 
+import * as client from './client.js';
+
 const _ = cockpit.gettext;
 
 class ContainerCheckpointModal extends React.Component {
@@ -25,6 +27,21 @@ class ContainerCheckpointModal extends React.Component {
             this.setState({ [event.target.name]: event.target.checked });
     }
 
+    handleCheckpointContainer(args) {
+        const Dialogs = this.context;
+        const container = this.props.containerWillCheckpoint;
+        this.setState({ inProgress: true });
+        client.postContainer(container.isSystem, "checkpoint", container.Id, args)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to checkpoint container $0"), container.Names);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    this.setState({ inProgress: false });
+                })
+                .finally(() => {
+                    Dialogs.close();
+                });
+    }
+
     render() {
         const Dialogs = this.context;
         return (
@@ -36,8 +53,7 @@ class ContainerCheckpointModal extends React.Component {
                        <Button variant="primary" isDisabled={this.state.inProgress}
                                isLoading={this.state.inProgress}
                                onClick={() => {
-                                   this.setState({ inProgress: true });
-                                   this.props.handleCheckpointContainer({
+                                   this.handleCheckpointContainer({
                                        keep: this.state.keep,
                                        leaveRunning: this.state.leaveRunning,
                                        tcpEstablished: this.state.tcpEstablished,

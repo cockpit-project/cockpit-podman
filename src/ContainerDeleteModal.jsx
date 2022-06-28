@@ -3,10 +3,25 @@ import { Button, Modal } from '@patternfly/react-core';
 import { useDialogs } from "dialogs.jsx";
 import cockpit from 'cockpit';
 
+import * as client from './client.js';
+
 const _ = cockpit.gettext;
 
-const ContainerDeleteModal = ({ containerWillDelete, handleRemoveContainer }) => {
+const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
     const Dialogs = useDialogs();
+
+    const handleRemoveContainer = () => {
+        const container = containerWillDelete;
+        const id = container ? container.Id : "";
+
+        Dialogs.close();
+        client.delContainer(container.isSystem, id, false)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to remove container $0"), container.Names);
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
+    };
+
     return (
         <Modal isOpen
                position="top" variant="medium"
