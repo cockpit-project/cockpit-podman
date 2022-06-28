@@ -18,7 +18,6 @@ import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import PruneUnusedImagesModal from './PruneUnusedImagesModal.jsx';
-import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
 import { useDialogs, DialogsContext } from "dialogs.jsx";
@@ -369,42 +368,7 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
     const removeImage = () => {
         setIsActionsKebabOpen(false);
         Dialogs.show(<ImageDeleteModal imageWillDelete={image}
-                                       handleRemoveImage={handleRemoveImage} />);
-    };
-
-    const handleRemoveImage = (tags, all) => {
-        Dialogs.close();
-        if (all)
-            client.delImage(image.isSystem, image.Id, false)
-                    .catch(ex => {
-                        Dialogs.show(<ForceRemoveModal name={image.RepoTags[0]}
-                                                       handleForceRemove={handleForceRemoveImage}
-                                                       reason={ex.Message} />);
-                    });
-        else {
-            // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
-            const tag = tags.shift();
-            const i = tag.lastIndexOf(":");
-            client.untagImage(image.isSystem, image.Id, tag.substring(0, i), tag.substring(i + 1, tag.length))
-                    .then(() => {
-                        if (tags.length > 0)
-                            handleRemoveImage(tags, all);
-                    })
-                    .catch(ex => {
-                        const error = cockpit.format(_("Failed to remove image $0"), tag);
-                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    });
-        }
-    };
-
-    const handleForceRemoveImage = () => {
-        return client.delImage(image.isSystem, image.Id, true)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to force remove image $0"), image.RepoTags[0]);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    throw ex;
-                })
-                .finally(Dialogs.close);
+                                       onAddNotification={onAddNotification} />);
     };
 
     const runImageAction = (

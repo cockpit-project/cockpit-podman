@@ -3,6 +3,8 @@ import { Button, Checkbox, Form, Modal } from '@patternfly/react-core';
 import { DialogsContext } from "dialogs.jsx";
 import cockpit from 'cockpit';
 
+import * as client from './client.js';
+
 const _ = cockpit.gettext;
 
 class ContainerRestoreModal extends React.Component {
@@ -26,19 +28,33 @@ class ContainerRestoreModal extends React.Component {
             this.setState({ [event.target.name]: event.target.checked });
     }
 
+    handleRestoreContainer(args) {
+        const Dialogs = this.context;
+        const container = this.props.containerWillRestore;
+        this.setState({ inProgress: true });
+        client.postContainer(container.isSystem, "restore", container.Id, args)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to restore container $0"), container.Names);
+                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    this.setState({ inProgress: false });
+                })
+                .finally(() => {
+                    Dialogs.close();
+                });
+    }
+
     render() {
         const Dialogs = this.context;
         return (
             <Modal isOpen
                    showClose={false}
                    position="top" variant="medium"
-                   title={cockpit.format(_("Restore container $0"), this.props.containerWillCheckpoint.Names)}
+                   title={cockpit.format(_("Restore container $0"), this.props.containerWillRestore.Names)}
                    footer={<>
                        <Button variant="primary" isDisabled={this.state.inProgress}
                                isLoading={this.state.inProgress}
                                onClick={() => {
-                                   this.setState({ inProgress: true });
-                                   this.props.handleRestoreContainer({
+                                   this.handleRestoreContainer({
                                        keep: this.state.keep,
                                        leaveRunning: this.state.leaveRunning,
                                        tcpEstablished: this.state.tcpEstablished,

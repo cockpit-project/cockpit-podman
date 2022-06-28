@@ -4,6 +4,9 @@ import { DialogsContext } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
 
+import ForceRemoveModal from './ForceRemoveModal.jsx';
+import * as client from './client.js';
+
 const _ = cockpit.gettext;
 
 function sortTags(a, b) {
@@ -50,6 +53,44 @@ export class ImageDeleteModal extends React.Component {
         });
     }
 
+    handleRemoveImage(tags, all) {
+        const Dialogs = this.context;
+        const image = this.props.imageWillDelete;
+
+        const handleForceRemoveImage = () => {
+            Dialogs.close();
+            return client.delImage(image.isSystem, image.Id, true)
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to force remove image $0"), image.RepoTags[0]);
+                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                        throw ex;
+                    });
+        };
+
+        Dialogs.close();
+        if (all)
+            client.delImage(image.isSystem, image.Id, false)
+                    .catch(ex => {
+                        Dialogs.show(<ForceRemoveModal name={image.RepoTags[0]}
+                                                       handleForceRemove={handleForceRemoveImage}
+                                                       reason={ex.message} />);
+                    });
+        else {
+            // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
+            const tag = tags.shift();
+            const i = tag.lastIndexOf(":");
+            client.untagImage(image.isSystem, image.Id, tag.substring(0, i), tag.substring(i + 1, tag.length))
+                    .then(() => {
+                        if (tags.length > 0)
+                            this.handleRemoveImage(tags, all);
+                    })
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to remove image $0"), tag);
+                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    });
+        }
+    }
+
     render() {
         const Dialogs = this.context;
 
@@ -62,7 +103,7 @@ export class ImageDeleteModal extends React.Component {
                    title={cockpit.format(_("Delete $0"), repoTags ? repoTags[0] : "")}
                    footer={<>
                        <Button id="btn-img-delete" variant="danger" isDisabled={checkedTags.length === 0}
-                               onClick={() => this.props.handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
+                               onClick={() => this.handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
                            {_("Delete tagged images")}
                        </Button>
                        <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
