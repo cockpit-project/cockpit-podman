@@ -56,7 +56,7 @@ jobs:
       - name: Check for node_modules availability and package.json consistency
         run: |
           # Make tools/node-modules available
-          make pkg/lib/cockpit.js
+          make tools/node-modules
           # for each commit in the PR which modifies package.json or node_modules...
           for commit in $(git log --reverse --full-history --format=%H \
                               "${HEAD_SHA}" --not "${BASE_SHA}" -- package.json node_modules); do
