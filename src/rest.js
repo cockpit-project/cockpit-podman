@@ -20,12 +20,19 @@ function connect(address, system) {
 
     connection.monitor = function(options, callback, system, return_raw) {
         return new Promise((resolve, reject) => {
+            let buffer = "";
+
             http.request(options)
                     .stream(data => {
                         if (return_raw)
                             callback(data);
-                        else
-                            callback(JSON.parse(data));
+                        else {
+                            buffer += data;
+                            const chunks = buffer.split("\n");
+                            buffer = chunks.pop();
+
+                            chunks.forEach(chunk => callback(JSON.parse(chunk)));
+                        }
                     })
                     .catch((error, content) => {
                         manage_error(reject, error, content);

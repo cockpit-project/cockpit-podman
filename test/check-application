@@ -2122,6 +2122,19 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
         self.waitContainerRow(container_name_new)
 
+    def testMultipleContainers(self):
+        self.login()
+
+        # Create 31 containers
+        for i in range(31):
+            self.execute(True, f"podman run -dt --name container{i} quay.io/libpod/busybox:latest")
+
+        self.waitContainerRow("container30")
+
+        # Generic cleanup takes too long and timeouts, so remove these container manually one by one
+        for i in range(31):
+            self.execute(True, f"podman rm -f container{i}")
+
 
 if __name__ == '__main__':
     testlib.test_main()
