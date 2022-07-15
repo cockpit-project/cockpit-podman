@@ -138,7 +138,9 @@ class Images extends React.Component {
                                      registries={this.props.registries} user={this.props.user}
                                      userServiceAvailable={this.props.userServiceAvailable}
                                      systemServiceAvailable={this.props.systemServiceAvailable}
-                                     podmanRestartAvailable={this.props.podmanRestartAvailable} />,
+                                     podmanRestartAvailable={this.props.podmanRestartAvailable}
+                                     userPodmanRestartAvailable={this.props.userPodmanRestartAvailable}
+                                     userLingeringEnabled={this.props.userLingeringEnabled} />,
                 props: { className: 'pf-c-table__action content-action' }
             },
         ];
@@ -349,7 +351,7 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
     );
 };
 
-const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, user, systemServiceAvailable, userServiceAvailable, podmanRestartAvailable }) => {
+const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, user, systemServiceAvailable, userServiceAvailable, podmanRestartAvailable, userPodmanRestartAvailable, userLingeringEnabled }) => {
     const Dialogs = useDialogs();
     const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
 
@@ -358,8 +360,10 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
         Dialogs.show(<ImageRunModal registries={registries}
                                     selinuxAvailable={selinuxAvailable}
                                     podmanRestartAvailable={podmanRestartAvailable}
+                                    userPodmanRestartAvailable={userPodmanRestartAvailable}
                                     systemServiceAvailable={systemServiceAvailable}
                                     userServiceAvailable={userServiceAvailable}
+                                    userLingeringEnabled={userLingeringEnabled}
                                     user={user}
                                     image={image}
                                     onAddNotification={onAddNotification} />);
