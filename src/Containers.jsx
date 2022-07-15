@@ -7,17 +7,19 @@ import {
     Dropdown, DropdownItem, DropdownSeparator,
     Flex,
     KebabToggle,
+    Popover,
     LabelGroup,
     Text, TextVariants, FormSelect, FormSelectOption,
-    Toolbar, ToolbarContent, ToolbarItem,
+    Tooltip, Toolbar, ToolbarContent, ToolbarItem,
 } from '@patternfly/react-core';
 import { cellWidth } from '@patternfly/react-table';
+import { MicrochipIcon, MemoryIcon, PortIcon, VolumeIcon, } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
 import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
-import ContainerIntegration from './ContainerIntegration.jsx';
+import ContainerIntegration, { renderContainerPublishedPorts, renderContainerVolumes } from './ContainerIntegration.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
 import ContainerHealthLogs from './ContainerHealthLogs.jsx';
@@ -32,6 +34,7 @@ import ContainerRenameModal from './ContainerRenameModal.jsx';
 import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import './Containers.scss';
+import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { PodActions } from './PodActions.jsx';
 
@@ -326,6 +329,7 @@ class Containers extends React.Component {
         };
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
+        this.podStats = this.podStats.bind(this);
 
         this.cardRef = React.createRef();
 
@@ -440,6 +444,101 @@ class Containers extends React.Component {
 
     onWindowResize() {
         this.setState({ width: this.cardRef.current.clientWidth });
+    }
+
+    podStats(pod) {
+        const { containersStats } = this.props;
+        // when no containers exists pod.Containers is null
+        if (!containersStats || !pod.Containers) {
+            return null;
+        }
+
+        // As podman does not provide per pod memory/cpu statistics we do the following:
+        // - don't add up CPU usage, instead display the highest found CPU usage of the containers in a pod
+        // - add up memory usage so it displays the total memory of the pod.
+        let cpu = 0;
+        let mem = 0;
+        for (const container of pod.Containers) {
+            const containerStats = containersStats[container.Id + pod.isSystem.toString()];
+            if (!containerStats)
+                continue;
+
+            if (containerStats.CPU != undefined) {
+                const val = containerStats.CPU === 0 ? containerStats.CPU : containerStats.CPU.toFixed(2);
+                if (val > cpu)
+                    cpu = val;
+            }
+            if (containerStats.MemUsage != undefined)
+                mem += containerStats.MemUsage;
+        }
+
+        return {
+            cpu,
+            mem,
+        };
+    }
+
+    renderPodDetails(pod, podStatus) {
+        const podStats = this.podStats(pod);
+        const infraContainer = this.props.containers[pod.InfraId + pod.isSystem.toString()];
+        const infraContainerDetails = this.props.containersDetails[pod.InfraId + pod.isSystem.toString()];
+
+        return (
+            <>
+                {podStats && podStatus === "Running" &&
+                    <>
+                        <Flex className='pod-stat' spaceItems={{ default: 'spaceItemsSm' }}>
+                            <Tooltip content={_("CPU")}>
+                                <MicrochipIcon />
+                            </Tooltip>
+                            <Text component={TextVariants.p} className="pf-u-hidden-on-sm">{_("CPU")}</Text>
+                            <Text component={TextVariants.p} className="pod-cpu">{podStats.cpu}%</Text>
+                        </Flex>
+                        <Flex className='pod-stat' spaceItems={{ default: 'spaceItemsSm' }}>
+                            <Tooltip content={_("Memory")}>
+                                <MemoryIcon />
+                            </Tooltip>
+                            <Text component={TextVariants.p} className="pf-u-hidden-on-sm">{_("Memory")}</Text>
+                            <Text component={TextVariants.p} className="pod-memory">{utils.format_memory_and_limit(podStats.mem) || "0 KB"}</Text>
+                        </Flex>
+                    </>
+                }
+                {infraContainer && infraContainerDetails &&
+                <>
+                    {infraContainer.Ports && infraContainer.Ports.length !== 0 &&
+                        <Tooltip content={_("Click to see published ports")}>
+                            <Popover
+                              enableFlip
+                              bodyContent={renderContainerPublishedPorts(infraContainer.Ports)}
+                            >
+                                <Button isSmall variant="link" className="pod-details-button pod-details-ports-btn"
+                                        icon={<PortIcon className="pod-details-button-color" />}
+                                >
+                                    {infraContainer.Ports.length}
+                                    <Text component={TextVariants.p} className="pf-u-hidden-on-sm">{_("ports")}</Text>
+                                </Button>
+                            </Popover>
+                        </Tooltip>
+                    }
+                    {infraContainerDetails.Mounts && infraContainerDetails.Mounts.length !== 0 &&
+                    <Tooltip content={_("Click to see volumes")}>
+                        <Popover
+                      enableFlip
+                      bodyContent={renderContainerVolumes(infraContainerDetails.Mounts)}
+                        >
+                            <Button isSmall variant="link" className="pod-details-button pod-details-volumes-btn"
+                            icon={<VolumeIcon className="pod-details-button-color" />}
+                            >
+                                {infraContainerDetails.Mounts.length}
+                                <Text component={TextVariants.p} className="pf-u-hidden-on-sm">{_("volumes")}</Text>
+                            </Button>
+                        </Popover>
+                    </Tooltip>
+                    }
+                </>
+                }
+            </>
+        );
     }
 
     render() {
@@ -627,9 +726,10 @@ class Containers extends React.Component {
                                         let caption;
                                         let podStatus;
                                         if (section !== 'no-pod') {
-                                            tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
-                                            podStatus = this.props.pods[section].Status;
-                                            caption = this.props.pods[section].Name;
+                                            const pod = this.props.pods[section];
+                                            tableProps['aria-label'] = cockpit.format("Containers of pod $0", pod.Name);
+                                            podStatus = pod.Status;
+                                            caption = pod.Name;
                                         } else {
                                             tableProps['aria-label'] = _("Containers");
                                         }
@@ -638,11 +738,14 @@ class Containers extends React.Component {
                                              id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                              isPlain={section == "no-pod"}
                                              isFlat={section != "no-pod"}
-                                             className="container-section">
+                                             className="container-pod">
                                                 {caption && <CardHeader>
                                                     <CardTitle>
-                                                        <span className='pod-name'>{caption}</span>
-                                                        <span>{_("pod group")}</span>
+                                                        <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
+                                                            <span className='pod-name'>{caption}</span>
+                                                            <span>{_("pod group")}</span>
+                                                            {this.renderPodDetails(this.props.pods[section], podStatus)}
+                                                        </Flex>
                                                     </CardTitle>
                                                     <CardActions className='panel-actions'>
                                                         <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
