@@ -565,8 +565,10 @@ class Containers extends React.Component {
                                             registries={this.props.registries}
                                             selinuxAvailable={this.props.selinuxAvailable}
                                             podmanRestartAvailable={this.props.podmanRestartAvailable}
+                                            userPodmanRestartAvailable={this.props.userPodmanRestartAvailable}
                                             systemServiceAvailable={this.props.systemServiceAvailable}
                                             userServiceAvailable={this.props.userServiceAvailable}
+                                            userLingeringEnabled={this.props.userLingeringEnabled}
                                             onAddNotification={this.props.onAddNotification} />);
         };
 

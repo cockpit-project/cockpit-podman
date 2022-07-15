@@ -432,7 +432,7 @@ export class ImageRunModal extends React.Component {
             }
             // Enable podman-restart.service for system containers, for user
             // sessions enable-linger needs to be enabled for containers to start on boot.
-            if (this.state.restartPolicy === "always" && this.props.systemServiceAvailable) {
+            if (this.state.restartPolicy === "always" && (this.props.userLingeringEnabled || this.props.systemServiceAvailable)) {
                 this.enablePodmanRestartService();
             }
         }
@@ -782,8 +782,11 @@ export class ImageRunModal extends React.Component {
 
     enablePodmanRestartService = () => {
         const argv = ["systemctl", "enable", "podman-restart.service"];
+        if (!this.isSystem()) {
+            argv.splice(1, 0, "--user");
+        }
 
-        cockpit.spawn(argv, { superuser: "require", err: "message" })
+        cockpit.spawn(argv, { superuser: this.isSystem() ? "require" : "", err: "message" })
                 .catch(err => {
                     console.warn("Failed to start podman-restart.service:", JSON.stringify(err));
                 });
@@ -997,14 +1000,14 @@ export class ImageRunModal extends React.Component {
                                 </Flex>
                             </FormGroup>
                         }
-                        {this.isSystem() && this.props.podmanRestartAvailable &&
+                        {((this.props.userLingeringEnabled && this.props.userPodmanRestartAvailable) || (this.isSystem() && this.props.podmanRestartAvailable)) &&
                         <Grid hasGutter md={6} sm={3}>
                             <GridItem>
                                 <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}
                           labelIcon={
                               <Popover aria-label={_("Restart policy help")}
                                 enableFlip
-                                bodyContent={_("Restart policy to follow when containers exit.")}>
+                                bodyContent={this.props.userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
                                   <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
                                       <OutlinedQuestionCircleIcon />
                                   </button>

@@ -64,7 +64,9 @@ class Application extends React.Component {
             version: '1.3.0',
             selinuxAvailable: false,
             podmanRestartAvailable: false,
+            userPodmanRestartAvailable: false,
             currentUser: _("User"),
+            userLingeringEnabled: null,
             privileged: false,
             location: {},
         };
@@ -537,19 +539,21 @@ class Application extends React.Component {
                 .catch(() => this.setState({ selinuxAvailable: false }));
 
         cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
-                .then(out => {
-                    if (out.trim() === "loaded") {
-                        this.setState({ podmanRestartAvailable: true });
-                    } else {
-                        this.setState({ podmanRestartAvailable: false });
-                    }
-                });
+                .then(out => this.setState({ podmanRestartAvailable: out.trim() === "loaded" }));
 
         superuser.addEventListener("changed", () => this.setState({ privileged: !!superuser.allowed }));
         this.setState({ privileged: superuser.allowed });
 
         cockpit.user().then(user => {
             this.setState({ currentUser: user.name || _("User") });
+            // HACK: https://github.com/systemd/systemd/issues/22244#issuecomment-1210357701
+            cockpit.file(`/var/lib/systemd/linger/${user.name}`).watch((content, tag) => {
+                if (content == null && tag === '-') {
+                    this.setState({ userLingeringEnabled: false });
+                } else {
+                    this.setState({ userLingeringEnabled: true });
+                }
+            });
         });
 
         cockpit.addEventListener("locationchanged", this.onNavigate);
@@ -581,6 +585,9 @@ class Application extends React.Component {
 
     checkUserService() {
         const argv = ["systemctl", "--user", "is-enabled", "podman.socket"];
+
+        cockpit.spawn(["systemctl", "--user", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
+                .then(out => this.setState({ userPodmanRestartAvailable: out.trim() === "loaded" }));
 
         cockpit.spawn(argv, { environ: ["LC_ALL=C"], err: "out" })
                 .then(() => this.setState({ userServiceExists: true }))
@@ -717,6 +724,8 @@ class Application extends React.Component {
                 registries={this.state.registries}
                 selinuxAvailable={this.state.selinuxAvailable}
                 podmanRestartAvailable={this.state.podmanRestartAvailable}
+                userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
+                userLingeringEnabled={this.state.userLingeringEnabled}
             />;
         const containerList =
             <Containers
@@ -739,6 +748,8 @@ class Application extends React.Component {
                 registries={this.state.registries}
                 selinuxAvailable={this.state.selinuxAvailable}
                 podmanRestartAvailable={this.state.podmanRestartAvailable}
+                userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
+                userLingeringEnabled={this.state.userLingeringEnabled}
                 updateContainerAfterEvent={this.updateContainerAfterEvent}
             />;
 

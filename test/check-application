@@ -24,6 +24,9 @@ registries = ['localhost:5000', 'localhost:6000']
 
 NOT_RUNNING = ["Exited", "Stopped"]
 
+# Ubuntu 2204 lacks user systemd units https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
+DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
+
 
 def checkImage(browser, name, owner):
     if browser.attr("#containers-images button.pf-c-expandable-section__toggle", "aria-expanded") == 'false':
@@ -1452,7 +1455,7 @@ class TestApplication(testlib.MachineCase):
             # Set restart policy to 3 retries
             b.set_val("#run-image-dialog-restart-policy", "on-failure")
             b.set_input_text('#run-image-dialog-restart-retries input', '3')
-        else:
+        else:  # no lingering enabled so it's disabled
             b.wait_not_present("#run-image-dialog-restart-policy")
 
         # Switch to Integration tab
@@ -2028,15 +2031,30 @@ class TestApplication(testlib.MachineCase):
     def testHealthcheckUser(self):
         self._testHealthcheck(False)
 
-    def testPodmanRestartEnabled(self):
+    @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_USER_RESTART)
+    def testPodmanRestartEnabledUser(self):
+        self._testPodmanRestartEnabled(False)
+
+    def testPodmanRestartEnabledSystem(self):
+        self._testPodmanRestartEnabled(True)
+
+    def _testPodmanRestartEnabled(self, auth):
         b = self.browser
-        self.addCleanup(self.machine.execute, "systemctl disable podman-restart.service")
+        if auth:
+            self.addCleanup(self.machine.execute, "systemctl disable podman-restart.service")
+        else:
+            self.addCleanup(self.machine.execute, "systemctl --user disable podman-restart.service")
+            self.machine.execute("loginctl enable-linger $(id -u admin)")
+            # HACK: verify that the file we watch exists
+            self.assertTrue(self.machine.execute("if test -e /var/lib/systemd/linger/admin; then echo yes; fi").strip() != "")
+            self.addCleanup(self.machine.execute, "loginctl disable-linger $(id -u admin)")
 
         # Drop user images for easy selection
-        if "busybox" in self.execute(False, "podman images"):
-            self.execute(False, "podman rmi busybox")
+        if auth:
+            if "busybox" in self.execute(False, "podman images"):
+                self.execute(False, "podman rmi busybox")
 
-        self.login(True)
+        self.login(auth)
         b.click("#containers-images button.pf-c-expandable-section__toggle")
 
         def create_container(name, policy=None):
@@ -2052,14 +2070,17 @@ class TestApplication(testlib.MachineCase):
 
         container_name = 'none'
         create_container(container_name)
-        restartPolicy = self.execute(True, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
+        restartPolicy = self.execute(auth, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
         self.assertEqual(restartPolicy, '{ 0}')
 
         container_name = 'restart'
         create_container(container_name, 'always')
-        restartPolicy = self.execute(True, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
+        restartPolicy = self.execute(auth, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
         self.assertEqual(restartPolicy, '{always 0}')
-        podmanRestartEnabled = self.execute(True, "systemctl is-enabled podman-restart.service || true").strip()
+        if auth:
+            podmanRestartEnabled = self.execute(True, "systemctl is-enabled podman-restart.service || true").strip()
+        else:
+            podmanRestartEnabled = self.execute(False, "systemctl --user is-enabled podman-restart.service || true").strip()
         self.assertEqual(podmanRestartEnabled, 'enabled')
 
     def _testCreateContainerInPod(self, auth):
