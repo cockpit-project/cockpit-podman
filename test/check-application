@@ -214,9 +214,27 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers("all")
         self.waitPodContainer("pod-1", [])
 
+        def get_pod_cpu_usage(pod_name):
+            cpu = self.browser.text(f"#table-{pod_name}-title .pod-cpu")
+            self.assertIn('%', cpu)
+            return float(cpu[:-1])
+
+        def get_pod_memory(pod_name):
+            memory = self.browser.text(f"#table-{pod_name}-title .pod-memory")
+            memory, unit = memory.split(' ')
+            self.assertIn(unit, ["GB", "MB", "KB"])
+            return float(memory)
+
         containerId = self.machine.execute("podman run -d --pod pod-1 --name test-pod-1-system alpine sleep 100").strip()
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "Running", "id": containerId}])
-        self.machine.execute("podman pod stop pod-1")
+        cpu = get_pod_cpu_usage("pod-1")
+        b.wait(lambda: get_pod_memory("pod-1") > 0)
+
+        # Test that cpu usage increases
+        self.machine.execute("podman exec -i test-pod-1-system sh -c 'dd bs=1024 count=1000000 < /dev/urandom > /dev/null'")
+        b.wait(lambda: get_pod_cpu_usage("pod-1") > cpu)
+
+        self.machine.execute("podman pod stop -t0 pod-1")  # disable timeout, so test doesn't wait endlessly
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
         self.filter_containers("running")
         self.waitPodRow("pod-1", False)
@@ -266,6 +284,20 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text(".pf-c-modal-box__body", "test-pod-2-system")
         b.click(".pf-c-modal-box button:contains('Delete')")
         self.waitPodRow("pod-2", False)
+
+        # Volumes / mounts
+        self.machine.execute("podman pod create -p 9999:9999 -v /tmp:/app --name pod-3")
+        self.machine.execute("podman pod start pod-3")
+
+        self.waitPodContainer("pod-3", [])
+        # Verify 1 port mapping
+        b.wait_in_text("#table-pod-3-title .pod-details-ports-btn", "1")
+        b.click("#table-pod-3-title .pod-details-ports-btn")
+        b.wait_in_text(".pf-c-popover__content", "0.0.0.0:9999 → 9999/tcp")
+        # Verify 1 mount
+        b.wait_in_text("#table-pod-3-title .pod-details-volumes-btn", "1")
+        b.click("#table-pod-3-title .pod-details-volumes-btn")
+        b.wait_in_text(".pf-c-popover__content", "/tmp ↔ /app")
 
     @testlib.nondestructive
     def testBasicSystem(self):

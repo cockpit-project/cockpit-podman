@@ -7,7 +7,7 @@ import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 
 const _ = cockpit.gettext;
 
-const renderContainerPublishedPorts = (ports) => {
+export const renderContainerPublishedPorts = (ports) => {
     if (!ports)
         return null;
 
@@ -28,7 +28,7 @@ const renderContainerPublishedPorts = (ports) => {
     return <List isPlain>{result}</List>;
 };
 
-const renderContainerVolumes = (volumes) => {
+export const renderContainerVolumes = (volumes) => {
     if (!volumes.length)
         return null;
 

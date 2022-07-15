@@ -1,7 +1,26 @@
-.container-section {
+@import "global-variables";
+
+.container-pod {
     .pf-c-card__header {
         border-color: #ddd;
         padding-top: var(--pf-global--spacer--md);
+    }
+
+    .pod-header-details {
+	border-color: #ddd;
+	margin-top: var(--pf-global--spacer--md);
+	margin-left: var(--pf-global--spacer--md);
+	margin-right: var(--pf-global--spacer--md);
+    }
+
+    .pod-details-button {
+       padding-left: 0;
+       padding-right: 0;
+       margin-right: var(--pf-global--spacer--md);
+    }
+
+    .pod-details-button-color {
+       color: var(--pf-c-button--m-secondary--Color);
     }
 
     .pf-c-card__title {
@@ -16,8 +35,35 @@
         }
     }
 
-    .pf-c-card__header:not(:last-child) {
-        padding-bottom: var(--pf-global--spacer-sm);
+    > .pf-c-card__header {
+        &:not(:last-child) {
+            padding-bottom: var(--pf-global--spacer-sm);
+        }
+
+        // Reduce vertical padding of pod header items
+        > .pf-c-card__title > .pf-l-flex {
+            row-gap: var(--pf-global--spacer--sm);
+        }
+    }
+}
+
+.pod-stat {
+    @media (max-width: $pf-global--breakpoint--sm - 1) {
+        // Place each pod stat on its own row
+        flex-basis: 100%;
+        display: grid;
+        // Give labels to the same space
+        grid-template-columns: minmax(auto, 4rem) 1fr;
+
+        > svg {
+            // Hide icons in mobile to be consistent with container lists
+            display: none;
+        }
+    }
+
+    // Center the icons for proper vertical alignment
+    > svg {
+        align-self: center;
     }
 }
 
