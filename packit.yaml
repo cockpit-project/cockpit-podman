@@ -18,8 +18,7 @@ srpm_build_deps:
 jobs:
   - job: tests
     trigger: pull_request
-    metadata:
-      targets:
+    targets:
       - fedora-35
       - fedora-36
       - fedora-development
@@ -27,11 +26,10 @@ jobs:
 
   - job: copr_build
     trigger: release
-    metadata:
-      owner: "@cockpit"
-      project: "cockpit-preview"
-      preserve_project: True
-      targets:
+    owner: "@cockpit"
+    project: "cockpit-preview"
+    preserve_project: True
+    targets:
       - fedora-35
       - fedora-36
       - fedora-development
@@ -47,24 +45,21 @@ jobs:
 
   - job: propose_downstream
     trigger: release
-    metadata:
-      dist_git_branches:
-        - fedora-development
-        - fedora-35
-        - fedora-36
+    dist_git_branches:
+      - fedora-development
+      - fedora-35
+      - fedora-36
 
   - job: koji_build
     trigger: commit
-    metadata:
-      dist_git_branches:
-        - fedora-development
-        - fedora-35
-        - fedora-36
+    dist_git_branches:
+      - fedora-development
+      - fedora-35
+      - fedora-36
 
   - job: bodhi_update
     trigger: commit
-    metadata:
-      dist_git_branches:
-        # rawhide updates are created automatically
-        - fedora-35
-        - fedora-36
+    dist_git_branches:
+      # rawhide updates are created automatically
+      - fedora-35
+      - fedora-36
