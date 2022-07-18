@@ -1808,12 +1808,21 @@ class TestApplication(testlib.MachineCase):
     def testPruneUnusedImagesUser(self):
         self._testPruneUnusedImagesSystem(False)
 
-    def _testPruneUnusedImagesSystem(self, auth):
+    @testlib.skipImage("no root login available on coreos", "fedora-coreos")
+    @testlib.nondestructive
+    def testPruneUnusedImagesRoot(self):
+        self._testPruneUnusedImagesSystem(False, True)
+
+    def _testPruneUnusedImagesSystem(self, auth, root=False):
         b = self.browser
-        self.login(auth)
+        if root:
+            self.login_and_go("/podman", user="root")
+            b.wait_visible("#app")
+        else:
+            self.login(auth)
 
         # By default we have 3 unused images, start one.
-        self.execute(auth, "podman run -d --name used_image alpine:latest sh")
+        self.execute(auth or root, "podman run -d --name used_image alpine:latest sh")
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
 

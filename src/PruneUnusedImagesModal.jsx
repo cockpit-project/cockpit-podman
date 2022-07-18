@@ -52,10 +52,9 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
 class PruneUnusedImagesModal extends React.Component {
     constructor(props) {
         super(props);
-        const isSystem = this.props.userServiceAvailable && this.props.systemServiceAvailable;
         this.state = {
-            deleteUserImages: true,
-            deleteSystemImages: isSystem,
+            deleteUserImages: this.props.userServiceAvailable !== null && this.props.userServiceAvailable,
+            deleteSystemImages: this.props.systemServiceAvailable,
             isPruning: false,
         };
     }
@@ -83,7 +82,7 @@ class PruneUnusedImagesModal extends React.Component {
     }
 
     render() {
-        const isSystem = this.props.userServiceAvailable && this.props.systemServiceAvailable;
+        const isSystem = this.props.systemServiceAvailable;
         const userImages = this.props.unusedImages.filter(image => !image.isSystem);
         const systemImages = this.props.unusedImages.filter(image => image.isSystem);
         const showCheckboxes = userImages.length > 0 && systemImages.length > 0;
