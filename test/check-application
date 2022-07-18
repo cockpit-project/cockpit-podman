@@ -992,6 +992,7 @@ class TestApplication(testlib.MachineCase):
 
         # Check we show usage
         b.wait(lambda: self.getContainerAttr("busybox:latest", "CPU") != "")
+        b.wait(lambda: self.getContainerAttr("busybox:latest", "Memory") != "")
         memory = self.getContainerAttr("busybox:latest", "Memory")
         if auth or self.has_cgroupsV2:
             cpu = get_cpu_usage("busybox:latest")
