@@ -57,7 +57,7 @@ class TestApplication(testlib.MachineCase):
             systemctl reset-failed podman.service podman.socket
             podman system reset --force
             pkill -e -9 podman || true
-            while pgrep -e podman; do sleep 0.1; done
+            while pgrep podman; do sleep 0.1; done
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
             sync
             """)
