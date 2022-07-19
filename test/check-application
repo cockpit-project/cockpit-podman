@@ -56,8 +56,10 @@ class TestApplication(testlib.MachineCase):
             systemctl stop podman.service podman.socket
             systemctl reset-failed podman.service podman.socket
             podman system reset --force
-            killall -9 podman || true
+            pkill -e -9 podman || true
+            while pgrep -e podman; do sleep 0.1; done
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
+            sync
             """)
 
         # Create admin session
