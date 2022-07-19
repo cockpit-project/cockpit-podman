@@ -4,7 +4,7 @@
 }
 
 /* Danger dropdown items should be red */
-.pf-c-dropdown__menu-item.pf-m-danger:not(.pf-m-disabled):not(.pf-m-aria-disabled) {
+.pf-c-dropdown__menu-item.pf-m-danger:not(.pf-m-disabled, .pf-m-aria-disabled) {
     color: var(--pf-global--danger-color--200);
 }
 
@@ -14,5 +14,5 @@
 }
 
 .containers-images .pf-c-expandable-section__content {
-    margin-top: 0px;
+    margin-top: 0;
 }
