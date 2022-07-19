@@ -48,8 +48,24 @@ class TestApplication(testlib.MachineCase):
         m = self.machine
         m.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
 
-        # backup/restore pristine podman state, so that tests can run on existing testbeds
-        self.restore_dir("/var/lib/containers", reboot_safe=True)
+        # save containers for later, so they can be restored on the first run this will save images.
+        m.execute("""
+            imagesdir="/var/cache/podmantest"
+            mkdir -p ${imagesdir}
+            for img in $(podman images -n | awk ' { printf \"%s:%s \", $1, $2 } '); do
+                imagename=${img##*\\/}
+                imagename=${imagename%:*}
+                podman save -o ${imagesdir}/${imagename}.tar ${img}
+            done
+        """)
+
+        # restore podman images
+        m.execute("""
+            # don't load when images exists
+            for img in /var/cache/podmantest/*;
+                do podman load -i $img;
+            done
+        """)
 
         # HACK: sometimes podman leaks mounts
         self.addCleanup(m.execute, """set -eu
@@ -59,6 +75,15 @@ class TestApplication(testlib.MachineCase):
             killall -9 podman || true
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
             """)
+
+        # copy images for user podman tests; podman insists on user session
+        m.execute("""
+            loginctl enable-linger $(id -u admin)
+            for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
+                podman save $img | sudo -i -u admin podman load
+            done
+            loginctl disable-linger $(id -u admin)
+        """)
 
         # Create admin session
         m.execute("""
@@ -76,10 +101,8 @@ class TestApplication(testlib.MachineCase):
 
         # Enable user service as well
         self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
-        self.restore_dir("/home/admin/.local/share/containers", reboot_safe=True)
         self.addCleanup(self.admin_s.execute, "systemctl --user stop podman.service podman.socket || true")
-        self.addCleanup(self.admin_s.execute, "podman rm --force --all || true")
-        self.addCleanup(self.admin_s.execute, "podman pod rm --force --all || true")
+        self.addCleanup(self.admin_s.execute, "podman system reset --force")
 
         # But disable it globally so that "systemctl --user disable" does what we expect
         m.execute("systemctl --global disable podman.socket")

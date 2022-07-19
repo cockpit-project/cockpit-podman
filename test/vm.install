@@ -35,13 +35,6 @@ if [ "$ID" = "fedora" ]; then
     fi
 fi
 
-# copy images for user podman tests; podman insists on user session
-loginctl enable-linger $(id -u admin)
-for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
-    podman save  $img | sudo -i -u admin podman load
-done
-loginctl disable-linger $(id -u admin)
-
 # 15minutes after boot tmp files are removed and podman stores some tmp lock files
 systemctl disable --now systemd-tmpfiles-clean.timer
 systemctl --global disable systemd-tmpfiles-clean.timer
