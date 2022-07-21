@@ -24,9 +24,6 @@ registries = ['localhost:5000', 'localhost:6000']
 
 NOT_RUNNING = ["Exited", "Stopped"]
 
-# Ubuntu stable has 3.2.1 while we need podman 3.3.
-DISTROS_WITHOUT_PODMAN_RESTART = ['ubuntu-stable']
-
 
 def checkImage(browser, name, owner):
     if browser.attr("#containers-images button.pf-c-expandable-section__toggle", "aria-expanded") == 'false':
@@ -1451,7 +1448,7 @@ class TestApplication(testlib.MachineCase):
         # Set up command line
         b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
 
-        if auth and m.image not in DISTROS_WITHOUT_PODMAN_RESTART:
+        if auth:
             # Set restart policy to 3 retries
             b.set_val("#run-image-dialog-restart-policy", "on-failure")
             b.set_input_text('#run-image-dialog-restart-retries input', '3')
@@ -1552,7 +1549,7 @@ class TestApplication(testlib.MachineCase):
             self.assertEqual(cpuShares, '512')
 
         restartPolicy = self.execute(auth, "podman inspect --format '{{.HostConfig.RestartPolicy}}' busybox-with-tty").strip()
-        if auth and m.image not in DISTROS_WITHOUT_PODMAN_RESTART:
+        if auth:
             self.assertEqual(restartPolicy, '{on-failure 3}')
         else:
             # No restart policy
@@ -1992,7 +1989,6 @@ class TestApplication(testlib.MachineCase):
                             ignore=["thead", "#container-details-healthcheck dt:contains('Failing streak') + dd",
                                     "td[data-label='Started at']"])
 
-    @testlib.skipImage("Ubuntu-stable does not get health check run signals", "ubuntu-stable")
     def testHealthcheckSystem(self):
         self._testHealthcheck(True)
 
@@ -2000,7 +1996,6 @@ class TestApplication(testlib.MachineCase):
     def testHealthcheckUser(self):
         self._testHealthcheck(False)
 
-    @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_RESTART)
     def testPodmanRestartEnabled(self):
         b = self.browser
         self.addCleanup(self.machine.execute, "systemctl disable podman-restart.service")
