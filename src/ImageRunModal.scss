@@ -65,6 +65,15 @@
     }
 }
 
+// We use FormFieldGroup PF component for the nested look and for ability to add buttons to the header
+// However we want to save space and not add indent to the left so we need to override it
+.dynamic-form-group .pf-c-form__field-group-body {
+    // Stretch content fully
+    --pf-c-form__field-group-body--GridColumn: 1 / -1;
+    // Reduce padding at the top
+    --pf-c-form__field-group-body--PaddingTop: var(--pf-global--spacer--xs);
+}
+
 // HACK: A local copy of pf-m-horizontal (as ct-m-horizontal),
 // but applied at the FormGroup level instead of Form
 @media (min-width: $pf-global--breakpoint--md) {
