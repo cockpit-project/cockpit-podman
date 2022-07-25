@@ -53,7 +53,7 @@ const units = {
 const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
     (
         <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-4-col-on-md"
+            <FormGroup className="pf-m-6-col-on-md"
                 label={_("IP address")}
                 fieldId={id + "-ip-address"}
                 labelIcon={
@@ -89,7 +89,7 @@ const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
                             value={item.hostPort || ''}
                             onChange={value => onChange(idx, 'hostPort', value)} />
             </FormGroup>
-            <FormGroup className="pf-m-3-col-on-md"
+            <FormGroup className="pf-m-2-col-on-md"
                         label={_("Container port")}
                         fieldId={id + "-container-port"} isRequired>
                 <TextInput id={id + "-container-port"}
@@ -149,12 +149,12 @@ const handleEnvValue = (key, value, idx, onChange, additem, itemCount) => {
 const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
     (
         <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-5-col-on-md" label={_("Key")} fieldId={id + "-key-address"}>
+            <FormGroup className="pf-m-6-col-on-md" label={_("Key")} fieldId={id + "-key-address"}>
                 <TextInput id={id + "-key"}
                        value={item.envKey || ''}
                        onChange={value => handleEnvValue('envKey', value, idx, onChange, additem, itemCount)} />
             </FormGroup>
-            <FormGroup className="pf-m-5-col-on-md" label={_("Value")} fieldId={id + "-value-address"}>
+            <FormGroup className="pf-m-6-col-on-md" label={_("Value")} fieldId={id + "-value-address"}>
                 <TextInput id={id + "-value"}
                        value={item.envValue || ''}
                        onChange={value => handleEnvValue('envValue', value, idx, onChange, additem, itemCount)} />
@@ -174,7 +174,7 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
 const Volume = ({ id, item, onChange, idx, removeitem, additem, options, itemCount }) =>
     (
         <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-3-col-on-md" label={_("Host path")} fieldId={id + "-host-path"}>
+            <FormGroup className="pf-m-4-col-on-md" label={_("Host path")} fieldId={id + "-host-path"}>
                 <FileAutoComplete id={id + "-host-path"}
                     value={item.hostPath || ''}
                     onChange={ value => onChange(idx, 'hostPath', value) } />
