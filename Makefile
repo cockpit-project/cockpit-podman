@@ -154,7 +154,7 @@ rpm: $(TARFILE) $(SPEC)
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	if [ "$$TEST_OS" = "fedora-coreos" ]; then \
 	    bots/image-customize --verbose --fresh --no-network --run-command 'mkdir -p /usr/local/share/cockpit' \
-	                         --upload dist:/usr/local/share/cockpit/podman \
+	                         --upload dist/:/usr/local/share/cockpit/podman \
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	else \
 	    bots/image-customize --verbose --fresh --no-network --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
