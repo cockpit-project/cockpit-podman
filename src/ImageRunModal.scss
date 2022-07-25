@@ -27,6 +27,18 @@
         height: calc(var(--pf-global--FontSize--md) * var(--pf-global--LineHeight--md) + 12px);
         align-content: center;
     }
+
+    .pf-c-form__field-group-body {
+        // Stretch content fully
+        --pf-c-form__field-group-body--GridColumn: 1 / -1;
+        // Reduce padding at the top
+        --pf-c-form__field-group-body--PaddingTop: var(--pf-global--spacer--xs);
+    }
+
+    .pf-l-grid {
+        // Rework grid to fix extra spacing between content and removal button
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    }
 }
 
 // Ensure the width fits within the screen boundaries (with padding on the sides)
