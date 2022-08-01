@@ -118,19 +118,28 @@ devel-uninstall:
 print-version:
 	@echo "$(VERSION)"
 
+# required for running integration tests; commander and ws are deps of chrome-remote-interface
+TEST_NPMS = \
+       node_modules/chrome-remote-interface \
+       node_modules/commander \
+       node_modules/sizzle \
+       node_modules/ws \
+       $(NULL)
+
 dist: $(TARFILE)
 	@ls -1 $(TARFILE)
 
 # when building a distribution tarball, call webpack with a 'production' environment
-# we don't ship node_modules for license and compactness reasons; we ship a
-# pre-built dist/ (so it's not necessary) and ship package-lock.json (so that
-# node_modules/ can be reconstructed if necessary)
+# we don't ship most node_modules for license and compactness reasons, only the ones necessary for running tests
+# we ship a pre-built dist/ (so it's not necessary) and ship package-lock.json (so that node_modules/ can be reconstructed if necessary)
 $(TARFILE): export NODE_ENV=production
 $(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	if type appstream-util >/dev/null 2>&1; then appstream-util validate-relax --nonet *.metainfo.xml; fi
 	tar --xz $(TAR_ARGS) -cf $(TARFILE) --transform 's,^,$(RPM_NAME)/,' \
-		--exclude '*.in' --exclude test/reference --exclude node_modules \
-		$$(git ls-files) $(COCKPIT_REPO_FILES) $(NODE_MODULES_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog dist/
+		--exclude '*.in' --exclude test/reference \
+		$$(git ls-files | grep -v node_modules) \
+		$(COCKPIT_REPO_FILES) $(NODE_MODULES_TEST) $(SPEC) $(TEST_NPMS) \
+		packaging/arch/PKGBUILD packaging/debian/changelog dist/
 
 # convenience target for developers
 rpm: $(TARFILE)
