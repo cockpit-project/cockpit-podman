@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import cockpit from 'cockpit';
 
-import { Button, DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, List, ListItem } from "@patternfly/react-core";
+import { Button, DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, List, ListItem, Tooltip } from "@patternfly/react-core";
 
 import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 
@@ -35,7 +35,11 @@ const renderContainerVolumes = (volumes) => {
     const result = volumes.map(volume => {
         return (
             <ListItem key={volume.Source + volume.Destination}>
-                {volume.Source} &rarr; {volume.Destination}
+                {volume.Source}
+                {volume.RW
+                    ? <Tooltip content={_("Read-write access")}><span> &harr; </span></Tooltip>
+                    : <Tooltip content={_("Read-only access")}><span> &rarr; </span></Tooltip>}
+                {volume.Destination}
             </ListItem>
         );
     });

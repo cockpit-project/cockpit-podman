@@ -1611,7 +1611,7 @@ class TestApplication(testlib.MachineCase):
         self.assertNotIn('MELON=GRAPE', env)
 
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Volumes") + dd', f"{rodir} \u2192 /tmp/ro")
-        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Volumes") + dd', f"{rwdir} \u2192 /tmp/rw")
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Volumes") + dd', f"{rwdir} \u2194 /tmp/rw")
 
         romnt = self.execute(auth, "podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro")
         self.assertIn('ro', romnt)
