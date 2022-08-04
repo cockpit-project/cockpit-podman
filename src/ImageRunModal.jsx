@@ -363,7 +363,7 @@ export class ImageRunModal extends React.Component {
     }
 
     getCreateConfig() {
-        const createConfig = {};
+        const createConfig = { annotations: { created_by: "cockpit" } };
 
         if (this.props.pod) {
             createConfig.pod = this.props.pod.Id;

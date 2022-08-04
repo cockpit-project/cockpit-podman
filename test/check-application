@@ -1543,6 +1543,8 @@ class TestApplication(testlib.MachineCase):
                            state='Running', owner="system" if auth else "admin")
         hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
         self.assertEqual(hasTTY, 'true')
+        annotated = self.execute(auth, "podman inspect --format '{{.Config.Annotations.created_by}}' busybox-with-tty").strip()
+        self.assertEqual(annotated, 'cockpit')
         # Only works with CGroupsV2
         if auth or self.has_cgroupsV2:
             memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
