@@ -174,8 +174,7 @@ print-vm:
 PYEXEFILES=$(shell git grep -lI '^#!.*python')
 
 codecheck:
-	python3 -m pyflakes $(PYEXEFILES)
-	python3 -m pycodestyle --max-line-length=195 $(PYEXEFILES) # TODO: Fix long lines
+	flake8 $(PYEXEFILES)
 
 # convenience target to setup all the bits needed for the integration tests
 # without actually running them
