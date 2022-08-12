@@ -49,7 +49,7 @@ class TestApplication(testlib.MachineCase):
         self.restore_dir("/var/lib/containers", reboot_safe=True)
 
         # HACK: sometimes podman leaks mounts
-        self.addCleanup(m.execute, """set -eu
+        self.addCleanup(m.execute, """
             systemctl stop podman.service podman.socket
             systemctl reset-failed podman.service podman.socket
             podman system reset --force
@@ -788,10 +788,11 @@ class TestApplication(testlib.MachineCase):
             self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
             self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
             # Add local insecure registry into registries conf
-            self.execute(True, f"echo \"{REGISTRIES_CONF}\" > /etc/containers/registries.conf && systemctl stop podman.service")
+            self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
+            self.execute(True, "systemctl stop podman.service")
             # Push busybox image to the local registries
-            self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
-            self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
+            self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
+            self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox; podman push localhost:6000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
             self.execute(True, "podman rmi -f quay.io/libpod/busybox localhost:5000/my-busybox localhost:6000/my-busybox")
 
@@ -1073,7 +1074,7 @@ class TestApplication(testlib.MachineCase):
         # Set machine to cgroup1 and reboot; Debian uses hybrid mode and does not have grubby
         if not m.image.startswith("debian") and not m.image.startswith("ubuntu"):
             self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"')
-            self.machine.spawn("sleep 0.1 && reboot", "reboot")
+            self.machine.spawn("sleep 0.1; reboot", "reboot")
             m.wait_reboot()
 
         self._testCheckpointRestore()
@@ -1278,10 +1279,11 @@ class TestApplication(testlib.MachineCase):
         self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
         self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
         # Add local insecure registry into registries conf
-        self.execute(True, f"echo \"{REGISTRIES_CONF}\" > /etc/containers/registries.conf && systemctl stop podman.service")
+        self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
+        self.execute(True, "systemctl stop podman.service")
         # Push busybox image to the local registries
-        self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox && podman push localhost:5000/my-busybox")
-        self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox && podman push localhost:6000/my-busybox")
+        self.execute(True, "podman tag quay.io/libpod/busybox localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
+        self.execute(True, "podman tag quay.io/libpod/busybox localhost:6000/my-busybox; podman push localhost:6000/my-busybox")
         # Untag busybox image which duplicates the image we are about to download
         self.execute(True, "podman rmi -f quay.io/libpod/busybox localhost:5000/my-busybox localhost:6000/my-busybox")
 
