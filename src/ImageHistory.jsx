@@ -9,10 +9,10 @@ import { cellWidth } from '@patternfly/react-table';
 const _ = cockpit.gettext;
 
 const columnTitles = [
-    _("#"),
+    "#",
     _("Created"),
     _("Size"),
-    { title: _("Created By"), transforms: [cellWidth(80)] },
+    { title: _("Created by"), transforms: [cellWidth(80)] },
 ];
 
 const render_image_history = (history) => {

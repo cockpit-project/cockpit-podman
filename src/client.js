@@ -140,6 +140,7 @@ function parseImageInfo(info) {
         image.Env = info.Config.Env;
     }
     image.Author = info.Author;
+    image.History = info.History;
 
     return image;
 }
