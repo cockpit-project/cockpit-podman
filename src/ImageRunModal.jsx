@@ -1065,7 +1065,7 @@ export class ImageRunModal extends React.Component {
                         <DynamicListForm id='run-image-dialog-env'
                                  emptyStateString={_("No environment variables specified")}
                                  formclass='env-form'
-                                 label={_("Environment variables")}
+                                 label={_("Env variables")}
                                  actionLabel={_("Add variable")}
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
@@ -1196,7 +1196,7 @@ export class ImageRunModal extends React.Component {
                    footer={<>
                        {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                        <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={!image && selectedImage === ""}>
-                           {_("Create and run")}
+                           {_("Create and start")}
                        </Button>
                        <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={!image && selectedImage === ""}>
                            {_("Create")}
