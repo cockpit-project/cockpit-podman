@@ -100,7 +100,7 @@ class TestApplication(testlib.MachineCase):
         else:
             extra = 0
 
-        self.browser.wait_js_func("ph_count_check", "#containers-images tbody", expected + extra)
+        self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected + extra)
 
     def waitNumContainers(self, expected, auth):
         if auth and self.machine.ostree_image:
@@ -434,6 +434,10 @@ class TestApplication(testlib.MachineCase):
         b.click(busybox_sel + " .pf-c-dropdown__toggle")
         b.wait_visible(busybox_sel + " button.btn-delete")
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Commandsh")
+        # Show history
+        b.click("#containers-images tbody.pf-m-expanded .pf-c-tabs__list li:nth-child(2) button")
+        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"ID\"]:first", images['quay.io/libpod/busybox:latest'][:12])
+        b.assert_pixels('#containers-images .pf-c-table__expandable-row.pf-m-expanded', "history", ignore=[".ignore-pixels"])
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
         # make sure no running containers shown; on CoreOS there's the cockpit/ws container

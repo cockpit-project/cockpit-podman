@@ -3,6 +3,8 @@
 @import "global-variables";
 // For pf-line-clamp
 @import "@patternfly/patternfly/sass-utilities/mixins.scss";
+// For pf-u-disabled-color-100
+@import "@patternfly/patternfly/utilities/Text/text.css";
 
 #app .pf-c-card.containers-containers, #app .pf-c-card.containers-images {
     @extend .ct-card;
@@ -83,15 +85,17 @@
    color: var(--pf-global--Color--200);
 }
 
-// Add  borders to no pod containers list and images list
-.container-section.pf-m-plain tbody,
-.containers-images tbody {
-    border: var(--pf-c-card--m-flat--BorderWidth) solid var(--pf-c-card--m-flat--BorderColor);
-}
-
 .content-action {
     text-align: right;
     white-space: nowrap !important;
+}
+
+// Remove doubled-up padding and borders on nested tables in mobile
+.ct-listing-panel-body .ct-table tr {
+    --pf-c-table-tr--responsive--PaddingTop: 0;
+    --pf-c-table-tr--responsive--PaddingRight: 0;
+    --pf-c-table-tr--responsive--PaddingBottom: 0;
+    --pf-c-table-tr--responsive--PaddingLeft: 0;
 }
 
 @media (max-width: $pf-global--breakpoint--md - 1) {
@@ -103,5 +107,11 @@
 @media (min-width: $pf-global--breakpoint--md) {
     .show-only-when-narrow {
         display: none;
+    }
+
+    // Add  borders to no pod containers list and images list
+    .container-section.pf-m-plain tbody,
+    .containers-images tbody {
+        border: var(--pf-c-card--m-flat--BorderWidth) solid var(--pf-c-card--m-flat--BorderColor);
     }
 }
