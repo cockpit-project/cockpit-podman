@@ -229,4 +229,12 @@ export function pruneUnusedImages(system) {
     });
 }
 
+export function imageHistory(system, id) {
+    return new Promise((resolve, reject) => {
+        podmanCall(`libpod/images/${id}/history`, "GET", {}, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
 export const imageExists = (system, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
