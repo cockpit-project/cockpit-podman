@@ -89,7 +89,7 @@ const renderContainerEnv = (containerEnv, imageEnv) => {
 const ContainerIntegration = ({ container, containerDetail, localImages }) => {
     if (containerDetail === null || localImages === null) {
         return (
-            <EmptyStatePanel title='Loading details...' loading />
+            <EmptyStatePanel title={_('Loading details...')} loading />
         );
     }
 
