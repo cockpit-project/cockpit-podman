@@ -390,9 +390,6 @@ class Application extends React.Component {
          * now we 'll do a batch update
          */
         case 'start':
-            // HACK: We don't get 'started' event for pods got started by the first container which was added to them
-            // https://github.com/containers/podman/issues/7213
-            this.updatePodsAfterEvent(system);
             this.updateContainerAfterEvent(event.Actor.ID, system);
             break;
         case 'checkpoint':
