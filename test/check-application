@@ -248,8 +248,21 @@ class TestApplication(testlib.MachineCase):
         self.performPodAction("pod-1", "system", "Delete")
         b.click(".pf-c-modal-box button:contains(Delete)")
         b.wait_in_text(".pf-c-modal-box__body", "running or paused containers cannot be removed without force")
+        b.wait_in_text(".pf-c-modal-box__body .pf-c-list", "test-pod-1-system")
         b.click(".pf-c-modal-box button:contains('Force delete')")
         self.waitPodRow("pod-1", False)
+
+        b.set_input_text('#containers-filter', '')
+        self.machine.execute("podman pod create --infra=false --name pod-2")
+        self.waitPodContainer("pod-2", [])
+        containerId = self.machine.execute("podman run -d --pod pod-2 --name test-pod-2-system alpine sleep 100").strip()
+        self.waitPodContainer("pod-2", [{"name": "test-pod-2-system", "image": "alpine", "command": "sleep 100", "state": "Running", "id": containerId}])
+        self.machine.execute("podman rm --force -t0 test-pod-2-system")
+        self.waitPodContainer("pod-2", [])
+        self.performPodAction("pod-2", "system", "Delete")
+        b.wait_not_in_text(".pf-c-modal-box__body", "test-pod-2-system")
+        b.click(".pf-c-modal-box button:contains('Delete')")
+        self.waitPodRow("pod-2", False)
 
     @testlib.nondestructive
     def testBasicSystem(self):

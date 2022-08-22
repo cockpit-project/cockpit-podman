@@ -413,6 +413,9 @@ class Application extends React.Component {
             break;
         case 'remove':
         case 'cleanup':
+            // HACK: we don't get a pod event when a container in a pod is removed.
+            // https://github.com/containers/podman/issues/15408
+            this.updatePodsAfterEvent(system);
             this.updateContainersAfterEvent(system);
             break;
         /* The following events need only to update the Image list */
