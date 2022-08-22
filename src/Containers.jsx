@@ -542,19 +542,16 @@ class Containers extends React.Component {
         // Convert to the search result output
         let localImages = null;
         if (this.props.images) {
-            localImages = Object.keys(this.props.images).map(id => {
+            localImages = Object.keys(this.props.images).reduce((images, id) => {
                 const img = this.props.images[id];
                 if (img.RepoTags) {
                     img.Index = img.RepoTags[0].split('/')[0];
                     img.Name = img.RepoTags[0];
-                } else {
-                    img.Name = "<none:none>";
-                    img.Index = "";
+                    img.toString = function imgToString() { return this.Name };
+                    images.push(img);
                 }
-                img.toString = function imgToString() { return this.Name };
-
-                return img;
-            });
+                return images;
+            }, []);
         }
 
         const createContainer = (inPod) => {
