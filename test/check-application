@@ -663,6 +663,13 @@ class TestApplication(testlib.MachineCase):
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
 
+        # Intermediate images are not shown in create container dialog
+        b.click("#containers-containers-create-container-btn")
+        b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
+        b.click("#create-image-image-select-typeahead")
+        b.wait_visible(".pf-c-select__menu-item:contains('registry:2')")
+        b.wait_not_present(".pf-c-select__menu-item:contains('none')")
+
     @testlib.nondestructive
     def testCommitUser(self):
         self._testCommit(False)
