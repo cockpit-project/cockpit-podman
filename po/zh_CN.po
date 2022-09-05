@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-30 04:31+0000\n"
-"PO-Revision-Date: 2022-03-02 10:32+0000\n"
-"Last-Translator: Sundeep Anand <suanand@redhat.com>\n"
+"POT-Creation-Date: 2022-09-05 04:30+0000\n"
+"PO-Revision-Date: 2022-09-05 11:54+0000\n"
+"Last-Translator: Transtats <suanand@redhat.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
 "projects/cockpit-podman/main/zh_CN/>\n"
 "Language: zh_CN\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0\n"
-"X-Generator: Weblate 4.11\n"
+"X-Generator: Weblate 4.14\n"
 
 #: src/Images.jsx:87
 msgid "$0 container"
@@ -33,7 +33,7 @@ msgstr[0] "共$0个镜像，$1"
 #: src/ContainerHealthLogs.jsx:37
 msgid "$0 second"
 msgid_plural "$0 seconds"
-msgstr[0] ""
+msgstr[0] "$0 秒"
 
 #: src/Images.jsx:274
 msgid "$0 unused image, $1"
@@ -107,10 +107,8 @@ msgid "Cancel"
 msgstr "取消"
 
 #: src/Containers.jsx:312
-#, fuzzy
-#| msgid "Checkpoint"
 msgid "Checking health"
-msgstr "检查点"
+msgstr "检查健康状况"
 
 #: src/ContainerCheckpointModal.jsx:63 src/Containers.jsx:225
 msgid "Checkpoint"
@@ -121,10 +119,8 @@ msgid "Checkpoint container $0"
 msgstr "检查点容器 $0"
 
 #: org.cockpit-project.podman.metainfo.xml:6
-#, fuzzy
-#| msgid "Podman containers"
 msgid "Cockpit component for Podman containers"
-msgstr "Podman 容器"
+msgstr "Podman 容器的 Cockpit 组件"
 
 #: src/ImageDetails.jsx:15 src/ContainerHealthLogs.jsx:61
 #: src/ContainerCommitModal.jsx:130 src/ImageRunModal.jsx:929
@@ -133,10 +129,8 @@ msgid "Command"
 msgstr "命令"
 
 #: src/ImageHistory.jsx:31
-#, fuzzy
-#| msgid "Commit"
 msgid "Comments"
-msgstr "提交"
+msgstr "注释"
 
 #: src/ContainerCommitModal.jsx:162 src/Containers.jsx:260
 msgid "Commit"
@@ -151,28 +145,20 @@ msgid "Configured"
 msgstr "已配置"
 
 #: src/ContainerDeleteModal.jsx:30
-#, fuzzy
-#| msgid "Please confirm deletion of $0"
 msgid "Confirm deletion of $0"
-msgstr "请确认是否删除 $0"
+msgstr "确认删除 $0"
 
 #: src/PodActions.jsx:39
-#, fuzzy
-#| msgid "Please confirm deletion of pod $0"
 msgid "Confirm deletion of pod $0"
-msgstr "请确认删除 pod $0"
+msgstr "确认删除 pod $0"
 
 #: src/PodActions.jsx:38
-#, fuzzy
-#| msgid "Please confirm force deletion of pod $0"
 msgid "Confirm force deletion of pod $0"
-msgstr "请确认强制删除 pod $0"
+msgstr "确认强制删除 pod $0"
 
 #: src/ForceRemoveModal.jsx:17
-#, fuzzy
-#| msgid "Please confirm forced deletion of $0"
 msgid "Confirm forced deletion of $0"
-msgstr "请确认是否强制删除 $0"
+msgstr "确认强制删除 $0"
 
 #: src/Containers.jsx:416
 msgid "Console"
@@ -203,10 +189,8 @@ msgid "Container name"
 msgstr "容器名称"
 
 #: src/ContainerRenameModal.jsx:26 src/ContainerRenameModal.jsx:37
-#, fuzzy
-#| msgid "Container name"
 msgid "Container name is required."
-msgstr "容器名称"
+msgstr "容器名称是必需的。"
 
 #: src/ImageRunModal.jsx:182
 msgid "Container path"
@@ -229,10 +213,8 @@ msgid "Create a new image based on the current state of the $0 container."
 msgstr "根据 $0 容器的当前状态创建一个新镜像。"
 
 #: src/ImageRunModal.jsx:1202
-#, fuzzy
-#| msgid "Create container"
 msgid "Create and run"
-msgstr "创建容器"
+msgstr "创建并运行"
 
 #: src/Images.jsx:396 src/Images.jsx:410 src/Containers.jsx:590
 #: src/ImageRunModal.jsx:1198
@@ -253,44 +235,36 @@ msgid "Created"
 msgstr "已创建"
 
 #: src/ImageHistory.jsx:31
-#, fuzzy
-#| msgid "Created"
 msgid "Created by"
-msgstr "已创建"
+msgstr "创建"
 
 #: src/ImageRunModal.jsx:997
-#, fuzzy
-#| msgid "CPU shares"
 msgid "Decrease CPU shares"
-msgstr "CPU 份额"
+msgstr "减少 CPU 共享"
 
 #: src/ImageRunModal.jsx:1102
 msgid "Decrease interval"
-msgstr ""
+msgstr "缩短间隔"
 
 #: src/ImageRunModal.jsx:1036
-#, fuzzy
-#| msgid "Maximum retries"
 msgid "Decrease maximum retries"
-msgstr "最大重试次数"
+msgstr "减小最大重试次数"
 
 #: src/ImageRunModal.jsx:955
 msgid "Decrease memory"
-msgstr ""
+msgstr "减少内存"
 
 #: src/ImageRunModal.jsx:1176
 msgid "Decrease retries"
-msgstr ""
+msgstr "减少重试"
 
 #: src/ImageRunModal.jsx:1152
-#, fuzzy
-#| msgid "Start podman"
 msgid "Decrease start period"
-msgstr "启动 podman"
+msgstr "减少启动周期"
 
 #: src/ImageRunModal.jsx:1127
 msgid "Decrease timeout"
-msgstr ""
+msgstr "减少超时"
 
 #: src/ContainerDeleteModal.jsx:32 src/Images.jsx:416 src/PodActions.jsx:44
 #: src/PodActions.jsx:194 src/Containers.jsx:279
@@ -380,7 +354,7 @@ msgstr "已退出"
 
 #: src/ContainerHealthLogs.jsx:111
 msgid "Failed health run"
-msgstr ""
+msgstr "失败的健康运行"
 
 #: src/ContainerCheckpointModal.jsx:36
 msgid "Failed to checkpoint container $0"
@@ -443,10 +417,8 @@ msgid "Failed to remove image $0"
 msgstr "删除镜像 $0 失败"
 
 #: src/ContainerRenameModal.jsx:52
-#, fuzzy
-#| msgid "Failed to resume container $0"
 msgid "Failed to rename container $0"
-msgstr "恢复容器 $0 失败"
+msgstr "重命名容器 $0 失败"
 
 #: src/Containers.jsx:144
 msgid "Failed to restart container $0"
@@ -473,10 +445,8 @@ msgid "Failed to run container $0"
 msgstr "运行容器 $0 失败"
 
 #: src/ContainerHealthLogs.jsx:91 src/Containers.jsx:130
-#, fuzzy
-#| msgid "Failed to checkpoint container $0"
 msgid "Failed to run health check on container $0"
-msgstr "检查点容器 $0 失败"
+msgstr "在容器 $0 上运行健康检查失败"
 
 #: src/ImageRunModal.jsx:621 src/ImageSearchModal.jsx:113
 msgid "Failed to search for images: $0"
@@ -504,7 +474,7 @@ msgstr "停止 Pod $0 失败"
 
 #: src/ContainerHealthLogs.jsx:81
 msgid "Failing streak"
-msgstr ""
+msgstr "streak 失败"
 
 #: src/ContainerCommitModal.jsx:169
 msgid "Force commit"
@@ -523,10 +493,8 @@ msgid "Force stop"
 msgstr "强制停止"
 
 #: src/ImageRunModal.jsx:966
-#, fuzzy
-#| msgid "GiB"
 msgid "GB"
-msgstr "GiB"
+msgstr "GB"
 
 #: src/ContainerDetails.jsx:51
 msgid "Gateway"
@@ -534,27 +502,27 @@ msgstr "网关"
 
 #: src/Containers.jsx:423 src/ImageRunModal.jsx:1078
 msgid "Health check"
-msgstr ""
+msgstr "健康检查"
 
 #: src/ImageRunModal.jsx:1087
 msgid "Health check interval help"
-msgstr ""
+msgstr "健康检查间隔帮助"
 
 #: src/ImageRunModal.jsx:1162
 msgid "Health check retries help"
-msgstr ""
+msgstr "健康检查重试帮助"
 
 #: src/ImageRunModal.jsx:1137
 msgid "Health check start period help"
-msgstr ""
+msgstr "健康检查启动周期帮助"
 
 #: src/ImageRunModal.jsx:1112
 msgid "Health check timeout help"
-msgstr ""
+msgstr "健康检查超时帮助"
 
 #: src/Containers.jsx:308
 msgid "Healthy"
-msgstr ""
+msgstr "健康"
 
 #: src/Images.jsx:299
 msgid "Hide images"
@@ -566,7 +534,7 @@ msgstr "隐藏中间镜像"
 
 #: src/Images.jsx:159
 msgid "History"
-msgstr ""
+msgstr "历史"
 
 #: src/ImageRunModal.jsx:177
 msgid "Host path"
@@ -625,66 +593,54 @@ msgid "Images"
 msgstr "镜像"
 
 #: src/ImageRunModal.jsx:998
-#, fuzzy
-#| msgid "CPU shares"
 msgid "Increase CPU shares"
-msgstr "CPU 份额"
+msgstr "增加 CPU 共享"
 
 #: src/ImageRunModal.jsx:1103
-#, fuzzy
-#| msgid "Integration"
 msgid "Increase interval"
-msgstr "集成"
+msgstr "增加间隔"
 
 #: src/ImageRunModal.jsx:1037
-#, fuzzy
-#| msgid "Maximum retries"
 msgid "Increase maximum retries"
-msgstr "最大重试次数"
+msgstr "增加最大重试次数"
 
 #: src/ImageRunModal.jsx:956
 msgid "Increase memory"
-msgstr ""
+msgstr "增加内存"
 
 #: src/ImageRunModal.jsx:1177
 msgid "Increase retries"
-msgstr ""
+msgstr "增加重试"
 
 #: src/ImageRunModal.jsx:1153
-#, fuzzy
-#| msgid "Start podman"
 msgid "Increase start period"
-msgstr "启动 podman"
+msgstr "增加开始周期"
 
 #: src/ImageRunModal.jsx:1128
 msgid "Increase timeout"
-msgstr ""
+msgstr "增加超时"
 
 #: src/Containers.jsx:408 src/ImageRunModal.jsx:1047
 msgid "Integration"
 msgstr "集成"
 
 #: src/ContainerHealthLogs.jsx:65 src/ImageRunModal.jsx:1085
-#, fuzzy
-#| msgid "Integration"
 msgid "Interval"
-msgstr "集成"
+msgstr "间隔"
 
 #: src/ImageRunModal.jsx:1089
 msgid "Interval how often health check is run."
-msgstr ""
+msgstr "健康检查运行的频率间隔。"
 
 #: src/ContainerRenameModal.jsx:30
 msgid ""
 "Invalid characters. Name can only contain letters, numbers, and certain "
 "punctuation (_ . -)."
-msgstr ""
+msgstr "无效的字符。名称只能包含字母、数字和某些标点符号 (_ . -)。"
 
 #: src/ImageRunModal.jsx:964
-#, fuzzy
-#| msgid "KiB"
 msgid "KB"
-msgstr "KiB"
+msgstr "KB"
 
 #: src/ContainerCheckpointModal.jsx:72 src/ContainerRestoreModal.jsx:73
 msgid "Keep all temporary checkpoint files"
@@ -696,17 +652,15 @@ msgstr "键"
 
 #: src/ContainerHealthLogs.jsx:101
 msgid "Last 5 runs"
-msgstr ""
+msgstr "最后 5 个运行"
 
 #: src/ContainerCheckpointModal.jsx:74
 msgid "Leave running after writing checkpoint to disk"
 msgstr "在将检查点写入磁盘后保持运行"
 
 #: src/ImageHistory.jsx:57
-#, fuzzy
-#| msgid "Loading logs..."
 msgid "Loading details..."
-msgstr "正在加载日志..."
+msgstr "加载详细信息..."
 
 #: src/ContainerLogs.jsx:53
 msgid "Loading logs..."
@@ -733,10 +687,8 @@ msgid "MAC address"
 msgstr "MAC 地址"
 
 #: src/ImageRunModal.jsx:965
-#, fuzzy
-#| msgid "MiB"
 msgid "MB"
-msgstr "MiB"
+msgstr "MB"
 
 #: src/ImageRunModal.jsx:1029
 msgid "Maximum retries"
@@ -767,10 +719,8 @@ msgid "Name"
 msgstr "名称"
 
 #: src/ContainerRenameModal.jsx:66
-#, fuzzy
-#| msgid "Container name"
 msgid "New container name"
-msgstr "容器名称"
+msgstr "新容器名称"
 
 #: src/ContainerCommitModal.jsx:107
 msgid "New image name"
@@ -851,7 +801,7 @@ msgstr "所有者"
 
 #: src/ContainerHealthLogs.jsx:111
 msgid "Passed health run"
-msgstr ""
+msgstr "通过的健康运行"
 
 #: src/ImageRunModal.jsx:1075
 msgid ""
@@ -871,10 +821,8 @@ msgid "Paused"
 msgstr "已暂停"
 
 #: org.cockpit-project.podman.metainfo.xml:5
-#, fuzzy
-#| msgid "podman"
 msgid "Podman"
-msgstr "podman"
+msgstr "Podman"
 
 #: src/index.html:20 src/manifest.json:0
 msgid "Podman containers"
@@ -922,13 +870,11 @@ msgstr "正在拉取"
 
 #: src/ContainerIntegration.jsx:41
 msgid "Read-only access"
-msgstr ""
+msgstr "只读访问"
 
 #: src/ContainerIntegration.jsx:40
-#, fuzzy
-#| msgid "ReadWrite"
 msgid "Read-write access"
-msgstr "读写"
+msgstr "读写访问"
 
 #: src/ImageRunModal.jsx:119 src/ImageRunModal.jsx:167
 #: src/ImageRunModal.jsx:207
@@ -941,13 +887,11 @@ msgstr "删除"
 
 #: src/ContainerRenameModal.jsx:90 src/Containers.jsx:178
 msgid "Rename"
-msgstr ""
+msgstr "重命名"
 
 #: src/ContainerRenameModal.jsx:83
-#, fuzzy
-#| msgid "Restore container $0"
 msgid "Rename container $0"
-msgstr "恢复容器 $0"
+msgstr "重命名容器 $0"
 
 #: src/PodActions.jsx:123 src/Containers.jsx:196
 msgid "Restart"
@@ -971,6 +915,8 @@ msgid ""
 "starting containers may not work in some circumstances, such as when "
 "ecryptfs, systemd-homed, NFS, or 2FA are used on a user account."
 msgstr ""
+"容器退出时重启策略。在某些情况下，使用 linger 进行自动启动容器可能无法正常工"
+"作，如在用户账户中使用了 ecryptfs、systemd-homed、NFS 或 2FA。"
 
 #: src/ContainerRestoreModal.jsx:64 src/Containers.jsx:246
 msgid "Restore"
@@ -990,17 +936,15 @@ msgstr "继续"
 
 #: src/ContainerHealthLogs.jsx:69 src/ImageRunModal.jsx:1160
 msgid "Retries"
-msgstr ""
+msgstr "重试"
 
 #: src/ImageSearchModal.jsx:187
-#, fuzzy
-#| msgid "Please retry another term."
 msgid "Retry another term."
-msgstr "请重试另一个项。"
+msgstr "重试另一个项。"
 
 #: src/ContainerHealthLogs.jsx:95 src/Containers.jsx:269
 msgid "Run health check"
-msgstr ""
+msgstr "运行健康检查"
 
 #: src/util.js:8 src/util.js:11 src/ImageUsedBy.jsx:32
 msgid "Running"
@@ -1055,10 +999,8 @@ msgid "Show intermediate images"
 msgstr "显示中间镜像"
 
 #: src/ContainerIntegration.jsx:81
-#, fuzzy
-#| msgid "Show images"
 msgid "Show less"
-msgstr "显示镜像"
+msgstr "显示更少"
 
 #: src/ContainerIntegration.jsx:81 src/PruneUnusedImagesModal.jsx:44
 msgid "Show more"
@@ -1073,34 +1015,26 @@ msgid "Start"
 msgstr "启动"
 
 #: src/ContainerHealthLogs.jsx:73 src/ImageRunModal.jsx:1135
-#, fuzzy
-#| msgid "Start podman"
 msgid "Start period"
-msgstr "启动 podman"
+msgstr "开始期间"
 
 #: src/app.jsx:666
 msgid "Start podman"
 msgstr "启动 podman"
 
 #: src/ImageSearchModal.jsx:182
-#, fuzzy
-#| msgid "Please start typing to look for images."
 msgid "Start typing to look for images."
-msgstr "请开始输入以查找镜像。"
+msgstr "开始键入来查找镜像。"
 
 #: src/ContainerHealthLogs.jsx:101
-#, fuzzy
-#| msgid "Start"
 msgid "Started at"
-msgstr "启动"
+msgstr "开始于"
 
 #: src/Containers.jsx:452 src/ContainerDetails.jsx:67
 msgid "State"
 msgstr "状态"
 
 #: src/ContainerHealthLogs.jsx:57
-#, fuzzy
-#| msgid "State"
 msgid "Status"
 msgstr "状态"
 
@@ -1138,27 +1072,27 @@ msgstr "标签"
 
 #: org.cockpit-project.podman.metainfo.xml:10
 msgid "The Cockpit user interface for Podman containers."
-msgstr ""
+msgstr "Podman 容器的 Cockpit 用户界面。"
 
 #: src/ImageRunModal.jsx:1139
 msgid "The initialization time needed for a container to bootstrap."
-msgstr ""
+msgstr "容器进行 bootstrap 所需的初始化时间。"
 
 #: src/ImageRunModal.jsx:1114
 msgid ""
 "The maximum time allowed to complete the health check before an interval is "
 "considered failed."
-msgstr ""
+msgstr "当间隔被视为失败前，允许完成健康检查的最长时间。"
 
 #: src/ImageRunModal.jsx:1164
 msgid ""
 "The number of retries allowed before a healthcheck is considered to be "
 "unhealthy."
-msgstr ""
+msgstr "在健康检查被视为不健康前，允许的重试次数。"
 
 #: src/ContainerHealthLogs.jsx:77 src/ImageRunModal.jsx:1110
 msgid "Timeout"
-msgstr ""
+msgstr "超时"
 
 #: src/app.jsx:671
 msgid "Troubleshoot"
@@ -1173,14 +1107,12 @@ msgid "UDP"
 msgstr "UDP"
 
 #: src/ImageHistory.jsx:57
-#, fuzzy
-#| msgid "Failed to download image $0:$1"
 msgid "Unable to load image history"
-msgstr "下载镜像 $0:$1 失败"
+msgstr "无法加载镜像历史记录"
 
 #: src/Containers.jsx:310
 msgid "Unhealthy"
-msgstr ""
+msgstr "不健康"
 
 #: src/ContainerDetails.jsx:11
 msgid "Up since $0"
@@ -1261,7 +1193,7 @@ msgstr "podman"
 #: src/ImageRunModal.jsx:1107 src/ImageRunModal.jsx:1132
 #: src/ImageRunModal.jsx:1157
 msgid "seconds"
-msgstr ""
+msgstr "秒"
 
 #: src/ImageDeleteModal.jsx:127
 msgid "select all"
