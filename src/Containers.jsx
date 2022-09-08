@@ -577,8 +577,8 @@ class Containers extends React.Component {
                     </ToolbarItem>
                     <ToolbarItem>
                         <FormSelect id="containers-containers-filter" value={this.props.filter} onChange={this.props.handleFilterChange}>
-                            <FormSelectOption value='running' label={_("Only running")} />
                             <FormSelectOption value='all' label={_("All")} />
+                            <FormSelectOption value='running' label={_("Only running")} />
                         </FormSelect>
                     </ToolbarItem>
                     <Divider isVertical />

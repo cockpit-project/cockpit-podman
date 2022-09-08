@@ -201,6 +201,7 @@ class TestApplication(testlib.MachineCase):
 
         self.login()
 
+        self.filter_containers("running")
         if not self.machine.ostree_image:
             b.wait_in_text("#containers-containers", "No running containers")
 

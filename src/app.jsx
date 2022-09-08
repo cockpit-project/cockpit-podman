@@ -48,7 +48,7 @@ class Application extends React.Component {
             userImagesLoaded: false,
             systemImagesLoaded: false,
             containers: null,
-            containersFilter: "running",
+            containersFilter: "all",
             containersStats: {},
             containersDetails: {},
             userContainersLoaded: null,
