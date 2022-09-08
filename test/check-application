@@ -97,13 +97,11 @@ class TestApplication(testlib.MachineCase):
         # HACK: older c-ws versions always log an assertion, fixed in PR cockpit#16765
         self.allow_journal_messages("json_object_get_string_member: assertion 'node != NULL' failed")
 
-    def waitNumImages(self, expected, auth):
-        if auth and self.machine.ostree_image:
-            extra = 1  # cockpit/ws
-        else:
-            extra = 0
+        self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
+        self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())
 
-        self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected + extra)
+    def waitNumImages(self, expected):
+        self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected)
 
     def waitNumContainers(self, expected, auth):
         if auth and self.machine.ostree_image:
@@ -390,7 +388,7 @@ class TestApplication(testlib.MachineCase):
         # `User Service is also available` banner should not be present
         b.wait_not_present("#overview div.pf-c-alert")
         # There should not be any duplicate images listed
-        self.waitNumImages(1, True)
+        self.waitNumImages(2 if self.machine.ostree_image else 1)
         # There should not be 'owner' selector
         b.wait_not_present("#containers-containers-owner")
 
@@ -474,11 +472,11 @@ class TestApplication(testlib.MachineCase):
 
         # Test owner filtering
         if auth:
-            self.waitNumImages(6, True)
+            self.waitNumImages(self.user_images_count + self.system_images_count)
             self.waitNumContainers(2, True)
 
             def verify_system():
-                self.waitNumImages(3, True)
+                self.waitNumImages(self.system_images_count)
                 b.wait_in_text("#containers-images", "system")
                 self.waitNumContainers(1, True)
                 b.wait_in_text("#containers-containers", "system")
@@ -490,7 +488,7 @@ class TestApplication(testlib.MachineCase):
             verify_system()
 
             def verify_user():
-                self.waitNumImages(3, False)
+                self.waitNumImages(self.user_images_count)
                 b.wait_in_text("#containers-images", "admin")
                 self.waitNumContainers(1, False)
                 b.wait_in_text("#containers-containers", "admin")
@@ -502,7 +500,7 @@ class TestApplication(testlib.MachineCase):
             verify_user()
 
             b.set_val("#containers-containers-owner", "all")
-            self.waitNumImages(6, True)
+            self.waitNumImages(self.user_images_count + self.system_images_count)
             self.waitNumContainers(2, True)
         else:  # No 'owner' selector when not privileged
             b.wait_not_present("#containers-containers-owner")
@@ -755,13 +753,11 @@ class TestApplication(testlib.MachineCase):
         # don't use waitNumImages() here, as we want to include anonymous images
         def waitImageCount(expected):
             if auth:
-                expected += 3
-                if self.machine.ostree_image:
-                    expected += 1  # cockpit/ws
+                expected += self.system_images_count
 
             b.wait_in_text("#containers-images", f"{expected} images")
 
-        waitImageCount(4)
+        waitImageCount(self.user_images_count + 1)
         image_id = self.execute(auth, "podman images --sort created --format '{{.Id}}' | head -n 1").strip()
         manifest_type = self.execute(auth, "podman inspect --format '{{.ManifestType}}' " + image_id).strip()
         cmd = self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' " + image_id).strip()
@@ -781,7 +777,7 @@ class TestApplication(testlib.MachineCase):
 
         self.confirm_modal("Commit")
 
-        waitImageCount(5)
+        waitImageCount(self.user_images_count + 2)
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Author}}' newname:24").strip(), "MM")
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:24").strip(), "[sh -c ps]")
         self.assertIn("vnd.oci.image.manifest", self.execute(auth, "podman inspect --format '{{.ManifestType}}' newname:24").strip())
@@ -792,7 +788,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(".pf-c-modal-box")
         b.set_input_text("#commit-dialog-image-name", "newname")
         self.confirm_modal("Commit")
-        waitImageCount(6)
+        waitImageCount(self.user_images_count + 3)
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:latest").strip(), "[sleep 1000]")
 
         # Test commit of running container with pause (also conflicting name through :latest)
@@ -804,7 +800,7 @@ class TestApplication(testlib.MachineCase):
             b.set_checked("#commit-dialog-pause", True)
             b.click("button:contains(Commit)")
             self.confirm_modal("Force commit")
-            waitImageCount(7)
+            waitImageCount(self.user_images_count + self.system_images_count)
 
     @testlib.nondestructive
     def testDownloadImage(self):
@@ -1880,23 +1876,28 @@ class TestApplication(testlib.MachineCase):
         else:
             self.login(auth)
 
+        leftover_images = 1
+        # cockpit-ws image
+        if self.machine.ostree_image and auth:
+            leftover_images += 1
+
         # By default we have 3 unused images, start one.
         self.execute(auth or root, "podman run -d --name used_image alpine:latest sh")
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
 
         if auth:
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 5)
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", (self.user_images_count + self.system_images_count) - leftover_images)
         else:
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 2)
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", self.user_images_count - leftover_images)
         b.click(".pf-c-modal-box button:contains(Prune)")
 
         # When being superuser, admin images are also removed
         if auth:
-            self.waitNumImages(1, True)
+            self.waitNumImages(leftover_images)
             checkImage(b, "quay.io/libpod/alpine:latest", "system")
         else:
-            self.waitNumImages(1, False)
+            self.waitNumImages(leftover_images)
             # Two images removed, one in use kept
             b.wait_not_present("#containers-images:contains('quay.io/libpod/busybox:latest')")
             b.wait_not_present("#containers-images:contains('quay.io/cockpit/registry:2')")
@@ -1920,13 +1921,16 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(".pf-c-modal-box button:contains(Prune):disabled")
 
         # Admin / user images are selected
-        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 6)
+        expected_images = self.user_images_count + self.system_images_count
+        if self.machine.ostree_image:
+            expected_images -= 1
+        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", expected_images)
         # Select user images
         b.click("#deleteUserImages")
         b.click(".pf-c-modal-box button:contains(Prune)")
 
         # System images are left over
-        self.waitNumImages(3, True)
+        self.waitNumImages(self.system_images_count)
         checkImage(b, "quay.io/libpod/alpine:latest", "system")
         checkImage(b, "quay.io/cockpit/registry:2", "system")
         checkImage(b, "quay.io/libpod/busybox:latest", "system")
@@ -1936,7 +1940,7 @@ class TestApplication(testlib.MachineCase):
         b.click("button:contains(Prune unused images)")
         b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 3)
         b.click(".pf-c-modal-box button:contains(Prune)")
-        self.waitNumImages(0, True)
+        self.waitNumImages(1 if self.machine.ostree_image else 0)
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
