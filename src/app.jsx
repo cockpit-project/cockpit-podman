@@ -294,7 +294,7 @@ class Application extends React.Component {
                 });
     }
 
-    updateContainerAfterEvent(id, system) {
+    updateContainerAfterEvent(id, system, event) {
         client.getContainers(system, id)
                 .then(reply => Promise.all(
                     (reply || []).map(container =>
@@ -311,6 +311,10 @@ class Application extends React.Component {
                         reply = reply[0];
 
                         reply.isSystem = system;
+                        // HACK: during restart State never changes from "running"
+                        //       override it to reconnect console after restart
+                        if (event && event.Action === "restart")
+                            reply.State = "restarting";
                         this.updateState("containers", reply.Id + system.toString(), reply);
                         if (reply.State == "running") {
                             this.inspectContainerDetail(reply.Id, system);
@@ -383,7 +387,6 @@ class Application extends React.Component {
         case 'import':
         case 'init':
         case 'wait':
-        case 'restart': // We get separate died-init-start events after the restart event
             break;
         /* The following events need only to update the Container list
          * We do get the container affected in the event object but for
@@ -397,7 +400,7 @@ class Application extends React.Component {
             } else {
                 this.updatePodsAfterEvent(system);
             }
-            this.updateContainerAfterEvent(event.Actor.ID, system);
+            this.updateContainerAfterEvent(event.Actor.ID, system, event);
             break;
         case 'checkpoint':
         case 'create':
@@ -407,13 +410,14 @@ class Application extends React.Component {
         case 'mount':
         case 'pause':
         case 'prune':
+        case 'restart':
         case 'restore':
         case 'stop':
         case 'sync':
         case 'unmount':
         case 'unpause':
         case 'rename': // rename event is available starting podman v4.1; until then the container does not get refreshed after renaming
-            this.updateContainerAfterEvent(event.Actor.ID, system);
+            this.updateContainerAfterEvent(event.Actor.ID, system, event);
             break;
         case 'remove':
         case 'cleanup':
