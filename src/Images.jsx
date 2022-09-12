@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     Button,
-    Card, CardBody, CardHeader, CardFooter,
+    Card, CardBody, CardHeader, CardFooter, CardTitle,
     Dropdown, DropdownItem,
     Flex, FlexItem,
     ExpandableSection,
@@ -283,7 +283,9 @@ class Images extends React.Component {
                     <Flex flexWrap={{ default: 'nowrap' }} className="pf-u-w-100">
                         <FlexItem grow={{ default: 'grow' }}>
                             <Flex>
-                                <Text className="images-title" component={TextVariants.h3}>{_("Images")}</Text>
+                                <CardTitle>
+                                    <Text component={TextVariants.h2}>{_("Images")}</Text>
+                                </CardTitle>
                                 <Flex className="ignore-pixels" style={{ "row-gap": "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
                         </FlexItem>
