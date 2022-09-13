@@ -1888,6 +1888,8 @@ class TestApplication(testlib.MachineCase):
 
         if auth:
             b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", (self.user_images_count + self.system_images_count) - leftover_images)
+        elif root:
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", self.system_images_count - leftover_images)
         else:
             b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", self.user_images_count - leftover_images)
         b.click(".pf-c-modal-box button:contains(Prune)")
@@ -1938,7 +1940,7 @@ class TestApplication(testlib.MachineCase):
         # Pruning again, should delete all system images
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
-        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", 3)
+        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", self.system_images_count - 1 if self.machine.ostree_image else self.system_images_count)
         b.click(".pf-c-modal-box button:contains(Prune)")
         self.waitNumImages(1 if self.machine.ostree_image else 0)
 
