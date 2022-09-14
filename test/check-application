@@ -28,9 +28,13 @@ NOT_RUNNING = ["Exited", "Stopped"]
 DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
 
 
-def checkImage(browser, name, owner):
+def showImages(browser):
     if browser.attr("#containers-images button.pf-c-expandable-section__toggle", "aria-expanded") == 'false':
         browser.click("#containers-images button.pf-c-expandable-section__toggle")
+
+
+def checkImage(browser, name, owner):
+    showImages(browser)
     browser.wait_visible("#containers-images table")
     browser.wait_js_func("""(function (first, last) {
         let items = ph_select("#containers-images table tbody");
@@ -389,7 +393,9 @@ class TestApplication(testlib.MachineCase):
         # `User Service is also available` banner should not be present
         b.wait_not_present("#overview div.pf-c-alert")
         # There should not be any duplicate images listed
-        self.waitNumImages(2 if self.machine.ostree_image else 1)
+        # The "busybox" and "alpine" images have been deleted by _testBasic.
+        showImages(b)
+        self.waitNumImages(self.system_images_count - 2)
         # There should not be 'owner' selector
         b.wait_not_present("#containers-containers-owner")
 
