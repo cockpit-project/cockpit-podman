@@ -807,7 +807,7 @@ class TestApplication(testlib.MachineCase):
             b.set_checked("#commit-dialog-pause", True)
             b.click("button:contains(Commit)")
             self.confirm_modal("Force commit")
-            waitImageCount(self.user_images_count + self.system_images_count)
+            waitImageCount(self.user_images_count + 4)
 
     @testlib.nondestructive
     def testDownloadImage(self):
