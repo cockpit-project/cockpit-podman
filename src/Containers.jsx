@@ -749,7 +749,7 @@ class Containers extends React.Component {
                                                     </CardTitle>
                                                     <CardActions className='panel-actions'>
                                                         <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
-                                                        <Button variant="primary"
+                                                        <Button variant="secondary"
                                                                 className="create-container-in-pod"
                                                                 isDisabled={localImages === null}
                                                                 onClick={() => createContainer(this.props.pods[section])}>
