@@ -392,7 +392,11 @@ class Application extends React.Component {
         case 'start':
             // HACK: We don't get 'started' event for pods got started by the first container which was added to them
             // https://github.com/containers/podman/issues/7213
-            this.updatePodsAfterEvent(system);
+            if (event.Actor.Attributes.podId) {
+                this.updatePodAfterEvent(event.Actor.Attributes.podId, system);
+            } else {
+                this.updatePodsAfterEvent(system);
+            }
             this.updateContainerAfterEvent(event.Actor.ID, system);
             break;
         case 'checkpoint':
@@ -415,7 +419,11 @@ class Application extends React.Component {
         case 'cleanup':
             // HACK: we don't get a pod event when a container in a pod is removed.
             // https://github.com/containers/podman/issues/15408
-            this.updatePodsAfterEvent(system);
+            if (event.Actor.Attributes.podId) {
+                this.updatePodAfterEvent(event.Actor.Attributes.podId, system);
+            } else {
+                this.updatePodsAfterEvent(system);
+            }
             this.updateContainersAfterEvent(system);
             break;
         /* The following events need only to update the Image list */
