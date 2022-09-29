@@ -97,7 +97,7 @@ const ContainerIntegration = ({ container, containerDetail, localImages }) => {
     const volumes = renderContainerVolumes(containerDetail.Mounts);
 
     const image = localImages.filter(img => img.Id === container.ImageID)[0];
-    const env = renderContainerEnv(containerDetail.Config.Env, image.Env);
+    const env = renderContainerEnv(containerDetail.Config.Env, image.Env || []);
 
     return (
         <DescriptionList isAutoColumnWidths columnModifier={{ md: '3Col' }} className='container-integration'>
