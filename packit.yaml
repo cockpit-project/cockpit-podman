@@ -29,14 +29,6 @@ jobs:
     owner: "@cockpit"
     project: "cockpit-preview"
     preserve_project: True
-    # HACK: hardcoding this list is redundant and hard to change; packit
-    # should just use the existing config for permanent COPRs;
-    # https://github.com/packit/packit-service/issues/1499
-    targets:
-      - fedora-36
-      - fedora-37
-      - centos-stream-8-x86_64
-      - centos-stream-9-x86_64
     actions:
       post-upstream-clone: make cockpit-podman.spec
       # HACK: tarball for releases (copr_build, koji, etc.), copying spec's Source0; this
