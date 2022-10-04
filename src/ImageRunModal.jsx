@@ -56,7 +56,7 @@ const handleEnvValue = (key, value, idx, onChange, additem, itemCount) => {
         const parts = value.trim().split(" ");
         let index = idx;
         for (const part of parts) {
-            const [envKey, envVar] = part.split('=', 2);
+            const [envKey, ...envVar] = part.split('=');
             if (!envKey || !envVar) {
                 continue;
             }
@@ -65,7 +65,7 @@ const handleEnvValue = (key, value, idx, onChange, additem, itemCount) => {
                 additem();
             }
             onChange(index, 'envKey', envKey);
-            onChange(index, 'envValue', envVar);
+            onChange(index, 'envValue', envVar.join('='));
             index++;
         }
     } else {
