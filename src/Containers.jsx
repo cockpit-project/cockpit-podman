@@ -365,7 +365,7 @@ class Containers extends React.Component {
             proc = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
             mem = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
         }
-        if (containerStats) {
+        if (containerStats && container.State === "running") {
             if (containerStats.CPU != undefined)
                 proc = containerStats.CPU.toFixed(2) + "%";
             if (containerStats.MemUsage != undefined && containerStats.MemLimit != undefined)
