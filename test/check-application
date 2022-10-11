@@ -27,7 +27,7 @@ NOT_RUNNING = ["Exited", "Stopped"]
 
 # Ubuntu 2204 lacks user systemd units https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
 DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
-DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-testing', 'fedora-35']
+DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-testing']
 
 
 def showImages(browser):
