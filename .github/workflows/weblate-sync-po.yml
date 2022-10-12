@@ -21,12 +21,12 @@ jobs:
           sudo apt install -y --no-install-recommends gettext
 
       - name: Clone source repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: src
 
       - name: Clone weblate repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.repository }}-weblate
           path: weblate
