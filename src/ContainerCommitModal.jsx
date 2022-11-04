@@ -22,7 +22,7 @@ class ContainerCommitModal extends React.Component {
         this.state = {
             imageName: "",
             tag: "",
-            author:"",
+            author: "",
             command: props.container.Command ? utils.quote_cmdline(props.container.Command) : "",
             pause: false,
             selectedFormat: "oci",

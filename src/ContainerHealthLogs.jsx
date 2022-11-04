@@ -114,7 +114,7 @@ const ContainerHealthLogs = ({ container, containerDetail, onAddNotification, st
                                           utils.localize_time(Date.parse(log.Start) / 1000)
                                       ],
                                       props: {
-                                          key : id,
+                                          key: id,
                                           "data-row-id": id,
                                       },
                                   };
