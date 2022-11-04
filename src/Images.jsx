@@ -168,7 +168,7 @@ class Images extends React.Component {
                                 tabRenderers={tabs} />,
             columns: columns,
             props: {
-                key :image.Id + image.isSystem.toString(),
+                key: image.Id + image.isSystem.toString(),
                 "data-row-id": image.Id + image.isSystem.toString(),
             },
         };

@@ -437,7 +437,7 @@ class Containers extends React.Component {
             columns: columns,
             initiallyExpanded: document.location.hash.substr(1) === container.Id,
             props: {
-                key :container.Id + container.isSystem.toString(),
+                key: container.Id + container.isSystem.toString(),
                 "data-row-id": container.Id + container.isSystem.toString(),
             },
         };
