@@ -115,8 +115,11 @@ export class ImageSearchModal extends React.Component {
                         }
 
                         this.setState({
-                            imageList: results || [], searchInProgress: false,
-                            searchFinished: true, dialogError, dialogErrorDetail
+                            imageList: results || [],
+                            searchInProgress: false,
+                            searchFinished: true,
+                            dialogError,
+                            dialogErrorDetail
                         });
                     }
                 });
