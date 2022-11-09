@@ -58,9 +58,14 @@ export class DynamicListForm extends React.Component {
                         ? <>
                             {dialogValues.list.map((item, idx) => {
                                 return React.cloneElement(this.props.itemcomponent, {
-                                    idx: idx, item: item, id: id + "-" + idx,
+                                    idx: idx,
+                                    item: item,
+                                    id: id + "-" + idx,
                                     key: idx,
-                                    onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
+                                    onChange: this.onItemChange,
+                                    removeitem: this.removeItem,
+                                    additem: this.addItem,
+                                    options: this.props.options,
                                     itemCount: Object.keys(dialogValues.list).length,
                                 });
                             })
