@@ -578,20 +578,21 @@ class Application extends React.Component {
     onNavigate() {
         // HACK: Use usePageLocation when this is rewritten into a functional component
         const { options, path } = cockpit.location;
-        this.setState({ location: options });
-        // only use the root path
-        if (path.length === 0) {
-            if (options.name) {
-                this.onFilterChanged(options.name);
+        this.setState({ location: options }, () => {
+            // only use the root path
+            if (path.length === 0) {
+                if (options.name) {
+                    this.onFilterChanged(options.name);
+                }
+                if (options.container) {
+                    this.onContainerFilterChanged(options.container);
+                }
+                const owners = ["user", "system", "all"];
+                if (owners.indexOf(options.owner) !== -1) {
+                    this.onOwnerChanged(options.owner);
+                }
             }
-            if (options.container) {
-                this.onContainerFilterChanged(options.container);
-            }
-            const owners = ["user", "system", "all"];
-            if (owners.indexOf(options.owner) !== -1) {
-                this.onOwnerChanged(options.owner);
-            }
-        }
+        });
     }
 
     checkUserService() {
