@@ -428,7 +428,7 @@ class TestApplication(testlib.MachineCase):
             self.machine.execute("systemctl try-restart sshd")
 
         # Test that when root is logged in we don't present "user" and "system"
-        self.login_and_go("/podman", user="root")
+        self.login_and_go("/podman", user="root", enable_root_login=True)
         b.wait_visible("#app")
 
         # `User Service is also available` banner should not be present
@@ -1923,7 +1923,7 @@ class TestApplication(testlib.MachineCase):
     def _testPruneUnusedImagesSystem(self, auth, root=False):
         b = self.browser
         if root:
-            self.login_and_go("/podman", user="root")
+            self.login_and_go("/podman", user="root", enable_root_login=True)
             b.wait_visible("#app")
         else:
             self.login(auth)
