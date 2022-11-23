@@ -7,7 +7,7 @@ import {
     KebabToggle, List, ListItem,
     Stack,
 } from '@patternfly/react-core';
-import { useDialogs, DialogsContext } from "dialogs.jsx";
+import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
 
@@ -61,46 +61,26 @@ const PodDeleteModal = ({ pod }) => {
     </Modal>;
 };
 
-export class PodActions extends React.Component {
-    static contextType = DialogsContext;
+export const PodActions = ({ onAddNotification, pod }) => {
+    const Dialogs = useDialogs();
+    const [isOpen, setOpen] = useState(false);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            isOpen: false
-        };
-        this.onToggle = isOpen => {
-            this.setState({
-                isOpen
-            });
-        };
-        this.onSelect = event => {
-            this.setState({
-                isOpen: !this.state.isOpen
-            });
-        };
-    }
-
-    render() {
-        const Dialogs = this.context;
-        const { isOpen } = this.state;
-        const pod = this.props.pod;
-        const dropdownItems = [];
-        // Possible Pod Statuses can be found here https://github.com/containers/podman/blob/main/libpod/define/podstate.go
-        if (pod.Status == "Running" || pod.Status == "Paused") {
-            dropdownItems.push(
-                <DropdownItem key="action-stop"
+    const dropdownItems = [];
+    // Possible Pod Statuses can be found here https://github.com/containers/podman/blob/main/libpod/define/podstate.go
+    if (pod.Status == "Running" || pod.Status == "Paused") {
+        dropdownItems.push(
+            <DropdownItem key="action-stop"
                               className="pod-action-stop"
                               onClick={() =>
                                   client.postPod(pod.isSystem, "stop", pod.Id, {})
                                           .catch(ex => {
                                               const error = cockpit.format(_("Failed to stop pod $0"), pod.Name);
-                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Stop")}
-                </DropdownItem>,
-                <DropdownItem key="action-force-stop"
+                {_("Stop")}
+            </DropdownItem>,
+            <DropdownItem key="action-force-stop"
                               className="pod-action-force-stop"
                               onClick={() =>
                                   client.postPod(pod.isSystem, "stop", pod.Id, { t: 0 })
@@ -109,9 +89,9 @@ export class PodActions extends React.Component {
                                               this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Force stop")}
-                </DropdownItem>,
-                <DropdownItem key="action-restart"
+                {_("Force stop")}
+            </DropdownItem>,
+            <DropdownItem key="action-restart"
                               className="pod-action-restart"
                               onClick={() =>
                                   client.postPod(pod.isSystem, "restart", pod.Id, {})
@@ -120,9 +100,9 @@ export class PodActions extends React.Component {
                                               this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Restart")}
-                </DropdownItem>,
-                <DropdownItem key="action-force-restart"
+                {_("Restart")}
+            </DropdownItem>,
+            <DropdownItem key="action-force-restart"
                               className="pod-action-force-restart"
                               onClick={() =>
                                   client.postPod(pod.isSystem, "restart", pod.Id, { t: 0 })
@@ -131,13 +111,13 @@ export class PodActions extends React.Component {
                                               this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Force restart")}
-                </DropdownItem>,
-            );
-        }
-        if (pod.Status == "Created" || pod.Status == "Exited" || pod.Status == "Stopped") {
-            dropdownItems.push(
-                <DropdownItem key="action-start"
+                {_("Force restart")}
+            </DropdownItem>,
+        );
+    }
+    if (pod.Status == "Created" || pod.Status == "Exited" || pod.Status == "Stopped") {
+        dropdownItems.push(
+            <DropdownItem key="action-start"
                               className="pod-action-start"
                               onClick={() =>
                                   client.postPod(pod.isSystem, "start", pod.Id, {})
@@ -146,13 +126,13 @@ export class PodActions extends React.Component {
                                               this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Start")}
-                </DropdownItem>,
-            );
-        }
-        if (pod.Status == "Paused") {
-            dropdownItems.push(
-                <DropdownItem key="action-unpause"
+                {_("Start")}
+            </DropdownItem>,
+        );
+    }
+    if (pod.Status == "Paused") {
+        dropdownItems.push(
+            <DropdownItem key="action-unpause"
                               className="pod-action-unpause"
                               onClick={() =>
                                   client.postPod(pod.isSystem, "unpause", pod.Id, {})
@@ -161,13 +141,13 @@ export class PodActions extends React.Component {
                                               this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Resume")}
-                </DropdownItem>,
-            );
-        }
-        if (pod.Status == "Running") {
-            dropdownItems.push(
-                <DropdownItem key="action-pause"
+                {_("Resume")}
+            </DropdownItem>,
+        );
+    }
+    if (pod.Status == "Running") {
+        dropdownItems.push(
+            <DropdownItem key="action-pause"
                               className="pod-action-pause"
                               onClick={() =>
                                   client.postPod(pod.isSystem, "pause", pod.Id, {})
@@ -176,33 +156,32 @@ export class PodActions extends React.Component {
                                               this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
-                    {_("Pause")}
-                </DropdownItem>,
-            );
-        }
+                {_("Pause")}
+            </DropdownItem>,
+        );
+    }
 
-        if (dropdownItems.length > 1) {
-            dropdownItems.push(<DropdownSeparator key="separator-1" />);
-        }
-        dropdownItems.push(
-            <DropdownItem key="action-delete"
+    if (dropdownItems.length > 1) {
+        dropdownItems.push(<DropdownSeparator key="separator-1" />);
+    }
+    dropdownItems.push(
+        <DropdownItem key="action-delete"
                           className="pod-action-delete pf-m-danger"
                           onClick={() => {
                               Dialogs.show(<PodDeleteModal pod={pod} />);
                           }}
                           component="button">
-                {_("Delete")}
-            </DropdownItem>,
-        );
+            {_("Delete")}
+        </DropdownItem>,
+    );
 
-        if (!dropdownItems.length)
-            return null;
+    if (!dropdownItems.length)
+        return null;
 
-        return <Dropdown onSelect={this.onSelect}
+    return <Dropdown onSelect={() => setOpen(!isOpen)}
                          position={DropdownPosition.right}
-                         toggle={<KebabToggle onToggle={this.onToggle} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
+                         toggle={<KebabToggle onToggle={(value, _) => setOpen(value)} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
                          isOpen={isOpen}
                          isPlain
         dropdownItems={dropdownItems} />;
-    }
-}
+};

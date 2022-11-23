@@ -122,7 +122,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
         setActionsKebabOpen(false);
 
         Dialogs.show(<ContainerCommitModal container={container}
-                                           version={version}
                                            localImages={localImages} />);
     };
 
