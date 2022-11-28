@@ -16,9 +16,14 @@ const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
     const [ignoreStaticIP, setIgnoreStaticIP] = useState(false);
     const [ignoreStaticMAC, setIgnoreStaticMAC] = useState(false);
 
-    const handleRestoreContainer = (args) => {
+    const handleRestoreContainer = () => {
         setInProgress(true);
-        client.postContainer(containerWillRestore.isSystem, "restore", containerWillRestore.Id, args)
+        client.postContainer(containerWillRestore.isSystem, "restore", containerWillRestore.Id, {
+            keep,
+            tcpEstablished,
+            ignoreStaticIP,
+            ignoreStaticMAC,
+        })
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to restore container $0"), containerWillRestore.Names);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -37,12 +42,7 @@ const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
                footer={<>
                    <Button variant="primary" isDisabled={inProgress}
                            isLoading={inProgress}
-                           onClick={() => {
-                               handleRestoreContainer({
-                                   keep: keep,
-                                   tcpEstablished: tcpEstablished,
-                               });
-                           }}>
+                           onClick={handleRestoreContainer}>
                        {_("Restore")}
                    </Button>
                    <Button variant="link" isDisabled={inProgress}
