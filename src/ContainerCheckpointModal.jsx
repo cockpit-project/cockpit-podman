@@ -13,7 +13,6 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
     const [keep, setKeep] = useState(false);
     const [leaveRunning, setLeaveRunning] = useState(false);
     const [tcpEstablished, setTcpEstablished] = useState(false);
-    const [ignoreRootFS, setIgnoreRootFS] = useState(false);
 
     const handleCheckpointContainer = () => {
         setProgress(true);
@@ -21,7 +20,6 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
             keep,
             leaveRunning,
             tcpEstablished,
-            ignoreRootFS,
         })
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to checkpoint container $0"), containerWillCheckpoint.Names);
@@ -59,9 +57,6 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
                 <Checkbox label={_("Support preserving established TCP connections")}
                               id="checkpoint-dialog-tcpEstablished" name="tcpEstablished"
                               isChecked={tcpEstablished} onChange={setTcpEstablished} />
-                <Checkbox label={_("Do not include root file-system changes when exporting")}
-                              id="checkpoint-dialog-ignoreRootFS" name="ignoreRootFS"
-                              isChecked={ignoreRootFS} onChange={setIgnoreRootFS} />
             </Form>
         </Modal>
     );

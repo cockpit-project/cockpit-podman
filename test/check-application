@@ -1132,7 +1132,6 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("busybox:latest", "Checkpoint")
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
-        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
         b.click('.pf-c-modal-box button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
 
@@ -1175,7 +1174,6 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("swamped-crate", "Checkpoint")
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
         b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
-        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-ignoreRootFS', True)
         b.click('.pf-c-modal-box button:contains(Checkpoint)')
 
         with b.wait_timeout(300):
