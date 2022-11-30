@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Checkbox, Modal, Stack, StackItem } from '@patternfly/react-core';
-import { DialogsContext } from "dialogs.jsx";
+import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
 
@@ -17,61 +17,48 @@ function sortTags(a, b) {
     return a.localeCompare(b);
 }
 
-export class ImageDeleteModal extends React.Component {
-    static contextType = DialogsContext;
+export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
+    const Dialogs = useDialogs();
+    const repoTags = imageWillDelete.RepoTags ? imageWillDelete.RepoTags : [];
 
-    constructor(props) {
-        super(props);
+    const [tags, setTags] = useState(repoTags.sort(sortTags).reduce((acc, item, i) => {
+        acc[item] = (i === 0);
+        return acc;
+    }, {}));
 
-        const tags = {};
-        const repoTags = this.props.imageWillDelete.RepoTags ? this.props.imageWillDelete.RepoTags : [];
-        repoTags.sort(sortTags).forEach((x, i) => {
-            tags[x] = (i === 0);
-        });
+    const checkedTags = Object.keys(tags).sort(sortTags)
+            .filter(x => tags[x]);
 
-        this.state = {
-            tags: tags,
-        };
+    const onValueChanged = (item, value) => {
+        setTags(prevState => ({
+            ...prevState,
+            [item]: value,
+        }));
+    };
 
-        this.onValueChanged = this.onValueChanged.bind(this);
-        this.pickAll = this.pickAll.bind(this);
-    }
+    const pickAll = () => {
+        setTags(prevState => Object.keys(prevState).reduce((acc, item, i) => {
+            acc[item] = true;
+            return acc;
+        }, {}));
+    };
 
-    onValueChanged(item, value) {
-        this.setState(prev => {
-            const tags = prev.tags;
-            tags[item] = value;
-            return { tags: tags };
-        });
-    }
-
-    pickAll() {
-        this.setState(prev => {
-            const tags = prev.tags;
-            Object.keys(tags).forEach(item => { tags[item] = true });
-            return { tags: tags };
-        });
-    }
-
-    handleRemoveImage(tags, all) {
-        const Dialogs = this.context;
-        const image = this.props.imageWillDelete;
-
+    const handleRemoveImage = (tags, all) => {
         const handleForceRemoveImage = () => {
             Dialogs.close();
-            return client.delImage(image.isSystem, image.Id, true)
+            return client.delImage(imageWillDelete.isSystem, imageWillDelete.Id, true)
                     .catch(ex => {
-                        const error = cockpit.format(_("Failed to force remove image $0"), image.RepoTags[0]);
-                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                        const error = cockpit.format(_("Failed to force remove image $0"), imageWillDelete.RepoTags[0]);
+                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                         throw ex;
                     });
         };
 
         Dialogs.close();
         if (all)
-            client.delImage(image.isSystem, image.Id, false)
+            client.delImage(imageWillDelete.isSystem, imageWillDelete.Id, false)
                     .catch(ex => {
-                        Dialogs.show(<ForceRemoveModal name={image.RepoTags[0]}
+                        Dialogs.show(<ForceRemoveModal name={imageWillDelete.RepoTags[0]}
                                                        handleForceRemove={handleForceRemoveImage}
                                                        reason={ex.message} />);
                     });
@@ -79,53 +66,47 @@ export class ImageDeleteModal extends React.Component {
             // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
             const tag = tags.shift();
             const i = tag.lastIndexOf(":");
-            client.untagImage(image.isSystem, image.Id, tag.substring(0, i), tag.substring(i + 1, tag.length))
+            client.untagImage(imageWillDelete.isSystem, imageWillDelete.Id, tag.substring(0, i), tag.substring(i + 1, tag.length))
                     .then(() => {
                         if (tags.length > 0)
-                            this.handleRemoveImage(tags, all);
+                            handleRemoveImage(tags, all);
                     })
                     .catch(ex => {
                         const error = cockpit.format(_("Failed to remove image $0"), tag);
-                        this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                     });
         }
-    }
+    };
 
-    render() {
-        const Dialogs = this.context;
-
-        const repoTags = Object.keys(this.state.tags).sort(sortTags);
-        const checkedTags = repoTags.filter(x => this.state.tags[x]);
-        return (
-            <Modal isOpen
-                   position="top" variant="medium"
-                   onClose={Dialogs.close}
-                   title={cockpit.format(_("Delete $0"), repoTags ? repoTags[0] : "")}
-                   footer={<>
-                       <Button id="btn-img-delete" variant="danger" isDisabled={checkedTags.length === 0}
-                               onClick={() => this.handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
-                           {_("Delete tagged images")}
-                       </Button>
-                       <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
-                   </>}
-            >
-                <Stack hasGutter>
-                    { repoTags.length > 1 && <StackItem>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</StackItem> }
-                    <StackItem isFilled>
-                        { repoTags.map(x => {
-                            return (
-                                <Checkbox isChecked={checkedTags.indexOf(x) > -1}
-                                          id={"delete-" + x}
-                                          aria-label={x}
-                                          key={x}
-                                          label={x}
-                                          onChange={checked => this.onValueChanged(x, checked)} />
-                            );
-                        })}
-                    </StackItem>
-                </Stack>
-                { repoTags.length > 2 && <Button variant="link" onClick={this.pickAll}>{_("select all")}</Button> }
-            </Modal>
-        );
-    }
-}
+    return (
+        <Modal isOpen
+                 position="top" variant="medium"
+                 onClose={Dialogs.close}
+                 title={cockpit.format(_("Delete $0"), repoTags ? repoTags[0] : "")}
+                 footer={<>
+                     <Button id="btn-img-delete" variant="danger" isDisabled={checkedTags.length === 0}
+                             onClick={() => handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
+                         {_("Delete tagged images")}
+                     </Button>
+                     <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
+                 </>}
+        >
+            <Stack hasGutter>
+                { repoTags.length > 1 && <StackItem>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</StackItem> }
+                <StackItem isFilled>
+                    { repoTags.map(x => {
+                        return (
+                            <Checkbox isChecked={checkedTags.indexOf(x) > -1}
+                                        id={"delete-" + x}
+                                        aria-label={x}
+                                        key={x}
+                                        label={x}
+                                        onChange={checked => onValueChanged(x, checked)} />
+                        );
+                    })}
+                </StackItem>
+            </Stack>
+            { repoTags.length > 2 && <Button isDisabled={repoTags.length === checkedTags.length} variant="link" onClick={pickAll}>{_("select all")}</Button> }
+        </Modal>
+    );
+};
