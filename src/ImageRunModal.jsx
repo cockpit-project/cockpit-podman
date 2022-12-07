@@ -103,7 +103,7 @@ export class ImageRunModal extends React.Component {
 
     constructor(props) {
         super(props);
-        let command = "sh";
+        let command = "";
         if (this.props.image && this.props.image.Command) {
             command = utils.quote_cmdline(this.props.image.Command);
         }
@@ -463,6 +463,11 @@ export class ImageRunModal extends React.Component {
     }
 
     clearImageSelection = () => {
+        // Reset command if it was prefilled
+        let command = this.state.command;
+        if (this.state.selectedImage && this.state.selectedImage.Command && this.state.command === utils.quote_cmdline(this.state.selectedImage.Command))
+            command = "";
+
         this.setState({
             selectedImage: "",
             image: "",
@@ -470,6 +475,7 @@ export class ImageRunModal extends React.Component {
             imageResults: {},
             searchText: "",
             searchFinished: false,
+            command: command,
         });
     }
 
@@ -483,9 +489,14 @@ export class ImageRunModal extends React.Component {
         if (event === undefined)
             return;
 
+        let command = this.state.command;
+        if (value.Command && !command)
+            command = utils.quote_cmdline(value.Command);
+
         this.setState({
             selectedImage: value,
             isImageSelectOpen: false,
+            command: command,
         });
     }
 
