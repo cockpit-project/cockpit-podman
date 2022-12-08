@@ -33,6 +33,10 @@ BuildRequires: libappstream-glib-devel
 
 Requires:       cockpit-bridge
 Requires:       podman >= 2.0.4
+# HACK https://github.com/containers/crun/issues/1091
+%if 0%{?fedora} == 36 || 0%{?fedora} == 37 || 0%{?centos} == 9
+Requires:       criu-libs
+%endif
 
 %description
 The Cockpit user interface for Podman containers.
