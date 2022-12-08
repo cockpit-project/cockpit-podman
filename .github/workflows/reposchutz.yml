@@ -24,6 +24,9 @@ jobs:
       - name: Fetch PR commits
         run: git fetch origin "${BASE_SHA}" "${HEAD_SHA}"
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
       - name: Clear .github-changes label
         if: ${{ !endsWith(github.event.action, 'labeled') }}
         uses: actions/github-script@v6
