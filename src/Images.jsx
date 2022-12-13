@@ -297,7 +297,7 @@ class Images extends React.Component {
                     </Flex>
                 </CardHeader>
                 <CardBody>
-                    {filtered.length
+                    {this.props.images && Object.keys(this.props.images).length
                         ? <ExpandableSection toggleText={this.state.isExpanded ? _("Hide images") : _("Show images")}
                                              onToggle={() => this.setState({ isExpanded: !this.state.isExpanded })}
                                              isExpanded={this.state.isExpanded}>
