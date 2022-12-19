@@ -35,8 +35,8 @@ const PodDeleteModal = ({ pod }) => {
                   position="top" variant="medium"
                   titleIconVariant="warning"
                   title={force
-                      ? cockpit.format(_("Confirm force deletion of pod $0"), pod.Name)
-                      : cockpit.format(_("Confirm deletion of pod $0"), pod.Name)}
+                      ? cockpit.format(_("Force delete pod $0?"), pod.Name)
+                      : cockpit.format(_("Delete pod $0?"), pod.Name)}
                   onClose={Dialogs.close}
                   footer={<>
                       <Button variant="danger"
@@ -51,6 +51,9 @@ const PodDeleteModal = ({ pod }) => {
     >
         {deleteError &&
         <Alert variant="danger" isInline title={_("An error occurred")}>{deleteError}</Alert>}
+        {containers.length === 0 &&
+            <p>{cockpit.format(_("Empty pod $0 will be permanently removed."), pod.Name)}</p>
+        }
         {containers.length > 0 &&
         <Stack hasGutter>
             <p>{_("Deleting this pod will remove the following containers:")}</p>
