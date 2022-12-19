@@ -27,7 +27,7 @@ const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
                position="top" variant="medium"
                titleIconVariant="warning"
                onClose={Dialogs.close}
-               title={cockpit.format(_("Confirm deletion of $0"), containerWillDelete.Names)}
+               title={cockpit.format(_("Delete $0?"), containerWillDelete.Names)}
                footer={<>
                    <Button variant="danger" className="btn-ctr-delete" onClick={handleRemoveContainer}>{_("Delete")}</Button>{' '}
                    <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
