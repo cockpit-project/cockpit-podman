@@ -67,7 +67,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
 
             Dialogs.show(<ForceRemoveModal name={container.Names}
                                            handleForceRemove={handleForceRemoveContainer}
-                                           reason={_("Container is currently running.")} />);
+                                           reason={_("Deleting a running container will erase all data in it.")} />);
         } else {
             Dialogs.show(<ContainerDeleteModal containerWillDelete={container}
                                                onAddNotification={onAddNotification} />);
