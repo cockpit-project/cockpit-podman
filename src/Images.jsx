@@ -286,7 +286,7 @@ class Images extends React.Component {
                                 <CardTitle>
                                     <Text component={TextVariants.h2}>{_("Images")}</Text>
                                 </CardTitle>
-                                <Flex className="ignore-pixels" style={{ "row-gap": "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
+                                <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
                         </FlexItem>
                         <FlexItem>
