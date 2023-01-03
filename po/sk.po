@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-12 03:04+0000\n"
+"POT-Creation-Date: 2022-12-29 02:54+0000\n"
 "PO-Revision-Date: 2022-03-31 18:17+0000\n"
 "Last-Translator: Matej Marusak <mmarusak@redhat.com>\n"
 "Language-Team: Slovak <https://translate.fedoraproject.org/projects/cockpit-"
@@ -56,7 +56,7 @@ msgstr "Pridať premennú"
 msgid "Add volume"
 msgstr "Pridať zväzok"
 
-#: src/ImageRunModal.jsx:622 src/ContainerHeader.jsx:22 src/Containers.jsx:689
+#: src/Containers.jsx:689 src/ImageRunModal.jsx:622 src/ContainerHeader.jsx:22
 msgid "All"
 msgstr "Všetky"
 
@@ -101,12 +101,12 @@ msgid ""
 "priority."
 msgstr ""
 
-#: src/ImageRunModal.jsx:1013 src/PruneUnusedImagesModal.jsx:93
-#: src/PodActions.jsx:48 src/ContainerRestoreModal.jsx:50
-#: src/ContainerCommitModal.jsx:156 src/ForceRemoveModal.jsx:24
-#: src/ContainerCheckpointModal.jsx:47 src/ContainerRenameModal.jsx:96
+#: src/ImageSearchModal.jsx:240 src/ContainerCommitModal.jsx:156
+#: src/ImageRunModal.jsx:1013 src/ImageDeleteModal.jsx:91
+#: src/ContainerRenameModal.jsx:96 src/PodActions.jsx:48
+#: src/ContainerRestoreModal.jsx:50 src/PruneUnusedImagesModal.jsx:93
 #: src/ContainerDeleteModal.jsx:33 src/PodCreateModal.jsx:156
-#: src/ImageDeleteModal.jsx:91 src/ImageSearchModal.jsx:240
+#: src/ContainerCheckpointModal.jsx:47 src/ForceRemoveModal.jsx:24
 msgid "Cancel"
 msgstr "Zrušiť"
 
@@ -116,7 +116,7 @@ msgstr "Zrušiť"
 msgid "Checking health"
 msgstr "Vytvoriť kontrolný bod"
 
-#: src/ContainerCheckpointModal.jsx:43 src/Containers.jsx:228
+#: src/Containers.jsx:228 src/ContainerCheckpointModal.jsx:43
 msgid "Checkpoint"
 msgstr "Vytvoriť kontrolný bod"
 
@@ -138,9 +138,9 @@ msgstr ""
 msgid "Cockpit component for Podman containers"
 msgstr "Podman kontajnery"
 
-#: src/ImageRunModal.jsx:734 src/ImageRunModal.jsx:884
-#: src/ContainerHealthLogs.jsx:61 src/ContainerCommitModal.jsx:111
-#: src/ContainerDetails.jsx:39 src/ImageDetails.jsx:15
+#: src/ContainerCommitModal.jsx:111 src/ImageRunModal.jsx:734
+#: src/ImageRunModal.jsx:884 src/ImageDetails.jsx:15
+#: src/ContainerDetails.jsx:39 src/ContainerHealthLogs.jsx:61
 msgid "Command"
 msgstr "Príkaz"
 
@@ -150,7 +150,7 @@ msgstr "Príkaz"
 msgid "Comments"
 msgstr "Vytvoriť"
 
-#: src/ContainerCommitModal.jsx:143 src/Containers.jsx:263
+#: src/Containers.jsx:263 src/ContainerCommitModal.jsx:143
 msgid "Commit"
 msgstr "Vytvoriť"
 
@@ -163,30 +163,6 @@ msgstr "Žiadne kontajnery"
 #: src/util.js:9
 msgid "Configured"
 msgstr "Nakonfigurovaný"
-
-#: src/ContainerDeleteModal.jsx:30
-#, fuzzy
-#| msgid "Please confirm deletion of $0"
-msgid "Confirm deletion of $0"
-msgstr "Potvrďte zmazanie $0"
-
-#: src/PodActions.jsx:39
-#, fuzzy
-#| msgid "Please confirm deletion of pod $0"
-msgid "Confirm deletion of pod $0"
-msgstr "Potvrďte zmazanie podu $0"
-
-#: src/PodActions.jsx:38
-#, fuzzy
-#| msgid "Please confirm force deletion of pod $0"
-msgid "Confirm force deletion of pod $0"
-msgstr "Potvrďte vynútené zmazanie podu $0"
-
-#: src/ForceRemoveModal.jsx:17
-#, fuzzy
-#| msgid "Please confirm forced deletion of $0"
-msgid "Confirm forced deletion of $0"
-msgstr "Potvrďte nútené zmazanie $0"
 
 #: src/Containers.jsx:420
 msgid "Console"
@@ -203,10 +179,6 @@ msgstr "Kontajner sa nepodarilo vytvoriť"
 #: src/ImageRunModal.jsx:271
 msgid "Container failed to be started"
 msgstr "Kontajner sa nepodarilo spustiť"
-
-#: src/Containers.jsx:70
-msgid "Container is currently running."
-msgstr "Kontajner momentálne beží."
 
 #: src/ContainerTerminal.jsx:262
 msgid "Container is not running"
@@ -246,7 +218,7 @@ msgstr ""
 msgid "Create and run"
 msgstr "Vytvoriť a spustiť"
 
-#: src/ImageRunModal.jsx:1003 src/Containers.jsx:706 src/Images.jsx:398
+#: src/Containers.jsx:706 src/ImageRunModal.jsx:1003 src/Images.jsx:398
 #: src/Images.jsx:412
 msgid "Create container"
 msgstr "Vytvoriť kontajner"
@@ -259,14 +231,14 @@ msgstr "Vytvoriť kontajner v $0"
 msgid "Create container in pod"
 msgstr "Vytvoriť kontajner v skupine"
 
-#: src/PodCreateModal.jsx:148 src/Containers.jsx:698
+#: src/Containers.jsx:698 src/PodCreateModal.jsx:148
 #, fuzzy
 #| msgid "Created"
 msgid "Create pod"
 msgstr "Vytvorený"
 
-#: src/util.js:9 src/util.js:12 src/ImageHistory.jsx:31
-#: src/ContainerDetails.jsx:63 src/Images.jsx:181
+#: src/ImageHistory.jsx:31 src/Images.jsx:181 src/ContainerDetails.jsx:63
+#: src/util.js:9 src/util.js:12
 msgid "Created"
 msgstr "Vytvorený"
 
@@ -310,13 +282,25 @@ msgstr "Spustiť podman"
 msgid "Decrease timeout"
 msgstr ""
 
-#: src/PodActions.jsx:44 src/PodActions.jsx:174 src/ContainerDeleteModal.jsx:32
-#: src/Containers.jsx:282 src/Images.jsx:418
+#: src/Containers.jsx:282 src/Images.jsx:418 src/PodActions.jsx:44
+#: src/PodActions.jsx:177 src/ContainerDeleteModal.jsx:32
 msgid "Delete"
 msgstr "Odstrániť"
 
 #: src/ImageDeleteModal.jsx:85
 msgid "Delete $0"
+msgstr "Odstrániť $0"
+
+#: src/ContainerDeleteModal.jsx:30 src/ForceRemoveModal.jsx:17
+#, fuzzy
+#| msgid "Delete $0"
+msgid "Delete $0?"
+msgstr "Odstrániť $0"
+
+#: src/PodActions.jsx:39
+#, fuzzy
+#| msgid "Delete $0"
+msgid "Delete pod $0?"
 msgstr "Odstrániť $0"
 
 #: src/ImageDeleteModal.jsx:89
@@ -335,11 +319,17 @@ msgstr "Zmazať nepoužívané užívateľské obrazy:"
 msgid "Deleting a container will erase all data in it."
 msgstr "Zmazaním kontajneru sa zmažú všetky dáta v ňom."
 
-#: src/PodActions.jsx:56
+#: src/Containers.jsx:70
+#, fuzzy
+#| msgid "Deleting a container will erase all data in it."
+msgid "Deleting a running container will erase all data in it."
+msgstr "Zmazaním kontajneru sa zmažú všetky dáta v ňom."
+
+#: src/PodActions.jsx:59
 msgid "Deleting this pod will remove the following containers:"
 msgstr "Zmazanie tohto podu zmaže nasledujúce kontajnery:"
 
-#: src/ImageRunModal.jsx:666 src/Containers.jsx:408 src/Images.jsx:150
+#: src/Containers.jsx:408 src/ImageRunModal.jsx:666 src/Images.jsx:150
 msgid "Details"
 msgstr "Podrobnosti"
 
@@ -359,6 +349,10 @@ msgstr "Stiahnuť"
 #: src/Images.jsx:346
 msgid "Download new image"
 msgstr "Stiahnuť nový obraz"
+
+#: src/PodActions.jsx:55
+msgid "Empty pod $0 will be permanently removed."
+msgstr ""
 
 #: src/ImageDetails.jsx:21
 msgid "Entrypoint"
@@ -388,7 +382,7 @@ msgstr "Príklad, Vaše Meno <vasemeno@priklad.sk>"
 msgid "Example: $0"
 msgstr "Príklad: $0"
 
-#: src/util.js:9 src/util.js:12 src/ContainerDetails.jsx:13
+#: src/ContainerDetails.jsx:13 src/util.js:9 src/util.js:12
 msgid "Exited"
 msgstr "Skončený"
 
@@ -424,11 +418,11 @@ msgstr "Nepodarilo sa vynútiť zmazanie kontajneru $0"
 msgid "Failed to force remove image $0"
 msgstr "Nepodarilo sa vynútiť zmazanie obrazu $0"
 
-#: src/PodActions.jsx:110
+#: src/PodActions.jsx:113
 msgid "Failed to force restart pod $0"
 msgstr "Nepodarilo sa nútene reštartovať pod $0"
 
-#: src/PodActions.jsx:88
+#: src/PodActions.jsx:91
 msgid "Failed to force stop pod $0"
 msgstr "Nepodarilo sa vynútiť zmazanie podu $0"
 
@@ -436,7 +430,7 @@ msgstr "Nepodarilo sa vynútiť zmazanie podu $0"
 msgid "Failed to pause container $0"
 msgstr "Nepodarilo sa zastaviť kontajner $0"
 
-#: src/PodActions.jsx:155
+#: src/PodActions.jsx:158
 msgid "Failed to pause pod $0"
 msgstr "Nepodarilo sa zastaviť pod $0"
 
@@ -468,7 +462,7 @@ msgstr "Nepodarilo sa spustiť kontajner $0"
 msgid "Failed to restart container $0"
 msgstr "Nepodarilo sa reštartovať kontajner $0"
 
-#: src/PodActions.jsx:99
+#: src/PodActions.jsx:102
 msgid "Failed to restart pod $0"
 msgstr "Nepodarilo sa reštartovať pod $0"
 
@@ -480,7 +474,7 @@ msgstr "Nepodarilo sa obnoviť kontajner $0"
 msgid "Failed to resume container $0"
 msgstr "Nepodarilo sa spustiť kontajner $0"
 
-#: src/PodActions.jsx:140
+#: src/PodActions.jsx:143
 msgid "Failed to resume pod $0"
 msgstr "Nepodarilo sa znovuspustiť pod $0"
 
@@ -488,17 +482,17 @@ msgstr "Nepodarilo sa znovuspustiť pod $0"
 msgid "Failed to run container $0"
 msgstr "Nepodarilo sa spustiť kontajner $0"
 
-#: src/ContainerHealthLogs.jsx:91 src/Containers.jsx:133
+#: src/Containers.jsx:133 src/ContainerHealthLogs.jsx:91
 #, fuzzy
 #| msgid "Failed to checkpoint container $0"
 msgid "Failed to run health check on container $0"
 msgstr "Nepodarilo sa vytvoriť kontrolný bod pre kontajner $0"
 
-#: src/ImageRunModal.jsx:426 src/ImageSearchModal.jsx:113
+#: src/ImageSearchModal.jsx:113 src/ImageRunModal.jsx:426
 msgid "Failed to search for images: $0"
 msgstr "Nepodarilo sa nájsť obrazy: $0"
 
-#: src/ImageRunModal.jsx:424 src/ImageSearchModal.jsx:112
+#: src/ImageSearchModal.jsx:112 src/ImageRunModal.jsx:424
 msgid "Failed to search for new images"
 msgstr "Nepodarilo sa nájsť nové obrazy"
 
@@ -506,7 +500,7 @@ msgstr "Nepodarilo sa nájsť nové obrazy"
 msgid "Failed to start container $0"
 msgstr "Nepodarilo sa spustiť kontajner $0"
 
-#: src/PodActions.jsx:125
+#: src/PodActions.jsx:128
 msgid "Failed to start pod $0"
 msgstr "Nepodarilo sa spustiť pod $0"
 
@@ -514,7 +508,7 @@ msgstr "Nepodarilo sa spustiť pod $0"
 msgid "Failed to stop container $0"
 msgstr "Nepodarilo sa zastaviť kontajner $0"
 
-#: src/PodActions.jsx:77
+#: src/PodActions.jsx:80
 msgid "Failed to stop pod $0"
 msgstr "Nepodarilo sa zastaviť pod $0"
 
@@ -532,11 +526,17 @@ msgstr "Vynútiť zastavenie"
 msgid "Force delete"
 msgstr "Vynútiť odstránenie"
 
-#: src/PodActions.jsx:114 src/Containers.jsx:203
+#: src/PodActions.jsx:38
+#, fuzzy
+#| msgid "Force delete"
+msgid "Force delete pod $0?"
+msgstr "Vynútiť odstránenie"
+
+#: src/Containers.jsx:203 src/PodActions.jsx:117
 msgid "Force restart"
 msgstr "Vynútiť reštartovanie"
 
-#: src/PodActions.jsx:92 src/Containers.jsx:195
+#: src/Containers.jsx:195 src/PodActions.jsx:95
 msgid "Force stop"
 msgstr "Vynútiť zastavenie"
 
@@ -548,7 +548,7 @@ msgstr "GB"
 msgid "Gateway"
 msgstr "Brána"
 
-#: src/ImageRunModal.jsx:883 src/Containers.jsx:427
+#: src/Containers.jsx:427 src/ImageRunModal.jsx:883
 msgid "Health check"
 msgstr ""
 
@@ -596,7 +596,7 @@ msgstr "Port na hostiteľovi"
 msgid "Host port help"
 msgstr "Nápoveda k portu na hostiteľovi"
 
-#: src/ContainerDetails.jsx:31 src/Images.jsx:182
+#: src/Images.jsx:182 src/ContainerDetails.jsx:31
 msgid "ID"
 msgstr "ID"
 
@@ -628,7 +628,7 @@ msgstr "Ignorovať staticky nastavené IP adresy"
 msgid "Ignore MAC address if set statically"
 msgstr "Ignorovať staticky nastavené MAC adresy"
 
-#: src/ImageRunModal.jsx:683 src/ContainerDetails.jsx:35 src/Images.jsx:179
+#: src/ImageRunModal.jsx:683 src/Images.jsx:179 src/ContainerDetails.jsx:35
 msgid "Image"
 msgstr "Obraz"
 
@@ -686,7 +686,7 @@ msgstr "Spustiť podman"
 msgid "Increase timeout"
 msgstr ""
 
-#: src/ImageRunModal.jsx:852 src/Containers.jsx:412
+#: src/Containers.jsx:412 src/ImageRunModal.jsx:852
 msgid "Integration"
 msgstr "Integrácia"
 
@@ -736,7 +736,7 @@ msgstr "Načítanie záznamov udalostí..."
 msgid "Loading logs..."
 msgstr "Načítanie záznamov udalostí..."
 
-#: src/ImageUsedBy.jsx:9 src/Containers.jsx:560
+#: src/Containers.jsx:560 src/ImageUsedBy.jsx:9
 msgid "Loading..."
 msgstr "Načítanie..."
 
@@ -748,7 +748,7 @@ msgstr "Miestne"
 msgid "Local images"
 msgstr "Miestne obrazy"
 
-#: src/ContainerHealthLogs.jsx:99 src/Containers.jsx:416
+#: src/Containers.jsx:416 src/ContainerHealthLogs.jsx:99
 msgid "Logs"
 msgstr "Záznamy udalostí"
 
@@ -826,7 +826,7 @@ msgstr "Neboli definované žiadne premenné prostredia"
 msgid "No images"
 msgstr "Žiadne obrazy"
 
-#: src/ImageRunModal.jsx:708 src/ImageSearchModal.jsx:185
+#: src/ImageSearchModal.jsx:185 src/ImageRunModal.jsx:708
 msgid "No images found"
 msgstr "Žiadne obrazy neboli nájdené"
 
@@ -866,9 +866,9 @@ msgstr "Iba bežiace"
 msgid "Options"
 msgstr "Možnosti"
 
-#: src/ImageRunModal.jsx:668 src/ContainerHeader.jsx:16
-#: src/PodCreateModal.jsx:106 src/Containers.jsx:548 src/Images.jsx:180
-#: src/ImageSearchModal.jsx:157
+#: src/Containers.jsx:548 src/ImageSearchModal.jsx:157
+#: src/ImageRunModal.jsx:668 src/ContainerHeader.jsx:16 src/Images.jsx:180
+#: src/PodCreateModal.jsx:106
 msgid "Owner"
 msgstr "Vlastník"
 
@@ -881,7 +881,7 @@ msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr ""
 
-#: src/PodActions.jsx:159 src/Containers.jsx:211
+#: src/Containers.jsx:211 src/PodActions.jsx:162
 msgid "Pause"
 msgstr "Pozastaviť"
 
@@ -919,7 +919,7 @@ msgstr "Služba Podman nie je aktívna"
 msgid "Port mapping"
 msgstr "Mapovanie portov"
 
-#: src/ContainerIntegration.jsx:105 src/ImageDetails.jsx:39
+#: src/ImageDetails.jsx:39 src/ContainerIntegration.jsx:105
 msgid "Ports"
 msgstr "Porty"
 
@@ -935,7 +935,7 @@ msgstr "Protokol"
 msgid "Prune"
 msgstr "Prerezať"
 
-#: src/PruneUnusedImagesModal.jsx:84 src/Images.jsx:358
+#: src/Images.jsx:358 src/PruneUnusedImagesModal.jsx:84
 msgid "Prune unused images"
 msgstr "Prerezať nepoužívané obrazy"
 
@@ -959,7 +959,7 @@ msgstr ""
 msgid "Read-write access"
 msgstr ""
 
-#: src/ImageRunModal.jsx:94 src/PublishPort.jsx:81 src/Volume.jsx:48
+#: src/PublishPort.jsx:81 src/ImageRunModal.jsx:94 src/Volume.jsx:48
 msgid "Remove item"
 msgstr "Odstrániť položku"
 
@@ -967,7 +967,7 @@ msgstr "Odstrániť položku"
 msgid "Removing"
 msgstr "Odstraňuje sa"
 
-#: src/ContainerRenameModal.jsx:91 src/Containers.jsx:181
+#: src/Containers.jsx:181 src/ContainerRenameModal.jsx:91
 msgid "Rename"
 msgstr ""
 
@@ -977,7 +977,7 @@ msgstr ""
 msgid "Rename container $0"
 msgstr "Obnovenie kontajneru $0"
 
-#: src/PodActions.jsx:103 src/Containers.jsx:199
+#: src/Containers.jsx:199 src/PodActions.jsx:106
 msgid "Restart"
 msgstr "Reštartovať"
 
@@ -1010,7 +1010,7 @@ msgstr ""
 msgid "Restarting"
 msgstr "Reštartovať"
 
-#: src/ContainerRestoreModal.jsx:46 src/Containers.jsx:249
+#: src/Containers.jsx:249 src/ContainerRestoreModal.jsx:46
 msgid "Restore"
 msgstr "Obnoviť"
 
@@ -1022,7 +1022,7 @@ msgstr "Obnovenie kontajneru $0"
 msgid "Restore with established TCP connections"
 msgstr ""
 
-#: src/PodActions.jsx:144 src/Containers.jsx:218
+#: src/Containers.jsx:218 src/PodActions.jsx:147
 msgid "Resume"
 msgstr ""
 
@@ -1036,7 +1036,7 @@ msgstr ""
 msgid "Retry another term."
 msgstr "Skúste iný pojem."
 
-#: src/ContainerHealthLogs.jsx:95 src/Containers.jsx:272
+#: src/Containers.jsx:272 src/ContainerHealthLogs.jsx:95
 msgid "Run health check"
 msgstr ""
 
@@ -1108,7 +1108,7 @@ msgstr "Zobraziť viac"
 msgid "Size"
 msgstr "Veľkosť"
 
-#: src/PodActions.jsx:129 src/app.jsx:714 src/Containers.jsx:238
+#: src/Containers.jsx:238 src/PodActions.jsx:132 src/app.jsx:714
 msgid "Start"
 msgstr "Spustiť"
 
@@ -1134,7 +1134,7 @@ msgstr "Začnite písať na vyhľadanie obrazov."
 msgid "Started at"
 msgstr "Spustiť"
 
-#: src/ContainerDetails.jsx:67 src/Containers.jsx:551
+#: src/Containers.jsx:551 src/ContainerDetails.jsx:67
 msgid "State"
 msgstr "Stav"
 
@@ -1144,7 +1144,7 @@ msgstr "Stav"
 msgid "Status"
 msgstr "Stav"
 
-#: src/PodActions.jsx:81 src/Containers.jsx:191
+#: src/Containers.jsx:191 src/PodActions.jsx:84
 msgid "Stop"
 msgstr "Zastaviť"
 
@@ -1169,7 +1169,7 @@ msgstr "Systémový podman je tiež dostupný"
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ContainerCommitModal.jsx:97 src/ImageSearchModal.jsx:227
+#: src/ImageSearchModal.jsx:227 src/ContainerCommitModal.jsx:97
 msgid "Tag"
 msgstr "Tag"
 
@@ -1231,7 +1231,7 @@ msgstr "Aktívny od $0"
 msgid "Use legacy Docker format"
 msgstr ""
 
-#: src/Images.jsx:184 src/ImageDetails.jsx:33
+#: src/ImageDetails.jsx:33 src/Images.jsx:184
 msgid "Used by"
 msgstr "Využívaný s"
 
@@ -1315,7 +1315,7 @@ msgstr ""
 msgid "select all"
 msgstr ""
 
-#: src/Containers.jsx:395 src/Images.jsx:132 src/ImageSearchModal.jsx:158
+#: src/Containers.jsx:395 src/ImageSearchModal.jsx:158 src/Images.jsx:132
 msgid "system"
 msgstr "systém"
 
@@ -1332,6 +1332,29 @@ msgstr "používateľ:"
 #| msgid "Volumes"
 msgid "volumes"
 msgstr "Zväzky"
+
+#, fuzzy
+#~| msgid "Please confirm deletion of $0"
+#~ msgid "Confirm deletion of $0"
+#~ msgstr "Potvrďte zmazanie $0"
+
+#, fuzzy
+#~| msgid "Please confirm deletion of pod $0"
+#~ msgid "Confirm deletion of pod $0"
+#~ msgstr "Potvrďte zmazanie podu $0"
+
+#, fuzzy
+#~| msgid "Please confirm force deletion of pod $0"
+#~ msgid "Confirm force deletion of pod $0"
+#~ msgstr "Potvrďte vynútené zmazanie podu $0"
+
+#, fuzzy
+#~| msgid "Please confirm forced deletion of $0"
+#~ msgid "Confirm forced deletion of $0"
+#~ msgstr "Potvrďte nútené zmazanie $0"
+
+#~ msgid "Container is currently running."
+#~ msgstr "Kontajner momentálne beží."
 
 #~ msgid "Do not include root file-system changes when exporting"
 #~ msgstr "Do exportu nezahŕnať zmeny v koreňovom súborovovom systéme"
