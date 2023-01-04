@@ -425,6 +425,33 @@ class TestApplication(testlib.MachineCase):
         # Checking images is harder but if there would be more than one this would fail
         b.wait_visible("#containers-images:contains('quay.io/cockpit/registry:2')")
 
+        # Check showing of entrypoint
+        b.click("#containers-containers-create-container-btn")
+        b.click("#create-image-image-select-typeahead")
+        b.click('button.pf-c-select__menu-item:contains("registry:2")')
+        b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yml')
+        b.wait_text("#run-image-dialog-entrypoint", '/entrypoint.sh')
+
+        # Deleting image will cleanup both command and entrypoint
+        b.click("button.pf-c-select__toggle-clear")
+        b.wait_val("#run-image-dialog-command", '')
+        b.wait_not_present("#run-image-dialog-entrypoint")
+
+        # Edited command will not be cleared
+        b.click("#create-image-image-select-typeahead")
+        b.click('button.pf-c-select__menu-item:contains("registry:2")')
+        b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yml')
+        b.set_input_text("#run-image-dialog-command", '/etc/docker/registry/config.yaml')
+        b.click("button.pf-c-select__toggle-clear")
+        b.wait_not_present("#run-image-dialog-entrypoint")
+        b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yaml')
+
+        # Setting a new image will still keep the old command and not prefill it
+        b.click("#create-image-image-select-typeahead")
+        b.click('button.pf-c-select__menu-item:contains("alpine")')
+        b.wait_visible("#run-image-dialog-pull-latest-image")
+        b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yaml')
+
         b.logout()
 
         if self.machine.ostree_image:
@@ -449,6 +476,7 @@ class TestApplication(testlib.MachineCase):
         # https://github.com/cockpit-project/cockpit-podman/pull/891
         b.click("#containers-containers-create-container-btn")
         b.set_input_text("#create-image-image-select-typeahead", "registry")
+        b.wait_visible('button.pf-c-select__menu-item:contains("registry")')
 
     @testlib.nondestructive
     def testBasicUser(self):

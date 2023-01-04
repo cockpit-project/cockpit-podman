@@ -8,7 +8,7 @@ import {
     NumberInput, InputGroupTextVariant,
     InputGroup, InputGroupText,
     SelectOption, SelectGroup,
-    TextInput, Tabs, Tab, TabTitleText,
+    TextInput, Tabs, Tab, TabTitleText, Text,
     ToggleGroup, ToggleGroupItem,
     Flex, FlexItem,
     Popover,
@@ -103,10 +103,14 @@ export class ImageRunModal extends React.Component {
 
     constructor(props) {
         super(props);
+
         let command = "";
         if (this.props.image && this.props.image.Command) {
             command = utils.quote_cmdline(this.props.image.Command);
         }
+
+        const entrypoint = utils.quote_cmdline(this.props.image?.Entrypoint);
+
         let selectedImage = "";
         if (this.props.image) {
             selectedImage = utils.image_name(this.props.image);
@@ -119,6 +123,7 @@ export class ImageRunModal extends React.Component {
         this.state = {
             command,
             containerName: dockerNames.getRandomName(),
+            entrypoint,
             env: [],
             hasTTY: true,
             publish: [],
@@ -465,7 +470,7 @@ export class ImageRunModal extends React.Component {
     clearImageSelection = () => {
         // Reset command if it was prefilled
         let command = this.state.command;
-        if (this.state.selectedImage && this.state.selectedImage.Command && this.state.command === utils.quote_cmdline(this.state.selectedImage.Command))
+        if (this.state.command === utils.quote_cmdline(this.state.selectedImage?.Command))
             command = "";
 
         this.setState({
@@ -476,6 +481,7 @@ export class ImageRunModal extends React.Component {
             searchText: "",
             searchFinished: false,
             command: command,
+            entrypoint: "",
         });
     }
 
@@ -493,10 +499,13 @@ export class ImageRunModal extends React.Component {
         if (value.Command && !command)
             command = utils.quote_cmdline(value.Command);
 
+        const entrypoint = utils.quote_cmdline(value?.Entrypoint);
+
         this.setState({
             selectedImage: value,
             isImageSelectOpen: false,
             command: command,
+            entrypoint: entrypoint,
         });
     }
 
@@ -739,6 +748,12 @@ export class ImageRunModal extends React.Component {
                             <Checkbox isChecked={this.state.pullLatestImage} id="run-image-dialog-pull-latest-image"
                                       onChange={value => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
                             />
+                        </FormGroup>
+                        }
+
+                        {dialogValues.entrypoint &&
+                        <FormGroup fieldId='run-image-dialog-entrypoint' hasNoPaddingTop label={_("Entrypoint")}>
+                            <Text id="run-image-dialog-entrypoint">{dialogValues.entrypoint}</Text>
                         </FormGroup>
                         }
 
