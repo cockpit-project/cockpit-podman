@@ -1249,7 +1249,9 @@ class TestApplication(testlib.MachineCase):
         # Troubleshoot action
         b.click("#app .pf-c-empty-state button.pf-m-link")
         b.enter_page("/system/services")
-        b.wait_in_text("#service-details", "podman.socket")
+        # services page is too slow
+        with b.wait_timeout(60):
+            b.wait_in_text("#service-details", "podman.socket")
 
         # Start action, with enabling (by default)
         b.go("/podman")
