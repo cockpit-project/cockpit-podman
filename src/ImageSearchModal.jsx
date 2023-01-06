@@ -110,7 +110,7 @@ export class ImageSearchModal extends React.Component {
                                 results = results.concat(JSON.parse(result.value));
                             } else {
                                 dialogError = _("Failed to search for new images");
-                                dialogErrorDetail = cockpit.format(_("Failed to search for images: $0"), result.reason);
+                                dialogErrorDetail = result.reason ? cockpit.format(_("Failed to search for images: $0"), result.reason.message) : _("Failed to search for images.");
                             }
                         }
 
