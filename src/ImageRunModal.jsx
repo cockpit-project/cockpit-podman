@@ -423,7 +423,7 @@ export class ImageRunModal extends React.Component {
                             } else {
                                 dialogError = _("Failed to search for new images");
                                 // TODO: add registry context, podman does not include it in the reply.
-                                dialogErrorDetail = cockpit.format(_("Failed to search for images: $0"), result.reason);
+                                dialogErrorDetail = result.reason ? cockpit.format(_("Failed to search for images: $0"), result.reason.message) : _("Failed to search for images.");
                             }
                         }
                         // Group images on registry
