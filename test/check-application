@@ -698,15 +698,15 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-images", alpine_sel)
 
         b.wait_collected_text("#containers-containers .container-name", expected_ws)
-        self.execute(auth, "podman run -d --name c registry:2 sh")
+        self.execute(auth, "podman run -d --name c quay.io/cockpit/registry:2 sh")
         b.wait_collected_text("#containers-containers .container-name", "c" + expected_ws)
-        self.execute(auth, "podman run -d --name a registry:2 sh")
+        self.execute(auth, "podman run -d --name a quay.io/cockpit/registry:2 sh")
         b.wait_collected_text("#containers-containers .container-name", "ac" + expected_ws)
 
-        self.execute(False, "podman run -d --name b registry:2 sh")
+        self.execute(False, "podman run -d --name b quay.io/cockpit/registry:2 sh")
         if auth:
             b.wait_collected_text("#containers-containers .container-name", "bac" + expected_ws)
-            self.execute(False, "podman run -d --name doremi registry:2 sh")
+            self.execute(False, "podman run -d --name doremi quay.io/cockpit/registry:2 sh")
             b.wait_collected_text("#containers-containers .container-name", "bdoremiac" + expected_ws)
             b.wait(lambda: self.getContainerAttr("doremi", "State") in NOT_RUNNING)
         else:
@@ -857,8 +857,8 @@ class TestApplication(testlib.MachineCase):
 
         def prepare():
             # Create and start registry containers
-            self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
-            self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
+            self.execute(True, "podman run -d -p 5000:5000 --name registry quay.io/cockpit/registry:2")
+            self.execute(True, "podman run -d -p 6000:5000 --name registry_alt quay.io/cockpit/registry:2")
             # Add local insecure registry into registries conf
             self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
             self.execute(True, "systemctl stop podman.service")
@@ -1348,8 +1348,8 @@ class TestApplication(testlib.MachineCase):
         self.execute(True, f"podman commit {new_container} newimage")
         new_image_sha = self.execute(True, "podman inspect --format '{{.Id}}' newimage").strip()
 
-        self.execute(True, "podman run -d -p 5000:5000 --name registry registry:2")
-        self.execute(True, "podman run -d -p 6000:5000 --name registry_alt registry:2")
+        self.execute(True, "podman run -d -p 5000:5000 --name registry quay.io/cockpit/registry:2")
+        self.execute(True, "podman run -d -p 6000:5000 --name registry_alt quay.io/cockpit/registry:2")
         # Add local insecure registry into registries conf
         self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
         self.execute(True, "systemctl stop podman.service")
@@ -1460,7 +1460,7 @@ class TestApplication(testlib.MachineCase):
 
         # Just drop user images so we can use simpler selectors
         if auth:
-            self.execute(False, "podman rmi alpine busybox registry:2")
+            self.execute(False, "podman rmi alpine busybox quay.io/cockpit/registry:2")
             _, _, version = self.execute(False, "podman -v").split(' ')
             if int(version[0]) < 4:
                 self.execute(False, "podman rmi pause:3.5")
@@ -2007,7 +2007,7 @@ class TestApplication(testlib.MachineCase):
         container_name = 'portused'
 
         # Start a podman container which uses a port
-        self.execute(False, "podman run -d -p 5000:5000 --name registry registry:2")
+        self.execute(False, "podman run -d -p 5000:5000 --name registry quay.io/cockpit/registry:2")
         b.click("#containers-images button.pf-c-expandable-section__toggle")
 
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
