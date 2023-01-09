@@ -93,8 +93,13 @@ class TestApplication(testlib.MachineCase):
         self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
         self.restore_dir("/home/admin/.local/share/containers", reboot_safe=True)
         self.addCleanup(self.admin_s.execute, "systemctl --user stop podman.service podman.socket || true")
-        self.addCleanup(self.admin_s.execute, "podman rm --force --all || true")
-        self.addCleanup(self.admin_s.execute, "podman pod rm --force --all || true")
+        # Ubuntu has old podman that does not know about --time
+        if m.image.startswith("ubuntu"):
+            self.addCleanup(self.admin_s.execute, "podman rm --force --all || true", timeout=300)
+            self.addCleanup(self.admin_s.execute, "podman pod rm --force --all || true", timeout=300)
+        else:
+            self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all || true")
+            self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all || true")
 
         # But disable it globally so that "systemctl --user disable" does what we expect
         m.execute("systemctl --global disable podman.socket")
