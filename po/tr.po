@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-12 03:04+0000\n"
-"PO-Revision-Date: 2022-12-10 11:46+0000\n"
+"POT-Creation-Date: 2023-01-06 02:59+0000\n"
+"PO-Revision-Date: 2022-12-26 07:20+0000\n"
 "Last-Translator: Burak Yavuz <hitowerdigit@hotmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/tr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1\n"
-"X-Generator: Weblate 4.14.2\n"
+"X-Generator: Weblate 4.15\n"
 
 #: src/Images.jsx:87
 msgid "$0 container"
@@ -55,7 +55,7 @@ msgstr "Değişken ekle"
 msgid "Add volume"
 msgstr "Birim ekle"
 
-#: src/ImageRunModal.jsx:622 src/ContainerHeader.jsx:22 src/Containers.jsx:689
+#: src/Containers.jsx:689 src/ImageRunModal.jsx:622 src/ContainerHeader.jsx:22
 msgid "All"
 msgstr "Tümü"
 
@@ -101,12 +101,12 @@ msgstr ""
 "Varsayılan öncelik 1024'dür. Daha yüksek bir sayı bu kapsayıcıya öncelik "
 "verir. Daha düşük bir sayı önceliği azaltır."
 
-#: src/ImageRunModal.jsx:1013 src/PruneUnusedImagesModal.jsx:93
-#: src/PodActions.jsx:48 src/ContainerRestoreModal.jsx:50
-#: src/ContainerCommitModal.jsx:156 src/ForceRemoveModal.jsx:24
-#: src/ContainerCheckpointModal.jsx:47 src/ContainerRenameModal.jsx:96
+#: src/ImageSearchModal.jsx:240 src/ContainerCommitModal.jsx:156
+#: src/ImageRunModal.jsx:1013 src/ImageDeleteModal.jsx:91
+#: src/ContainerRenameModal.jsx:96 src/PodActions.jsx:48
+#: src/ContainerRestoreModal.jsx:50 src/PruneUnusedImagesModal.jsx:93
 #: src/ContainerDeleteModal.jsx:33 src/PodCreateModal.jsx:156
-#: src/ImageDeleteModal.jsx:91 src/ImageSearchModal.jsx:240
+#: src/ContainerCheckpointModal.jsx:47 src/ForceRemoveModal.jsx:24
 msgid "Cancel"
 msgstr "İptal"
 
@@ -114,7 +114,7 @@ msgstr "İptal"
 msgid "Checking health"
 msgstr "Sağlık denetleniyor"
 
-#: src/ContainerCheckpointModal.jsx:43 src/Containers.jsx:228
+#: src/Containers.jsx:228 src/ContainerCheckpointModal.jsx:43
 msgid "Checkpoint"
 msgstr "Denetim noktası"
 
@@ -134,9 +134,9 @@ msgstr "Birimleri görmek için tıklayın"
 msgid "Cockpit component for Podman containers"
 msgstr "Podman kapsayıcıları için Cockpit bileşeni"
 
-#: src/ImageRunModal.jsx:734 src/ImageRunModal.jsx:884
-#: src/ContainerHealthLogs.jsx:61 src/ContainerCommitModal.jsx:111
-#: src/ContainerDetails.jsx:39 src/ImageDetails.jsx:15
+#: src/ContainerCommitModal.jsx:111 src/ImageRunModal.jsx:734
+#: src/ImageRunModal.jsx:884 src/ImageDetails.jsx:15
+#: src/ContainerDetails.jsx:39 src/ContainerHealthLogs.jsx:61
 msgid "Command"
 msgstr "Komut"
 
@@ -144,7 +144,7 @@ msgstr "Komut"
 msgid "Comments"
 msgstr "Açıklamalar"
 
-#: src/ContainerCommitModal.jsx:143 src/Containers.jsx:263
+#: src/Containers.jsx:263 src/ContainerCommitModal.jsx:143
 msgid "Commit"
 msgstr "İşle"
 
@@ -155,22 +155,6 @@ msgstr "Kapsayıcı işle"
 #: src/util.js:9
 msgid "Configured"
 msgstr "Yapılandırıldı"
-
-#: src/ContainerDeleteModal.jsx:30
-msgid "Confirm deletion of $0"
-msgstr "$0 için silme işlemini onaylayın"
-
-#: src/PodActions.jsx:39
-msgid "Confirm deletion of pod $0"
-msgstr "$0 bölmesinin silme işlemini onaylayın"
-
-#: src/PodActions.jsx:38
-msgid "Confirm force deletion of pod $0"
-msgstr "$0 bölmesinin zorla silme işlemini onaylayın"
-
-#: src/ForceRemoveModal.jsx:17
-msgid "Confirm forced deletion of $0"
-msgstr "$0 için zorla silme işlemini onaylayın"
 
 #: src/Containers.jsx:420
 msgid "Console"
@@ -187,10 +171,6 @@ msgstr "Kapsayıcının oluşturulması başarısız oldu"
 #: src/ImageRunModal.jsx:271
 msgid "Container failed to be started"
 msgstr "Kapsayıcının başlatılması başarısız oldu"
-
-#: src/Containers.jsx:70
-msgid "Container is currently running."
-msgstr "Kapsayıcı şu anda çalışıyor."
 
 #: src/ContainerTerminal.jsx:262
 msgid "Container is not running"
@@ -228,7 +208,7 @@ msgstr "$0 kapsayıcısının şu anki durumuna göre yeni bir kalıp oluşturun
 msgid "Create and run"
 msgstr "Oluştur ve çalıştır"
 
-#: src/ImageRunModal.jsx:1003 src/Containers.jsx:706 src/Images.jsx:398
+#: src/Containers.jsx:706 src/ImageRunModal.jsx:1003 src/Images.jsx:398
 #: src/Images.jsx:412
 msgid "Create container"
 msgstr "Kapsayıcı oluştur"
@@ -241,12 +221,12 @@ msgstr "$0 içinde kapsayıcı oluştur"
 msgid "Create container in pod"
 msgstr "Bölme içinde kapsayıcı oluştur"
 
-#: src/PodCreateModal.jsx:148 src/Containers.jsx:698
+#: src/Containers.jsx:698 src/PodCreateModal.jsx:148
 msgid "Create pod"
 msgstr "Bölme oluştur"
 
-#: src/util.js:9 src/util.js:12 src/ImageHistory.jsx:31
-#: src/ContainerDetails.jsx:63 src/Images.jsx:181
+#: src/ImageHistory.jsx:31 src/Images.jsx:181 src/ContainerDetails.jsx:63
+#: src/util.js:9 src/util.js:12
 msgid "Created"
 msgstr "Oluşturuldu"
 
@@ -282,14 +262,22 @@ msgstr "Başlangıç süresini azalt"
 msgid "Decrease timeout"
 msgstr "Zaman aşımını azalt"
 
-#: src/PodActions.jsx:44 src/PodActions.jsx:174 src/ContainerDeleteModal.jsx:32
-#: src/Containers.jsx:282 src/Images.jsx:418
+#: src/Containers.jsx:282 src/Images.jsx:418 src/PodActions.jsx:44
+#: src/PodActions.jsx:177 src/ContainerDeleteModal.jsx:32
 msgid "Delete"
 msgstr "Sil"
 
 #: src/ImageDeleteModal.jsx:85
 msgid "Delete $0"
 msgstr "$0 sil"
+
+#: src/ContainerDeleteModal.jsx:30 src/ForceRemoveModal.jsx:17
+msgid "Delete $0?"
+msgstr "$0 silinsin mi?"
+
+#: src/PodActions.jsx:39
+msgid "Delete pod $0?"
+msgstr "$0 bölmesi silinsin mi?"
 
 #: src/ImageDeleteModal.jsx:89
 msgid "Delete tagged images"
@@ -305,13 +293,17 @@ msgstr "Kullanılmayan kullanıcı kalıplarını sil:"
 
 #: src/ContainerDeleteModal.jsx:36
 msgid "Deleting a container will erase all data in it."
-msgstr "Bir kapsayıcıyı silmek içindeki tüm verileri silecektir."
+msgstr "Bir kapsayıcıyı silmek içindeki tüm verileri silecek."
 
-#: src/PodActions.jsx:56
+#: src/Containers.jsx:70
+msgid "Deleting a running container will erase all data in it."
+msgstr "Çalışan bir kapsayıcıyı silmek içindeki tüm verileri silecek."
+
+#: src/PodActions.jsx:59
 msgid "Deleting this pod will remove the following containers:"
-msgstr "Bu bölmeyi silmek aşağıdaki kapsayıcıları kaldıracaktır:"
+msgstr "Bu bölmeyi silmek aşağıdaki kapsayıcıları kaldıracak:"
 
-#: src/ImageRunModal.jsx:666 src/Containers.jsx:408 src/Images.jsx:150
+#: src/Containers.jsx:408 src/ImageRunModal.jsx:666 src/Images.jsx:150
 msgid "Details"
 msgstr "Ayrıntılar"
 
@@ -332,6 +324,10 @@ msgstr "İndir"
 #: src/Images.jsx:346
 msgid "Download new image"
 msgstr "Yeni kalıbı indir"
+
+#: src/PodActions.jsx:55
+msgid "Empty pod $0 will be permanently removed."
+msgstr "Boş bölme $0 kalıcı olarak kaldırılacaktır."
 
 #: src/ImageDetails.jsx:21
 msgid "Entrypoint"
@@ -361,7 +357,7 @@ msgstr "Örnek, Adınız <adiniz@ornek.com>"
 msgid "Example: $0"
 msgstr "Örnek: $0"
 
-#: src/util.js:9 src/util.js:12 src/ContainerDetails.jsx:13
+#: src/ContainerDetails.jsx:13 src/util.js:9 src/util.js:12
 msgid "Exited"
 msgstr "Çıkıldı"
 
@@ -397,11 +393,11 @@ msgstr "$0 kapsayıcısını zorla kaldırma başarısız oldu"
 msgid "Failed to force remove image $0"
 msgstr "$0 kalıbını zorla kaldırma başarısız oldu"
 
-#: src/PodActions.jsx:110
+#: src/PodActions.jsx:113
 msgid "Failed to force restart pod $0"
 msgstr "$0 bölmesini yeniden başlatmaya zorlama başarısız oldu"
 
-#: src/PodActions.jsx:88
+#: src/PodActions.jsx:91
 msgid "Failed to force stop pod $0"
 msgstr "$0 bölmesini zorla durdurma başarısız oldu"
 
@@ -409,7 +405,7 @@ msgstr "$0 bölmesini zorla durdurma başarısız oldu"
 msgid "Failed to pause container $0"
 msgstr "$0 kapsayıcısını duraklatma başarısız oldu"
 
-#: src/PodActions.jsx:155
+#: src/PodActions.jsx:158
 msgid "Failed to pause pod $0"
 msgstr "$0 bölmesini duraklatma başarısız oldu"
 
@@ -437,7 +433,7 @@ msgstr "$0 kapsayıcısını yeniden adlandırma başarısız oldu"
 msgid "Failed to restart container $0"
 msgstr "$0 kapsayıcısını yeniden başlatma başarısız oldu"
 
-#: src/PodActions.jsx:99
+#: src/PodActions.jsx:102
 msgid "Failed to restart pod $0"
 msgstr "$0 bölmesini yeniden başlatma başarısız oldu"
 
@@ -449,7 +445,7 @@ msgstr "$0 kapsayıcısını geri yükleme başarısız oldu"
 msgid "Failed to resume container $0"
 msgstr "$0 kapsayıcısını sürdürme başarısız oldu"
 
-#: src/PodActions.jsx:140
+#: src/PodActions.jsx:143
 msgid "Failed to resume pod $0"
 msgstr "$0 bölmesini sürdürme başarısız oldu"
 
@@ -457,15 +453,15 @@ msgstr "$0 bölmesini sürdürme başarısız oldu"
 msgid "Failed to run container $0"
 msgstr "$0 kapsayıcısını çalıştırma başarısız oldu"
 
-#: src/ContainerHealthLogs.jsx:91 src/Containers.jsx:133
+#: src/Containers.jsx:133 src/ContainerHealthLogs.jsx:91
 msgid "Failed to run health check on container $0"
 msgstr "$0 kapsayıcısında sağlık denetimi çalıştırma başarısız oldu"
 
-#: src/ImageRunModal.jsx:426 src/ImageSearchModal.jsx:113
+#: src/ImageSearchModal.jsx:113 src/ImageRunModal.jsx:426
 msgid "Failed to search for images: $0"
 msgstr "Kalıpları arama başarısız oldu: $0"
 
-#: src/ImageRunModal.jsx:424 src/ImageSearchModal.jsx:112
+#: src/ImageSearchModal.jsx:112 src/ImageRunModal.jsx:424
 msgid "Failed to search for new images"
 msgstr "Yeni kalıpları arama başarısız oldu"
 
@@ -473,7 +469,7 @@ msgstr "Yeni kalıpları arama başarısız oldu"
 msgid "Failed to start container $0"
 msgstr "$0 kapsayıcısını başlatma başarısız oldu"
 
-#: src/PodActions.jsx:125
+#: src/PodActions.jsx:128
 msgid "Failed to start pod $0"
 msgstr "$0 bölmesini başlatma başarısız oldu"
 
@@ -481,7 +477,7 @@ msgstr "$0 bölmesini başlatma başarısız oldu"
 msgid "Failed to stop container $0"
 msgstr "$0 kapsayıcısını durdurma başarısız oldu"
 
-#: src/PodActions.jsx:77
+#: src/PodActions.jsx:80
 msgid "Failed to stop pod $0"
 msgstr "$0 bölmesini durdurma başarısız oldu"
 
@@ -497,11 +493,15 @@ msgstr "İşlemeye zorla"
 msgid "Force delete"
 msgstr "Silmeye zorla"
 
-#: src/PodActions.jsx:114 src/Containers.jsx:203
+#: src/PodActions.jsx:38
+msgid "Force delete pod $0?"
+msgstr "$0 bölmesi silmeye zorlansın mı?"
+
+#: src/Containers.jsx:203 src/PodActions.jsx:117
 msgid "Force restart"
 msgstr "Yeniden başlatmaya zorla"
 
-#: src/PodActions.jsx:92 src/Containers.jsx:195
+#: src/Containers.jsx:195 src/PodActions.jsx:95
 msgid "Force stop"
 msgstr "Durdurmaya zorla"
 
@@ -513,7 +513,7 @@ msgstr "GB"
 msgid "Gateway"
 msgstr "Ağ geçidi"
 
-#: src/ImageRunModal.jsx:883 src/Containers.jsx:427
+#: src/Containers.jsx:427 src/ImageRunModal.jsx:883
 msgid "Health check"
 msgstr "Sağlık denetimi"
 
@@ -561,7 +561,7 @@ msgstr "Anamakine bağlantı noktası"
 msgid "Host port help"
 msgstr "Anamakine b.noktası yardım"
 
-#: src/ContainerDetails.jsx:31 src/Images.jsx:182
+#: src/Images.jsx:182 src/ContainerDetails.jsx:31
 msgid "ID"
 msgstr "Kimlik"
 
@@ -597,7 +597,7 @@ msgstr "Sabit olarak ayarlanmışsa IP adresini yoksay"
 msgid "Ignore MAC address if set statically"
 msgstr "Sabit olarak ayarlanmışsa MAC adresini yoksay"
 
-#: src/ImageRunModal.jsx:683 src/ContainerDetails.jsx:35 src/Images.jsx:179
+#: src/ImageRunModal.jsx:683 src/Images.jsx:179 src/ContainerDetails.jsx:35
 msgid "Image"
 msgstr "Kalıp"
 
@@ -645,7 +645,7 @@ msgstr "Başlangıç süresini artır"
 msgid "Increase timeout"
 msgstr "Zaman aşımını artır"
 
-#: src/ImageRunModal.jsx:852 src/Containers.jsx:412
+#: src/Containers.jsx:412 src/ImageRunModal.jsx:852
 msgid "Integration"
 msgstr "Bütünleştirme"
 
@@ -693,7 +693,7 @@ msgstr "Ayrıntılar yükleniyor..."
 msgid "Loading logs..."
 msgstr "Günlükler yükleniyor..."
 
-#: src/ImageUsedBy.jsx:9 src/Containers.jsx:560
+#: src/Containers.jsx:560 src/ImageUsedBy.jsx:9
 msgid "Loading..."
 msgstr "Yükleniyor..."
 
@@ -705,7 +705,7 @@ msgstr "Yerel"
 msgid "Local images"
 msgstr "Yerel kalıplar"
 
-#: src/ContainerHealthLogs.jsx:99 src/Containers.jsx:416
+#: src/Containers.jsx:416 src/ContainerHealthLogs.jsx:99
 msgid "Logs"
 msgstr "Günlükler"
 
@@ -783,7 +783,7 @@ msgstr "Belirtilen ortam değişkenleri yok"
 msgid "No images"
 msgstr "Kalıplar yok"
 
-#: src/ImageRunModal.jsx:708 src/ImageSearchModal.jsx:185
+#: src/ImageSearchModal.jsx:185 src/ImageRunModal.jsx:708
 msgid "No images found"
 msgstr "Bulunan kalıplar yok"
 
@@ -823,9 +823,9 @@ msgstr "Sadece çalışanlar"
 msgid "Options"
 msgstr "Seçenekler"
 
-#: src/ImageRunModal.jsx:668 src/ContainerHeader.jsx:16
-#: src/PodCreateModal.jsx:106 src/Containers.jsx:548 src/Images.jsx:180
-#: src/ImageSearchModal.jsx:157
+#: src/Containers.jsx:548 src/ImageSearchModal.jsx:157
+#: src/ImageRunModal.jsx:668 src/ContainerHeader.jsx:16 src/Images.jsx:180
+#: src/PodCreateModal.jsx:106
 msgid "Owner"
 msgstr "Sahibi"
 
@@ -840,7 +840,7 @@ msgstr ""
 "Toplu içe aktarma için herhangi bir alana bir veya daha fazla anahtar=değer "
 "çifti satırı yapıştırın"
 
-#: src/PodActions.jsx:159 src/Containers.jsx:211
+#: src/Containers.jsx:211 src/PodActions.jsx:162
 msgid "Pause"
 msgstr "Duraklat"
 
@@ -876,7 +876,7 @@ msgstr "Podman hizmeti etkin değil"
 msgid "Port mapping"
 msgstr "Bağlantı noktası eşleme"
 
-#: src/ContainerIntegration.jsx:105 src/ImageDetails.jsx:39
+#: src/ImageDetails.jsx:39 src/ContainerIntegration.jsx:105
 msgid "Ports"
 msgstr "Bağlantı noktaları"
 
@@ -892,7 +892,7 @@ msgstr "Protokol"
 msgid "Prune"
 msgstr "Ayıkla"
 
-#: src/PruneUnusedImagesModal.jsx:84 src/Images.jsx:358
+#: src/Images.jsx:358 src/PruneUnusedImagesModal.jsx:84
 msgid "Prune unused images"
 msgstr "Kullanılmayan kalıpları ayıkla"
 
@@ -916,7 +916,7 @@ msgstr "Salt-okunur erişim"
 msgid "Read-write access"
 msgstr "Okuma-yazma erişimi"
 
-#: src/ImageRunModal.jsx:94 src/PublishPort.jsx:81 src/Volume.jsx:48
+#: src/PublishPort.jsx:81 src/ImageRunModal.jsx:94 src/Volume.jsx:48
 msgid "Remove item"
 msgstr "Öğeyi kaldır"
 
@@ -924,7 +924,7 @@ msgstr "Öğeyi kaldır"
 msgid "Removing"
 msgstr "Kaldırılıyor"
 
-#: src/ContainerRenameModal.jsx:91 src/Containers.jsx:181
+#: src/Containers.jsx:181 src/ContainerRenameModal.jsx:91
 msgid "Rename"
 msgstr "Yeniden adlandır"
 
@@ -932,7 +932,7 @@ msgstr "Yeniden adlandır"
 msgid "Rename container $0"
 msgstr "$0 kapsayıcısını yeniden adlandır"
 
-#: src/PodActions.jsx:103 src/Containers.jsx:199
+#: src/Containers.jsx:199 src/PodActions.jsx:106
 msgid "Restart"
 msgstr "Yeniden başlat"
 
@@ -963,7 +963,7 @@ msgstr ""
 msgid "Restarting"
 msgstr "Yeniden başlatılıyor"
 
-#: src/ContainerRestoreModal.jsx:46 src/Containers.jsx:249
+#: src/Containers.jsx:249 src/ContainerRestoreModal.jsx:46
 msgid "Restore"
 msgstr "Geri yükle"
 
@@ -975,7 +975,7 @@ msgstr "$0 kapsayıcısını geri yükle"
 msgid "Restore with established TCP connections"
 msgstr "Kurulu TCP bağlantıları ile geri yükle"
 
-#: src/PodActions.jsx:144 src/Containers.jsx:218
+#: src/Containers.jsx:218 src/PodActions.jsx:147
 msgid "Resume"
 msgstr "Sürdür"
 
@@ -987,7 +987,7 @@ msgstr "Yeniden denemeler"
 msgid "Retry another term."
 msgstr "Başka bir terimi yeniden deneyin."
 
-#: src/ContainerHealthLogs.jsx:95 src/Containers.jsx:272
+#: src/Containers.jsx:272 src/ContainerHealthLogs.jsx:95
 msgid "Run health check"
 msgstr "Sağlık denetimini çalıştır"
 
@@ -1055,7 +1055,7 @@ msgstr "Daha fazlasını göster"
 msgid "Size"
 msgstr "Boyut"
 
-#: src/PodActions.jsx:129 src/app.jsx:714 src/Containers.jsx:238
+#: src/Containers.jsx:238 src/PodActions.jsx:132 src/app.jsx:714
 msgid "Start"
 msgstr "Başlat"
 
@@ -1075,7 +1075,7 @@ msgstr "Kalıpları aramak için yazmaya başlayın."
 msgid "Started at"
 msgstr "Başlama zamanı"
 
-#: src/ContainerDetails.jsx:67 src/Containers.jsx:551
+#: src/Containers.jsx:551 src/ContainerDetails.jsx:67
 msgid "State"
 msgstr "Durum"
 
@@ -1083,7 +1083,7 @@ msgstr "Durum"
 msgid "Status"
 msgstr "Durum"
 
-#: src/PodActions.jsx:81 src/Containers.jsx:191
+#: src/Containers.jsx:191 src/PodActions.jsx:84
 msgid "Stop"
 msgstr "Durdur"
 
@@ -1108,7 +1108,7 @@ msgstr "Sistem Podman hizmeti de kullanılabilir"
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ContainerCommitModal.jsx:97 src/ImageSearchModal.jsx:227
+#: src/ImageSearchModal.jsx:227 src/ContainerCommitModal.jsx:97
 msgid "Tag"
 msgstr "Etiket"
 
@@ -1172,7 +1172,7 @@ msgstr "$0'dan beri aktif"
 msgid "Use legacy Docker format"
 msgstr "Eski Docker biçimini kullan"
 
-#: src/Images.jsx:184 src/ImageDetails.jsx:33
+#: src/ImageDetails.jsx:33 src/Images.jsx:184
 msgid "Used by"
 msgstr "Kullanan"
 
@@ -1254,7 +1254,7 @@ msgstr "saniye"
 msgid "select all"
 msgstr "tümünü seç"
 
-#: src/Containers.jsx:395 src/Images.jsx:132 src/ImageSearchModal.jsx:158
+#: src/Containers.jsx:395 src/ImageSearchModal.jsx:158 src/Images.jsx:132
 msgid "system"
 msgstr "sistem"
 
@@ -1269,6 +1269,21 @@ msgstr "kullanıcı:"
 #: src/Containers.jsx:533
 msgid "volumes"
 msgstr "birimler"
+
+#~ msgid "Confirm deletion of $0"
+#~ msgstr "$0 için silme işlemini onaylayın"
+
+#~ msgid "Confirm deletion of pod $0"
+#~ msgstr "$0 bölmesinin silme işlemini onaylayın"
+
+#~ msgid "Confirm force deletion of pod $0"
+#~ msgstr "$0 bölmesinin zorla silme işlemini onaylayın"
+
+#~ msgid "Confirm forced deletion of $0"
+#~ msgstr "$0 için zorla silme işlemini onaylayın"
+
+#~ msgid "Container is currently running."
+#~ msgstr "Kapsayıcı şu anda çalışıyor."
 
 #~ msgid "Do not include root file-system changes when exporting"
 #~ msgstr "Dışa aktarırken kök dosya sistemi değişikliklerini dahil etme"
