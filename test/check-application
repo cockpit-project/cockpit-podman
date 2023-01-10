@@ -2361,8 +2361,6 @@ class TestApplication(testlib.MachineCase):
         self.assertEqual(port_bindings['5001/udp'], [{'HostIp': '127.0.0.1', 'HostPort': '6001'}])
         # Host port is randomized as not provided
         self.assertTrue(port_bindings['9001/tcp'])
-        # Force stop, so tearDown does not hang
-        self.execute(auth, f"podman pod stop -t0 {pod_name} || true")
 
         # Create pod as admin
         if auth:
