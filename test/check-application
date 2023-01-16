@@ -239,7 +239,7 @@ class TestApplication(testlib.MachineCase):
             self.assertIn(unit, ["GB", "MB", "KB"])
             return float(memory)
 
-        containerId = self.machine.execute("podman run -d --pod pod-1 --name test-pod-1-system alpine sleep 100").strip()
+        containerId = self.machine.execute("podman run -d --pod pod-1 --name test-pod-1-system --stop-timeout 0 alpine sleep 100").strip()
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": "alpine", "command": "sleep 100", "state": "Running", "id": containerId}])
         cpu = get_pod_cpu_usage("pod-1")
         b.wait(lambda: get_pod_memory("pod-1") > 0)
@@ -290,7 +290,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#containers-filter', '')
         self.machine.execute("podman pod create --infra=false --name pod-2")
         self.waitPodContainer("pod-2", [])
-        containerId = self.machine.execute("podman run -d --pod pod-2 --name test-pod-2-system alpine sleep 100").strip()
+        containerId = self.machine.execute("podman run -d --pod pod-2 --name test-pod-2-system --stop-timeout 0 alpine sleep 100").strip()
         self.waitPodContainer("pod-2", [{"name": "test-pod-2-system", "image": "alpine", "command": "sleep 100", "state": "Running", "id": containerId}])
         self.machine.execute("podman rm --force -t0 test-pod-2-system")
         self.waitPodContainer("pod-2", [])
@@ -544,12 +544,12 @@ class TestApplication(testlib.MachineCase):
 
         if auth:
             # Run two containers as system (first exits immediately)
-            self.execute(auth, "podman run -d --name test-sh-system alpine:latest sh")
-            self.execute(auth, "podman run -d --name swamped-crate-system busybox:latest sleep 1000")
+            self.execute(auth, "podman run -d --name test-sh-system --stop-timeout 0 alpine:latest sh")
+            self.execute(auth, "podman run -d --name swamped-crate-system --stop-timeout 0 busybox:latest sleep 1000")
 
         # Run two containers as admin (first exits immediately)
-        self.execute(False, "podman run -d --name test-sh-user alpine:latest sh")
-        self.execute(False, "podman run -d --name swamped-crate-user busybox:latest sleep 1000")
+        self.execute(False, "podman run -d --name test-sh-user --stop-timeout 0 alpine:latest sh")
+        self.execute(False, "podman run -d --name swamped-crate-user --stop-timeout 0 busybox:latest sleep 1000")
 
         # Test owner filtering
         if auth:
@@ -707,7 +707,7 @@ class TestApplication(testlib.MachineCase):
         # Check that we correctly show networking information
         # Rootless don't have this info
         if auth:
-            self.execute(auth, "podman run -dt --name net_check alpine")
+            self.execute(auth, "podman run -dt --name net_check --stop-timeout 0 alpine")
             self.toggleExpandedContainer("net_check")
             b.wait_in_text(".pf-m-expanded .container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
             b.wait_in_text(".pf-m-expanded .container-details-networking", self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
@@ -717,7 +717,7 @@ class TestApplication(testlib.MachineCase):
             self.toggleExpandedContainer("net_check")
 
         # delete image alpine that has been used by a container
-        self.execute(auth, "podman run -d --name test-sh4 alpine sh")
+        self.execute(auth, "podman run -d --name test-sh4 --stop-timeout 0 alpine sh")
         self.waitContainerRow("test-sh4")
         if auth:
             b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"])
@@ -731,15 +731,15 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-images", alpine_sel)
 
         b.wait_collected_text("#containers-containers .container-name", expected_ws)
-        self.execute(auth, "podman run -d --name c quay.io/cockpit/registry:2 sh")
+        self.execute(auth, "podman run -d --name c --stop-timeout 0 quay.io/cockpit/registry:2 sh")
         b.wait_collected_text("#containers-containers .container-name", "c" + expected_ws)
-        self.execute(auth, "podman run -d --name a quay.io/cockpit/registry:2 sh")
+        self.execute(auth, "podman run -d --name a --stop-timeout 0 quay.io/cockpit/registry:2 sh")
         b.wait_collected_text("#containers-containers .container-name", "ac" + expected_ws)
 
-        self.execute(False, "podman run -d --name b quay.io/cockpit/registry:2 sh")
+        self.execute(False, "podman run -d --name b --stop-timeout 0 quay.io/cockpit/registry:2 sh")
         if auth:
             b.wait_collected_text("#containers-containers .container-name", "bac" + expected_ws)
-            self.execute(False, "podman run -d --name doremi quay.io/cockpit/registry:2 sh")
+            self.execute(False, "podman run -d --name doremi --stop-timeout 0 quay.io/cockpit/registry:2 sh")
             b.wait_collected_text("#containers-containers .container-name", "bdoremiac" + expected_ws)
             b.wait(lambda: self.getContainerAttr("doremi", "State") in NOT_RUNNING)
         else:
@@ -780,7 +780,7 @@ class TestApplication(testlib.MachineCase):
         self.login(auth)
 
         # run a container (will exit immediately) and test the display of commit modal
-        self.execute(auth, "podman run -d --name test-sh0 alpine sh -c 'ls -a'")
+        self.execute(auth, "podman run -d --name test-sh0 --stop-timeout 0 alpine sh -c 'ls -a'")
 
         self.filter_containers("all")
         self.waitContainerRow("test-sh0")
@@ -864,7 +864,7 @@ class TestApplication(testlib.MachineCase):
         self.assertIn("vnd.oci.image.manifest", self.execute(auth, "podman inspect --format '{{.ManifestType}}' newname:24").strip())
 
         # Test commit of running container
-        self.execute(auth, "podman run -d --name test-sh2 busybox sleep 1000")
+        self.execute(auth, "podman run -d --name test-sh2 --stop-timeout 0 busybox sleep 1000")
         self.performContainerAction("test-sh2", "Commit")
         b.wait_visible(".pf-c-modal-box")
         b.set_input_text("#commit-dialog-image-name", "newname")
@@ -890,8 +890,8 @@ class TestApplication(testlib.MachineCase):
 
         def prepare():
             # Create and start registry containers
-            self.execute(True, "podman run -d -p 5000:5000 --name registry quay.io/cockpit/registry:2")
-            self.execute(True, "podman run -d -p 6000:5000 --name registry_alt quay.io/cockpit/registry:2")
+            self.execute(True, "podman run -d -p 5000:5000 --name registry --stop-timeout 0 quay.io/cockpit/registry:2")
+            self.execute(True, "podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 quay.io/cockpit/registry:2")
             # Add local insecure registry into registries conf
             self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
             self.execute(True, "systemctl stop podman.service")
@@ -1063,7 +1063,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # run a container
-        self.execute(auth, "podman run -dit --name swamped-crate busybox:latest sh; podman stop swamped-crate")
+        self.execute(auth, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         b.wait_visible("#containers-containers")
@@ -1158,7 +1158,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # Run a container
-        self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh")
+        self.execute(True, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
 
         # Checkpoint the container
@@ -1191,7 +1191,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # Run a container
-        self.execute(True, "podman run -dit --name swamped-crate busybox:latest sh; podman stop swamped-crate")
+        self.execute(True, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         # Check that the restore option is not present (i.e. start is a regular button)
@@ -1377,12 +1377,12 @@ class TestApplication(testlib.MachineCase):
 
     def _testCreateContainer(self, auth):
         new_container = 'new-container'
-        self.execute(True, f"podman run -d --name {new_container} quay.io/libpod/busybox touch /latest")
+        self.execute(True, f"podman run -d --name {new_container} --stop-timeout 0 quay.io/libpod/busybox touch /latest")
         self.execute(True, f"podman commit {new_container} newimage")
         new_image_sha = self.execute(True, "podman inspect --format '{{.Id}}' newimage").strip()
 
-        self.execute(True, "podman run -d -p 5000:5000 --name registry quay.io/cockpit/registry:2")
-        self.execute(True, "podman run -d -p 6000:5000 --name registry_alt quay.io/cockpit/registry:2")
+        self.execute(True, "podman run -d -p 5000:5000 --name registry --stop-timeout 0 quay.io/cockpit/registry:2")
+        self.execute(True, "podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 quay.io/cockpit/registry:2")
         # Add local insecure registry into registries conf
         self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
         self.execute(True, "systemctl stop podman.service")
@@ -1967,7 +1967,7 @@ class TestApplication(testlib.MachineCase):
             leftover_images += 1
 
         # By default we have 3 unused images, start one.
-        self.execute(auth or root, "podman run -d --name used_image alpine:latest sh")
+        self.execute(auth or root, "podman run -d --name used_image --stop-timeout 0 alpine:latest sh")
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
 
@@ -2040,7 +2040,7 @@ class TestApplication(testlib.MachineCase):
         container_name = 'portused'
 
         # Start a podman container which uses a port
-        self.execute(False, "podman run -d -p 5000:5000 --name registry quay.io/cockpit/registry:2")
+        self.execute(False, "podman run -d -p 5000:5000 --name registry --stop-timeout 0 quay.io/cockpit/registry:2")
         b.click("#containers-images button.pf-c-expandable-section__toggle")
 
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
@@ -2254,7 +2254,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         container_name = "pauseresume"
 
-        self.execute(auth, f"podman run -dt --name {container_name} alpine")
+        self.execute(auth, f"podman run -dt --name {container_name} --stop-timeout 0 alpine")
         self.login(auth)
 
         self.waitContainerRow(container_name)
@@ -2305,7 +2305,7 @@ class TestApplication(testlib.MachineCase):
 
         # Create 31 containers
         for i in range(31):
-            self.execute(True, f"podman run -dt --name container{i} quay.io/libpod/busybox:latest")
+            self.execute(True, f"podman run -dt --name container{i} --stop-timeout 0 quay.io/libpod/busybox:latest")
 
         self.waitContainerRow("container30")
 
@@ -2374,7 +2374,7 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer(pod_name, [])
 
         container_name = 'test-pod-1-system' if auth else 'test-pod-1'
-        containerId = self.execute(auth, f"podman run -d --pod {pod_name} --name {container_name} alpine sleep 500").strip()
+        containerId = self.execute(auth, f"podman run -d --pod {pod_name} --name {container_name} --stop-timeout 0 alpine sleep 500").strip()
         self.waitPodContainer(pod_name, [{"name": container_name, "image": "alpine", "command": "sleep 500", "state": "Running", "id": containerId}], auth)
 
         self.toggleExpandedContainer(container_name)
