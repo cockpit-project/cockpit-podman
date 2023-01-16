@@ -1063,7 +1063,7 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # run a container
-        self.execute(auth, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh; podman stop swamped-crate")
+        self.execute(auth, "podman run -d --name swamped-crate --stop-timeout 0 busybox:latest sh -c 'echo 123; sleep infinity'; podman stop swamped-crate")
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         b.wait_visible("#containers-containers")
@@ -1086,7 +1086,7 @@ class TestApplication(testlib.MachineCase):
         container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
 
         with b.wait_timeout(5):
-            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh',
+            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest',
                                state='Running', owner="system" if auth else "admin")
 
         def get_cpu_usage(sel):
@@ -1123,7 +1123,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
 
         with b.wait_timeout(5):
-            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh', state='Running')
+            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', state='Running')
 
         self.filter_containers('all')
         b.wait_visible("#containers-containers")
@@ -1137,10 +1137,37 @@ class TestApplication(testlib.MachineCase):
         # Stop the container
         self.performContainerAction("busybox:latest", "Force stop")
 
-        self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', cmd='sh')
+        self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
         b.wait(lambda: self.getContainerAttr("swamped-crate", "CPU") == "")
         b.wait(lambda: self.getContainerAttr("swamped-crate", "Memory") == "")
+
+        # Check that console reconnects when container starts
+        self.toggleExpandedContainer("swamped-crate")
+        b.click(".pf-m-expanded button:contains('Console')")
+        b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
+        self.performContainerAction("swamped-crate", "Start")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+        b.focus(".pf-m-expanded .xterm-helper-textarea")
+        b.key_press('echo hello\r')
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
+        self.performContainerAction("swamped-crate", "Stop")
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
+        sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
+        self.waitContainer(sha, auth, name='swamped-crate', image='busybox:latest', state=NOT_RUNNING)
+        self.performContainerAction("swamped-crate", "Start")
+        self.waitContainer(sha, auth, state='Running')
+        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+        b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
+
+        # Check that logs reconnect when container starts
+        b.click(".pf-m-expanded button:contains('Logs')")
+        self.performContainerAction("swamped-crate", "Stop")
+        self.waitContainer(sha, auth, state=NOT_RUNNING)
+        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected")
+        self.performContainerAction("swamped-crate", "Start")
+        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected123")
 
     @testlib.nondestructive
     def testCheckpointRestoreCGroupsV2(self):
@@ -1796,25 +1823,6 @@ class TestApplication(testlib.MachineCase):
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
-        self.performContainerAction("busybox-without-publish", "Stop")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
-        sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
-        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
-        self.performContainerAction("busybox-without-publish", "Start")
-        self.waitContainer(sha, auth, state='Running')
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-
-        # Check that logs reconnect when container starts
-        b.click(".pf-m-expanded button:contains('Logs')")
-        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "2")
-        self.performContainerAction("busybox-without-publish", "Stop")
-        self.waitContainer(sha, auth, state=NOT_RUNNING)
-        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected")
-        self.performContainerAction("busybox-without-publish", "Start")
-        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected1")
-
-        self.performContainerAction("busybox-without-publish", "Stop")
-        b.click('#containers-containers tr:contains("busybox-without-publish")')
 
         b.go("#/?name=tty")
         self.check_containers(["busybox-with-tty"], ["busybox-without-publish"])
@@ -1837,15 +1845,8 @@ class TestApplication(testlib.MachineCase):
         self.check_images(["busybox:latest", "alpine:latest", "registry:2"], [])
         b.wait_js_cond('window.location.hash === "#/"')
 
-        b.set_val("#containers-containers-filter", "all")
-        self.waitContainer(sha, auth, name='busybox-without-publish', image='busybox:latest', state=NOT_RUNNING)
-        b.click(".pf-m-expanded button:contains('Console')")
-        b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
-
         self.filter_containers("running")
-        b.wait_not_in_text("#containers-containers", "busybox-without-publish")
         id_with_tty = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
-        id_without_publish = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-without-publish").strip()
 
         b.click('#containers-images tbody tr:contains("busybox:latest") td.pf-c-table__toggle button')
         # running container, just selects it, but leaves "Only running" alone
@@ -1855,17 +1856,9 @@ class TestApplication(testlib.MachineCase):
         # FIXME: expanding running container details does not actually work right now
         # b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep infinity")
         # stopped container, switches to showing all containers
-        b.click("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-without-publish')")
-        b.wait_js_cond('window.location.hash === "#' + id_without_publish + '"')
-        b.wait_val("#containers-containers-filter", "all")
-        b.wait_in_text("#containers-containers", "busybox-without-publish")
-        # auto-expands container details
-        b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details-basic", "sleep infinity")
-
-        b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
-        b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') td[data-label='Used by']", 'unused')
 
         # Create a container without starting it
+        self.filter_containers("all")
         container_name = "busybox-not-started"
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
@@ -1873,13 +1866,25 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_val("#create-image-image-select-typeahead", "quay.io/libpod/busybox:latest")
         b.set_input_text("#run-image-dialog-name", container_name)
+        b.set_input_text("#run-image-dialog-command", "sh -c sleep infinity")
 
         b.click('.pf-c-modal-box__footer #create-image-create-btn')
         b.wait_not_present("div.pf-c-modal-box")
 
-        b.wait_val("#containers-containers-filter", "all")
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' " + container_name).strip()
         self.waitContainer(sha, auth, name=container_name, image='busybox:latest', state=['Configured', 'Created'])
+
+        self.filter_containers("running")
+        b.wait_not_in_text("#containers-containers", "busybox-not-started")
+        b.click("#containers-images tbody tr:contains('busybox:latest') + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-not-started')")
+        b.wait_js_cond(f"window.location.hash === '#{sha}'")
+        b.wait_val("#containers-containers-filter", "all")
+        b.wait_in_text("#containers-containers", "busybox-not-started")
+        # auto-expands container details
+        b.wait_in_text("#containers-containers tbody tr:contains('busybox-not-started') + tr", "sleep infinity")
+
+        b.click('#containers-images tbody tr:contains("alpine:latest") td.pf-c-table__toggle button')
+        b.wait_in_text("#containers-images tbody tr:contains('alpine:latest') td[data-label='Used by']", 'unused')
 
         b.set_input_text('#containers-filter', 'foobar')
         b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers that match the current filter')
