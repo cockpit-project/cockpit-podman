@@ -1892,6 +1892,10 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#containers-filter', '')
 
         if not auth or not self.machine.ostree_image:  # don't kill ws container
+            # Ubuntu has old podman that does not know about --time
+            if not m.image.startswith("ubuntu"):
+                # Remove all containers first as it is not possible to set --time 0 to rmi command
+                self.execute(auth, "podman rm --all --force --time 0")
             self.execute(auth, "podman rmi -af")
             b.wait_in_text('#containers-containers .pf-c-empty-state', 'No containers')
             b.set_val("#containers-containers-filter", "running")
