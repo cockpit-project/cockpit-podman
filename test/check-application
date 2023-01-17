@@ -2003,6 +2003,7 @@ class TestApplication(testlib.MachineCase):
         b.click("#image-actions-dropdown")
         b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
 
+    @testlib.nondestructive
     def testPruneUnusedImagesSystemSelections(self):
         ''' Test the prune unused images selection options'''
         b = self.browser
@@ -2042,6 +2043,7 @@ class TestApplication(testlib.MachineCase):
         b.click("#image-actions-dropdown")
         b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
 
+    @testlib.nondestructive
     def testCreateContainerValidation(self):
         ''' Test the validation errors'''
         b = self.browser
@@ -2151,17 +2153,21 @@ class TestApplication(testlib.MachineCase):
                             ignore=["thead", "#container-details-healthcheck dt:contains('Failing streak') + dd",
                                     "td[data-label='Started at']"])
 
+    @testlib.nondestructive
     def testHealthcheckSystem(self):
         self._testHealthcheck(True)
 
     @testlib.skipImage("Ubuntu-stable does not get health check run signals", "ubuntu-stable")
+    @testlib.nondestructive
     def testHealthcheckUser(self):
         self._testHealthcheck(False)
 
     @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_USER_RESTART)
+    @testlib.nondestructive
     def testPodmanRestartEnabledUser(self):
         self._testPodmanRestartEnabled(False)
 
+    @testlib.nondestructive
     def testPodmanRestartEnabledSystem(self):
         self._testPodmanRestartEnabled(True)
 
@@ -2244,15 +2250,19 @@ class TestApplication(testlib.MachineCase):
             b.wait_visible("#run-image-dialog-owner-user:disabled")
             b.wait_visible("#run-image-dialog-owner-system:disabled")
 
+    @testlib.nondestructive
     def testCreateContainerInPodSystem(self):
         self._testCreateContainerInPod(True)
 
+    @testlib.nondestructive
     def testCreateContainerInPodUser(self):
         self._testCreateContainerInPod(False)
 
+    @testlib.nondestructive
     def testPauseResumeContainerSystem(self):
         self._testPauseResumeContainer(True)
 
+    @testlib.nondestructive
     def testPauseResumeContainerUser(self):
         # rootless cgroupv1 containers do not support pausing
         if not self.has_cgroupsV2:
@@ -2279,9 +2289,11 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction(container_name, "Resume")
         b.wait(lambda: self.getContainerAttr(container_name, "State") == "Running")
 
+    @testlib.nondestructive
     def testRenameContainerSystem(self):
         self._testRenameContainer(True)
 
+    @testlib.nondestructive
     def testRenameContainerUser(self):
         self._testRenameContainer(False)
 
@@ -2309,6 +2321,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
         self.waitContainerRow(container_name_new)
 
+    @testlib.nondestructive
     def testMultipleContainers(self):
         self.login()
 
@@ -2322,12 +2335,14 @@ class TestApplication(testlib.MachineCase):
         for i in range(31):
             self.execute(True, f"podman rm -f container{i}")
 
+    @testlib.nondestructive
     def testCreatePodSystem(self):
         self._createPod(True)
 
     # HACK: give podman time to kill the pod containers, can be removed if we
     # have podman 4.0 everywhere and can use podman pod rm -t0
     @testlib.timeout(300)
+    @testlib.nondestructive
     def testCreatePodUser(self):
         self._createPod(False)
 
