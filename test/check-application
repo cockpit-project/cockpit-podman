@@ -2339,9 +2339,6 @@ class TestApplication(testlib.MachineCase):
     def testCreatePodSystem(self):
         self._createPod(True)
 
-    # HACK: give podman time to kill the pod containers, can be removed if we
-    # have podman 4.0 everywhere and can use podman pod rm -t0
-    @testlib.timeout(300)
     @testlib.nondestructive
     def testCreatePodUser(self):
         self._createPod(False)
