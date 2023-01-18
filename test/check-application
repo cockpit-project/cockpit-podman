@@ -32,6 +32,12 @@ DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
 DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-testing']
 
 
+def podman_version(cls):
+    version = cls.execute(False, "podman -v").strip().split(' ')[-1]
+    # HACK: handle possible rc versions such as 4.4.0-rc2
+    return tuple(int(v.split('-')[0]) for v in version.split('.'))
+
+
 def showImages(browser):
     if browser.attr("#containers-images button.pf-c-expandable-section__toggle", "aria-expanded") == 'false':
         browser.click("#containers-images button.pf-c-expandable-section__toggle")
@@ -1162,7 +1168,8 @@ class TestApplication(testlib.MachineCase):
             return
 
         # Run a container
-        self.execute(True, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh; podman stop swamped-crate")
+        mac_address = '92:d0:c6:0a:29:38'
+        self.execute(True, f"podman run -dit --mac-address {mac_address} --name swamped-crate --stop-timeout 0 busybox:latest sh; podman stop swamped-crate")
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         # Check that the restore option is not present (i.e. start is a regular button)
@@ -1200,6 +1207,14 @@ class TestApplication(testlib.MachineCase):
         b.set_checked('.pf-c-modal-box input#restore-dialog-ignoreStaticMAC', True)
         b.click('.pf-c-modal-box button:contains(Restore)')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
+
+        # A new MAC address should have been generated
+        # Fixed in podman 4.4.0 https://github.com/containers/podman/issues/16666
+        new_mac_address = self.execute(True, "podman inspect --format '{{.NetworkSettings.MacAddress}}' swamped-crate").strip()
+        if podman_version(self) >= (4, 4, 0):
+            self.assertNotEqual(new_mac_address, mac_address)
+        else:
+            self.assertEqual(new_mac_address, mac_address)
 
         # Checkpoint the container without stopping
         self.waitContainerRow("swamped-crate")
@@ -1461,8 +1476,7 @@ class TestApplication(testlib.MachineCase):
         # Just drop user images so we can use simpler selectors
         if auth:
             self.execute(False, "podman rmi alpine busybox quay.io/cockpit/registry:2")
-            _, _, version = self.execute(False, "podman -v").split(' ')
-            if int(version[0]) < 4:
+            if podman_version(self)[0] < 4:
                 self.execute(False, "podman rmi pause:3.5")
 
         self.login(auth)
