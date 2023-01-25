@@ -532,7 +532,9 @@ class TestApplication(testlib.MachineCase):
         # Show history
         b.click("#containers-images tbody.pf-m-expanded .pf-c-tabs__list li:nth-child(2) button")
         b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"ID\"]:first", images['quay.io/libpod/busybox:latest'][:12])
-        b.assert_pixels('#containers-images .pf-c-table__expandable-row.pf-m-expanded', "history", ignore=[".ignore-pixels"])
+        b.assert_pixels('#containers-images .pf-c-table__expandable-row.pf-m-expanded', "history",
+                        ignore=[".ignore-pixels"],
+                        skip_layouts=["rtl"])
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
         # make sure no running containers shown; on CoreOS there's the cockpit/ws container
@@ -720,7 +722,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, "podman run -d --name test-sh4 --stop-timeout 0 alpine sh")
         self.waitContainerRow("test-sh4")
         if auth:
-            b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"])
+            b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl"])
         alpine_sel = f"#containers-images tbody tr[data-row-id={images['quay.io/libpod/alpine:latest']}{auth}]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
@@ -854,7 +856,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#commit-dialog-command", "sh -c 'ps'")
 
         if auth:
-            b.assert_pixels(".pf-c-modal-box", "commit")
+            b.assert_pixels(".pf-c-modal-box", "commit", skip_layouts=["rtl"])
 
         self.confirm_modal("Commit")
 
@@ -1004,7 +1006,7 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_visible(".pf-c-data-list .image-name:contains('localhost:5000/my-busybox')")
         b.wait_visible(".pf-c-data-list .image-name:contains('localhost:6000/my-busybox')")
-        b.assert_pixels(".podman-search", "download")
+        b.assert_pixels(".podman-search", "download", skip_layouts=["rtl"])
 
         b.set_val('#registry-select', "localhost:6000")
         b.wait_not_present(".pf-c-data-list .image-name:contains('localhost:5000/my-busybox')")
@@ -1436,7 +1438,7 @@ class TestApplication(testlib.MachineCase):
         # Local results found
         b.set_input_text("#create-image-image-select-typeahead", "registry")
         if auth:
-            b.assert_pixels(".pf-c-modal-box", "image-select")
+            b.assert_pixels(".pf-c-modal-box", "image-select", skip_layouts=["rtl"])
         b.click('button.pf-c-toggle-group__button:contains("Local")')
         b.wait_text("button.pf-c-select__menu-item", "quay.io/cockpit/registry:2")
 
@@ -1659,7 +1661,9 @@ class TestApplication(testlib.MachineCase):
         b.click('.volume-form .btn-add')
 
         if auth:
-            b.assert_pixels(".pf-c-modal-box", "integration", ignore=["#run-image-dialog-volume-0 input.pf-c-select__toggle-typeahead"])
+            b.assert_pixels(".pf-c-modal-box", "integration",
+                            ignore=["#run-image-dialog-volume-0 input.pf-c-select__toggle-typeahead"],
+                            skip_layouts=["rtl"])
 
         if self.has_selinux:
             b.set_val('#run-image-dialog-volume-1-selinux', "Z")
@@ -2098,7 +2102,7 @@ class TestApplication(testlib.MachineCase):
         b.click('#run-image-healthcheck-retries button:nth-child(1)')
         b.wait_val("#run-image-healthcheck-retries input", 2)
         if auth:
-            b.assert_pixels('.pf-c-modal-box', "healthcheck-modal")
+            b.assert_pixels('.pf-c-modal-box', "healthcheck-modal", skip_layouts=["rtl"])
         b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
 
         self.waitContainerRow("healthy")
@@ -2151,7 +2155,8 @@ class TestApplication(testlib.MachineCase):
             b.assert_pixels(".pf-m-expanded .pf-c-table__expandable-row-content",
                             "healthcheck-details",
                             ignore=["thead", "#container-details-healthcheck dt:contains('Failing streak') + dd",
-                                    "td[data-label='Started at']"])
+                                    "td[data-label='Started at']"],
+                            skip_layouts=["rtl"])
 
     @testlib.nondestructive
     def testHealthcheckSystem(self):
