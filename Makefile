@@ -159,13 +159,32 @@ rpm: $(TARFILE)
 # build a VM with locally built distro pkgs installed
 # HACK for fedora-coreos: skip the rpm build/install
 # HACK for rhel-8-7: https://bugzilla.redhat.com/show_bug.cgi?id=2086757
-$(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
+# pybridge scenario: build and install the python bridge from cockpit repo
+
+ifeq ("$(TEST_SCENARIO)","pybridge")
+COCKPIT_PYBRIDGE_REF = main
+COCKPIT_WHEEL = cockpit-0-py3-none-any.whl
+
+$(COCKPIT_WHEEL):
+	# aka: pip wheel git+https://github.com/cockpit-project/cockpit.git@${COCKPIT_PYBRIDGE_REF}
+	rm -rf tmp/pybridge
+	git init tmp/pybridge
+	git -C tmp/pybridge remote add origin https://github.com/cockpit-project/cockpit
+	git -C tmp/pybridge fetch --depth=1 origin ${COCKPIT_PYBRIDGE_REF}
+	git -C tmp/pybridge reset --hard FETCH_HEAD
+	cp "$$(tmp/pybridge/tools/make-wheel)" $@
+
+VM_DEPENDS = $(COCKPIT_WHEEL)
+VM_CUSTOMIZE_FLAGS = --install $(COCKPIT_WHEEL)
+endif
+
+$(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots $(VM_DEPENDS)
 	if [ "$$TEST_OS" = "fedora-coreos" ]; then \
 	    bots/image-customize --verbose --fresh --no-network --run-command 'mkdir -p /usr/local/share/cockpit' \
 	                         --upload dist/:/usr/local/share/cockpit/podman \
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	else \
-	    bots/image-customize --verbose --fresh --no-network --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
+	    bots/image-customize --verbose --fresh --no-network $(VM_CUSTOMIZE_FLAGS) --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	fi
 	if [ "$$TEST_OS" = "rhel-8-7" ]; then \
 	    bots/image-customize --verbose --install containernetworking-cni $$TEST_OS; \
