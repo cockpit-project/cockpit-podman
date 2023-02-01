@@ -427,6 +427,7 @@ class TestApplication(testlib.MachineCase):
         b.logout()
 
         if self.machine.ostree_image:
+            self.machine.execute("echo foobar | passwd --stdin root")
             self.write_file("/etc/ssh/sshd_config.d/99-root-password.conf", "PermitRootLogin yes",
                             "systemctl try-restart sshd")
             self.machine.execute("systemctl try-restart sshd")
