@@ -332,25 +332,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers .container-name:contains('a')")
         b.wait_visible("#containers-containers .container-name:contains('b')")
 
-        if self.system_before(231):  # Changed in #14740
-            modal_sel = ".modal-dialog"
-        else:
-            modal_sel = ".pf-c-modal-box"
-
-        if self.system_before(244):  # Changed in #15293
-            passwd_prompt = "Please authenticate"
-        else:
-            passwd_prompt = "Password for admin:"
-
-        # Drop privileges
-        b.switch_to_top()
-        b.click("#super-user-indicator button")
-        b.click(f"{modal_sel}:contains('Switch to limited access') button:contains('Limit access')")
-        b.wait_not_present(f"{modal_sel}:contains('Switch to limited access')")
-        b.wait_text("#super-user-indicator", "Limited access")
-        b.switch_to_frame("cockpit1:localhost/podman")
-
-        # All system things should disappear
+        # Drop privileges - all system things should disappear
+        b.drop_superuser()
         b.wait_not_present("#containers-containers .pod-name:contains('pod_system')")
         b.wait_not_present("#containers-containers .container-name:contains('a')")
         b.wait_visible("#containers-containers .pod-name:contains('pod_user')")
@@ -372,15 +355,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present('div.pf-c-modal-box header:contains("Search for an image")')
 
         # Gain privileges
-        b.switch_to_top()
-        b.click("#super-user-indicator button")
-        b.wait_in_text(f"{modal_sel}:contains('dministrative access')", passwd_prompt)
-        # Needs to match "Administrative" (before cockpit-244) and "administrative" (now)
-        b.set_input_text(f"{modal_sel}:contains('dministrative access') input", "foobar")
-        b.click(f"{modal_sel} button:contains('Authenticate')")
-        b.wait_not_present(f"{modal_sel}:contains('dministrative access')")
-        b.wait_text("#super-user-indicator", "Administrative access")
-        b.switch_to_frame("cockpit1:localhost/podman")
+        b.become_superuser()
 
         # We are notified that we can also start the system one
         b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "System Podman service is also available")
@@ -413,12 +388,7 @@ class TestApplication(testlib.MachineCase):
         # Checking images is harder but if there would be more than one this would fail
         b.wait_visible("#containers-images:contains('quay.io/cockpit/registry:2')")
 
-        b.switch_to_top()
-        b.click("#super-user-indicator button")
-        b.click(f"{modal_sel}:contains('Switch to limited access') button:contains('Limit access')")
-        b.wait_not_present(f"{modal_sel}:contains('Switch to limited access')")
-        b.wait_text("#super-user-indicator", "Limited access")
-        b.switch_to_frame("cockpit1:localhost/podman")
+        b.drop_superuser()
 
         b.wait_visible("#containers-containers .pod-name:contains('pod_user')")
         b.wait_visible("#containers-containers .container-name:contains('b')")
