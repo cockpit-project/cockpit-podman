@@ -15,6 +15,8 @@ sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
 from machine_core import ssh_connection  # noqa
 import testlib  # noqa
 
+from lib.constants import OSTREE_IMAGES # noqa
+
 REGISTRIES_CONF = """
 [registries.search]
 registries = ['localhost:5000', 'localhost:6000']
@@ -355,7 +357,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present('div.pf-c-modal-box header:contains("Search for an image")')
 
         # Gain privileges
-        b.become_superuser()
+        b.become_superuser(passwordless=self.machine.image == "rhel4edge")
 
         # We are notified that we can also start the system one
         b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "System Podman service is also available")
@@ -1170,7 +1172,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
 
     @testlib.skipImage("Arch Linux has cgroups v1 by default", "arch")
-    @testlib.skipImage("cgroupsv1 not supported", "fedora-coreos")
+    @testlib.skipImage("cgroupsv1 not supported", *OSTREE_IMAGES)
     def testCheckpointRestoreCGroupsV1(self):
         m = self.machine
 
@@ -1931,7 +1933,7 @@ class TestApplication(testlib.MachineCase):
     def testPruneUnusedImagesUser(self):
         self._testPruneUnusedImagesSystem(False)
 
-    @testlib.skipImage("no root login available on coreos", "fedora-coreos")
+    @testlib.skipImage("no root login available on ostree", *OSTREE_IMAGES)
     @testlib.nondestructive
     def testPruneUnusedImagesRoot(self):
         self._testPruneUnusedImagesSystem(False, True)

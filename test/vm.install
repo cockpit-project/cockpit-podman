@@ -26,14 +26,13 @@ fi
 
 . /usr/lib/os-release
 # Remove extra images for containers tests
-if [ "$ID" = "fedora" ]; then
-    if [ "${VARIANT_ID:-}" = "coreos" ]; then
-        podman rmi quay.io/jitesoft/nginx:latest
-    else
-        podman rmi localhost/cockpit/base
-        podman rmi registry.fedoraproject.org/fedora:"$VERSION_ID"
-    fi
+if [ "$ID" = "fedora" ] && [ "${VARIANT_ID:-}" != "coreos" ]; then
+    podman rmi localhost/cockpit/base
+    podman rmi registry.fedoraproject.org/fedora:"$VERSION_ID"
 fi
+
+# HACK: Ubuntu does not know about --ignore yet
+podman rmi --ignore quay.io/jitesoft/nginx:latest || true
 
 images=(quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2)
 podman_version=$(podman -v | awk '{ print substr($3, 1, 1) }')

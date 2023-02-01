@@ -39,7 +39,7 @@ COCKPIT_REPO_FILES = \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = 80a7c7cfed9157915067666fe95b298896f2aea8 # 284
+COCKPIT_REPO_COMMIT = 811a679947d785c969e71403cde8f94156eb8bde # 284 + #18263
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
@@ -157,7 +157,7 @@ rpm: $(TARFILE)
 	rm -r tmp/rpmbuild
 
 # build a VM with locally built distro pkgs installed
-# HACK for fedora-coreos: skip the rpm build/install
+# HACK for ostree images: skip the rpm build/install
 # HACK for rhel-8-7: https://bugzilla.redhat.com/show_bug.cgi?id=2086757
 # pybridge scenario: build and install the python bridge from cockpit repo
 
@@ -179,7 +179,7 @@ VM_CUSTOMIZE_FLAGS = --install $(COCKPIT_WHEEL)
 endif
 
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots $(VM_DEPENDS)
-	if [ "$$TEST_OS" = "fedora-coreos" ]; then \
+	if [ "$$TEST_OS" = "fedora-coreos" ] || [ "$$TEST_OS" = "rhel4edge" ]; then \
 	    bots/image-customize --verbose --fresh --no-network --run-command 'mkdir -p /usr/local/share/cockpit' \
 	                         --upload dist/:/usr/local/share/cockpit/podman \
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
