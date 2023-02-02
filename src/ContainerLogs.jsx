@@ -110,6 +110,7 @@ class ContainerLogs extends React.Component {
             method: "GET",
             path: client.VERSION + "libpod/containers/" + this.props.containerId + "/logs",
             body: "",
+            binary: true,
             params: {
                 follow: true,
                 stdout: true,
@@ -140,7 +141,7 @@ class ContainerLogs extends React.Component {
             }
             // First 8 bytes encode information about stream and frame
             // See 'Stream format' on https://docs.docker.com/engine/api/v1.40/#operation/ContainerAttach
-            this.view.writeln(data.substring(8));
+            this.view.writeln(data.slice(8));
         }
     }
 
