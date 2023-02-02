@@ -1335,6 +1335,7 @@ class TestApplication(testlib.MachineCase):
 
         self.allow_restart_journal_messages()
         self.allow_journal_messages(".*podman/podman.sock/.*: couldn't connect:.*")
+        self.allow_journal_messages(".*podman/podman.sock: .*ConnectionRefusedError.*")
         self.allow_journal_messages(".*podman/podman.sock/.*/events.*: received truncated HTTP response.*")
 
     def testCreateContainerSystem(self):
