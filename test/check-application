@@ -49,6 +49,7 @@ def checkImage(browser, name, owner):
         })""", name, owner)
 
 
+@testlib.nondestructive
 class TestApplication(testlib.MachineCase):
 
     def setUp(self):
@@ -212,7 +213,6 @@ class TestApplication(testlib.MachineCase):
         b.click(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle] li > button.pod-action-{action.lower()}")
         b.wait_not_present(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle]")
 
-    @testlib.nondestructive
     def testPods(self):
         b = self.browser
         m = self.machine
@@ -315,7 +315,6 @@ class TestApplication(testlib.MachineCase):
         b.click("#table-pod-3-title .pod-details-volumes-btn")
         b.wait_in_text(".pf-c-popover__content", "/tmp ↔ /app")
 
-    @testlib.nondestructive
     def testBasicSystem(self):
         self._testBasic(True)
 
@@ -451,7 +450,6 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#create-image-image-select-typeahead", "registry")
         b.wait_visible('button.pf-c-select__menu-item:contains("registry")')
 
-    @testlib.nondestructive
     def testBasicUser(self):
         self._testBasic(False)
 
@@ -741,11 +739,9 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(".pf-c-select__menu-item:contains('registry:2')")
         b.wait_not_present(".pf-c-select__menu-item:contains('none')")
 
-    @testlib.nondestructive
     def testCommitUser(self):
         self._testCommit(False)
 
-    @testlib.nondestructive
     def testCommitSystem(self):
         self._testCommit(True)
 
@@ -858,7 +854,6 @@ class TestApplication(testlib.MachineCase):
             self.confirm_modal("Force commit")
             waitImageCount(self.user_images_count + 4)
 
-    @testlib.nondestructive
     def testDownloadImage(self):
         b = self.browser
         execute = self.execute
@@ -1020,11 +1015,9 @@ class TestApplication(testlib.MachineCase):
               .selectImageAndDownload() \
               .expectDownloadErrorForNonExistingTag()
 
-    @testlib.nondestructive
     def testLifecycleOperationsUser(self):
         self._testLifecycleOperations(False)
 
-    @testlib.nondestructive
     def testLifecycleOperationsSystem(self):
         self._testLifecycleOperations(True)
 
@@ -1144,53 +1137,29 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("swamped-crate", "Start")
         b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected123")
 
-    @testlib.nondestructive
-    def testCheckpointRestoreCGroupsV2(self):
+    def testCheckpointRestore(self):
+        m = self.machine
         b = self.browser
 
-        if not self.has_cgroupsV2:
+        self.login()
+        self.filter_containers('all')
+
+        if not self.has_criu:
+            # On cgroupsv1 systems just check that we get expected error messages
+
+            # Run a container
+            self.execute(True, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh")
+            b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
+
+            # Checkpoint the container
+            self.performContainerAction("busybox:latest", "Checkpoint")
+            b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
+            b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
+            b.click('.pf-c-modal-box button:contains(Checkpoint)')
+            b.wait_not_present('.modal_dialog')
+
+            b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
             return
-
-        if self.has_criu:
-            return self._testCheckpointRestore()
-
-        # On other systems just check that we get expected error messages
-
-        self.login()
-        self.filter_containers('all')
-
-        # Run a container
-        self.execute(True, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh")
-        b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
-
-        # Checkpoint the container
-        self.performContainerAction("busybox:latest", "Checkpoint")
-        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-keep', True)
-        b.set_checked('.pf-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
-        b.click('.pf-c-modal-box button:contains(Checkpoint)')
-        b.wait_not_present('.modal_dialog')
-
-        b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
-
-    @testlib.skipImage("Arch Linux has cgroups v1 by default", "arch")
-    @testlib.skipImage("cgroupsv1 not supported", *OSTREE_IMAGES)
-    def testCheckpointRestoreCGroupsV1(self):
-        m = self.machine
-
-        # Set machine to cgroup1 and reboot; Debian uses hybrid mode and does not have grubby
-        if not m.image.startswith("debian") and not m.image.startswith("ubuntu"):
-            self.execute(True, 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"')
-            self.machine.spawn("sleep 0.1; reboot", "reboot")
-            m.wait_reboot()
-
-        self._testCheckpointRestore()
-
-    def _testCheckpointRestore(self):
-        b = self.browser
-        m = self.machine
-
-        self.login()
-        self.filter_containers('all')
 
         # Run a container
         self.execute(True, "podman run -dit --name swamped-crate --stop-timeout 0 busybox:latest sh; podman stop swamped-crate")
@@ -1248,7 +1217,6 @@ class TestApplication(testlib.MachineCase):
         b.click('.pf-c-modal-box button:contains(Restore)')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
-    @testlib.nondestructive
     def testNotRunning(self):
         b = self.browser
 
@@ -1369,11 +1337,9 @@ class TestApplication(testlib.MachineCase):
         self.allow_journal_messages(".*podman/podman.sock/.*: couldn't connect:.*")
         self.allow_journal_messages(".*podman/podman.sock/.*/events.*: received truncated HTTP response.*")
 
-    @testlib.nondestructive
     def testCreateContainerSystem(self):
         self._testCreateContainer(True)
 
-    @testlib.nondestructive
     def testCreateContainerUser(self):
         self._testCreateContainer(False)
 
@@ -1481,11 +1447,9 @@ class TestApplication(testlib.MachineCase):
             b.click('.pf-c-modal-box__footer #create-image-create-run-btn')
             b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
 
-    @testlib.nondestructive
     def testRunImageSystem(self):
         self._testRunImage(True)
 
-    @testlib.nondestructive
     def testRunImageUser(self):
         self._testRunImage(False)
 
@@ -1926,16 +1890,13 @@ class TestApplication(testlib.MachineCase):
         b.click(f".pf-c-modal-box footer button:contains({text})")
         b.wait_not_present(f".pf-c-modal-box footer button:contains({text})")
 
-    @testlib.nondestructive
     def testPruneUnusedImagesSystem(self):
         self._testPruneUnusedImagesSystem(True)
 
-    @testlib.nondestructive
     def testPruneUnusedImagesUser(self):
         self._testPruneUnusedImagesSystem(False)
 
     @testlib.skipImage("no root login available on ostree", *OSTREE_IMAGES)
-    @testlib.nondestructive
     def testPruneUnusedImagesRoot(self):
         self._testPruneUnusedImagesSystem(False, True)
 
@@ -1980,7 +1941,6 @@ class TestApplication(testlib.MachineCase):
         b.click("#image-actions-dropdown")
         b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
 
-    @testlib.nondestructive
     def testPruneUnusedImagesSystemSelections(self):
         ''' Test the prune unused images selection options'''
         b = self.browser
@@ -2020,7 +1980,6 @@ class TestApplication(testlib.MachineCase):
         b.click("#image-actions-dropdown")
         b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
 
-    @testlib.nondestructive
     def testCreateContainerValidation(self):
         ''' Test the validation errors'''
         b = self.browser
@@ -2131,21 +2090,17 @@ class TestApplication(testlib.MachineCase):
                                     "td[data-label='Started at']"],
                             skip_layouts=["rtl"])
 
-    @testlib.nondestructive
     def testHealthcheckSystem(self):
         self._testHealthcheck(True)
 
     @testlib.skipImage("Ubuntu-stable does not get health check run signals", "ubuntu-stable")
-    @testlib.nondestructive
     def testHealthcheckUser(self):
         self._testHealthcheck(False)
 
     @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_USER_RESTART)
-    @testlib.nondestructive
     def testPodmanRestartEnabledUser(self):
         self._testPodmanRestartEnabled(False)
 
-    @testlib.nondestructive
     def testPodmanRestartEnabledSystem(self):
         self._testPodmanRestartEnabled(True)
 
@@ -2228,19 +2183,15 @@ class TestApplication(testlib.MachineCase):
             b.wait_visible("#run-image-dialog-owner-user:disabled")
             b.wait_visible("#run-image-dialog-owner-system:disabled")
 
-    @testlib.nondestructive
     def testCreateContainerInPodSystem(self):
         self._testCreateContainerInPod(True)
 
-    @testlib.nondestructive
     def testCreateContainerInPodUser(self):
         self._testCreateContainerInPod(False)
 
-    @testlib.nondestructive
     def testPauseResumeContainerSystem(self):
         self._testPauseResumeContainer(True)
 
-    @testlib.nondestructive
     def testPauseResumeContainerUser(self):
         # rootless cgroupv1 containers do not support pausing
         if not self.has_cgroupsV2:
@@ -2267,11 +2218,9 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction(container_name, "Resume")
         b.wait(lambda: self.getContainerAttr(container_name, "State") == "Running")
 
-    @testlib.nondestructive
     def testRenameContainerSystem(self):
         self._testRenameContainer(True)
 
-    @testlib.nondestructive
     def testRenameContainerUser(self):
         self._testRenameContainer(False)
 
@@ -2299,7 +2248,6 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
         self.waitContainerRow(container_name_new)
 
-    @testlib.nondestructive
     def testMultipleContainers(self):
         self.login()
 
@@ -2313,11 +2261,9 @@ class TestApplication(testlib.MachineCase):
         for i in range(31):
             self.execute(True, f"podman rm -f container{i}")
 
-    @testlib.nondestructive
     def testCreatePodSystem(self):
         self._createPod(True)
 
-    @testlib.nondestructive
     def testCreatePodUser(self):
         self._createPod(False)
 
