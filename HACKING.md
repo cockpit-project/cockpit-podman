@@ -19,7 +19,7 @@ After changing the code and running `make` again, reload the Cockpit page in
 your browser.
 
 You can also use
-[watch mode](https://webpack.js.org/guides/development/#using-watch-mode) to
+[watch mode](https://esbuild.github.io/api/#watch) to
 automatically update the bundle on every code change with
 
     $ make watch
@@ -70,11 +70,11 @@ Violations of some rules can be fixed automatically by:
 
 Rules configuration can be found in the `.stylelintrc.json` file.
 
-During fast iterative development, you can also choose to not run stylelint.
+During fast iterative development, you can also choose to not run eslint/stylelint.
 This speeds up the build and avoids build failures due to e. g. ill-formatted
 css or other issues:
 
-    $ make STYLELINT=0
+    $ make LINT=0
 
 # Running tests locally
 
