@@ -39,7 +39,7 @@ COCKPIT_REPO_FILES = \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = cfde666c56a18bb4d0bceeb2421efb574e015beb # 286 + patternfly paths imports per component
+COCKPIT_REPO_COMMIT = 4037280a05f697c3d0585c1ef33261c6ca611323 # 286 + esbuild plugins
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
@@ -91,12 +91,8 @@ packaging/arch/PKGBUILD: packaging/arch/PKGBUILD.in
 packaging/debian/changelog: packaging/debian/changelog.in
 	sed 's/VERSION/$(VERSION)/' $< > $@
 
-$(DIST_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json webpack.config.js
-	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack
-	# In development mode terser does not run and so no LICENSE.txt.gz is generated, so we explictly create it as it is required for building rpm's
-	if [ "$$NODE_ENV" = "development" ]; then \
-		gzip </dev/null >dist/index.js.LICENSE.txt.gz; \
-	fi
+$(DIST_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json build.js
+	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) node build.js
 
 watch:
 	NODE_ENV=$(NODE_ENV) npm run watch
