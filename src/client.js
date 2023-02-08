@@ -15,7 +15,7 @@ export function getAddress(system) {
 
 function podmanCall(name, method, args, system, body) {
     const options = {
-        method: method,
+        method,
         path: VERSION + name,
         body: body || "",
         params: args,
@@ -26,7 +26,7 @@ function podmanCall(name, method, args, system, body) {
 
 function podmanMonitor(name, method, args, callback, system) {
     const options = {
-        method: method,
+        method,
         path: VERSION + name,
         body: "",
         params: args,
@@ -191,7 +191,7 @@ export function getPods(system, id) {
 export function delImage(system, id, force) {
     return new Promise((resolve, reject) => {
         const options = {
-            force: force,
+            force,
         };
         podmanCall("libpod/images/" + id, "DELETE", options, system)
                 .then(reply => resolve(JSON.parse(reply)))
@@ -204,7 +204,7 @@ export const untagImage = (system, id, repo, tag) => podmanCall("libpod/images/"
 export function pullImage(system, reference) {
     return new Promise((resolve, reject) => {
         const options = {
-            reference: reference,
+            reference,
         };
         podmanCall("libpod/images/pull", "POST", options, system)
                 .then(r => {

@@ -71,11 +71,11 @@ class Images extends React.Component {
                                        registries={this.props.registries}
                                        userServiceAvailable={this.props.userServiceAvailable}
                                        systemServiceAvailable={this.props.systemServiceAvailable} />);
-    }
+    };
 
     onOpenPruneUnusedImagesDialog = () => {
         this.setState({ showPruneUnusedImagesModal: true });
-    }
+    };
 
     getUsedByText(image) {
         const { imageContainerList } = this.props;
@@ -121,7 +121,7 @@ class Images extends React.Component {
         }
 
         return { imageStats, unusedImages };
-    }
+    };
 
     renderRow(image) {
         const tabs = [];
@@ -150,7 +150,7 @@ class Images extends React.Component {
             name: _("Details"),
             renderer: ImageDetails,
             data: {
-                image: image,
+                image,
                 containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.Id + image.isSystem.toString()] : null,
                 showAll: this.props.showAll,
             }
@@ -159,14 +159,14 @@ class Images extends React.Component {
             name: _("History"),
             renderer: ImageHistory,
             data: {
-                image: image,
+                image,
             }
         });
         return {
             expandedContent: <ListingPanel
                                 colSpan='8'
                                 tabRenderers={tabs} />,
-            columns: columns,
+            columns,
             props: {
                 key: image.Id + image.isSystem.toString(),
                 "data-row-id": image.Id + image.isSystem.toString(),

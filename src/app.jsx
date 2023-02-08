@@ -696,12 +696,12 @@ class Application extends React.Component {
                 const image = container.ImageID + container.isSystem.toString();
                 if (imageContainerList[image]) {
                     imageContainerList[image].push({
-                        container: container,
+                        container,
                         stats: this.state.containersStats[container.Id + container.isSystem.toString()],
                     });
                 } else {
                     imageContainerList[image] = [{
-                        container: container,
+                        container,
                         stats: this.state.containersStats[container.Id + container.isSystem.toString()]
                     }];
                 }

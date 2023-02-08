@@ -47,7 +47,7 @@ export const renderContainerVolumes = (volumes) => {
     return <List isPlain>{result}</List>;
 };
 
-const renderContainerEnv = (containerEnv, imageEnv) => {
+const ContainerEnv = ({ containerEnv, imageEnv }) => {
     // filter out some Environment variables set by podman or by image
     const toRemoveEnv = [...imageEnv, 'container=podman'];
     let toShow = containerEnv.filter(variable => {
@@ -97,7 +97,7 @@ const ContainerIntegration = ({ container, containerDetail, localImages }) => {
     const volumes = renderContainerVolumes(containerDetail.Mounts);
 
     const image = localImages.filter(img => img.Id === container.ImageID)[0];
-    const env = renderContainerEnv(containerDetail.Config.Env, image.Env || []);
+    const env = <ContainerEnv containerEnv={containerDetail.Config.Env} imageEnv={image.Env || []} />;
 
     return (
         <DescriptionList isAutoColumnWidths columnModifier={{ md: '3Col' }} className='container-integration'>

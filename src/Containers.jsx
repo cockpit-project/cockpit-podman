@@ -407,11 +407,11 @@ class Containers extends React.Component {
         const tabs = [{
             name: _("Details"),
             renderer: ContainerDetails,
-            data: { container: container, containerDetail: containerDetail }
+            data: { container, containerDetail }
         }, {
             name: _("Integration"),
             renderer: ContainerIntegration,
-            data: { container: container, containerDetail: containerDetail, localImages: localImages }
+            data: { container, containerDetail, localImages }
         }, {
             name: _("Logs"),
             renderer: ContainerLogs,
@@ -419,21 +419,21 @@ class Containers extends React.Component {
         }, {
             name: _("Console"),
             renderer: ContainerTerminal,
-            data: { containerId: container.Id, containerStatus: container.State, width: this.state.width, system: container.isSystem, tty: tty }
+            data: { containerId: container.Id, containerStatus: container.State, width: this.state.width, system: container.isSystem, tty }
         }];
 
         if (healthcheck) {
             tabs.push({
                 name: _("Health check"),
                 renderer: ContainerHealthLogs,
-                data: { container: container, containerDetail: containerDetail, onAddNotification: this.props.onAddNotification, state: localized_health }
+                data: { container, containerDetail, onAddNotification: this.props.onAddNotification, state: localized_health }
             });
         }
 
         return {
             expandedContent: <ListingPanel colSpan='4'
                                            tabRenderers={tabs} />,
-            columns: columns,
+            columns,
             initiallyExpanded: document.location.hash.substr(1) === container.Id,
             props: {
                 key: container.Id + container.isSystem.toString(),

@@ -294,7 +294,7 @@ export class ImageRunModal extends React.Component {
                         dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
                     });
                 });
-    }
+    };
 
     async onCreateClicked(runImage = false) {
         const Dialogs = this.context;
@@ -465,7 +465,7 @@ export class ImageRunModal extends React.Component {
                         });
                     }
                 });
-    }
+    };
 
     clearImageSelection = () => {
         // Reset command if it was prefilled
@@ -480,16 +480,16 @@ export class ImageRunModal extends React.Component {
             imageResults: {},
             searchText: "",
             searchFinished: false,
-            command: command,
+            command,
             entrypoint: "",
         });
-    }
+    };
 
     onImageSelectToggle = isOpen => {
         this.setState({
             isImageSelectOpen: isOpen,
         });
-    }
+    };
 
     onImageSelect = (event, value, placeholder) => {
         if (event === undefined)
@@ -504,10 +504,10 @@ export class ImageRunModal extends React.Component {
         this.setState({
             selectedImage: value,
             isImageSelectOpen: false,
-            command: command,
-            entrypoint: entrypoint,
+            command,
+            entrypoint,
         });
-    }
+    };
 
     handleImageSelectInput = value => {
         this.setState({
@@ -517,7 +517,7 @@ export class ImageRunModal extends React.Component {
             selectedImage: "",
         });
         this.onSearchTriggered(value);
-    }
+    };
 
     debouncedInputChanged = debounce(300, this.handleImageSelectInput);
 
@@ -526,7 +526,7 @@ export class ImageRunModal extends React.Component {
         this.setState({
             owner: value
         });
-    }
+    };
 
     filterImages = () => {
         const { localImages } = this.props;
@@ -594,7 +594,7 @@ export class ImageRunModal extends React.Component {
         }
 
         return results;
-    }
+    };
 
     // Similar to the output of podman search and podman's /libpod/images/search endpoint only show the root domain.
     truncateRegistryDomain = (domain) => {
@@ -603,7 +603,7 @@ export class ImageRunModal extends React.Component {
             return parts[parts.length - 2] + "." + parts[parts.length - 1];
         }
         return domain;
-    }
+    };
 
     enablePodmanRestartService = () => {
         const argv = ["systemctl", "enable", "podman-restart.service"];
@@ -615,12 +615,12 @@ export class ImageRunModal extends React.Component {
                 .catch(err => {
                     console.warn("Failed to start podman-restart.service:", JSON.stringify(err));
                 });
-    }
+    };
 
     isSystem = () => {
         const { owner } = this.state;
         return owner === systemOwner;
-    }
+    };
 
     render() {
         const Dialogs = this.context;
