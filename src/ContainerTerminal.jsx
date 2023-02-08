@@ -75,7 +75,7 @@ class ContainerTerminal extends React.Component {
         });
 
         this.state = {
-            term: term,
+            term,
             container: props.containerId,
             sessionId: props.containerId,
             channel: null,
@@ -202,7 +202,7 @@ class ContainerTerminal extends React.Component {
                               "Upgrade: WebSocket\r\nConnection: Upgrade\r\nContent-Length: " + body.length + "\r\n\r\n" + body);
 
                     const buffer = this.setUpBuffer(channel);
-                    this.setState({ channel: channel, errorMessage: "", buffer: buffer, sessionId: r.Id }, () => this.resize(this.props.width));
+                    this.setState({ channel, errorMessage: "", buffer, sessionId: r.Id }, () => this.resize(this.props.width));
                 })
                 .catch(e => this.setState({ errorMessage: e.message }));
     }
@@ -220,7 +220,7 @@ class ContainerTerminal extends React.Component {
                       "Upgrade: WebSocket\r\nConnection: Upgrade\r\nContent-Length: 0\r\n\r\n");
 
         const buffer = this.setUpBuffer(channel);
-        this.setState({ channel: channel, errorMessage: "", buffer: buffer });
+        this.setState({ channel, errorMessage: "", buffer });
         this.resize(this.props.width);
     }
 
