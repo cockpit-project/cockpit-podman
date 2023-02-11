@@ -89,7 +89,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
                                   client.postPod(pod.isSystem, "stop", pod.Id, { t: 0 })
                                           .catch(ex => {
                                               const error = cockpit.format(_("Failed to force stop pod $0"), pod.Name);
-                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
                 {_("Force stop")}
@@ -100,7 +100,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
                                   client.postPod(pod.isSystem, "restart", pod.Id, {})
                                           .catch(ex => {
                                               const error = cockpit.format(_("Failed to restart pod $0"), pod.Name);
-                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
                 {_("Restart")}
@@ -111,7 +111,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
                                   client.postPod(pod.isSystem, "restart", pod.Id, { t: 0 })
                                           .catch(ex => {
                                               const error = cockpit.format(_("Failed to force restart pod $0"), pod.Name);
-                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
                 {_("Force restart")}
@@ -126,7 +126,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
                                   client.postPod(pod.isSystem, "start", pod.Id, {})
                                           .catch(ex => {
                                               const error = cockpit.format(_("Failed to start pod $0"), pod.Name);
-                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
                 {_("Start")}
@@ -141,7 +141,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
                                   client.postPod(pod.isSystem, "unpause", pod.Id, {})
                                           .catch(ex => {
                                               const error = cockpit.format(_("Failed to resume pod $0"), pod.Name);
-                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
                 {_("Resume")}
@@ -156,7 +156,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
                                   client.postPod(pod.isSystem, "pause", pod.Id, {})
                                           .catch(ex => {
                                               const error = cockpit.format(_("Failed to pause pod $0"), pod.Name);
-                                              this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                           })}
                               component="button">
                 {_("Pause")}
