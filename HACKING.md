@@ -30,6 +30,12 @@ the remote hostname.
 
     $ RSYNC=c make watch
 
+When developing against a remote host as a normal user, `RSYNC_DEVEL` can be
+set to upload code changes to `~/.local/share/cockpit/` instead of
+`/usr/local`.
+
+    $ RSYNC_DEVEL=example.com make watch
+
 ## Running eslint
 
 Cockpit Podman uses [ESLint](https://eslint.org/) to automatically check
