@@ -82,7 +82,6 @@ class ContainerTerminal extends React.Component {
             buffer: null,
             opened: false,
             errorMessage: "",
-            cols: 80,
         };
     }
 
@@ -113,7 +112,6 @@ class ContainerTerminal extends React.Component {
         this.state.term.resize(cols, 24);
         client.resizeContainersTTY(this.props.system, this.state.sessionId, this.props.tty, cols, 24)
                 .catch(e => this.setState({ errorMessage: e.message }));
-        this.setState({ cols: cols });
     }
 
     connectChannel() {
