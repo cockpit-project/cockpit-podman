@@ -158,7 +158,6 @@ rpm: $(TARFILE)
 
 # build a VM with locally built distro pkgs installed
 # HACK for ostree images: skip the rpm build/install
-# HACK for rhel-8-7: https://bugzilla.redhat.com/show_bug.cgi?id=2086757
 # pybridge scenario: build and install the python bridge from cockpit repo
 
 ifeq ("$(TEST_SCENARIO)","pybridge")
@@ -185,9 +184,6 @@ $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packagin
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	else \
 	    bots/image-customize --verbose --fresh --no-network $(VM_CUSTOMIZE_FLAGS) --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
-	fi
-	if [ "$$TEST_OS" = "rhel-8-7" ]; then \
-	    bots/image-customize --verbose --install containernetworking-cni $$TEST_OS; \
 	fi
 
 # convenience target for the above
