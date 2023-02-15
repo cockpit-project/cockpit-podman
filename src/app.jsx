@@ -90,12 +90,12 @@ class Application extends React.Component {
     onAddNotification(notification) {
         notification.index = this.state.notifications.length;
 
-        this.setState({
+        this.setState(prevState => ({
             notifications: [
-                ...this.state.notifications,
+                ...prevState.notifications,
                 notification
             ]
-        });
+        }));
     }
 
     onDismissNotification(notificationIndex) {
