@@ -299,7 +299,7 @@ class Images extends React.Component {
                 <CardBody>
                     {this.props.images && Object.keys(this.props.images).length
                         ? <ExpandableSection toggleText={this.state.isExpanded ? _("Hide images") : _("Show images")}
-                                             onToggle={() => this.setState({ isExpanded: !this.state.isExpanded })}
+                                             onToggle={() => this.setState(prevState => ({ isExpanded: !prevState.isExpanded }))}
                                              isExpanded={this.state.isExpanded}>
                             {cardBody}
                         </ExpandableSection>
