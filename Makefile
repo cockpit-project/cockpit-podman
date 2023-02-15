@@ -156,10 +156,7 @@ rpm: $(TARFILE)
 	find tmp/rpmbuild -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r tmp/rpmbuild
 
-# build a VM with locally built distro pkgs installed
-# HACK for ostree images: skip the rpm build/install
 # pybridge scenario: build and install the python bridge from cockpit repo
-
 ifeq ("$(TEST_SCENARIO)","pybridge")
 COCKPIT_PYBRIDGE_REF = main
 COCKPIT_WHEEL = cockpit-0-py3-none-any.whl
@@ -177,7 +174,9 @@ VM_DEPENDS = $(COCKPIT_WHEEL)
 VM_CUSTOMIZE_FLAGS = --install $(COCKPIT_WHEEL)
 endif
 
+# build a VM with locally built distro pkgs installed
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots $(VM_DEPENDS)
+	# HACK for ostree images: skip the rpm build/install
 	if [ "$$TEST_OS" = "fedora-coreos" ] || [ "$$TEST_OS" = "rhel4edge" ]; then \
 	    bots/image-customize --verbose --fresh --no-network --run-command 'mkdir -p /usr/local/share/cockpit' \
 	                         --upload dist/:/usr/local/share/cockpit/podman \
