@@ -694,7 +694,7 @@ class Containers extends React.Component {
                     <ToolbarItem>
                         <Button variant="secondary" key="create-new-pod-action"
                                 id="containers-containers-create-pod-btn"
-                                onClick={() => createPod(null)}>
+                                onClick={() => createPod()}>
                             {_("Create pod")}
                         </Button>
                     </ToolbarItem>
