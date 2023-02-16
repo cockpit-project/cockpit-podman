@@ -58,7 +58,7 @@ const ContainerRenameModal = ({ container, version, updateContainerAfterEvent })
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
-            handleRename(name);
+            handleRename();
         }
     };
 
