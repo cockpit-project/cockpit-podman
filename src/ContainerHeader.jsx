@@ -1,9 +1,8 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import {
-    FormSelect, FormSelectOption,
-    TextInput, Toolbar, ToolbarContent, ToolbarItem,
-} from '@patternfly/react-core';
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
 const _ = cockpit.gettext;
 
 const ContainerHeader = ({ user, twoOwners, ownerFilter, handleOwnerChanged, textFilter, handleFilterChanged }) => {

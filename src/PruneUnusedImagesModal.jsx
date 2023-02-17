@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Flex, List, ListItem, Modal, } from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import cockpit from 'cockpit';
 
 import * as client from './client.js';

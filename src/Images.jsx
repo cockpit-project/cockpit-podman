@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import {
-    Button,
-    Card, CardBody, CardHeader, CardFooter, CardTitle,
-    Dropdown, DropdownItem,
-    Flex, FlexItem,
-    ExpandableSection,
-    KebabToggle,
-    Text, TextVariants
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Card, CardBody, CardFooter, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
+import { Dropdown, DropdownItem, KebabToggle } from "@patternfly/react-core/dist/esm/components/Dropdown";
+import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { ExpandableSection } from "@patternfly/react-core/dist/esm/components/ExpandableSection";
+import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { cellWidth } from '@patternfly/react-table';
 
 import cockpit from 'cockpit';
