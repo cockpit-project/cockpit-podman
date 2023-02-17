@@ -1,6 +1,6 @@
 import cockpit from 'cockpit';
 
-import * as dfnlocales from 'date-fns/locale';
+import * as dfnlocales from 'date-fns/locale/index.js';
 import { formatRelative } from 'date-fns';
 const _ = cockpit.gettext;
 
