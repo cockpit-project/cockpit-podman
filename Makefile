@@ -13,8 +13,8 @@ APPSTREAMFILE=org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check for node_modules/
 NODE_MODULES_TEST=package-lock.json
-# one example file in dist/ from webpack to check if that already ran
-WEBPACK_TEST=dist/manifest.json
+# one example file in dist/ from bundler to check if that already ran
+DIST_TEST=dist/manifest.json
 # one example file in pkg/lib to check if it was already checked out
 COCKPIT_REPO_STAMP=pkg/lib/cockpit-po-plugin.js
 # common arguments for tar, mostly to make the generated tarballs reproducible
@@ -25,7 +25,7 @@ RUN_TESTS_OPTIONS+=--coverage
 NODE_ENV=development
 endif
 
-all: $(WEBPACK_TEST)
+all: $(DIST_TEST)
 
 # checkout common files from Cockpit repository required to build this project;
 # this has no API stability guarantee, so check out a stable tag when you start
@@ -91,7 +91,7 @@ packaging/arch/PKGBUILD: packaging/arch/PKGBUILD.in
 packaging/debian/changelog: packaging/debian/changelog.in
 	sed 's/VERSION/$(VERSION)/' $< > $@
 
-$(WEBPACK_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json webpack.config.js
+$(DIST_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json webpack.config.js
 	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack
 	# In development mode terser does not run and so no LICENSE.txt.gz is generated, so we explictly create it as it is required for building rpm's
 	if [ "$$NODE_ENV" = "development" ]; then \
@@ -99,14 +99,14 @@ $(WEBPACK_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json w
 	fi
 
 watch:
-	NODE_ENV=$(NODE_ENV) node_modules/.bin/webpack --watch
+	NODE_ENV=$(NODE_ENV) npm run watch
 
 clean:
 	rm -rf dist/
 	rm -f $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	rm -f po/LINGUAS
 
-install: $(WEBPACK_TEST) po/LINGUAS
+install: $(DIST_TEST) po/LINGUAS
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	cp -r dist/* $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
 	mkdir -p $(DESTDIR)/usr/share/metainfo/
@@ -115,7 +115,7 @@ install: $(WEBPACK_TEST) po/LINGUAS
 		-o $(DESTDIR)/usr/share/metainfo/$(APPSTREAMFILE)
 
 # this requires a built source tree and avoids having to install anything system-wide
-devel-install: $(WEBPACK_TEST)
+devel-install: $(DIST_TEST)
 	mkdir -p ~/.local/share/cockpit
 	ln -s `pwd`/dist ~/.local/share/cockpit/$(PACKAGE_NAME)
 
@@ -138,11 +138,11 @@ TEST_NPMS = \
 dist: $(TARFILE)
 	@ls -1 $(TARFILE)
 
-# when building a distribution tarball, call webpack with a 'production' environment by default
+# when building a distribution tarball, call bundler with a 'production' environment by default
 # we don't ship most node_modules for license and compactness reasons, only the ones necessary for running tests
 # we ship a pre-built dist/ (so it's not necessary) and ship package-lock.json (so that node_modules/ can be reconstructed if necessary)
 $(TARFILE): export NODE_ENV ?= production
-$(TARFILE): $(WEBPACK_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
+$(TARFILE): $(DIST_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	if type appstream-util >/dev/null 2>&1; then appstream-util validate-relax --nonet *.metainfo.xml; fi
 	tar --xz $(TAR_ARGS) -cf $(TARFILE) --transform 's,^,$(RPM_NAME)/,' \
 		--exclude '*.in' --exclude test/reference \
