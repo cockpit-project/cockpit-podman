@@ -39,7 +39,7 @@ COCKPIT_REPO_FILES = \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = 54f2fd58a3645c4a222e2b1b9b5f1b9321bed998 # 285 + Move to a webpack module
+COCKPIT_REPO_COMMIT = 4bdbbbe058052e626dccc404536f39e50fc90caf # 285 + webpack/esbuild hybrid plugins
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
