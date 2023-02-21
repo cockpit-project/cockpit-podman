@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import {
-    Button,
-    Form, FormGroup,
-    Modal, TextInput
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import cockpit from 'cockpit';
 
 import * as client from './client.js';

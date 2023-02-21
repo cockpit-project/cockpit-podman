@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Modal, Stack, StackItem } from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';

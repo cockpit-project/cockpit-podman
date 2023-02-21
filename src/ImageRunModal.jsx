@@ -1,18 +1,20 @@
 import React from 'react';
-import {
-    Button, Checkbox,
-    Form, FormGroup,
-    FormSelect, FormSelectOption,
-    Grid, GridItem,
-    Modal, Radio, Select, SelectVariant,
-    NumberInput, InputGroupTextVariant,
-    InputGroup, InputGroupText,
-    SelectOption, SelectGroup,
-    TextInput, Tabs, Tab, TabTitleText, Text,
-    ToggleGroup, ToggleGroupItem,
-    Flex, FlexItem,
-    Popover,
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
+import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
+import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
+import { Select, SelectGroup, SelectOption, SelectVariant } from "@patternfly/react-core/dist/esm/components/Select";
+import { NumberInput } from "@patternfly/react-core/dist/esm/components/NumberInput";
+import { InputGroup, InputGroupText, InputGroupTextVariant } from "@patternfly/react-core/dist/esm/components/InputGroup";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { Tab, TabTitleText, Tabs } from "@patternfly/react-core/dist/esm/components/Tabs";
+import { Text } from "@patternfly/react-core/dist/esm/components/Text";
+import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
+import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 

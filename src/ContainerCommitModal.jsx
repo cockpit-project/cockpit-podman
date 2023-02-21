@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import {
-    Button, Checkbox,
-    Form, FormGroup,
-    Modal, TextInput
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
+import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import cockpit from 'cockpit';
 
 import * as utils from './util.js';

@@ -1,6 +1,9 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import { Button, Badge, Flex, List, ListItem } from "@patternfly/react-core";
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
 
 const _ = cockpit.gettext;
 

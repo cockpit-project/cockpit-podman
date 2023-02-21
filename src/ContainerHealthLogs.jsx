@@ -23,11 +23,9 @@ import * as utils from './util.js';
 import * as client from './client.js';
 
 import { ListingTable } from "cockpit-components-table.jsx";
-import {
-    Button,
-    DescriptionList, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription,
-    Flex, FlexItem,
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
+import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { CheckCircleIcon, ErrorCircleOIcon } from "@patternfly/react-icons";
 
 const _ = cockpit.gettext;

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import {
-    Button,
-    Form, FormGroup, Modal, Radio,
-    TextInput,
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import * as dockerNames from 'docker-names';
 
 import { ErrorNotification } from './Notification.jsx';

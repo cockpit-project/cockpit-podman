@@ -1,12 +1,10 @@
 import React from 'react';
-import {
-    Button,
-    FormGroup,
-    FormSelect, FormSelectOption,
-    Grid,
-    TextInput,
-    Popover,
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
+import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
 

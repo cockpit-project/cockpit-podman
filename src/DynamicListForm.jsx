@@ -1,11 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    Button,
-    EmptyState, EmptyStateBody,
-    FormFieldGroup, FormFieldGroupHeader,
-    HelperText, HelperTextItem,
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { EmptyState, EmptyStateBody } from "@patternfly/react-core/dist/esm/components/EmptyState";
+import { FormFieldGroup, FormFieldGroupHeader } from "@patternfly/react-core/dist/esm/components/Form";
+import { HelperText, HelperTextItem } from "@patternfly/react-core/dist/esm/components/HelperText";
 
 import './DynamicListForm.scss';
 

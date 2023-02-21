@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import {
-    Badge,
-    Button,
-    Card, CardBody, CardHeader, CardTitle, CardActions,
-    Divider,
-    Dropdown, DropdownItem, DropdownSeparator,
-    Flex,
-    KebabToggle,
-    Popover,
-    LabelGroup,
-    Text, TextVariants, FormSelect, FormSelectOption,
-    Tooltip, Toolbar, ToolbarContent, ToolbarItem,
-} from '@patternfly/react-core';
+import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Card, CardActions, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
+import { Divider } from "@patternfly/react-core/dist/esm/components/Divider";
+import { Dropdown, DropdownItem, DropdownSeparator, KebabToggle } from "@patternfly/react-core/dist/esm/components/Dropdown";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
+import { LabelGroup } from "@patternfly/react-core/dist/esm/components/LabelGroup";
+import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
+import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
+import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
 import { cellWidth } from '@patternfly/react-table';
 import { MicrochipIcon, MemoryIcon, PortIcon, VolumeIcon, } from '@patternfly/react-icons';
 

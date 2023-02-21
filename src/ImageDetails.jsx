@@ -2,7 +2,7 @@ import React from 'react';
 import cockpit from 'cockpit';
 import * as utils from './util.js';
 
-import { DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup } from "@patternfly/react-core";
+import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
 
 import ImageUsedBy from './ImageUsedBy.jsx';
 const _ = cockpit.gettext;
