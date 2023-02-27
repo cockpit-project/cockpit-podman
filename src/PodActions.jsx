@@ -31,7 +31,8 @@ const PodDeleteModal = ({ pod }) => {
                 });
     }
 
-    return <Modal isOpen
+    return (
+        <Modal isOpen
                   position="top" variant="medium"
                   titleIconVariant="warning"
                   title={force
@@ -48,20 +49,21 @@ const PodDeleteModal = ({ pod }) => {
                           {_("Cancel")}
                       </Button>
                   </>}
-    >
-        {deleteError &&
-        <Alert variant="danger" isInline title={_("An error occurred")}>{deleteError}</Alert>}
-        {containers.length === 0 &&
+        >
+            {deleteError &&
+            <Alert variant="danger" isInline title={_("An error occurred")}>{deleteError}</Alert>}
+            {containers.length === 0 &&
             <p>{cockpit.format(_("Empty pod $0 will be permanently removed."), pod.Name)}</p>
-        }
-        {containers.length > 0 &&
-        <Stack hasGutter>
-            <p>{_("Deleting this pod will remove the following containers:")}</p>
-            <List>
-                {containers.map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
-            </List>
-        </Stack>}
-    </Modal>;
+            }
+            {containers.length > 0 &&
+            <Stack hasGutter>
+                <p>{_("Deleting this pod will remove the following containers:")}</p>
+                <List>
+                    {containers.map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
+                </List>
+            </Stack>}
+        </Modal>
+    );
 };
 
 export const PodActions = ({ onAddNotification, pod }) => {
@@ -181,10 +183,12 @@ export const PodActions = ({ onAddNotification, pod }) => {
     if (!dropdownItems.length)
         return null;
 
-    return <Dropdown onSelect={() => setOpen(!isOpen)}
+    return (
+        <Dropdown onSelect={() => setOpen(!isOpen)}
                          position={DropdownPosition.right}
                          toggle={<KebabToggle onToggle={(value, _) => setOpen(value)} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
                          isOpen={isOpen}
                          isPlain
-        dropdownItems={dropdownItems} />;
+        dropdownItems={dropdownItems} />
+    );
 };

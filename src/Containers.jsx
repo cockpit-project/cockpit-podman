@@ -369,12 +369,13 @@ class Containers extends React.Component {
             if (containerStats.MemUsage != undefined && containerStats.MemLimit != undefined)
                 mem = utils.format_memory_and_limit(containerStats.MemUsage, containerStats.MemLimit);
         }
-        const info_block =
+        const info_block = (
             <div className="container-block">
                 <span className="container-name">{container.Names}</span>
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Command)}</small>
-            </div>;
+            </div>
+        );
 
         let containerStateClass = "ct-badge-container-" + container.State.toLowerCase();
         if (container.isDownloading)
@@ -677,7 +678,7 @@ class Containers extends React.Component {
                 version={this.props.version} />);
         };
 
-        const filterRunning =
+        const filterRunning = (
             <Toolbar>
                 <ToolbarContent>
                     <ToolbarItem variant="label" htmlFor="containers-containers-filter">
@@ -706,7 +707,8 @@ class Containers extends React.Component {
                         </Button>
                     </ToolbarItem>
                 </ToolbarContent>
-            </Toolbar>;
+            </Toolbar>
+        );
 
         const card = (
             <Card id="containers-containers" className="containers-containers">

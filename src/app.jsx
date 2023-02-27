@@ -711,22 +711,28 @@ class Application extends React.Component {
             imageContainerList = null;
 
         let startService = "";
-        const action = (<>
-            <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
-            <AlertActionCloseButton onClose={() => this.setState({ showStartService: false })} />
-        </>);
+        const action = (
+            <>
+                <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
+                <AlertActionCloseButton onClose={() => this.setState({ showStartService: false })} />
+            </>
+        );
         if (!this.state.systemServiceAvailable && this.state.privileged) {
-            startService = <Alert variant='default'
+            startService = (
+                <Alert variant='default'
                 title={_("System Podman service is also available")}
-                actionClose={action} />;
+                actionClose={action} />
+            );
         }
         if (!this.state.userServiceAvailable && this.state.userServiceExists) {
-            startService = <Alert variant='default'
+            startService = (
+                <Alert variant='default'
                 title={_("User Podman service is also available")}
-                actionClose={action} />;
+                actionClose={action} />
+            );
         }
 
-        const imageList =
+        const imageList = (
             <Images
                 key="imageList"
                 images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
@@ -743,8 +749,9 @@ class Application extends React.Component {
                 podmanRestartAvailable={this.state.podmanRestartAvailable}
                 userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
                 userLingeringEnabled={this.state.userLingeringEnabled}
-            />;
-        const containerList =
+            />
+        );
+        const containerList = (
             <Containers
                 key="containerList"
                 version={this.state.version}
@@ -768,7 +775,8 @@ class Application extends React.Component {
                 userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
                 userLingeringEnabled={this.state.userLingeringEnabled}
                 updateContainerAfterEvent={this.updateContainerAfterEvent}
-            />;
+            />
+        );
 
         const notificationList = (
             <AlertGroup isToast>
