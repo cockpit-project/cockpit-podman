@@ -83,7 +83,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
                 });
     };
 
-    const commitContent =
+    const commitContent = (
         <Form isHorizontal>
             <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}
                        validated={nameError ? "error" : "default"}
@@ -125,7 +125,8 @@ const ContainerCommitModal = ({ container, localImages }) => {
                           description={_("Docker format is useful when sharing the image with Docker or Moby Engine")}
                           label={_("Use legacy Docker format")} />
             </FormGroup>
-        </Form>;
+        </Form>
+    );
 
     return (
         <Modal isOpen

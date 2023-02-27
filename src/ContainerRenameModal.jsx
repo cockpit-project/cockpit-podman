@@ -61,7 +61,7 @@ const ContainerRenameModal = ({ container, version, updateContainerAfterEvent })
         }
     };
 
-    const renameContent =
+    const renameContent = (
         <Form isHorizontal>
             <FormGroup fieldId="rename-dialog-container-name" label={_("New container name")}
                     validated={nameError ? "error" : "default"}
@@ -73,7 +73,8 @@ const ContainerRenameModal = ({ container, version, updateContainerAfterEvent })
                         aria-label={nameError}
                         onChange={value => handleInputChange("name", value)} />
             </FormGroup>
-        </Form>;
+        </Form>
+    );
 
     return (
         <Modal isOpen

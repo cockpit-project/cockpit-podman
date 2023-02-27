@@ -51,11 +51,13 @@ class Images extends React.Component {
                 })
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest");
-                    const errorDetail = (<>
-                        <p> {_("Error message")}:
-                            <samp>{cockpit.format("$0 $1", ex.message, ex.reason)}</samp>
-                        </p>
-                    </>);
+                    const errorDetail = (
+                        <>
+                            <p> {_("Error message")}:
+                                <samp>{cockpit.format("$0 $1", ex.message, ex.reason)}</samp>
+                            </p>
+                        </>
+                    );
                     this.setState({ imageDownloadInProgress: undefined });
                     this.props.onAddNotification({ type: 'danger', error, errorDetail });
                 });
@@ -244,10 +246,12 @@ class Images extends React.Component {
 
         let toggleIntermediate = "";
         if (interim) {
-            toggleIntermediate = <span className="listing-action">
-                <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened, isExpanded: true })}>
-                    {intermediateOpened ? _("Hide intermediate images") : _("Show intermediate images")}</Button>
-            </span>;
+            toggleIntermediate = (
+                <span className="listing-action">
+                    <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened, isExpanded: true })}>
+                        {intermediateOpened ? _("Hide intermediate images") : _("Show intermediate images")}</Button>
+                </span>
+            );
         }
         const cardBody = (
             <>
