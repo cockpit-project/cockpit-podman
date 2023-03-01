@@ -26,6 +26,10 @@ make
 `sudo make install` installs the package in `/usr/share/cockpit/`. This depends
 on the `dist` target, which generates the distribution tarball.
 
+> If a `msgfmt` not found error occurs during `make install`, you may need to
+> install the `gettext` package then `make install` again. e.g. `apt install 
+> gettext` or `yum install gettext`.
+
 You can also run `make rpm` to build RPMs for local installation.
 
 In `production` mode, source files are automatically minified and compressed.
