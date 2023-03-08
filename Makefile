@@ -95,7 +95,7 @@ $(DIST_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json buil
 	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) node build.js
 
 watch:
-	NODE_ENV=$(NODE_ENV) npm run watch
+	NODE_ENV=$(NODE_ENV) ESBUILD_WATCH=true node build.js
 
 clean:
 	rm -rf dist/
