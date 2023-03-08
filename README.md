@@ -10,6 +10,16 @@ containers](https://podman.io/).
  - This project is based on the [Cockpit Starter Kit](https://github.com/cockpit-project/starter-kit).
    See [Starter Kit Intro](http://cockpit-project.org/blog/cockpit-starter-kit.html) for details.
 
+# Development dependencies
+
+On Debian/Ubuntu:
+
+    $ sudo apt install gettext nodejs make
+
+On Fedora:
+
+    $ sudo dnf install gettext nodejs make
+
 # Getting and building the source
 
 These commands check out the source and build it into the `dist/` directory:
