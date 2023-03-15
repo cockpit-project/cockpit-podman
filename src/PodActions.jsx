@@ -120,7 +120,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
             </DropdownItem>,
         );
     }
-    if (pod.Status == "Created" || pod.Status == "Exited" || pod.Status == "Stopped") {
+    if (pod.Containers.length !== 0 && (pod.Status == "Created" || pod.Status == "Exited" || pod.Status == "Stopped")) {
         dropdownItems.push(
             <DropdownItem key="action-start"
                               className="pod-action-start"
