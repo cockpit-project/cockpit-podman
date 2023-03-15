@@ -702,7 +702,7 @@ export class ImageRunModal extends React.Component {
                                    onChange={this.handleOwnerSelect} />
                         </FormGroup>
                         }
-                        <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}
+                        <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")} isRequired
                           labelIcon={!this.props.image &&
                               <Popover aria-label={_("Image selection help")}
                                 enableFlip
