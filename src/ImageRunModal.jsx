@@ -11,7 +11,7 @@ import { NumberInput } from "@patternfly/react-core/dist/esm/components/NumberIn
 import { InputGroup, InputGroupText, InputGroupTextVariant } from "@patternfly/react-core/dist/esm/components/InputGroup";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { Tab, TabTitleText, Tabs } from "@patternfly/react-core/dist/esm/components/Tabs";
-import { Text } from "@patternfly/react-core/dist/esm/components/Text";
+import { Text, TextContent, TextList, TextListItem, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
@@ -688,7 +688,47 @@ export class ImageRunModal extends React.Component {
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-c-form pf-m-horizontal">
                         { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
-                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}>
+                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}
+                                   labelIcon={
+                                       <Popover aria-label={_("Owner help")}
+                                          enableFlip
+                                          bodyContent={
+                                              <>
+                                                  <TextContent>
+                                                      <Text component={TextVariants.h4}>{_("System")}</Text>
+                                                      <TextList>
+                                                          <TextListItem>
+                                                              {_("Ideal for running services")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Resource limits can be set")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Checkpoint and restore support")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Ports under 1024 can be mapped")}
+                                                          </TextListItem>
+                                                      </TextList>
+                                                  </TextContent>
+                                                  <TextContent>
+                                                      <Text component={TextVariants.h4}>{cockpit.format("$0 $1", _("User:"), this.props.user)}</Text>
+                                                      <TextList>
+                                                          <TextListItem>
+                                                              {_("Ideal for development")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Restricted by user account permissions")}
+                                                          </TextListItem>
+                                                      </TextList>
+                                                  </TextContent>
+                                              </>
+                                          }>
+                                           <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                               <OutlinedQuestionCircleIcon />
+                                           </button>
+                                       </Popover>
+                                   }>
                             <Radio value="system"
                                    label={_("System")}
                                    id="run-image-dialog-owner-system"
