@@ -6,6 +6,7 @@ import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
+import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
@@ -226,7 +227,6 @@ export class ImageSearchModal extends React.Component {
                    onClose={Dialogs.close}
                    title={_("Search for an image")}
                    footer={<>
-                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                        <Form isHorizontal className="image-search-tag-form">
                            <FormGroup fieldId="image-search-tag" label={_("Tag")}>
                                <TextInput className="image-tag-entry"
@@ -245,7 +245,12 @@ export class ImageSearchModal extends React.Component {
                        </Button>
                    </>}
             >
-                {defaultBody}
+                <Stack hasGutter>
+                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
+                    <StackItem>
+                        {defaultBody}
+                    </StackItem>
+                </Stack>
             </Modal>
         );
     }

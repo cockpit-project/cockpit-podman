@@ -15,6 +15,7 @@ import { Text } from "@patternfly/react-core/dist/esm/components/Text";
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
+import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
@@ -1030,7 +1031,6 @@ export class ImageRunModal extends React.Component {
                    }}
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
-                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                        <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={!image && selectedImage === ""}>
                            {_("Create and run")}
                        </Button>
@@ -1042,7 +1042,12 @@ export class ImageRunModal extends React.Component {
                        </Button>
                    </>}
             >
-                {defaultBody}
+                <Stack hasGutter>
+                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
+                    <StackItem>
+                        {defaultBody}
+                    </StackItem>
+                </Stack>
             </Modal>
         );
     }

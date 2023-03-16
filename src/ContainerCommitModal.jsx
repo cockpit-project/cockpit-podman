@@ -3,6 +3,7 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import cockpit from 'cockpit';
 
@@ -135,7 +136,6 @@ const ContainerCommitModal = ({ container, localImages }) => {
                  title={_("Commit container")}
                  description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{container.Names}</b>)}
                  footer={<>
-                     {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError("")} />}
                      <Button variant="primary"
                              className="btn-ctr-commit"
                              isLoading={commitInProgress && !nameError}
@@ -158,7 +158,12 @@ const ContainerCommitModal = ({ container, localImages }) => {
                      </Button>
                  </>}
         >
-            {commitContent}
+            <Stack hasGutter>
+                {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError("")} />}
+                <StackItem>
+                    {commitContent}
+                </StackItem>
+            </Stack>
         </Modal>
     );
 };
