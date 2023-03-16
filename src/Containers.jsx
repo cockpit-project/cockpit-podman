@@ -37,6 +37,7 @@ import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { PodActions } from './PodActions.jsx';
 import { PodCreateModal } from './PodCreateModal.jsx';
+import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 
 const _ = cockpit.gettext;
 
@@ -317,6 +318,30 @@ const localize_health = (state) => {
     return null;
 };
 
+const ContainerOverActions = ({ handlePruneUnusedContainers, unusedContainers }) => {
+    const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
+
+    return (
+        <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} id="containers-actions-dropdown" />}
+                  isOpen={isActionsKebabOpen}
+                  isPlain
+                  position="right"
+                  dropdownItems={[
+                      <DropdownItem key="prune-unused-containers"
+                                    id="prune-unused-containers-button"
+                                    component="button"
+                                    className="pf-m-danger btn-delete"
+                                    onClick={() => {
+                                        setIsActionsKebabOpen(false);
+                                        handlePruneUnusedContainers();
+                                    }}
+                                    isDisabled={unusedContainers.length === 0}>
+                          {_("Prune unused containers")}
+                      </DropdownItem>,
+                  ]} />
+    );
+};
+
 class Containers extends React.Component {
     static contextType = DialogsContext;
 
@@ -325,6 +350,7 @@ class Containers extends React.Component {
         this.state = {
             width: 0,
             downloadingContainers: [],
+            showPruneUnusedContainersModal: false,
         };
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
@@ -545,6 +571,10 @@ class Containers extends React.Component {
         );
     }
 
+    onOpenPruneUnusedContainersDialog = () => {
+        this.setState({ showPruneUnusedContainersModal: true });
+    };
+
     render() {
         const Dialogs = this.context;
         const columnTitles = [
@@ -557,6 +587,7 @@ class Containers extends React.Component {
         ];
         const partitionedContainers = { 'no-pod': [] };
         let filtered = [];
+        const unusedContainers = [];
 
         let emptyCaption = _("No containers");
         const emptyCaptionPod = _("No containers in this pod");
@@ -640,6 +671,21 @@ class Containers extends React.Component {
             // If there are pods to show and the generic container list is empty don't show  it at all
             if (Object.keys(partitionedContainers).length > 1 && !partitionedContainers["no-pod"].length)
                 delete partitionedContainers["no-pod"];
+
+            const prune_states = ["created", "configured", "stopped", "exited"];
+            for (const containerid of Object.keys(this.props.containers)) {
+                const container = this.props.containers[containerid];
+                // Ignore pods and running containers
+                if (!prune_states.includes(container.State) || container.Pod)
+                    continue;
+
+                unusedContainers.push({
+                    id: container.Id + container.isSystem.toString(),
+                    name: container.Names[0],
+                    created: container.Created,
+                    system: container.isSystem,
+                });
+            }
         }
 
         // Convert to the search result output
@@ -685,7 +731,7 @@ class Containers extends React.Component {
 
         const filterRunning = (
             <Toolbar>
-                <ToolbarContent>
+                <ToolbarContent className="containers-containers-toolbarcontent">
                     <ToolbarItem variant="label" htmlFor="containers-containers-filter">
                         {_("Show")}
                     </ToolbarItem>
@@ -710,6 +756,9 @@ class Containers extends React.Component {
                                 onClick={() => createContainer(null)}>
                             {_("Create container")}
                         </Button>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                        <ContainerOverActions unusedContainers={unusedContainers} handlePruneUnusedContainers={this.onOpenPruneUnusedContainersDialog} />
                     </ToolbarItem>
                 </ToolbarContent>
             </Toolbar>
@@ -819,6 +868,13 @@ class Containers extends React.Component {
                                         );
                                     })}
                     </Flex>
+                    {this.state.showPruneUnusedContainersModal &&
+                    <PruneUnusedContainersModal
+                      close={() => this.setState({ showPruneUnusedContainersModal: false })}
+                      unusedContainers={unusedContainers}
+                      onAddNotification={this.props.onAddNotification}
+                      userSystemServiceAvailable={this.props.userServiceAvailable && this.props.systemServiceAvailable}
+                      user={this.props.user} /> }
                 </CardBody>
             </Card>
         );

@@ -2039,6 +2039,56 @@ class TestApplication(testlib.MachineCase):
         b.click("#image-actions-dropdown")
         b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
 
+    def testPruneUnusedContainersSystem(self):
+        self._testPruneUnusedContainersSystem(True)
+
+    def testPruneUnusedContainersUser(self):
+        self._testPruneUnusedContainersSystem(False)
+
+    def _testPruneUnusedContainersSystem(self, auth):
+        '''Test the prune unused container image dialog'''
+
+        b = self.browser
+        self.login(auth)
+
+        # Create running and non-running containers
+        self.execute(auth, "podman pod create --name pod")
+        notrunninginpodId = self.execute(auth, f"podman run --name inpod --pod pod -tid {IMG_BUSYBOX} sh -c 'exit 1'").strip()
+        runninginpodId = self.execute(auth, f"podman run --name inpodrunning --pod pod -tid {IMG_BUSYBOX} sh -c 'sleep infinity'").strip()
+
+        self.execute(auth, f"podman run --name notrunning -tid {IMG_BUSYBOX} sh -c  'exit 1'")
+        self.execute(auth, f"podman run --name containerrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'")
+
+        # Create containers for the opposite of what we are, admin or super admin
+        if auth:
+            self.execute(False, f"podman run --name adminnotrunning -tid {IMG_BUSYBOX} sh 'exit 1'")
+            b.wait(lambda: self.getContainerAttr("adminnotrunning", "State") in NOT_RUNNING)
+            self.execute(False, f"podman run --name adminrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'")
+            b.wait(lambda: self.getContainerAttr("adminrunning", "State") == "Running")
+
+        b.click("#containers-actions-dropdown")
+        b.click("button:contains(Prune unused containers)")
+
+        if auth:
+            b.wait_in_text(".pf-c-modal-box__body tbody tr:nth-child(1) td[data-label=Name]", "adminnotrunning")
+            b.wait_in_text(".pf-c-modal-box__body tbody tr:nth-child(2) td[data-label=Name]", "notrunning")
+        else:
+            b.wait_in_text(".pf-c-modal-box__body tbody td[data-label=Name]", "notrunning")
+
+        b.click(".pf-c-modal-box button:contains(Prune)")
+        b.wait_not_present(".pf-c-modal-box__body")
+
+        if auth:
+            self.waitContainerRow("notrunning", False)
+            self.waitContainerRow("adminnotrunning", False)
+        else:
+            self.waitContainerRow("notrunning", False)
+
+        # Verify running containers still exists
+        self.waitContainerRow("containerrunning")
+        self.waitPodContainer("pod", [{"name": "inpod", "state": "Exited", "id": notrunninginpodId, "image": IMG_BUSYBOX, "command": 'sh -c "exit 1"'},
+                                      {"name": "inpodrunning", "state": "Running", "id": runninginpodId, "image": IMG_BUSYBOX, "command": 'sh -c "sleep infinity"'}], auth)
+
     def testCreateContainerValidation(self):
         ''' Test the validation errors'''
         b = self.browser
