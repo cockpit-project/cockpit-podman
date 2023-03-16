@@ -81,3 +81,8 @@
 .containers-containers .pf-c-toolbar__content-section {
     gap: var(--pf-global--spacer--sm);
 }
+
+/* Drop the excessive margin for a Dropdown button */
+.containers-containers .pf-c-toolbar__content-section > :nth-last-child(2) {
+    margin-right: 0;
+}
