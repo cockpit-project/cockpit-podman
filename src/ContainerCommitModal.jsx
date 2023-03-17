@@ -3,7 +3,6 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
-import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import cockpit from 'cockpit';
 
@@ -86,6 +85,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
 
     const commitContent = (
         <Form isHorizontal>
+            {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError("")} />}
             <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}
                        validated={nameError ? "error" : "default"}
                        helperTextInvalid={nameError}>
@@ -158,12 +158,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
                      </Button>
                  </>}
         >
-            <Stack hasGutter>
-                {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError("")} />}
-                <StackItem>
-                    {commitContent}
-                </StackItem>
-            </Stack>
+            {commitContent}
         </Modal>
     );
 };

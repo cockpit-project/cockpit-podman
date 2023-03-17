@@ -6,7 +6,6 @@ import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
-import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
@@ -158,6 +157,7 @@ export class ImageSearchModal extends React.Component {
         const defaultBody = (
             <>
                 <Form isHorizontal>
+                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                     { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
                     <FormGroup id="as-user" label={_("Owner")} isInline>
                         <Radio name="user" value="system" id="system" onChange={this.onToggleUser} isChecked={this.state.isSystem} label={_("system")} />
@@ -245,12 +245,7 @@ export class ImageSearchModal extends React.Component {
                        </Button>
                    </>}
             >
-                <Stack hasGutter>
-                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <StackItem>
-                        {defaultBody}
-                    </StackItem>
-                </Stack>
+                {defaultBody}
             </Modal>
         );
     }

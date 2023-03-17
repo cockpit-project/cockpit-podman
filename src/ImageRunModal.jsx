@@ -15,7 +15,6 @@ import { Text } from "@patternfly/react-core/dist/esm/components/Text";
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
-import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
@@ -678,6 +677,7 @@ export class ImageRunModal extends React.Component {
 
         const defaultBody = (
             <Form>
+                {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                 <FormGroup fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
                     <TextInput id='run-image-dialog-name'
                            className="image-name"
@@ -1042,12 +1042,7 @@ export class ImageRunModal extends React.Component {
                        </Button>
                    </>}
             >
-                <Stack hasGutter>
-                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                    <StackItem>
-                        {defaultBody}
-                    </StackItem>
-                </Stack>
+                {defaultBody}
             </Modal>
         );
     }

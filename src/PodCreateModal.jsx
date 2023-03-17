@@ -3,7 +3,6 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
-import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import * as dockerNames from 'docker-names';
 
@@ -92,6 +91,7 @@ export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable,
 
     const defaultBody = (
         <Form>
+            {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
             <FormGroup fieldId='create-pod-dialog-name' label={_("Name")} className="ct-m-horizontal"
                     validated={nameError ? "error" : "default"}
                     helperTextInvalid={nameError}>
@@ -157,12 +157,7 @@ export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable,
                     </Button>
                 </>}
         >
-            <Stack hasGutter>
-                {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
-                <StackItem>
-                    {defaultBody}
-                </StackItem>
-            </Stack>
+            {defaultBody}
         </Modal>
     );
 };
