@@ -140,7 +140,8 @@ class Images extends React.Component {
                                      systemServiceAvailable={this.props.systemServiceAvailable}
                                      podmanRestartAvailable={this.props.podmanRestartAvailable}
                                      userPodmanRestartAvailable={this.props.userPodmanRestartAvailable}
-                                     userLingeringEnabled={this.props.userLingeringEnabled} />,
+                                     userLingeringEnabled={this.props.userLingeringEnabled}
+                                     version={this.props.version} />,
                 props: { className: 'pf-c-table__action content-action' }
             },
         ];
@@ -362,7 +363,7 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
     );
 };
 
-const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, user, systemServiceAvailable, userServiceAvailable, podmanRestartAvailable, userPodmanRestartAvailable, userLingeringEnabled }) => {
+const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, user, systemServiceAvailable, userServiceAvailable, podmanRestartAvailable, userPodmanRestartAvailable, userLingeringEnabled, version }) => {
     const Dialogs = useDialogs();
     const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
 
@@ -377,7 +378,8 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
                                     userLingeringEnabled={userLingeringEnabled}
                                     user={user}
                                     image={image}
-                                    onAddNotification={onAddNotification} />);
+                                    onAddNotification={onAddNotification}
+                                    version={version} />);
     };
 
     const removeImage = () => {

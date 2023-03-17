@@ -665,7 +665,8 @@ class Containers extends React.Component {
                                             systemServiceAvailable={this.props.systemServiceAvailable}
                                             userServiceAvailable={this.props.userServiceAvailable}
                                             userLingeringEnabled={this.props.userLingeringEnabled}
-                                            onAddNotification={this.props.onAddNotification} />);
+                                            onAddNotification={this.props.onAddNotification}
+                                            version={this.props.version} />);
         };
 
         const createPod = () => {

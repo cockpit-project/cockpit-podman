@@ -749,6 +749,7 @@ class Application extends React.Component {
                 podmanRestartAvailable={this.state.podmanRestartAvailable}
                 userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
                 userLingeringEnabled={this.state.userLingeringEnabled}
+                version={this.state.version}
             />
         );
         const containerList = (
