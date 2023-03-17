@@ -52,6 +52,14 @@ const units = {
     },
 };
 
+// healthchecks.go HealthCheckOnFailureAction
+const HealthCheckOnFailureActionOrder = [
+    { value: 0, label: _("No action") },
+    { value: 3, label: _("Restart") },
+    { value: 4, label: _("Stop") },
+    { value: 2, label: _("Force stop") },
+];
+
 const handleEnvValue = (key, value, idx, onChange, additem, itemCount, companionField) => {
     // Allow the input of KEY=VALUE separated value pairs for bulk import only if the other
     // field is not empty.
@@ -157,6 +165,7 @@ export class ImageRunModal extends React.Component {
             healthcheck_timeout: 30,
             healthcheck_start_period: 0,
             healthcheck_retries: 3,
+            healthcheck_action: 0,
 
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
@@ -258,6 +267,7 @@ export class ImageRunModal extends React.Component {
                 Test: utils.unquote_cmdline(this.state.healthcheck_command),
                 Timeout: parseInt(this.state.healthcheck_timeout) * 1000000000,
             };
+            createConfig.health_check_on_failure_action = parseInt(this.state.healthcheck_action);
         }
 
         return createConfig;
@@ -1054,6 +1064,27 @@ export class ImageRunModal extends React.Component {
                                     onPlus={() => this.onPlusOne('healthcheck_retries')}
                                     onChange={ev => this.onValueChanged('healthcheck_retries', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                         </FormGroup>
+                        {this.props.version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
+                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("Failure action") }
+                              labelIcon={
+                                  <Popover aria-label={_("Health failure check action help")}
+                                      enableFlip
+                                      bodyContent={_("Action to take once the container transitions to an unhealthy state.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            {HealthCheckOnFailureActionOrder.map(item =>
+                                <Radio value={item.value}
+                                       key={item.value}
+                                       label={item.label}
+                                       id={`run-image-healthcheck-action-${item.value}`}
+                                       isChecked={dialogValues.healthcheck_action === item.value}
+                                       onChange={() => this.onValueChanged('healthcheck_action', item.value)} />
+                            )}
+                        </FormGroup>
+                        }
                     </Tab>
                 </Tabs>
             </Form>
