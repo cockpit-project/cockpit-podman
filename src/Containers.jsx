@@ -11,7 +11,7 @@ import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/T
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
 import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
-import { cellWidth } from '@patternfly/react-table';
+import { cellWidth, SortByDirection } from '@patternfly/react-table';
 import { MicrochipIcon, MemoryIcon, PortIcon, VolumeIcon, } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
@@ -391,11 +391,15 @@ class Containers extends React.Component {
         }
 
         const columns = [
-            { title: info_block },
-            { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
-            { title: proc, props: { modifier: "nowrap" } },
-            { title: mem, props: { modifier: "nowrap" } },
-            { title: <LabelGroup isVertical>{state}</LabelGroup> },
+            { title: info_block, sortKey: container.Names[0] },
+            {
+                title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>,
+                props: { modifier: "nowrap" },
+                sortKey: container.isSystem.toString()
+            },
+            { title: proc, props: { modifier: "nowrap" }, sortKey: containerState === "Running" ? containerStats?.CPU ?? -1 : -1 },
+            { title: mem, props: { modifier: "nowrap" }, sortKey: containerStats?.MemUsage ?? -1 },
+            { title: <LabelGroup isVertical>{state}</LabelGroup>, sortKey: containerState },
         ];
 
         if (!container.isDownloading) {
@@ -544,11 +548,11 @@ class Containers extends React.Component {
     render() {
         const Dialogs = this.context;
         const columnTitles = [
-            { title: _("Container"), transforms: [cellWidth(20)] },
-            _("Owner"),
-            _("CPU"),
-            _("Memory"),
-            _("State"),
+            { title: _("Container"), transforms: [cellWidth(20)], sortable: true },
+            { title: _("Owner"), sortable: true },
+            { title: _("CPU"), sortable: true },
+            { title: _("Memory"), sortable: true },
+            { title: _("State"), sortable: true },
             ''
         ];
         const partitionedContainers = { 'no-pod': [] };
@@ -711,6 +715,30 @@ class Containers extends React.Component {
             </Toolbar>
         );
 
+        const sortRows = (rows, direction, idx) => {
+            // CPU / Memory /States
+            const isNumeric = idx == 2 || idx == 3 || idx == 4;
+            const stateOrderMapping = {};
+            utils.states.forEach((elem, index) => {
+                stateOrderMapping[elem] = index;
+            });
+            const sortedRows = rows.sort((a, b) => {
+                let aitem = a.columns[idx].sortKey ?? a.columns[idx].title;
+                let bitem = b.columns[idx].sortKey ?? b.columns[idx].title;
+                // Sort the states based on the order defined in utils. so Running first.
+                if (idx === 4) {
+                    aitem = stateOrderMapping[aitem];
+                    bitem = stateOrderMapping[bitem];
+                }
+                if (isNumeric) {
+                    return bitem - aitem;
+                } else {
+                    return aitem.localeCompare(bitem);
+                }
+            });
+            return direction === SortByDirection.asc ? sortedRows : sortedRows.reverse();
+        };
+
         const card = (
             <Card id="containers-containers" className="containers-containers">
                 <CardHeader>
@@ -724,7 +752,9 @@ class Containers extends React.Component {
                                             aria-label={_("Containers")}
                                             emptyCaption={emptyCaption}
                                             columns={columnTitles}
-                                            rows={[]} />
+                                            sortMethod={sortRows}
+                                            rows={[]}
+                                            sortBy={{ index: 0, direction: SortByDirection.asc }} />
                             : Object.keys(partitionedContainers)
                                     .sort((a, b) => {
                                         if (a == "no-pod") return -1;
@@ -780,6 +810,7 @@ class Containers extends React.Component {
                                                 <ListingTable variant='compact'
                                                           emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
                                                           columns={columnTitles}
+                                                          sortMethod={sortRows}
                                                           rows={rows}
                                                           {...tableProps} />
                                             </Card>

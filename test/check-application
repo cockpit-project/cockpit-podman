@@ -616,10 +616,11 @@ class TestApplication(testlib.MachineCase):
             self.confirm_modal("Cancel")
 
         # Checked order of containers
-        expected = "swamped-crate-usertest-sh-user"
+        expected = ["swamped-crate-user", "test-sh-user"]
         if auth:
-            expected += "swamped-crate-systemtest-sh-system"
-        b.wait_collected_text("#containers-containers .container-name", expected + expected_ws)
+            expected.extend(["swamped-crate-system", "test-sh-system"])
+        expected.extend([expected_ws])
+        b.wait_collected_text("#containers-containers .container-name", ''.join(sorted(expected)))
 
         # show running container
         self.filter_containers('running')
@@ -724,9 +725,9 @@ class TestApplication(testlib.MachineCase):
 
         self.execute(False, f"podman run -d --name b --stop-timeout 0 {IMG_REGISTRY} sh")
         if auth:
-            b.wait_collected_text("#containers-containers .container-name", "bac" + expected_ws)
+            b.wait_collected_text("#containers-containers .container-name", "abc" + expected_ws)
             self.execute(False, f"podman run -d --name doremi --stop-timeout 0 {IMG_REGISTRY} sh")
-            b.wait_collected_text("#containers-containers .container-name", "bdoremiac" + expected_ws)
+            b.wait_collected_text("#containers-containers .container-name", "abcdoremi" + expected_ws)
             b.wait(lambda: self.getContainerAttr("doremi", "State") in NOT_RUNNING)
         else:
             b.wait_collected_text("#containers-containers .container-name", "abc")
@@ -2109,15 +2110,15 @@ class TestApplication(testlib.MachineCase):
         expected_ws = ""
         if auth and self.machine.ostree_image:
             expected_ws = "ws"
-        b.wait_collected_text("#containers-containers .container-name", "sickhealthy" + expected_ws)
+        b.wait_collected_text("#containers-containers .container-name", "healthysick" + expected_ws)
 
         self.toggleExpandedContainer("sick")
         b.click(".pf-m-expanded button:contains('Health check')")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(1)")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(4)")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(2) svg.red")
-        b.wait_visible('#container-details-healthcheck dt:contains("Failing streak")')
-        self.assertGreater(int(b.text('#container-details-healthcheck dt:contains("Failing streak") + dd')), 3)
+        b.wait_visible('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak")')
+        self.assertGreater(int(b.text('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak") + dd')), 3)
         if auth:
             b.wait_js_func("ph_count_check", ".pf-m-expanded table[aria-label=Logs] tbody tr", 5)
             b.assert_pixels(".pf-m-expanded .pf-c-table__expandable-row-content",
