@@ -157,6 +157,7 @@ export class ImageSearchModal extends React.Component {
         const defaultBody = (
             <>
                 <Form isHorizontal>
+                    {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                     { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
                     <FormGroup id="as-user" label={_("Owner")} isInline>
                         <Radio name="user" value="system" id="system" onChange={this.onToggleUser} isChecked={this.state.isSystem} label={_("system")} />
@@ -226,7 +227,6 @@ export class ImageSearchModal extends React.Component {
                    onClose={Dialogs.close}
                    title={_("Search for an image")}
                    footer={<>
-                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                        <Form isHorizontal className="image-search-tag-form">
                            <FormGroup fieldId="image-search-tag" label={_("Tag")}>
                                <TextInput className="image-tag-entry"

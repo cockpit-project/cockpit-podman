@@ -91,6 +91,7 @@ export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable,
 
     const defaultBody = (
         <Form>
+            {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
             <FormGroup fieldId='create-pod-dialog-name' label={_("Name")} className="ct-m-horizontal"
                     validated={nameError ? "error" : "default"}
                     helperTextInvalid={nameError}>
@@ -147,7 +148,6 @@ export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable,
                 onEscapePress={Dialogs.close}
                 title={_("Create pod")}
                 footer={<>
-                    {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
                     <Button variant='primary' id="create-pod-create-btn" onClick={() => onCreateClicked()}
                             isDisabled={nameError}>
                         {_("Create")}

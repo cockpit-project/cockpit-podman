@@ -85,6 +85,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
 
     const commitContent = (
         <Form isHorizontal>
+            {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError("")} />}
             <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}
                        validated={nameError ? "error" : "default"}
                        helperTextInvalid={nameError}>
@@ -135,7 +136,6 @@ const ContainerCommitModal = ({ container, localImages }) => {
                  title={_("Commit container")}
                  description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{container.Names}</b>)}
                  footer={<>
-                     {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError("")} />}
                      <Button variant="primary"
                              className="btn-ctr-commit"
                              isLoading={commitInProgress && !nameError}

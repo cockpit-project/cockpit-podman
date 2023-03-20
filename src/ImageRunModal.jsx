@@ -677,6 +677,7 @@ export class ImageRunModal extends React.Component {
 
         const defaultBody = (
             <Form>
+                {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                 <FormGroup fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
                     <TextInput id='run-image-dialog-name'
                            className="image-name"
@@ -1030,7 +1031,6 @@ export class ImageRunModal extends React.Component {
                    }}
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
-                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                        <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={!image && selectedImage === ""}>
                            {_("Create and run")}
                        </Button>
