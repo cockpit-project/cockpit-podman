@@ -158,13 +158,7 @@ COCKPIT_PYBRIDGE_REF = main
 COCKPIT_WHEEL = cockpit-0-py3-none-any.whl
 
 $(COCKPIT_WHEEL):
-	# aka: pip wheel git+https://github.com/cockpit-project/cockpit.git@${COCKPIT_PYBRIDGE_REF}
-	rm -rf tmp/pybridge
-	git init tmp/pybridge
-	git -C tmp/pybridge remote add origin https://github.com/cockpit-project/cockpit
-	git -C tmp/pybridge fetch --depth=1 origin ${COCKPIT_PYBRIDGE_REF}
-	git -C tmp/pybridge reset --hard FETCH_HEAD
-	cp "$$(tmp/pybridge/tools/make-wheel)" $@
+	pip wheel git+https://github.com/cockpit-project/cockpit.git@${COCKPIT_PYBRIDGE_REF}
 
 VM_DEPENDS = $(COCKPIT_WHEEL)
 VM_CUSTOMIZE_FLAGS = --install $(COCKPIT_WHEEL)
