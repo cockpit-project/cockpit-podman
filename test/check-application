@@ -2366,6 +2366,18 @@ class TestApplication(testlib.MachineCase):
             b.set_val("#containers-containers-filter", "all")
             self.waitPodContainer(pod_name, [])
 
+    @testlib.skipImage("passthrough log driver not supported", "ubuntu-*")
+    def testLogErrors(self):
+        b = self.browser
+        container_name = "logissue"
+        self.login()
+
+        self.execute(False, f"podman run --log-driver=passthrough --name {container_name} -d alpine sleep inf </dev/null")
+        self.waitContainerRow(container_name)
+        self.toggleExpandedContainer(container_name)
+        b.click(".pf-m-expanded button:contains('Logs')")
+        b.wait_in_text(".pf-m-expanded .pf-c-empty-state__content", "failed to obtain logs for Container")
+
 
 if __name__ == '__main__':
     testlib.test_main()
