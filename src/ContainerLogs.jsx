@@ -121,8 +121,9 @@ class ContainerLogs extends React.Component {
         connection.monitor(options, this.onStreamMessage, this.props.system, true)
                 .then(this.onStreamClose)
                 .catch(e => {
+                    const error = JSON.parse(new TextDecoder().decode(e.message));
                     this.setState({
-                        errorMessage: e.message,
+                        errorMessage: error.message,
                         streamer: null,
                     });
                 });
