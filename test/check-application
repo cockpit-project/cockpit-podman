@@ -1588,6 +1588,11 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-env-5-key', 'HOSTNAME')
         b.set_input_text('#run-image-dialog-env-5-value', 'busybox')
 
+        # Test inputting a var with = in it doesn't reset key
+        b.click('.env-form .btn-add')
+        b.set_input_text('#run-image-dialog-env-6-key', 'TEST')
+        b.set_input_text('#run-image-dialog-env-6-value', 'REBASE=1')
+
         # Configure volumes
         b.click('.volume-form .btn-add')
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
@@ -1678,6 +1683,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'DURIAN=LEMON')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'TEST_URL=wss://cockpit/?start=1&stop=0')
         b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'HOSTNAME=busybox')
+        b.wait_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'TEST=REBASE=1')
         # variables are present in env but are not displayed in the UI
         b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'container=podman')
         b.wait_not_in_text('#containers-containers tr:contains("busybox:latest") dt:contains("Environment variables") + dd', 'TERM=xterm')
@@ -1697,6 +1703,7 @@ class TestApplication(testlib.MachineCase):
         self.assertIn('RHUBARB=STRAWBERRY', env)
         self.assertIn('DURIAN=LEMON', env)
         self.assertIn('HOSTNAME=busybox', env)
+        self.assertIn('TEST=REBASE=1', env)
         self.assertIn('container=podman', env)
         self.assertIn('TERM=xterm', env)
         self.assertIn('HOME=/root', env)
