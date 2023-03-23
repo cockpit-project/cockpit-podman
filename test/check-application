@@ -251,7 +251,7 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: get_pod_memory("pod-1") > 0)
 
         # Test that cpu usage increases
-        self.machine.execute("podman exec -i test-pod-1-system sh -c 'dd bs=1024 count=1000000 < /dev/urandom > /dev/null'")
+        self.machine.execute("podman exec -di test-pod-1-system sh -c 'dd bs=1024 < /dev/urandom > /dev/null'")
         b.wait(lambda: get_pod_cpu_usage("pod-1") > cpu)
 
         self.machine.execute("podman pod stop -t0 pod-1")  # disable timeout, so test doesn't wait endlessly
@@ -1082,8 +1082,9 @@ class TestApplication(testlib.MachineCase):
             self.assertIn(full[1], ["GB", "MB"])
 
             # Test that the value is updated dynamically
-            self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 count=1000000 < /dev/urandom > /dev/null'")
+            self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null &'")
             b.wait(lambda: get_cpu_usage("busybox:latest") > cpu)
+            self.execute(auth, "podman exec swamped-crate sh -c 'pkill dd'")
         else:
             # No support for CGroupsV2
             self.assertEqual(self.getContainerAttr("busybox:latest", "CPU"), "n/a")
