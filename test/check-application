@@ -15,8 +15,6 @@ sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
 from machine_core import ssh_connection  # noqa
 import testlib  # noqa
 
-from lib.constants import OSTREE_IMAGES # noqa
-
 REGISTRIES_CONF = """
 [registries.search]
 registries = ['localhost:5000', 'localhost:6000']
@@ -1911,7 +1909,7 @@ class TestApplication(testlib.MachineCase):
     def testPruneUnusedImagesUser(self):
         self._testPruneUnusedImagesSystem(False)
 
-    @testlib.skipImage("no root login available on ostree", *OSTREE_IMAGES)
+    @testlib.skipOstree("no root login available on ostree")
     def testPruneUnusedImagesRoot(self):
         self._testPruneUnusedImagesSystem(False, True)
 
