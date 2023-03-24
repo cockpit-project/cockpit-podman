@@ -22,6 +22,9 @@ const outdir = 'dist';
 // Obtain package name from package.json
 const packageJson = JSON.parse(fs.readFileSync('package.json'));
 
+const getTime = () => new Date().toTimeString()
+        .split(' ')[0];
+
 const context = await esbuild.context({
     ...!production ? { sourcemap: "external" } : {},
     bundle: true,
@@ -29,8 +32,6 @@ const context = await esbuild.context({
     external: ['*.woff', '*.woff2', '*.jpg', '*.svg', '../../assets*'], // Allow external font files which live in ../../static/fonts
     legalComments: 'external', // Move all legal comments to a .LEGAL.txt file
     loader: { ".js": "jsx" },
-    // show "build started/finished" messages in watch mode
-    logLevel: 'info',
     minify: production,
     nodePaths,
     outdir,
@@ -62,12 +63,38 @@ const context = await esbuild.context({
 
         ...production ? [cockpitCompressPlugin()] : [],
         cockpitRsyncEsbuildPlugin({ dest: packageJson.name }),
+
+        {
+            name: 'notify-end',
+            setup(build) {
+                build.onEnd(() => console.log(`${getTime()}: Build finished`));
+            }
+        },
     ]
 });
 
-if (watchMode)
-    await context.watch();
-else {
+try {
     await context.rebuild();
-    context.dispose();
+} catch (e) {
+    if (!watchMode)
+        process.exit(1);
+    // ignore errors in watch mode
 }
+
+if (watchMode) {
+    // Attention: this does not watch subdirectories -- if you ever introduce one, need to set up one watch per subdir
+    fs.watch('src', {}, async (ev, path) => {
+        // only listen for "change" events, as renames are noisy
+        if (ev !== "change")
+            return;
+        console.log("change detected:", path);
+        await context.cancel();
+        try {
+            await context.rebuild();
+        } catch (e) {} // ignore in watch mode
+    });
+    // wait forever until Control-C
+    await new Promise(() => {});
+}
+
+context.dispose();
