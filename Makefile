@@ -39,7 +39,7 @@ COCKPIT_REPO_FILES = \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = 6c53bff7a21c1558320d358fe7d0bef71f57e141 # 287 + ListingTable onHeaderSelect
+COCKPIT_REPO_COMMIT = cf8186ebf46ec3eda0e59509ce35124ffb9d8372 # 288 + esbuild plugin updates
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
