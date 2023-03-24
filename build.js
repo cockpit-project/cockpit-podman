@@ -7,6 +7,7 @@ import { sassPlugin } from 'esbuild-sass-plugin';
 import { cockpitCompressPlugin } from './pkg/lib/esbuild-compress-plugin.js';
 import { cockpitPoEsbuildPlugin } from './pkg/lib/cockpit-po-plugin.js';
 import { cockpitRsyncEsbuildPlugin } from './pkg/lib/cockpit-rsync-plugin.js';
+import { cleanPlugin } from './pkg/lib/esbuild-cleanup-plugin.js';
 import { eslintPlugin } from './pkg/lib/esbuild-eslint-plugin.js';
 import { stylelintPlugin } from './pkg/lib/esbuild-stylelint-plugin.js';
 
@@ -17,21 +18,6 @@ const lint = process.env.LINT ? (process.env.LINT !== '0') : (watchMode || !prod
 /* List of directories to use when resolving import statements */
 const nodePaths = ['pkg/lib'];
 const outdir = 'dist';
-
-// always start with a fresh dist/ directory, to change between development and production, or clean up gzipped files
-const cleanPlugin = {
-    name: 'clean-dist',
-    setup(build) {
-        build.onStart(() => {
-            try {
-                fs.rmSync(outdir, { recursive: true });
-            } catch (e) {
-                if (e.code !== 'ENOENT')
-                    throw e;
-            }
-        });
-    }
-};
 
 // Obtain package name from package.json
 const packageJson = JSON.parse(fs.readFileSync('package.json'));
@@ -50,8 +36,8 @@ const context = await esbuild.context({
     outdir,
     target: ['es2020'],
     plugins: [
-        cleanPlugin,
-        ...lint ? [stylelintPlugin(), eslintPlugin] : [],
+        cleanPlugin(),
+        ...lint ? [stylelintPlugin(), eslintPlugin()] : [],
         // Esbuild will only copy assets that are explicitly imported and used
         // in the code. This is a problem for index.html and manifest.json which are not imported
         copy({
@@ -74,7 +60,7 @@ const context = await esbuild.context({
         }),
         cockpitPoEsbuildPlugin(),
 
-        ...production ? [cockpitCompressPlugin] : [],
+        ...production ? [cockpitCompressPlugin()] : [],
         cockpitRsyncEsbuildPlugin({ dest: packageJson.name }),
     ]
 });
