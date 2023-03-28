@@ -41,8 +41,9 @@ import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, healthcheck, onAddNotification, version, localImages, updateContainer }) => {
+const ContainerActions = ({ container, healthcheck, onAddNotification, localImages, updateContainer }) => {
     const Dialogs = useDialogs();
+    const { version } = utils.usePodmanInfo();
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
@@ -155,7 +156,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
         if (container.State.Status !== "running" ||
             version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
             Dialogs.show(<ContainerRenameModal container={container}
-                                               version={version}
                                                updateContainer={updateContainer} />);
         }
     };
@@ -430,8 +430,7 @@ class Containers extends React.Component {
 
         if (!container.isDownloading) {
             columns.push({
-                title: <ContainerActions version={this.props.version}
-                                         container={container}
+                title: <ContainerActions container={container}
                                          healthcheck={healthcheck}
                                          onAddNotification={this.props.onAddNotification}
                                          localImages={localImages}
@@ -720,28 +719,31 @@ class Containers extends React.Component {
 
         const createContainer = (inPod) => {
             if (localImages)
-                Dialogs.show(<ImageRunModal user={this.props.user}
-                                            localImages={localImages}
-                                            pod={inPod}
-                                            registries={this.props.registries}
-                                            selinuxAvailable={this.props.selinuxAvailable}
-                                            podmanRestartAvailable={this.props.podmanRestartAvailable}
-                                            userPodmanRestartAvailable={this.props.userPodmanRestartAvailable}
-                                            systemServiceAvailable={this.props.systemServiceAvailable}
-                                            userServiceAvailable={this.props.userServiceAvailable}
-                                            userLingeringEnabled={this.props.userLingeringEnabled}
-                                            onAddNotification={this.props.onAddNotification}
-                                            version={this.props.version} />);
+                Dialogs.show(
+                    <utils.PodmanInfoContext.Consumer>
+                        {(podmanInfo) => (
+                            <DialogsContext.Consumer>
+                                {(Dialogs) => (
+                                    <ImageRunModal user={this.props.user}
+                                                              localImages={localImages}
+                                                              pod={inPod}
+                                                              systemServiceAvailable={this.props.systemServiceAvailable}
+                                                              userServiceAvailable={this.props.userServiceAvailable}
+                                                              onAddNotification={this.props.onAddNotification}
+                                                              podmanInfo={podmanInfo}
+                                                              dialogs={Dialogs} />
+                                )}
+                            </DialogsContext.Consumer>
+                        )}
+                    </utils.PodmanInfoContext.Consumer>);
         };
 
         const createPod = () => {
             Dialogs.show(<PodCreateModal
-                user={this.props.user}
-                selinuxAvailable={this.props.selinuxAvailable}
                 systemServiceAvailable={this.props.systemServiceAvailable}
                 userServiceAvailable={this.props.userServiceAvailable}
-                onAddNotification={this.props.onAddNotification}
-                version={this.props.version} />);
+                user={this.props.user}
+                onAddNotification={this.props.onAddNotification} />);
         };
 
         const filterRunning = (

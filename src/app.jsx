@@ -33,6 +33,7 @@ import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
+import { WithPodmanInfo } from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -710,12 +711,6 @@ class Application extends React.Component {
                 user={this.state.currentUser}
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
-                registries={this.state.registries}
-                selinuxAvailable={this.state.selinuxAvailable}
-                podmanRestartAvailable={this.state.podmanRestartAvailable}
-                userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
-                userLingeringEnabled={this.state.userLingeringEnabled}
-                version={this.state.version}
             />
         );
         const containerList = (
@@ -735,11 +730,6 @@ class Application extends React.Component {
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
                 cgroupVersion={this.state.cgroupVersion}
-                registries={this.state.registries}
-                selinuxAvailable={this.state.selinuxAvailable}
-                podmanRestartAvailable={this.state.podmanRestartAvailable}
-                userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
-                userLingeringEnabled={this.state.userLingeringEnabled}
                 updateContainer={this.updateContainer}
             />
         );
@@ -758,30 +748,42 @@ class Application extends React.Component {
             </AlertGroup>
         );
 
+        const contextInfo = {
+            cgroupVersion: this.state.cgroupVersion,
+            registries: this.state.registries,
+            selinuxAvailable: this.state.selinuxAvailable,
+            podmanRestartAvailable: this.state.podmanRestartAvailable,
+            userPodmanRestartAvailable: this.state.userPodmanRestartAvailable,
+            userLingeringEnabled: this.state.userLingeringEnabled,
+            version: this.state.version,
+        };
+
         return (
-            <WithDialogs>
-                <Page id="overview" key="overview">
-                    {notificationList}
-                    <PageSection className="content-filter" padding={{ default: 'noPadding' }}
-                                 variant={PageSectionVariants.light}>
-                        <ContainerHeader
-                            handleFilterChanged={this.onFilterChanged}
-                            handleOwnerChanged={this.onOwnerChanged}
-                            ownerFilter={this.state.ownerFilter}
-                            textFilter={this.state.textFilter}
-                            twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
-                            user={this.state.currentUser}
-                        />
-                    </PageSection>
-                    <PageSection className='ct-pagesection-mobile'>
-                        <Stack hasGutter>
-                            { this.state.showStartService ? startService : null }
-                            {imageList}
-                            {containerList}
-                        </Stack>
-                    </PageSection>
-                </Page>
-            </WithDialogs>
+            <WithPodmanInfo value={contextInfo}>
+                <WithDialogs>
+                    <Page id="overview" key="overview">
+                        {notificationList}
+                        <PageSection className="content-filter" padding={{ default: 'noPadding' }}
+                          variant={PageSectionVariants.light}>
+                            <ContainerHeader
+                              handleFilterChanged={this.onFilterChanged}
+                              handleOwnerChanged={this.onOwnerChanged}
+                              ownerFilter={this.state.ownerFilter}
+                              textFilter={this.state.textFilter}
+                              twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
+                              user={this.state.currentUser}
+                            />
+                        </PageSection>
+                        <PageSection className='ct-pagesection-mobile'>
+                            <Stack hasGutter>
+                                { this.state.showStartService ? startService : null }
+                                {imageList}
+                                {containerList}
+                            </Stack>
+                        </PageSection>
+                    </Page>
+                </WithDialogs>
+            </WithPodmanInfo>
         );
     }
 }

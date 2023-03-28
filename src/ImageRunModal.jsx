@@ -24,7 +24,6 @@ import * as client from './client.js';
 import rest from './rest.js';
 import cockpit from 'cockpit';
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
-import { DialogsContext } from "dialogs.jsx";
 import { PublishPort } from './PublishPort.jsx';
 import { DynamicListForm } from './DynamicListForm.jsx';
 import { Volume } from './Volume.jsx';
@@ -110,8 +109,6 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
     );
 
 export class ImageRunModal extends React.Component {
-    static contextType = DialogsContext;
-
     constructor(props) {
         super(props);
 
@@ -254,7 +251,7 @@ export class ImageRunModal extends React.Component {
             }
             // Enable podman-restart.service for system containers, for user
             // sessions enable-linger needs to be enabled for containers to start on boot.
-            if (this.state.restartPolicy === "always" && (this.props.userLingeringEnabled || this.props.systemServiceAvailable)) {
+            if (this.state.restartPolicy === "always" && (this.props.podmanInfo.userLingeringEnabled || this.props.systemServiceAvailable)) {
                 this.enablePodmanRestartService();
             }
         }
@@ -274,7 +271,7 @@ export class ImageRunModal extends React.Component {
     }
 
     createContainer = (isSystem, createConfig, runImage) => {
-        const Dialogs = this.context;
+        const Dialogs = this.props.dialogs;
         client.createContainer(isSystem, createConfig)
                 .then(reply => {
                     if (runImage) {
@@ -310,7 +307,7 @@ export class ImageRunModal extends React.Component {
     };
 
     async onCreateClicked(runImage = false) {
-        const Dialogs = this.context;
+        const Dialogs = this.props.dialogs;
         const createConfig = this.getCreateConfig();
         const { pullLatestImage } = this.state;
         const isSystem = this.isSystem();
@@ -407,7 +404,7 @@ export class ImageRunModal extends React.Component {
 
         // If there are registries configured search in them, or if a user searches for `docker.io/cockpit` let
         // podman search in the user specified registry.
-        if (Object.keys(this.props.registries).length !== 0 || value.includes('/')) {
+        if (Object.keys(this.props.podmanInfo.registries).length !== 0 || value.includes('/')) {
             searches.push(this.activeConnection.call({
                 method: "GET",
                 path: client.VERSION + "libpod/images/search",
@@ -636,7 +633,8 @@ export class ImageRunModal extends React.Component {
     };
 
     render() {
-        const Dialogs = this.context;
+        const Dialogs = this.props.dialogs;
+        const { registries, podmanRestartAvailable, userLingeringEnabled, userPodmanRestartAvailable, selinuxAvailable, version } = this.props.podmanInfo;
         const { image } = this.props;
         const dialogValues = this.state;
         const { activeTabKey, owner, selectedImage } = this.state;
@@ -647,7 +645,7 @@ export class ImageRunModal extends React.Component {
         }
 
         const localImage = this.state.image || (selectedImage && this.props.localImages.some(img => img.Id === selectedImage.Id));
-        const registries = this.props.registries && this.props.registries.search ? this.props.registries.search : utils.fallbackRegistries;
+        const podmanRegistries = registries && registries.search ? registries.search : utils.fallbackRegistries;
 
         // Add the search component
         const footer = (
@@ -669,7 +667,7 @@ export class ImageRunModal extends React.Component {
                     ev.stopPropagation();
                 }}
                 />
-                {registries.map(registry => {
+                {podmanRegistries.map(registry => {
                     const index = this.truncateRegistryDomain(registry);
                     return (
                         <ToggleGroupItem
@@ -885,14 +883,14 @@ export class ImageRunModal extends React.Component {
                                 </Flex>
                             </FormGroup>
                         }
-                        {((this.props.userLingeringEnabled && this.props.userPodmanRestartAvailable) || (this.isSystem() && this.props.podmanRestartAvailable)) &&
+                        {((userLingeringEnabled && userPodmanRestartAvailable) || (this.isSystem() && podmanRestartAvailable)) &&
                         <Grid hasGutter md={6} sm={3}>
                             <GridItem>
                                 <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}
                           labelIcon={
                               <Popover aria-label={_("Restart policy help")}
                                 enableFlip
-                                bodyContent={this.props.userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
+                                bodyContent={userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
                                   <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                       <OutlinedQuestionCircleIcon />
                                   </button>
@@ -947,7 +945,7 @@ export class ImageRunModal extends React.Component {
                                  actionLabel={_("Add volume")}
                                  onChange={value => this.onValueChanged('volumes', value)}
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
-                                 options={{ selinuxAvailable: this.props.selinuxAvailable }}
+                                 options={{ selinuxAvailable }}
                                  itemcomponent={ <Volume />} />
 
                         <DynamicListForm id='run-image-dialog-env'
@@ -1064,7 +1062,7 @@ export class ImageRunModal extends React.Component {
                                     onPlus={() => this.onPlusOne('healthcheck_retries')}
                                     onChange={ev => this.onValueChanged('healthcheck_retries', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                         </FormGroup>
-                        {this.props.version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
+                        {version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
                         <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("When unhealthy") }
                               labelIcon={
                                   <Popover aria-label={_("Health failure check action help")}
