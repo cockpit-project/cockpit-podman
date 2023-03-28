@@ -1,5 +1,3 @@
-summary:
-    Run browser integration tests on the host
 require:
   - cockpit-podman
   - cockpit-ws
@@ -10,5 +8,16 @@ require:
   - make
   - nodejs
   - python3
-test: ./browser.sh
-duration: 60m
+duration: 30m
+
+/system:
+    test: ./browser.sh system
+    summary: Run *System tests
+
+/user:
+    test: ./browser.sh user
+    summary: Run *User tests
+
+/other:
+    test: ./browser.sh other
+    summary: Run all other tests

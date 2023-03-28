@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eux
 
+PLAN="$1"
+
 # tests need cockpit's bots/ libraries and test infrastructure
 cd $SOURCE
 rm -f bots  # common local case: existing bots symlink
@@ -23,10 +25,19 @@ if [ "${TEST_OS#centos-}" != "$TEST_OS" ]; then
     TEST_OS="${TEST_OS}-stream"
 fi
 
+# select subset of tests according to plan
+TESTS="$(test/common/run-tests -l)"
+case "$PLAN" in
+    system) TESTS="$(echo "$TESTS" | grep 'System$')" ;;
+    user) TESTS="$(echo "$TESTS" | grep 'User$')" ;;
+    other) TESTS="$(echo "$TESTS" | grep -vE '(System|User)$')" ;;
+    *) echo "Unknown test plan: $PLAN" >&2; exit 1 ;;
+esac
+
 EXCLUDES=""
 
 RC=0
-test/common/run-tests --nondestructive --machine 127.0.0.1:22 --browser 127.0.0.1:9090 $EXCLUDES || RC=$?
+test/common/run-tests --nondestructive --machine 127.0.0.1:22 --browser 127.0.0.1:9090 $TESTS $EXCLUDES || RC=$?
 
 echo $RC > "$LOGS/exitcode"
 cp --verbose Test* "$LOGS" || true
