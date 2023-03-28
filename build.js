@@ -10,6 +10,7 @@ import { cockpitRsyncEsbuildPlugin } from './pkg/lib/cockpit-rsync-plugin.js';
 import { cleanPlugin } from './pkg/lib/esbuild-cleanup-plugin.js';
 import { eslintPlugin } from './pkg/lib/esbuild-eslint-plugin.js';
 import { stylelintPlugin } from './pkg/lib/esbuild-stylelint-plugin.js';
+import { esbuildStylesPlugins } from './pkg/lib/esbuild-common.js';
 
 const production = process.env.NODE_ENV === 'production';
 const watchMode = process.env.ESBUILD_WATCH === "true" || false;
@@ -47,18 +48,7 @@ const context = await esbuild.context({
                 { from: ['./src/index.html'], to: ['./index.html'] },
             ]
         }),
-        sassPlugin({
-            loadPaths: [...nodePaths, 'node_modules'],
-            quietDeps: true,
-            async transform(source, resolveDir, path) {
-                if (path.includes('patternfly-4-cockpit.scss')) {
-                    return source
-                            .replace(/url.*patternfly-icons-fake-path.*;/g, 'url("../base1/fonts/patternfly.woff") format("woff");')
-                            .replace(/@font-face[^}]*patternfly-fonts-fake-path[^}]*}/g, '');
-                }
-                return source;
-            }
-        }),
+        ...esbuildStylesPlugins,
         cockpitPoEsbuildPlugin(),
 
         ...production ? [cockpitCompressPlugin()] : [],
