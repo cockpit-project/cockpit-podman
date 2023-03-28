@@ -1487,7 +1487,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible('#containers-images td[data-label="Image"]:contains("alpine:latest")')
         b.click('#containers-images tbody tr:contains("alpine:latest") .ct-container-create')
         b.wait_visible('div.pf-c-modal-box header:contains("Create container")')
-        b.wait_visible("#run-image-dialog-command[value='/bin/sh']")
+        # depending on the precise container, this can be /bin/sh or /bin/ash
+        cmd = self.execute(auth, 'podman image inspect --format "{{.Config.Cmd}}" quay.io/libpod/alpine')
+        cmd = cmd.strip().replace('[', '').replace(']', '')
+        b.wait_attr("#run-image-dialog-command", "value", cmd)
         b.click(".btn-cancel")
 
         # Open run image dialog
