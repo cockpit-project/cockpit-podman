@@ -2419,7 +2419,7 @@ class TestApplication(testlib.MachineCase):
         container_name = "logissue"
         self.login()
 
-        self.execute(False, f"podman run --log-driver=passthrough --name {container_name} -d alpine sleep inf </dev/null")
+        self.execute(False, f"podman run --log-driver=passthrough --name {container_name} -d alpine false </dev/null")
         self.waitContainerRow(container_name)
         self.toggleExpandedContainer(container_name)
         b.click(".pf-m-expanded button:contains('Logs')")
