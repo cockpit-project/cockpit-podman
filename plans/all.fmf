@@ -1,6 +1,19 @@
-summary:
-    Run all tests
 discover:
     how: fmf
 execute:
     how: tmt
+
+/system:
+    summary: Run tests on system podman
+    discover+:
+        test: /test/browser/system
+
+/user:
+    summary: Run tests on user podman
+    discover+:
+        test: /test/browser/user
+
+/misc:
+    summary: Run other tests
+    discover+:
+        test: /test/browser/other

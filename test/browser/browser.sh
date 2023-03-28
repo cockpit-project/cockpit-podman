@@ -1,6 +1,9 @@
 #!/bin/sh
 set -eux
 
+# test plan name, passed on to run-test.sh
+PLAN="$1"
+
 TESTS="$(realpath $(dirname "$0"))"
 if [ -d source ]; then
     # path for standard-test-source
@@ -70,7 +73,7 @@ loginctl disable-linger $(id -u admin)
 systemctl enable --now cockpit.socket podman.socket
 
 # Run tests as unprivileged user
-su - -c "env TEST_BROWSER=firefox SOURCE=$SOURCE LOGS=$LOGS $TESTS/run-test.sh" runtest
+su - -c "env TEST_BROWSER=firefox SOURCE=$SOURCE LOGS=$LOGS $TESTS/run-test.sh $PLAN" runtest
 
 RC=$(cat $LOGS/exitcode)
 exit ${RC:-1}
