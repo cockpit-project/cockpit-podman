@@ -14,14 +14,14 @@ import { ErrorNotification } from './Notification.jsx';
 import cockpit from 'cockpit';
 import rest from './rest.js';
 import * as client from './client.js';
-import { fallbackRegistries } from './util.js';
+import { fallbackRegistries, usePodmanInfo } from './util.js';
 import { useDialogs } from "dialogs.jsx";
 
 import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
 
-export const ImageSearchModal = ({ downloadImage, registries, user, userServiceAvailable, systemServiceAvailable }) => {
+export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, systemServiceAvailable }) => {
     const [searchInProgress, setSearchInProgress] = useState(false);
     const [searchFinished, setSearchFinished] = useState(false);
     const [imageIdentifier, setImageIdentifier] = useState('');
@@ -35,6 +35,7 @@ export const ImageSearchModal = ({ downloadImage, registries, user, userServiceA
     const [typingTimeout, setTypingTimeout] = useState(null);
 
     let activeConnection = null;
+    const { registries } = usePodmanInfo();
     const Dialogs = useDialogs();
     // Registries to use for searching
     const searchRegistries = registries.search && registries.length !== 0 ? registries.search : fallbackRegistries;

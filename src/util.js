@@ -1,8 +1,21 @@
+import React, { useContext } from "react";
+
 import cockpit from 'cockpit';
 
 import * as dfnlocales from 'date-fns/locale/index.js';
 import { formatRelative } from 'date-fns';
 const _ = cockpit.gettext;
+
+export const PodmanInfoContext = React.createContext();
+export const usePodmanInfo = () => useContext(PodmanInfoContext);
+
+export const WithPodmanInfo = ({ value, children }) => {
+    return (
+        <PodmanInfoContext.Provider value={value}>
+            {children}
+        </PodmanInfoContext.Provider>
+    );
+};
 
 // https://github.com/containers/podman/blob/main/libpod/define/containerstate.go
 // "Restarting" comes from special handling of restart case in Application.updateContainer()

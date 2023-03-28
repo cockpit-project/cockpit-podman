@@ -20,7 +20,8 @@ const _ = cockpit.gettext;
 
 const systemOwner = "system";
 
-export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable, userServiceAvailable, version }) => {
+export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvailable }) => {
+    const { version, selinuxAvailable } = utils.usePodmanInfo();
     const [podName, setPodName] = useState(dockerNames.getRandomName());
     const [nameError, setNameError] = useState(null);
     const [publish, setPublish] = useState([]);

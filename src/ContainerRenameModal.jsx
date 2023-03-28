@@ -13,9 +13,10 @@ import { FormHelper } from 'cockpit-components-form-helper.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerRenameModal = ({ container, version, updateContainer }) => {
+const ContainerRenameModal = ({ container, updateContainer }) => {
     const Dialogs = useDialogs();
     const [name, setName] = useState(container.Name);
+    const { version } = utils.usePodmanInfo();
     const [nameError, setNameError] = useState(null);
     const [dialogError, setDialogError] = useState(null);
     const [dialogErrorDetail, setDialogErrorDetail] = useState(null);
