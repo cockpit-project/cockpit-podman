@@ -380,6 +380,7 @@ class Application extends React.Component {
     }
 
     handleContainerEvent(event, system) {
+        console.log("container event", event, system);
         switch (event.Action) {
         /* The following events do not need to trigger any state updates */
         case 'attach':
@@ -441,6 +442,7 @@ class Application extends React.Component {
     }
 
     handlePodEvent(event, system) {
+        console.log("pod event", event, system);
         switch (event.Action) {
         case 'create':
         case 'kill':
