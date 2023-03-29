@@ -432,7 +432,7 @@ class TestApplication(testlib.MachineCase):
         if self.machine.ostree_image:
             self.machine.execute("echo foobar | passwd --stdin root")
             self.write_file("/etc/ssh/sshd_config.d/99-root-password.conf", "PermitRootLogin yes",
-                            "systemctl try-restart sshd")
+                            post_restore_action="systemctl try-restart sshd")
             self.machine.execute("systemctl try-restart sshd")
 
         # Test that when root is logged in we don't present "user" and "system"
