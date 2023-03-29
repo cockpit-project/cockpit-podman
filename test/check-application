@@ -2578,6 +2578,216 @@ class TestApplication(testlib.MachineCase):
         else:
             self.assertIn("Podman", b.text("#host-apps"))
 
+    def testCloneContainerSystem(self):
+        self._testCloneContainer(True)
+
+    def testCloneContainerUser(self):
+        self._testCloneContainer(False)
+
+    def _testCloneContainer(self, auth):
+        b = self.browser
+
+        self.login(auth)
+
+        # Create a simple container
+        self.execute(auth, f"podman run -d --name busybox --memory 256000000 --env MYVAR=simple_container {IMG_BUSYBOX} sleep 1000")
+        self.performContainerAction("busybox", "Clone")
+        b.wait_visible("div.pf-c-modal-box")
+
+        # container was not created through cockpit, warning should be present
+        b.wait_visible(".pf-c-form .pf-c-alert")
+        # Details tab
+        if auth:
+            b.wait_visible("#run-image-dialog-owner-system:checked")
+
+        b.wait_visible("#run-image-dialog-name[value='busybox_copy']")
+        b.wait_visible("#create-image-image-select-typeahead[value='localhost/test-busybox:latest']")
+        b.wait_visible("#run-image-dialog-command[value='sleep 1000']")
+        b.wait_visible("#run-image-dialog-pull-latest-image:not(:checked)")
+
+        if auth or self.has_cgroupsV2:
+            b.wait_visible("#run-image-dialog-memory-limit-checkbox:checked")
+            b.wait_visible("#run-image-dialog-memory input[value='256']")
+
+        if auth:
+            b.wait_visible("#run-image-dialog-cpu-priority-checkbox:not(:checked)")
+            b.wait_visible("#run-image-cpu-priority input[value='1024']")
+
+        # Integration tab
+        b.click("#pf-tab-1-create-image-dialog-tab-integration")
+        b.wait_in_text("#pf-tab-section-1-create-image-dialog-tab-integration .publish-port-form", "No ports exposed")
+        b.wait_in_text("#pf-tab-section-1-create-image-dialog-tab-integration .volume-form", "No volumes specified")
+
+        b.wait_visible("#run-image-dialog-env-0-key[value='MYVAR']")
+        b.wait_visible("#run-image-dialog-env-0-value[value='simple_container']")
+        # only one env is set
+        b.wait_not_present("#run-image-dialog-env-1")
+
+        # Healthcheck tab - has default values
+        b.click("#pf-tab-2-create-image-dialog-tab-healthcheck")
+        b.wait_visible("#run-image-dialog-healthcheck-command[value='']")
+        b.wait_visible("#run-image-healthcheck-interval input[value='30']")
+        b.wait_visible("#run-image-healthcheck-timeout input[value='30']")
+        b.wait_visible("#run-image-healthcheck-start-period input[value='0']")
+        b.wait_visible("#run-image-healthcheck-retries input[value='3']")
+
+        b.click("#create-image-create-run-btn")
+        self.waitContainerRow("busybox_copy")
+
+        ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox_copy")
+        self.assertEqual(ports, 'map[]\n')
+
+        env = self.execute(auth, "podman exec busybox_copy env")
+        self.assertIn('MYVAR=simple_container', env)
+        self.assertIn('container=podman', env)
+        self.assertIn('TERM=xterm', env)
+        self.assertIn('HOME=/root', env)
+        self.assertIn('PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', env)
+
+        # Clone container and set different values
+        # Switch to Details tab
+        self.performContainerAction("busybox_copy", "Clone")
+
+        # Change memory configuration
+        if auth or self.has_cgroupsV2:
+            b.set_input_text("#run-image-dialog-memory-limit input[type=number]", "1024")
+
+        if auth:
+            # Set cpu shares
+            b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
+            b.set_input_text("#run-image-dialog-cpu-priority input[type=number]", "2048")
+
+        # Enable tty
+        b.set_checked("#run-image-dialog-tty", True)
+
+        # Change command
+        b.set_input_text('#run-image-dialog-command', "sleep 900")
+
+        if auth:
+            # Add restart policy
+            b.set_val("#run-image-dialog-restart-policy", "on-failure")
+            b.set_input_text('#run-image-dialog-restart-retries input', '2')
+
+        # Switch to Integration tab
+        b.click("#pf-tab-1-create-image-dialog-tab-integration")
+
+        # Configure published ports
+        b.click(".publish-port-form .btn-add")
+        b.set_input_text("#run-image-dialog-publish-0-host-port", "6000")
+        b.set_input_text("#run-image-dialog-publish-0-container-port", "5000")
+        b.click(".publish-port-form .btn-add")
+        b.set_input_text("#run-image-dialog-publish-1-ip-address", "127.0.0.1")
+        b.set_input_text("#run-image-dialog-publish-1-host-port", "6001")
+        b.set_input_text("#run-image-dialog-publish-1-container-port", "5001")
+        b.set_val("#run-image-dialog-publish-1-protocol", "udp")
+
+        # Add environment variables
+        b.click(".env-form .btn-add")
+        b.set_input_text("#run-image-dialog-env-1-key", "APPLE")
+        b.set_input_text("#run-image-dialog-env-1-value", "ORANGE")
+        b.click(".env-form .btn-add")
+        b.set_input_text("#run-image-dialog-env-2-key", "PEAR")
+        b.set_input_text("#run-image-dialog-env-2-value", "BANANA")
+
+        # Configure volumes
+        b.click(".volume-form .btn-add")
+        b.set_checked("#run-image-dialog-volume-0-mode", False)
+        b.set_file_autocomplete_val("#run-image-dialog-volume-0 .pf-c-select", "/tmp/")
+        b.key_press(["\r"])
+        b.set_input_text("#run-image-dialog-volume-0-container-path", "/host/tmp")
+        b.key_press(["\r"])
+        b.click(".volume-form .btn-add")
+        b.set_checked("#run-image-dialog-volume-1-mode", True)
+        b.set_file_autocomplete_val("#run-image-dialog-volume-1 .pf-c-select", "/mnt/")
+        b.key_press(["\r"])
+        b.set_input_text("#run-image-dialog-volume-1-container-path", "/mounts")
+        b.key_press(["\r"])
+
+        # Switch to healthcheck tab
+        b.click("#pf-tab-2-create-image-dialog-tab-healthcheck")
+        b.set_input_text("#run-image-dialog-healthcheck-command", "true")
+        b.set_input_text("#run-image-healthcheck-interval input", "90")
+        b.set_input_text("#run-image-healthcheck-timeout input", "10")
+        b.set_input_text("#run-image-healthcheck-start-period input", "3")
+        b.click("#run-image-healthcheck-retries button:nth-child(1)")
+        if podman_version(self) >= (4, 3, 0):
+            b.click("#run-image-healthcheck-action-3")
+
+        # change container name
+        b.set_input_text("#run-image-dialog-name", "busybox_edited")
+        b.click("#create-image-create-run-btn")
+        self.waitContainerRow("busybox_edited")
+
+        ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox_edited")
+        self.assertIn('5000/tcp:[{ 6000}]', ports)
+        self.assertIn('5001/udp:[{127.0.0.1 6001}]', ports)
+
+        env = self.execute(auth, "podman exec busybox_edited env")
+        self.assertIn('APPLE=ORANGE', env)
+        self.assertIn('PEAR=BANANA', env)
+        self.assertIn('MYVAR=simple_container', env)
+        self.assertIn('container=podman', env)
+        self.assertIn('TERM=xterm', env)
+        self.assertIn('HOME=/root', env)
+        self.assertIn('PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', env)
+
+        healthcheck = self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' busybox_edited")
+        self.assertIn('true', healthcheck)   # healthcheck command
+        self.assertIn('1m30s', healthcheck)  # interval
+        self.assertIn('3s', healthcheck)     # start period
+        self.assertIn('10s', healthcheck)    # timeout
+        self.assertIn('2', healthcheck)      # retries
+        if podman_version(self) >= (4, 3, 0):
+            self.assertEqual('restart', self.execute(auth, "podman inspect --format '{{.Config.HealthcheckOnFailureAction}}' busybox_edited").strip())
+
+        self.performContainerAction("busybox_edited", "Force stop")
+        self.waitContainer(self.execute(auth, "podman inspect --format '{{.Id}}' busybox_edited").strip(), auth, state="ExitedHealthy")
+
+        # create 1:1 clone of container above
+        self.performContainerAction("busybox_edited", "Clone")
+        b.click("#create-image-create-run-btn")
+        self.waitContainerRow("busybox_edited_copy")
+
+        cmd = self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' busybox_edited_copy").strip()
+        self.assertEqual('[sleep 900]', cmd)
+
+        if self.has_cgroupsV2:
+            memory_limit = int(self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox_edited_copy"))
+            self.assertEqual(1024_000_000, memory_limit)
+
+        if auth:
+            cpu_shares = int(self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox_edited_copy"))
+            self.assertEqual(2048, cpu_shares)
+
+            restart_policy = self.execute(auth, "podman inspect --format '{{.HostConfig.RestartPolicy}}' busybox_edited_copy").strip()
+            self.assertEqual('{on-failure 5}', restart_policy)
+
+        ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox_edited_copy")
+        self.assertIn('5000/tcp:[{ 6000}]', ports)
+        self.assertIn('5001/udp:[{127.0.0.1 6001}]', ports)
+
+        binds = self.execute(auth, "podman inspect --format '{{.HostConfig.Binds}}' busybox_edited_copy")
+        self.assertIn('/tmp:/host/tmp:ro', binds)
+        self.assertIn('/mnt:/mounts:rw', binds)
+
+        env = self.execute(auth, "podman exec busybox_edited_copy env")
+        self.assertIn('APPLE=ORANGE', env)
+        self.assertIn('PEAR=BANANA', env)
+        self.assertIn('MYVAR=simple_container', env)
+        self.assertIn('container=podman', env)
+        self.assertIn('TERM=xterm', env)
+        self.assertIn('HOME=/root', env)
+        self.assertIn('PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', env)
+
+        healthcheck = self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' busybox_edited_copy")
+        self.assertIn('true', healthcheck)   # healthcheck command
+        self.assertIn('1m30s', healthcheck)  # interval
+        self.assertIn('3s', healthcheck)     # start period
+        self.assertIn('10s', healthcheck)    # timeout
+        self.assertIn('2', healthcheck)      # retries
+        if podman_version(self) >= (4, 3, 0):
+            self.assertEqual('restart', self.execute(auth, "podman inspect --format '{{.Config.HealthcheckOnFailureAction}}' busybox_edited_copy").strip())
+
 
 if __name__ == '__main__':
     testlib.test_main()

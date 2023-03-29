@@ -43,3 +43,11 @@ export const ErrorNotification = ({ errorMessage, errorDetail, onDismiss }) => {
         </Alert>
     );
 };
+
+export const WarningNotification = ({ warningMessage, warningDetail }) => {
+    return (
+        <Alert isInline variant='warning' title={warningMessage}>
+            { warningDetail && <p> {_("Warning message")}: <samp>{warningDetail}</samp> </p> }
+        </Alert>
+    );
+};
