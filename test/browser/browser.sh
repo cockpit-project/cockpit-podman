@@ -59,13 +59,24 @@ echo core > /proc/sys/kernel/core_pattern
 
 # grab a few images to play with; tests run offline, so they cannot download images
 podman rmi --all
-podman pull quay.io/libpod/busybox
-podman pull quay.io/libpod/alpine
-podman pull quay.io/cockpit/registry:2
+
+# HACK: call https://github.com/cockpit-project/bots/blob/main/images/scripts/lib/podman-images.setup once that is updated to the
+# new images
+# use images which support multiple architectures
+podman pull quay.io/prometheus/busybox
+podman pull quay.io/jitesoft/alpine
+podman pull quay.io/libpod/registry:2.8
+# the tests expect the image to be called differently, so re-tag them
+podman tag quay.io/prometheus/busybox localhost/test-busybox
+podman rmi quay.io/prometheus/busybox
+podman tag quay.io/jitesoft/alpine localhost/test-alpine
+podman rmi quay.io/jitesoft/alpine
+podman tag quay.io/libpod/registry:2.8 localhost/test-registry
+podman rmi quay.io/libpod/registry:2.8
 
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
-for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
+for img in localhost/test-alpine localhost/test-busybox localhost/test-registry; do
     podman save  $img | sudo -i -u admin podman load
 done
 loginctl disable-linger $(id -u admin)

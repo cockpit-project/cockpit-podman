@@ -165,14 +165,15 @@ VM_CUSTOMIZE_FLAGS = --install $(COCKPIT_WHEEL)
 endif
 
 # build a VM with locally built distro pkgs installed
+# HACK: Once all our VMs have the new container images, make this --no-network again
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots $(VM_DEPENDS)
 	# HACK for ostree images: skip the rpm build/install
 	if [ "$$TEST_OS" = "fedora-coreos" ] || [ "$$TEST_OS" = "rhel4edge" ]; then \
-	    bots/image-customize --verbose --fresh --no-network --run-command 'mkdir -p /usr/local/share/cockpit' \
+	    bots/image-customize --verbose --fresh --run-command 'mkdir -p /usr/local/share/cockpit' \
 	                         --upload dist/:/usr/local/share/cockpit/podman \
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	else \
-	    bots/image-customize --verbose --fresh --no-network $(VM_CUSTOMIZE_FLAGS) --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
+	    bots/image-customize --verbose --fresh $(VM_CUSTOMIZE_FLAGS) --build $(TARFILE) --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	fi
 
 # convenience target for the above

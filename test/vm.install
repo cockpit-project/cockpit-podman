@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # image-customize script to prepare a bots VM for cockpit-podman testing
 set -eu
 
@@ -25,27 +25,29 @@ if type firewall-cmd >/dev/null 2>&1; then
 fi
 
 . /usr/lib/os-release
-# Remove extra images for containers tests
-if [ "$ID" = "fedora" ] && [ "${VARIANT_ID:-}" != "coreos" ]; then
-    podman rmi localhost/cockpit/base
-    podman rmi registry.fedoraproject.org/fedora:"$VERSION_ID"
-fi
 
-# HACK: Ubuntu does not know about --ignore yet
-podman rmi --ignore quay.io/jitesoft/nginx:latest || true
+# HACK: this eventually goes into https://github.com/cockpit-project/bots/blob/main/images/scripts/lib/podman-images.setup; remove
+# this once all our images are rebuilt
 
-images=(quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2)
-podman_version=$(podman -v | awk '{ print substr($3, 1, 1) }')
-echo $podman_version
+podman pull quay.io/prometheus/busybox
+podman pull quay.io/jitesoft/alpine
+podman pull quay.io/libpod/registry:2.8
+# the tests expect the image to be called differently, so re-tag them
+podman tag quay.io/prometheus/busybox localhost/test-busybox
+podman rmi quay.io/prometheus/busybox
+podman tag quay.io/jitesoft/alpine localhost/test-alpine
+podman rmi quay.io/jitesoft/alpine
+podman tag quay.io/libpod/registry:2.8 localhost/test-registry
+podman rmi quay.io/libpod/registry:2.8
 
+# Remove extra images, tests assume our specific set
 # Since 4.0 podman now ships the pause image
-if [ "${podman_version}" -lt 4 ]; then
-	images+=("k8s.gcr.io/pause:3.5")
-fi
+podman images --format '{{.Repository}}:{{.Tag}}' | grep -Ev 'localhost/test-|pause|cockpit/ws' | xargs -r podman rmi -f
 
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
-for img in "${images[@]}"; do
+images=$(podman images --format '{{.Repository}}:{{.Tag}}')
+for img in $images; do
 	podman save  $img | sudo -i -u admin podman load
 done
 	loginctl disable-linger $(id -u admin)
