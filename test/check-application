@@ -1056,10 +1056,8 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("busybox:latest", "Start")
 
         container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
-
-        with b.wait_timeout(5):
-            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest',
-                               state='Running', owner="system" if auth else "admin")
+        self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest',
+                           state='Running', owner="system" if auth else "admin")
 
         def get_cpu_usage(sel):
             cpu = self.getContainerAttr(sel, "CPU")
@@ -1094,9 +1092,7 @@ class TestApplication(testlib.MachineCase):
         old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate")
         self.performContainerAction("busybox:latest", "Force restart")
         b.wait(lambda: old_pid != self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
-
-        with b.wait_timeout(5):
-            self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', state='Running')
+        self.waitContainer(container_sha, auth, name='swamped-crate', image='busybox:latest', state='Running')
 
         self.filter_containers('all')
         b.wait_visible("#containers-containers")
