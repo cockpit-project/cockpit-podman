@@ -691,7 +691,7 @@ class Containers extends React.Component {
                             <FormSelectOption value='running' label={_("Only running")} />
                         </FormSelect>
                     </ToolbarItem>
-                    <Divider isVertical />
+                    <Divider orientation={{ default: "vertical" }} />
                     <ToolbarItem>
                         <Button variant="secondary" key="create-new-pod-action"
                                 id="containers-containers-create-pod-btn"
