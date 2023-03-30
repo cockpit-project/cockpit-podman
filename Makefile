@@ -92,10 +92,10 @@ packaging/debian/changelog: packaging/debian/changelog.in
 	sed 's/VERSION/$(VERSION)/' $< > $@
 
 $(DIST_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json build.js
-	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) node build.js
+	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) ./build.js
 
 watch: $(NODE_MODULES_TEST)
-	NODE_ENV=$(NODE_ENV) ESBUILD_WATCH=true node build.js
+	NODE_ENV=$(NODE_ENV) ESBUILD_WATCH=true ./build.js
 
 clean:
 	rm -rf dist/
