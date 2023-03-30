@@ -2,7 +2,6 @@ import fs from 'fs';
 
 import copy from 'esbuild-plugin-copy';
 import esbuild from "esbuild";
-import { sassPlugin } from 'esbuild-sass-plugin';
 
 import { cockpitCompressPlugin } from './pkg/lib/esbuild-compress-plugin.js';
 import { cockpitPoEsbuildPlugin } from './pkg/lib/cockpit-po-plugin.js';
@@ -26,6 +25,8 @@ const packageJson = JSON.parse(fs.readFileSync('package.json'));
 const getTime = () => new Date().toTimeString()
         .split(' ')[0];
 
+const cwd = process.cwd();
+
 const context = await esbuild.context({
     ...!production ? { sourcemap: "external" } : {},
     bundle: true,
@@ -39,7 +40,12 @@ const context = await esbuild.context({
     target: ['es2020'],
     plugins: [
         cleanPlugin(),
-        ...lint ? [stylelintPlugin(), eslintPlugin()] : [],
+        ...lint
+            ? [
+                stylelintPlugin({ filter: new RegExp(cwd + '\/src\/.*\.(css?|scss?)$') }),
+                eslintPlugin({ filter: new RegExp(cwd + '\/src\/.*\.(jsx?|js?)$') })
+            ]
+            : [],
         // Esbuild will only copy assets that are explicitly imported and used
         // in the code. This is a problem for index.html and manifest.json which are not imported
         copy({
