@@ -60,19 +60,8 @@ echo core > /proc/sys/kernel/core_pattern
 # grab a few images to play with; tests run offline, so they cannot download images
 podman rmi --all
 
-# HACK: call https://github.com/cockpit-project/bots/blob/main/images/scripts/lib/podman-images.setup once that is updated to the
-# new images
-# use images which support multiple architectures
-podman pull quay.io/prometheus/busybox
-podman pull quay.io/jitesoft/alpine
-podman pull quay.io/libpod/registry:2.8
-# the tests expect the image to be called differently, so re-tag them
-podman tag quay.io/prometheus/busybox localhost/test-busybox
-podman rmi quay.io/prometheus/busybox
-podman tag quay.io/jitesoft/alpine localhost/test-alpine
-podman rmi quay.io/jitesoft/alpine
-podman tag quay.io/libpod/registry:2.8 localhost/test-registry
-podman rmi quay.io/libpod/registry:2.8
+# set up our expected images, in the same way that we do for upstream CI
+curl https://raw.githubusercontent.com/cockpit-project/bots/main/images/scripts/lib/podman-images.setup | sh -eux
 
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
