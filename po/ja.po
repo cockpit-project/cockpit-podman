@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-28 02:52+0000\n"
+"POT-Creation-Date: 2023-04-02 02:48+0000\n"
 "PO-Revision-Date: 2023-02-27 10:31+0000\n"
 "Last-Translator: Transtats <suanand@redhat.com>\n"
 "Language-Team: Japanese <https://translate.fedoraproject.org/projects/"
@@ -25,7 +25,7 @@ msgid "$0 container"
 msgid_plural "$0 containers"
 msgstr[0] "$0 コンテナー"
 
-#: src/Images.jsx:271
+#: src/Images.jsx:272
 msgid "$0 image total, $1"
 msgid_plural "$0 images total, $1"
 msgstr[0] "$0 イメージ合計、$1"
@@ -35,24 +35,28 @@ msgid "$0 second"
 msgid_plural "$0 seconds"
 msgstr[0] "$0 2 番目"
 
-#: src/Images.jsx:275
+#: src/Images.jsx:276
 msgid "$0 unused image, $1"
 msgid_plural "$0 unused images, $1"
 msgstr[0] "$0 の未使用イメージ、$1"
 
-#: src/PodCreateModal.jsx:124 src/ImageRunModal.jsx:928
+#: src/ImageRunModal.jsx:1072
+msgid "Action to take once the container transitions to an unhealthy state."
+msgstr ""
+
+#: src/PodCreateModal.jsx:124 src/ImageRunModal.jsx:938
 msgid "Add port mapping"
 msgstr "ポートマッピングの追加"
 
-#: src/ImageRunModal.jsx:947
+#: src/ImageRunModal.jsx:957
 msgid "Add variable"
 msgstr "変数の追加"
 
-#: src/PodCreateModal.jsx:134 src/ImageRunModal.jsx:937
+#: src/PodCreateModal.jsx:134 src/ImageRunModal.jsx:947
 msgid "Add volume"
 msgstr "ボリュームの追加"
 
-#: src/ContainerHeader.jsx:21 src/ImageRunModal.jsx:645 src/Containers.jsx:689
+#: src/Containers.jsx:690 src/ContainerHeader.jsx:21 src/ImageRunModal.jsx:655
 msgid "All"
 msgstr "すべて"
 
@@ -60,7 +64,7 @@ msgstr "すべて"
 msgid "All registries"
 msgstr "すべてのレジストリー"
 
-#: src/ImageRunModal.jsx:898
+#: src/ImageRunModal.jsx:908
 msgid "Always"
 msgstr "常時"
 
@@ -80,15 +84,15 @@ msgstr "起動時に podman を自動的に起動する"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/ImageRunModal.jsx:851
+#: src/ImageRunModal.jsx:861
 msgid "CPU Shares help"
 msgstr "CPU share のヘルプ"
 
-#: src/ImageRunModal.jsx:849
+#: src/ImageRunModal.jsx:859
 msgid "CPU shares"
 msgstr "CPU 共有"
 
-#: src/ImageRunModal.jsx:853
+#: src/ImageRunModal.jsx:863
 msgid ""
 "CPU shares determine the priority of running containers. Default priority is "
 "1024. A higher number prioritizes this container. A lower number decreases "
@@ -98,12 +102,12 @@ msgstr ""
 "です。数値が高いほど、このコンテナーの優先度が高くなります。数値が低いほど優"
 "先度が低くなります。"
 
-#: src/ContainerRenameModal.jsx:96 src/PruneUnusedImagesModal.jsx:97
-#: src/ForceRemoveModal.jsx:25 src/ContainerCheckpointModal.jsx:50
-#: src/ContainerDeleteModal.jsx:34 src/PodCreateModal.jsx:156
-#: src/ImageSearchModal.jsx:244 src/ImageRunModal.jsx:1082
-#: src/ImageDeleteModal.jsx:94 src/PodActions.jsx:49
-#: src/ContainerCommitModal.jsx:157 src/ContainerRestoreModal.jsx:53
+#: src/PodCreateModal.jsx:156 src/ContainerCommitModal.jsx:157
+#: src/ImageDeleteModal.jsx:94 src/ContainerRestoreModal.jsx:53
+#: src/ForceRemoveModal.jsx:25 src/PruneUnusedImagesModal.jsx:97
+#: src/ContainerDeleteModal.jsx:34 src/ImageSearchModal.jsx:244
+#: src/ContainerRenameModal.jsx:96 src/PodActions.jsx:49
+#: src/ContainerCheckpointModal.jsx:50 src/ImageRunModal.jsx:1113
 msgid "Cancel"
 msgstr "取り消し"
 
@@ -111,11 +115,11 @@ msgstr "取り消し"
 msgid "Checking health"
 msgstr "ヘルスチェック"
 
-#: src/ContainerCheckpointModal.jsx:46 src/Containers.jsx:227
+#: src/Containers.jsx:227 src/ContainerCheckpointModal.jsx:46
 msgid "Checkpoint"
 msgstr "チェックポイント"
 
-#: src/ImageRunModal.jsx:708
+#: src/ImageRunModal.jsx:718
 #, fuzzy
 #| msgid "Checkpoint container $0"
 msgid "Checkpoint and restore support"
@@ -137,9 +141,9 @@ msgstr "クリックしてボリュームを表示します"
 msgid "Cockpit component for Podman containers"
 msgstr "Podman コンテナーの Cockpit コンポーネント"
 
-#: src/ImageDetails.jsx:15 src/ImageRunModal.jsx:804 src/ImageRunModal.jsx:954
-#: src/ContainerDetails.jsx:40 src/ContainerCommitModal.jsx:112
-#: src/ContainerHealthLogs.jsx:59
+#: src/ContainerCommitModal.jsx:112 src/ContainerDetails.jsx:40
+#: src/ImageDetails.jsx:15 src/ContainerHealthLogs.jsx:59
+#: src/ImageRunModal.jsx:814 src/ImageRunModal.jsx:964
 msgid "Command"
 msgstr "コマンド"
 
@@ -147,7 +151,7 @@ msgstr "コマンド"
 msgid "Comments"
 msgstr "コメント"
 
-#: src/ContainerCommitModal.jsx:144 src/Containers.jsx:262
+#: src/Containers.jsx:262 src/ContainerCommitModal.jsx:144
 msgid "Commit"
 msgstr "コミット"
 
@@ -167,11 +171,11 @@ msgstr "コンソール"
 msgid "Container"
 msgstr "コンテナー"
 
-#: src/ImageRunModal.jsx:296
+#: src/ImageRunModal.jsx:306
 msgid "Container failed to be created"
 msgstr "コンテナーの作成に失敗しました"
 
-#: src/ImageRunModal.jsx:279
+#: src/ImageRunModal.jsx:289
 msgid "Container failed to be started"
 msgstr "コンテナーの開始に失敗しました"
 
@@ -179,7 +183,7 @@ msgstr "コンテナーの開始に失敗しました"
 msgid "Container is not running"
 msgstr "コンテナーが実行されていません"
 
-#: src/ImageRunModal.jsx:685
+#: src/ImageRunModal.jsx:695
 msgid "Container name"
 msgstr "コンテナー名"
 
@@ -195,11 +199,11 @@ msgstr "コンテナーパス"
 msgid "Container port"
 msgstr "コンテナーポート"
 
-#: src/Containers.jsx:716 src/Containers.jsx:723 src/Containers.jsx:752
+#: src/Containers.jsx:717 src/Containers.jsx:724 src/Containers.jsx:753
 msgid "Containers"
 msgstr "コンテナー"
 
-#: src/PodCreateModal.jsx:153 src/ImageRunModal.jsx:1079
+#: src/PodCreateModal.jsx:153 src/ImageRunModal.jsx:1110
 msgid "Create"
 msgstr "作成"
 
@@ -207,29 +211,29 @@ msgstr "作成"
 msgid "Create a new image based on the current state of the $0 container."
 msgstr "$0 コンテナーの現在の状態に基づいて、新しいイメージを作成します。"
 
-#: src/ImageRunModal.jsx:1076
+#: src/ImageRunModal.jsx:1107
 msgid "Create and run"
 msgstr "作成して実行する"
 
-#: src/ImageRunModal.jsx:1073 src/Images.jsx:399 src/Images.jsx:413
-#: src/Containers.jsx:706
+#: src/Images.jsx:401 src/Images.jsx:415 src/Containers.jsx:707
+#: src/ImageRunModal.jsx:1104
 msgid "Create container"
 msgstr "コンテナーの作成"
 
-#: src/ImageRunModal.jsx:1073
+#: src/ImageRunModal.jsx:1104
 msgid "Create container in $0"
 msgstr "$0 でのコンテナーの作成"
 
-#: src/Containers.jsx:774
+#: src/Containers.jsx:775
 msgid "Create container in pod"
 msgstr "Pod でのコンテナーの作成"
 
-#: src/PodCreateModal.jsx:149 src/Containers.jsx:698
+#: src/PodCreateModal.jsx:149 src/Containers.jsx:699
 msgid "Create pod"
 msgstr "Pod の作成"
 
-#: src/ImageHistory.jsx:33 src/util.js:9 src/util.js:12 src/Images.jsx:180
-#: src/ContainerDetails.jsx:64
+#: src/Images.jsx:181 src/ContainerDetails.jsx:64 src/ImageHistory.jsx:33
+#: src/util.js:9 src/util.js:12
 msgid "Created"
 msgstr "作成済み"
 
@@ -237,36 +241,36 @@ msgstr "作成済み"
 msgid "Created by"
 msgstr "作成元"
 
-#: src/ImageRunModal.jsx:872
+#: src/ImageRunModal.jsx:882
 msgid "Decrease CPU shares"
 msgstr "CPU 共有を減らす"
 
-#: src/ImageRunModal.jsx:977
+#: src/ImageRunModal.jsx:987
 msgid "Decrease interval"
 msgstr "間隔を縮小する"
 
-#: src/ImageRunModal.jsx:911
+#: src/ImageRunModal.jsx:921
 msgid "Decrease maximum retries"
 msgstr "最大再試行回数を減らす"
 
-#: src/ImageRunModal.jsx:830
+#: src/ImageRunModal.jsx:840
 msgid "Decrease memory"
 msgstr "メモリーを減らす"
 
-#: src/ImageRunModal.jsx:1051
+#: src/ImageRunModal.jsx:1061
 msgid "Decrease retries"
 msgstr "再試行回数を減らす"
 
-#: src/ImageRunModal.jsx:1027
+#: src/ImageRunModal.jsx:1037
 msgid "Decrease start period"
 msgstr "開始期間を縮小する"
 
-#: src/ImageRunModal.jsx:1002
+#: src/ImageRunModal.jsx:1012
 msgid "Decrease timeout"
 msgstr "タイムアウトを縮小する"
 
-#: src/ContainerDeleteModal.jsx:33 src/Images.jsx:419 src/PodActions.jsx:45
-#: src/PodActions.jsx:179 src/Containers.jsx:281
+#: src/Images.jsx:421 src/Containers.jsx:281 src/ContainerDeleteModal.jsx:33
+#: src/PodActions.jsx:45 src/PodActions.jsx:179
 msgid "Delete"
 msgstr "削除"
 
@@ -306,11 +310,11 @@ msgstr "実行中のコンテナーを削除すると、その中のすべての
 msgid "Deleting this pod will remove the following containers:"
 msgstr "この Pod を削除すると、以下のコンテナーが削除されます:"
 
-#: src/ImageRunModal.jsx:690 src/Images.jsx:149 src/Containers.jsx:408
+#: src/Images.jsx:150 src/Containers.jsx:408 src/ImageRunModal.jsx:700
 msgid "Details"
 msgstr "詳細"
 
-#: src/Images.jsx:182
+#: src/Images.jsx:183
 msgid "Disk space"
 msgstr "ディスクの空き容量"
 
@@ -324,7 +328,7 @@ msgstr ""
 msgid "Download"
 msgstr "ダウンロード"
 
-#: src/Images.jsx:347
+#: src/Images.jsx:348
 msgid "Download new image"
 msgstr "新規イメージのダウンロード"
 
@@ -332,11 +336,11 @@ msgstr "新規イメージのダウンロード"
 msgid "Empty pod $0 will be permanently removed."
 msgstr "空の Pod $0 は完全に削除されます。"
 
-#: src/ImageDetails.jsx:21 src/ImageRunModal.jsx:799
+#: src/ImageDetails.jsx:21 src/ImageRunModal.jsx:809
 msgid "Entrypoint"
 msgstr "エントリーポイント"
 
-#: src/ContainerIntegration.jsx:116 src/ImageRunModal.jsx:946
+#: src/ContainerIntegration.jsx:116 src/ImageRunModal.jsx:956
 msgid "Environment variables"
 msgstr "環境変数"
 
@@ -344,7 +348,7 @@ msgstr "環境変数"
 msgid "Error"
 msgstr "エラー"
 
-#: src/Notification.jsx:42 src/Images.jsx:56
+#: src/Images.jsx:56 src/Notification.jsx:42
 msgid "Error message"
 msgstr "エラーメッセージ"
 
@@ -356,11 +360,11 @@ msgstr "コンソールへの接続中にエラーが発生しました"
 msgid "Example, Your Name <yourname@example.com>"
 msgstr "例: 名前 <yourname@example.com>"
 
-#: src/ImageRunModal.jsx:754
+#: src/ImageRunModal.jsx:764
 msgid "Example: $0"
 msgstr "例: $0"
 
-#: src/util.js:9 src/util.js:12 src/ContainerDetails.jsx:14
+#: src/ContainerDetails.jsx:14 src/util.js:9 src/util.js:12
 msgid "Exited"
 msgstr "終了"
 
@@ -372,7 +376,7 @@ msgstr "失敗したヘルスの実行"
 msgid "Failed to checkpoint container $0"
 msgstr "コンテナー $0 のチェックポイントに失敗しました"
 
-#: src/ImageRunModal.jsx:285
+#: src/ImageRunModal.jsx:295
 msgid "Failed to clean up container"
 msgstr "コンテナーのクリーンアップに失敗しました"
 
@@ -380,7 +384,7 @@ msgstr "コンテナーのクリーンアップに失敗しました"
 msgid "Failed to commit container $0"
 msgstr "コンテナー $0 のコミットに失敗しました"
 
-#: src/ImageRunModal.jsx:347
+#: src/ImageRunModal.jsx:357
 msgid "Failed to create container $0"
 msgstr "コンテナー $0 の作成に失敗しました"
 
@@ -416,7 +420,7 @@ msgstr "Pod $0 の一時停止に失敗しました"
 msgid "Failed to prune unused images"
 msgstr "使用されていないイメージのpruneに失敗しました"
 
-#: src/ImageRunModal.jsx:353
+#: src/ImageRunModal.jsx:363
 msgid "Failed to pull image $0"
 msgstr "イメージ $0 のpullに失敗しました"
 
@@ -452,23 +456,23 @@ msgstr "コンテナー $0 のレジュームに失敗しました"
 msgid "Failed to resume pod $0"
 msgstr "Pod $0 の再開に失敗しました"
 
-#: src/ImageRunModal.jsx:340
+#: src/ImageRunModal.jsx:350
 msgid "Failed to run container $0"
 msgstr "コンテナー $0 の実行に失敗しました"
 
-#: src/ContainerHealthLogs.jsx:89 src/Containers.jsx:132
+#: src/Containers.jsx:132 src/ContainerHealthLogs.jsx:89
 msgid "Failed to run health check on container $0"
 msgstr "コンテナーでのヘルスチェックの実行に失敗しました $0"
 
-#: src/ImageSearchModal.jsx:117 src/ImageRunModal.jsx:434
+#: src/ImageSearchModal.jsx:117 src/ImageRunModal.jsx:444
 msgid "Failed to search for images."
 msgstr "イメージの検索に失敗しました。"
 
-#: src/ImageSearchModal.jsx:117 src/ImageRunModal.jsx:434
+#: src/ImageSearchModal.jsx:117 src/ImageRunModal.jsx:444
 msgid "Failed to search for images: $0"
 msgstr "イメージの検索に失敗しました: $0"
 
-#: src/ImageSearchModal.jsx:116 src/ImageRunModal.jsx:432
+#: src/ImageSearchModal.jsx:116 src/ImageRunModal.jsx:442
 msgid "Failed to search for new images"
 msgstr "新規イメージの検索に失敗しました"
 
@@ -492,6 +496,10 @@ msgstr "Pod $0 の停止に失敗しました"
 msgid "Failing streak"
 msgstr "失敗の連続"
 
+#: src/ImageRunModal.jsx:1068
+msgid "Failure action"
+msgstr ""
+
 #: src/ContainerCommitModal.jsx:151
 msgid "Force commit"
 msgstr "強制コミット"
@@ -504,15 +512,15 @@ msgstr "削除の強制"
 msgid "Force delete pod $0?"
 msgstr "Pod $0 を強制的に削除しますか?"
 
-#: src/PodActions.jsx:119 src/Containers.jsx:202
+#: src/Containers.jsx:202 src/PodActions.jsx:119
 msgid "Force restart"
 msgstr "再起動の強制"
 
-#: src/PodActions.jsx:97 src/Containers.jsx:194
+#: src/Containers.jsx:194 src/PodActions.jsx:97 src/ImageRunModal.jsx:60
 msgid "Force stop"
 msgstr "停止の強制"
 
-#: src/ImageRunModal.jsx:841
+#: src/ImageRunModal.jsx:851
 msgid "GB"
 msgstr "GB"
 
@@ -520,39 +528,45 @@ msgstr "GB"
 msgid "Gateway"
 msgstr "ゲートウェイ"
 
-#: src/ImageRunModal.jsx:953 src/Containers.jsx:427
+#: src/Containers.jsx:427 src/ImageRunModal.jsx:963
 msgid "Health check"
 msgstr "ヘルスチェック"
 
-#: src/ImageRunModal.jsx:962
+#: src/ImageRunModal.jsx:972
 msgid "Health check interval help"
 msgstr "ヘルスチェックの間隔のヘルプ"
 
-#: src/ImageRunModal.jsx:1037
+#: src/ImageRunModal.jsx:1047
 msgid "Health check retries help"
 msgstr "ヘルスチェックの再試行のヘルプ"
 
-#: src/ImageRunModal.jsx:1012
+#: src/ImageRunModal.jsx:1022
 msgid "Health check start period help"
 msgstr "ヘルスチェックの開始期間のヘルプ"
 
-#: src/ImageRunModal.jsx:987
+#: src/ImageRunModal.jsx:997
 msgid "Health check timeout help"
+msgstr "ヘルスチェックのタイムアウトのヘルプ"
+
+#: src/ImageRunModal.jsx:1070
+#, fuzzy
+#| msgid "Health check timeout help"
+msgid "Health failure check action help"
 msgstr "ヘルスチェックのタイムアウトのヘルプ"
 
 #: src/Containers.jsx:310
 msgid "Healthy"
 msgstr "健全"
 
-#: src/Images.jsx:302
+#: src/Images.jsx:303
 msgid "Hide images"
 msgstr "イメージを非表示"
 
-#: src/Images.jsx:252
+#: src/Images.jsx:253
 msgid "Hide intermediate images"
 msgstr "中間イメージを非表示"
 
-#: src/Images.jsx:158
+#: src/Images.jsx:159
 msgid "History"
 msgstr "履歴"
 
@@ -568,11 +582,11 @@ msgstr "ホストポート"
 msgid "Host port help"
 msgstr "ホストポートヘルプ"
 
-#: src/Images.jsx:181 src/ContainerDetails.jsx:32
+#: src/Images.jsx:182 src/ContainerDetails.jsx:32
 msgid "ID"
 msgstr "ID"
 
-#: src/PublishPort.jsx:17 src/ContainerDetails.jsx:48
+#: src/ContainerDetails.jsx:48 src/PublishPort.jsx:17
 msgid "IP address"
 msgstr "IP アドレス"
 
@@ -580,11 +594,11 @@ msgstr "IP アドレス"
 msgid "IP address help"
 msgstr "IP アドレスヘルプ"
 
-#: src/ImageRunModal.jsx:719
+#: src/ImageRunModal.jsx:729
 msgid "Ideal for development"
 msgstr ""
 
-#: src/ImageRunModal.jsx:702
+#: src/ImageRunModal.jsx:712
 msgid "Ideal for running services"
 msgstr ""
 
@@ -612,7 +626,7 @@ msgstr "静的に設定された場合は IP アドレスを無視"
 msgid "Ignore MAC address if set statically"
 msgstr "静的に設定された場合は MAC アドレスを無視"
 
-#: src/ImageRunModal.jsx:747 src/Images.jsx:178 src/ContainerDetails.jsx:36
+#: src/Images.jsx:179 src/ContainerDetails.jsx:36 src/ImageRunModal.jsx:757
 msgid "Image"
 msgstr "イメージ"
 
@@ -624,55 +638,55 @@ msgstr "イメージ名は一意ではありません"
 msgid "Image name is required"
 msgstr "イメージ名が必要です"
 
-#: src/ImageRunModal.jsx:749
+#: src/ImageRunModal.jsx:759
 msgid "Image selection help"
 msgstr "イメージ選択のヘルプ"
 
-#: src/Images.jsx:258 src/Images.jsx:288
+#: src/Images.jsx:259 src/Images.jsx:289
 msgid "Images"
 msgstr "イメージ"
 
-#: src/ImageRunModal.jsx:873
+#: src/ImageRunModal.jsx:883
 msgid "Increase CPU shares"
 msgstr "CPU 共有を増やす"
 
-#: src/ImageRunModal.jsx:978
+#: src/ImageRunModal.jsx:988
 msgid "Increase interval"
 msgstr "間隔を増やす"
 
-#: src/ImageRunModal.jsx:912
+#: src/ImageRunModal.jsx:922
 msgid "Increase maximum retries"
 msgstr "最大再試行回数を増やす"
 
-#: src/ImageRunModal.jsx:831
+#: src/ImageRunModal.jsx:841
 msgid "Increase memory"
 msgstr "メモリーを増やす"
 
-#: src/ImageRunModal.jsx:1052
+#: src/ImageRunModal.jsx:1062
 msgid "Increase retries"
 msgstr "再試行を増やす"
 
-#: src/ImageRunModal.jsx:1028
+#: src/ImageRunModal.jsx:1038
 msgid "Increase start period"
 msgstr "開始期間を拡大する"
 
-#: src/ImageRunModal.jsx:1003
+#: src/ImageRunModal.jsx:1013
 msgid "Increase timeout"
 msgstr "タイムアウトを拡大する"
 
-#: src/ImageRunModal.jsx:922 src/Containers.jsx:412
+#: src/Containers.jsx:412 src/ImageRunModal.jsx:932
 msgid "Integration"
 msgstr "インテグレーション"
 
-#: src/ImageRunModal.jsx:960 src/ContainerHealthLogs.jsx:63
+#: src/ContainerHealthLogs.jsx:63 src/ImageRunModal.jsx:970
 msgid "Interval"
 msgstr "間隔"
 
-#: src/ImageRunModal.jsx:964
+#: src/ImageRunModal.jsx:974
 msgid "Interval how often health check is run."
 msgstr "ヘルスチェックの実行頻度 (間隔)。"
 
-#: src/ContainerRenameModal.jsx:30 src/PodCreateModal.jsx:88
+#: src/PodCreateModal.jsx:88 src/ContainerRenameModal.jsx:30
 msgid ""
 "Invalid characters. Name can only contain letters, numbers, and certain "
 "punctuation (_ . -)."
@@ -680,15 +694,15 @@ msgstr ""
 "無効な文字です。名前には文字、数字、および特定の句読点 (_ . -) のみを使用でき"
 "ます。"
 
-#: src/ImageRunModal.jsx:839
+#: src/ImageRunModal.jsx:849
 msgid "KB"
 msgstr "KB"
 
-#: src/ContainerCheckpointModal.jsx:55 src/ContainerRestoreModal.jsx:58
+#: src/ContainerRestoreModal.jsx:58 src/ContainerCheckpointModal.jsx:55
 msgid "Keep all temporary checkpoint files"
 msgstr "すべての一時的なチェックポイントファイルを維持"
 
-#: src/ImageRunModal.jsx:82
+#: src/ImageRunModal.jsx:90
 msgid "Key"
 msgstr "キー"
 
@@ -708,19 +722,19 @@ msgstr "詳細をロード中..."
 msgid "Loading logs..."
 msgstr "ログをロード中..."
 
-#: src/ImageUsedBy.jsx:12 src/Containers.jsx:560
+#: src/Containers.jsx:560 src/ImageUsedBy.jsx:12
 msgid "Loading..."
 msgstr "ロード中..."
 
-#: src/ImageRunModal.jsx:654
+#: src/ImageRunModal.jsx:664
 msgid "Local"
 msgstr "ローカル"
 
-#: src/ImageRunModal.jsx:537
+#: src/ImageRunModal.jsx:547
 msgid "Local images"
 msgstr "ローカルのイメージ"
 
-#: src/ContainerHealthLogs.jsx:97 src/Containers.jsx:416
+#: src/Containers.jsx:416 src/ContainerHealthLogs.jsx:97
 msgid "Logs"
 msgstr "ログ"
 
@@ -728,11 +742,11 @@ msgstr "ログ"
 msgid "MAC address"
 msgstr "MAC アドレス"
 
-#: src/ImageRunModal.jsx:840
+#: src/ImageRunModal.jsx:850
 msgid "MB"
 msgstr "MB"
 
-#: src/ImageRunModal.jsx:904
+#: src/ImageRunModal.jsx:914
 msgid "Maximum retries"
 msgstr "最大施行数"
 
@@ -740,11 +754,11 @@ msgstr "最大施行数"
 msgid "Memory"
 msgstr "メモリ"
 
-#: src/ImageRunModal.jsx:817
+#: src/ImageRunModal.jsx:827
 msgid "Memory limit"
 msgstr "メモリー制限"
 
-#: src/ImageRunModal.jsx:834
+#: src/ImageRunModal.jsx:844
 msgid "Memory unit"
 msgstr "メモリーユニット"
 
@@ -758,7 +772,7 @@ msgstr ""
 "このイメージには、複数のタグが存在します。削除するタグ付けされたイメージを選"
 "択します。"
 
-#: src/PodCreateModal.jsx:95 src/ImageRunModal.jsx:682
+#: src/PodCreateModal.jsx:95 src/ImageRunModal.jsx:692
 msgid "Name"
 msgstr "名前"
 
@@ -770,9 +784,13 @@ msgstr "新しいコンテナー名"
 msgid "New image name"
 msgstr "新しいイメージ名"
 
-#: src/ImageRunModal.jsx:896
+#: src/ImageRunModal.jsx:906
 msgid "No"
 msgstr "いいえ"
+
+#: src/ImageRunModal.jsx:57
+msgid "No action"
+msgstr ""
 
 #: src/Containers.jsx:557
 msgid "No containers"
@@ -790,19 +808,19 @@ msgstr "この Pod 内のコンテナーはありません"
 msgid "No containers that match the current filter"
 msgstr "現在のフィルターに一致するコンテナーがありません"
 
-#: src/ImageRunModal.jsx:944
+#: src/ImageRunModal.jsx:954
 msgid "No environment variables specified"
 msgstr "環境変数が指定されていません"
 
-#: src/Images.jsx:185
+#: src/Images.jsx:186
 msgid "No images"
 msgstr "イメージなし"
 
-#: src/ImageSearchModal.jsx:190 src/ImageRunModal.jsx:772
+#: src/ImageSearchModal.jsx:190 src/ImageRunModal.jsx:782
 msgid "No images found"
 msgstr "イメージが見つかりません"
 
-#: src/Images.jsx:189
+#: src/Images.jsx:190
 msgid "No images that match the current filter"
 msgstr "現在のフィルターに一致するイメージがありません"
 
@@ -810,7 +828,7 @@ msgstr "現在のフィルターに一致するイメージがありません"
 msgid "No label"
 msgstr "ラベルなし"
 
-#: src/PodCreateModal.jsx:121 src/ImageRunModal.jsx:925
+#: src/PodCreateModal.jsx:121 src/ImageRunModal.jsx:935
 msgid "No ports exposed"
 msgstr "開放されているポートはありません"
 
@@ -822,15 +840,15 @@ msgstr "$0 の結果なし"
 msgid "No running containers"
 msgstr "実行中のコンテナーはありません"
 
-#: src/PodCreateModal.jsx:131 src/ImageRunModal.jsx:934
+#: src/PodCreateModal.jsx:131 src/ImageRunModal.jsx:944
 msgid "No volumes specified"
 msgstr "指定されているボリュームはありません"
 
-#: src/ImageRunModal.jsx:897
+#: src/ImageRunModal.jsx:907
 msgid "On failure"
 msgstr "障害発生時"
 
-#: src/Containers.jsx:690
+#: src/Containers.jsx:691
 msgid "Only running"
 msgstr "実行のみ"
 
@@ -838,13 +856,13 @@ msgstr "実行のみ"
 msgid "Options"
 msgstr "オプション"
 
-#: src/ContainerHeader.jsx:15 src/PodCreateModal.jsx:107
-#: src/ImageSearchModal.jsx:162 src/ImageRunModal.jsx:692 src/Images.jsx:179
-#: src/Containers.jsx:548
+#: src/PodCreateModal.jsx:107 src/Images.jsx:180 src/Containers.jsx:548
+#: src/ContainerHeader.jsx:15 src/ImageSearchModal.jsx:162
+#: src/ImageRunModal.jsx:702
 msgid "Owner"
 msgstr "所有者"
 
-#: src/ImageRunModal.jsx:694
+#: src/ImageRunModal.jsx:704
 #, fuzzy
 #| msgid "Owner"
 msgid "Owner help"
@@ -854,14 +872,14 @@ msgstr "所有者"
 msgid "Passed health run"
 msgstr "合格したヘルスの実行"
 
-#: src/ImageRunModal.jsx:950
+#: src/ImageRunModal.jsx:960
 msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr ""
 "一括インポートのために、キー=値ペアからなる 1 つまたは複数の行を任意のフィー"
 "ルドに貼り付けます"
 
-#: src/PodActions.jsx:164 src/Containers.jsx:210
+#: src/Containers.jsx:210 src/PodActions.jsx:164
 msgid "Pause"
 msgstr "一時停止"
 
@@ -893,7 +911,7 @@ msgstr "Podman コンテナー"
 msgid "Podman service is not active"
 msgstr "Podman サービスがアクティブではありません"
 
-#: src/PodCreateModal.jsx:123 src/ImageRunModal.jsx:927
+#: src/PodCreateModal.jsx:123 src/ImageRunModal.jsx:937
 msgid "Port mapping"
 msgstr "ポートマッピング"
 
@@ -901,7 +919,7 @@ msgstr "ポートマッピング"
 msgid "Ports"
 msgstr "ポート"
 
-#: src/ImageRunModal.jsx:711
+#: src/ImageRunModal.jsx:721
 msgid "Ports under 1024 can be mapped"
 msgstr ""
 
@@ -917,7 +935,7 @@ msgstr "プロトコル"
 msgid "Prune"
 msgstr "削除"
 
-#: src/PruneUnusedImagesModal.jsx:88 src/Images.jsx:359
+#: src/Images.jsx:360 src/PruneUnusedImagesModal.jsx:88
 msgid "Prune unused images"
 msgstr "未使用イメージの削除"
 
@@ -925,11 +943,11 @@ msgstr "未使用イメージの削除"
 msgid "Pruning images"
 msgstr "イメージを削除中"
 
-#: src/ImageRunModal.jsx:793
+#: src/ImageRunModal.jsx:803
 msgid "Pull latest image"
 msgstr "最新イメージのプル"
 
-#: src/Images.jsx:325
+#: src/Images.jsx:326
 msgid "Pulling"
 msgstr "プル中"
 
@@ -941,7 +959,7 @@ msgstr "読み取り専用アクセス"
 msgid "Read-write access"
 msgstr "読み書きアクセス"
 
-#: src/PublishPort.jsx:79 src/Volume.jsx:47 src/ImageRunModal.jsx:97
+#: src/Volume.jsx:47 src/PublishPort.jsx:79 src/ImageRunModal.jsx:105
 msgid "Remove item"
 msgstr "アイテムの削除"
 
@@ -949,7 +967,7 @@ msgstr "アイテムの削除"
 msgid "Removing"
 msgstr "削除中"
 
-#: src/ContainerRenameModal.jsx:91 src/Containers.jsx:180
+#: src/Containers.jsx:180 src/ContainerRenameModal.jsx:91
 msgid "Rename"
 msgstr "名前変更"
 
@@ -957,27 +975,27 @@ msgstr "名前変更"
 msgid "Rename container $0"
 msgstr "コンテナーの名前変更 $0"
 
-#: src/ImageRunModal.jsx:705
+#: src/ImageRunModal.jsx:715
 msgid "Resource limits can be set"
 msgstr ""
 
-#: src/PodActions.jsx:108 src/Containers.jsx:198
+#: src/Containers.jsx:198 src/PodActions.jsx:108 src/ImageRunModal.jsx:58
 msgid "Restart"
 msgstr "再起動"
 
-#: src/ImageRunModal.jsx:881
+#: src/ImageRunModal.jsx:891
 msgid "Restart policy"
 msgstr "再起動ポリシー"
 
-#: src/ImageRunModal.jsx:883 src/ImageRunModal.jsx:893
+#: src/ImageRunModal.jsx:893 src/ImageRunModal.jsx:903
 msgid "Restart policy help"
 msgstr "再起動ポリシーのヘルプ"
 
-#: src/ImageRunModal.jsx:885
+#: src/ImageRunModal.jsx:895
 msgid "Restart policy to follow when containers exit."
 msgstr "コンテナーの終了時に従う再起動ポリシー。"
 
-#: src/ImageRunModal.jsx:885
+#: src/ImageRunModal.jsx:895
 msgid ""
 "Restart policy to follow when containers exit. Using linger for auto-"
 "starting containers may not work in some circumstances, such as when "
@@ -1003,15 +1021,15 @@ msgstr "コンテナー $0 の復元"
 msgid "Restore with established TCP connections"
 msgstr "確立された TCP 接続での復元"
 
-#: src/ImageRunModal.jsx:722
+#: src/ImageRunModal.jsx:732
 msgid "Restricted by user account permissions"
 msgstr ""
 
-#: src/PodActions.jsx:149 src/Containers.jsx:217
+#: src/Containers.jsx:217 src/PodActions.jsx:149
 msgid "Resume"
 msgstr "再開"
 
-#: src/ImageRunModal.jsx:1035 src/ContainerHealthLogs.jsx:67
+#: src/ContainerHealthLogs.jsx:67 src/ImageRunModal.jsx:1045
 msgid "Retries"
 msgstr "再試行回数"
 
@@ -1019,7 +1037,7 @@ msgstr "再試行回数"
 msgid "Retry another term."
 msgstr "別の用語を再試行します。"
 
-#: src/ContainerHealthLogs.jsx:93 src/Containers.jsx:271
+#: src/Containers.jsx:271 src/ContainerHealthLogs.jsx:93
 msgid "Run health check"
 msgstr "ヘルスチェックを実行する"
 
@@ -1035,7 +1053,7 @@ msgstr "SELinux"
 msgid "Search by name or description"
 msgstr "名前または説明による検索"
 
-#: src/ImageRunModal.jsx:644
+#: src/ImageRunModal.jsx:654
 msgid "Search by registry"
 msgstr "レジストリーで検索"
 
@@ -1047,7 +1065,7 @@ msgstr "検索"
 msgid "Search for an image"
 msgstr "イメージの検索"
 
-#: src/ImageRunModal.jsx:777
+#: src/ImageRunModal.jsx:787
 msgid "Search string or container location"
 msgstr "検索文字列またはコンテナーのロケーション"
 
@@ -1055,7 +1073,7 @@ msgstr "検索文字列またはコンテナーのロケーション"
 msgid "Searching..."
 msgstr "検索中..."
 
-#: src/ImageRunModal.jsx:755
+#: src/ImageRunModal.jsx:765
 msgid "Searching: $0"
 msgstr "検索中: $0"
 
@@ -1063,15 +1081,15 @@ msgstr "検索中: $0"
 msgid "Shared"
 msgstr "共有"
 
-#: src/Containers.jsx:685
+#: src/Containers.jsx:686
 msgid "Show"
 msgstr "表示"
 
-#: src/Images.jsx:302
+#: src/Images.jsx:303
 msgid "Show images"
 msgstr "イメージの表示"
 
-#: src/Images.jsx:252
+#: src/Images.jsx:253
 msgid "Show intermediate images"
 msgstr "中間イメージの表示"
 
@@ -1087,11 +1105,11 @@ msgstr "詳細表示"
 msgid "Size"
 msgstr "サイズ"
 
-#: src/app.jsx:716 src/PodActions.jsx:134 src/Containers.jsx:237
+#: src/Containers.jsx:237 src/app.jsx:716 src/PodActions.jsx:134
 msgid "Start"
 msgstr "開始"
 
-#: src/ImageRunModal.jsx:1010 src/ContainerHealthLogs.jsx:71
+#: src/ContainerHealthLogs.jsx:71 src/ImageRunModal.jsx:1020
 msgid "Start period"
 msgstr "開始期間"
 
@@ -1107,7 +1125,7 @@ msgstr "イメージを検索するために入力を開始します。"
 msgid "Started at"
 msgstr "開始日時"
 
-#: src/ContainerDetails.jsx:68 src/Containers.jsx:551
+#: src/Containers.jsx:551 src/ContainerDetails.jsx:68
 msgid "State"
 msgstr "状態"
 
@@ -1115,7 +1133,7 @@ msgstr "状態"
 msgid "Status"
 msgstr "ステータス"
 
-#: src/PodActions.jsx:86 src/Containers.jsx:190
+#: src/Containers.jsx:190 src/PodActions.jsx:86 src/ImageRunModal.jsx:59
 msgid "Stop"
 msgstr "停止"
 
@@ -1127,8 +1145,8 @@ msgstr "停止中"
 msgid "Support preserving established TCP connections"
 msgstr "確立された TCP 接続の保持サポート"
 
-#: src/ContainerHeader.jsx:20 src/PodCreateModal.jsx:109
-#: src/ImageRunModal.jsx:699 src/ImageRunModal.jsx:734
+#: src/PodCreateModal.jsx:109 src/ContainerHeader.jsx:20
+#: src/ImageRunModal.jsx:709 src/ImageRunModal.jsx:744
 msgid "System"
 msgstr "システム"
 
@@ -1140,7 +1158,7 @@ msgstr "システム Podman サービスも利用できます"
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ImageSearchModal.jsx:231 src/ContainerCommitModal.jsx:98
+#: src/ContainerCommitModal.jsx:98 src/ImageSearchModal.jsx:231
 msgid "Tag"
 msgstr "タグ"
 
@@ -1152,11 +1170,11 @@ msgstr "タグ"
 msgid "The Cockpit user interface for Podman containers."
 msgstr "Podman コンテナーの Cockpit ユーザーインターフェイス。"
 
-#: src/ImageRunModal.jsx:1014
+#: src/ImageRunModal.jsx:1024
 msgid "The initialization time needed for a container to bootstrap."
 msgstr "コンテナーのブートストラップに必要な初期化時間。"
 
-#: src/ImageRunModal.jsx:989
+#: src/ImageRunModal.jsx:999
 msgid ""
 "The maximum time allowed to complete the health check before an interval is "
 "considered failed."
@@ -1164,13 +1182,13 @@ msgstr ""
 "間隔が失敗したとみなされる前に、ヘルスチェックを完了するために許容される最大"
 "時間。"
 
-#: src/ImageRunModal.jsx:1039
+#: src/ImageRunModal.jsx:1049
 msgid ""
 "The number of retries allowed before a healthcheck is considered to be "
 "unhealthy."
 msgstr "ヘルスチェックが異常であると見なされるまでに許可される再試行の回数。"
 
-#: src/ImageRunModal.jsx:985 src/ContainerHealthLogs.jsx:75
+#: src/ContainerHealthLogs.jsx:75 src/ImageRunModal.jsx:995
 msgid "Timeout"
 msgstr "タイムアウト"
 
@@ -1202,7 +1220,7 @@ msgstr "$0 から稼働中"
 msgid "Use legacy Docker format"
 msgstr "レガシーの Docker フォーマットの使用"
 
-#: src/ImageDetails.jsx:33 src/Images.jsx:183
+#: src/Images.jsx:184 src/ImageDetails.jsx:33
 msgid "Used by"
 msgstr "使用中"
 
@@ -1214,21 +1232,21 @@ msgstr "ユーザー"
 msgid "User Podman service is also available"
 msgstr "ユーザーの Podman サービスも利用できます"
 
-#: src/PodCreateModal.jsx:114 src/ImageRunModal.jsx:716
-#: src/ImageRunModal.jsx:740
+#: src/PodCreateModal.jsx:114 src/ImageRunModal.jsx:726
+#: src/ImageRunModal.jsx:750
 msgid "User:"
 msgstr "ユーザー:"
 
-#: src/ImageRunModal.jsx:87
+#: src/ImageRunModal.jsx:95
 msgid "Value"
 msgstr "値"
 
-#: src/ContainerIntegration.jsx:112 src/PodCreateModal.jsx:133
-#: src/ImageRunModal.jsx:936
+#: src/PodCreateModal.jsx:133 src/ContainerIntegration.jsx:112
+#: src/ImageRunModal.jsx:946
 msgid "Volumes"
 msgstr "ボリューム"
 
-#: src/ImageRunModal.jsx:813
+#: src/ImageRunModal.jsx:823
 msgid "With terminal"
 msgstr "端末の使用"
 
@@ -1240,11 +1258,11 @@ msgstr "書き込み可能"
 msgid "container"
 msgstr "コンテナー"
 
-#: src/ImageRunModal.jsx:324
+#: src/ImageRunModal.jsx:334
 msgid "downloading"
 msgstr "ダウンロード中"
 
-#: src/ImageRunModal.jsx:753
+#: src/ImageRunModal.jsx:763
 msgid "host[:port]/[user]/container[:tag]"
 msgstr "host[:port]/[user]/container[:tag]"
 
@@ -1264,7 +1282,7 @@ msgstr "N/A"
 msgid "not available"
 msgstr "利用できません"
 
-#: src/Containers.jsx:764
+#: src/Containers.jsx:765
 msgid "pod group"
 msgstr "Pod グループ"
 
@@ -1276,8 +1294,8 @@ msgstr "Podman"
 msgid "ports"
 msgstr "ポート"
 
-#: src/ImageRunModal.jsx:982 src/ImageRunModal.jsx:1007
-#: src/ImageRunModal.jsx:1032
+#: src/ImageRunModal.jsx:992 src/ImageRunModal.jsx:1017
+#: src/ImageRunModal.jsx:1042
 msgid "seconds"
 msgstr "秒"
 
@@ -1285,7 +1303,7 @@ msgstr "秒"
 msgid "select all"
 msgstr "すべて選択"
 
-#: src/ImageSearchModal.jsx:163 src/Images.jsx:131 src/Containers.jsx:395
+#: src/Images.jsx:131 src/Containers.jsx:395 src/ImageSearchModal.jsx:163
 msgid "system"
 msgstr "システム"
 
