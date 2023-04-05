@@ -35,12 +35,20 @@ const format_nanoseconds = (ns) => {
     return cockpit.format(cockpit.ngettext("$0 second", "$0 seconds", seconds), seconds);
 };
 
+const HealthcheckOnFailureActionText = {
+    none: _("No action"),
+    restart: _("Restart"),
+    stop: _("Stop"),
+    kill: _("Force stop"),
+};
+
 const ContainerHealthLogs = ({ container, containerDetail, onAddNotification, state }) => {
     let healthCheck = {};
     let failingStreak = 0;
     let logs = [];
     if (containerDetail) {
         healthCheck = containerDetail.Config.Healthcheck || containerDetail.Config.Health;
+        healthCheck.HealthcheckOnFailureAction = containerDetail.Config.HealthcheckOnFailureAction;
         const healthState = containerDetail.State.Healthcheck || containerDetail.State.Health;
         failingStreak = healthState.FailingStreak || 0;
         logs = [...(healthState.Log || [])].reverse();
@@ -74,6 +82,10 @@ const ContainerHealthLogs = ({ container, containerDetail, onAddNotification, st
                         {healthCheck.Timeout && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Timeout")}</DescriptionListTerm>
                             <DescriptionListDescription>{format_nanoseconds(healthCheck.Timeout)}</DescriptionListDescription>
+                        </DescriptionListGroup>}
+                        {healthCheck.HealthcheckOnFailureAction && <DescriptionListGroup>
+                            <DescriptionListTerm>{_("When unhealthy")}</DescriptionListTerm>
+                            <DescriptionListDescription>{HealthcheckOnFailureActionText[healthCheck.HealthcheckOnFailureAction]}</DescriptionListDescription>
                         </DescriptionListGroup>}
                         {failingStreak !== 0 && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Failing streak")}</DescriptionListTerm>

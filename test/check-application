@@ -2089,6 +2089,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text('#container-details-healthcheck dt:contains("Timeout") + dd', '35 seconds')
         b.wait_in_text('#container-details-healthcheck dt:contains("Start period") + dd', '5 seconds')
         b.wait_not_present('#container-details-healthcheck dt:contains("Failing streak")')
+        if podman_version(self) >= (4, 3, 0):
+            b.wait_in_text('#container-details-healthcheck dt:contains("When unhealthy") + dd', 'No action')
 
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' healthy").strip(), "{[true] 5s 5m25s 35s 2}")
 
@@ -2127,6 +2129,7 @@ class TestApplication(testlib.MachineCase):
                                     "td[data-label='Started at']"],
                             skip_layouts=["rtl"])
 
+        self.toggleExpandedContainer("sick")
         b.click("#containers-images button.pf-c-expandable-section__toggle")
 
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
@@ -2154,6 +2157,8 @@ class TestApplication(testlib.MachineCase):
         self.waitContainerRow(containername)
         self.toggleExpandedContainer(containername)
         b.wait(lambda: self.getContainerAttr(containername, "State") == "RunningHealthy")
+        b.click(".pf-m-expanded button:contains('Health check')")
+        b.wait_in_text('.pf-m-expanded #container-details-healthcheck dt:contains("When unhealthy") + dd', 'Force stop')
         # Removing the file should kill the container
         status = self.execute(auth, f"podman exec {containername} rm -f /healthy").strip()
         b.wait(lambda: self.getContainerAttr(containername, "State") in NOT_RUNNING)
