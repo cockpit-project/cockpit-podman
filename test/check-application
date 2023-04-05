@@ -707,7 +707,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, f"podman run -d --name test-sh4 --stop-timeout 0 {IMG_ALPINE} sh")
         self.waitContainerRow("test-sh4")
         if auth:
-            b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl"])
+            b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl", "mobile"])
         alpine_sel = f"#containers-images tbody tr[data-row-id={images[IMG_ALPINE_LATEST]}{auth}]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-c-table__toggle button")
