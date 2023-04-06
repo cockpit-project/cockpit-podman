@@ -1065,7 +1065,7 @@ export class ImageRunModal extends React.Component {
                                     onChange={ev => this.onValueChanged('healthcheck_retries', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                         </FormGroup>
                         {this.props.version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
-                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("Failure action") }
+                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("When unhealthy") }
                               labelIcon={
                                   <Popover aria-label={_("Health failure check action help")}
                                       enableFlip
