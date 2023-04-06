@@ -2161,7 +2161,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text('.pf-m-expanded #container-details-healthcheck dt:contains("When unhealthy") + dd', 'Force stop')
         # Removing the file should kill the container
         status = self.execute(auth, f"podman exec {containername} rm -f /healthy").strip()
-        b.wait(lambda: self.getContainerAttr(containername, "State") in NOT_RUNNING)
+        b.wait(lambda: self.getContainerAttr(containername, "State", "span:not(.ct-badge-container-unhealthy)") in NOT_RUNNING)
         status = self.execute(auth, f"podman inspect --format '{{{{.State.Health.Status}}}}' {containername}").strip()
         self.assertEqual(status, "unhealthy")
 
