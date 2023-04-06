@@ -178,7 +178,7 @@ class Images extends React.Component {
         const columnTitles = [
             { title: _("Image"), transforms: [cellWidth(20)] },
             { title: _("Owner"), props: { className: "ignore-pixels" } },
-            { title: _("Created"), props: { className: "ignore-pixels" } },
+            { title: _("Created"), props: { className: "ignore-pixels", width: 15 } },
             { title: _("ID"), props: { className: "ignore-pixels" } },
             { title: _("Disk space"), props: { className: "ignore-pixels" } },
             { title: _("Used by"), props: { className: "ignore-pixels" } },
