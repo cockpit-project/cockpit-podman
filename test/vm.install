@@ -26,12 +26,6 @@ fi
 
 . /usr/lib/os-release
 
-# HACK: https://github.com/cockpit-project/bots/pull/4585 started to change the container images
-# on our VM images to the ones we expect; until all of them get rebuild, pull them during image setup
-if ! podman image exists localhost/test-busybox; then
-    /var/tmp/podman-images.setup
-fi
-
 # Remove extra images, tests assume our specific set
 # Since 4.0 podman now ships the pause image
 podman images --format '{{.Repository}}:{{.Tag}}' | grep -Ev 'localhost/test-|pause|cockpit/ws' | xargs -r podman rmi -f
