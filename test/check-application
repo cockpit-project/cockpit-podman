@@ -1296,6 +1296,7 @@ class TestApplication(testlib.MachineCase):
         disable_system()
         disable_user()
         b.click("#app .pf-c-empty-state input[type=checkbox]")
+        b.assert_pixels("#app .pf-c-empty-state", "podman-service-disabled", skip_layouts=["medium", "mobile"])
         b.click("#app .pf-c-empty-state button.pf-m-primary")
 
         b.wait_visible("#containers-containers")
