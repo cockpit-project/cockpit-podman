@@ -56,16 +56,16 @@ const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
         >
             <Form isHorizontal>
                 <Checkbox label={_("Keep all temporary checkpoint files")} id="restore-dialog-keep" name="keep"
-                          isChecked={keep} onChange={setKeep} />
+                          isChecked={keep} onChange={(_, val) => setKeep(val)} />
                 <Checkbox label={_("Restore with established TCP connections")}
                           id="restore-dialog-tcpEstablished" name="tcpEstablished"
-                          isChecked={tcpEstablished} onChange={setTcpEstablished} />
+                          isChecked={tcpEstablished} onChange={(_, val) => setTcpEstablished(val)} />
                 <Checkbox label={_("Ignore IP address if set statically")} id="restore-dialog-ignoreStaticIP"
                           name="ignoreStaticIP" isChecked={ignoreStaticIP}
-                          onChange={setIgnoreStaticIP} />
+                          onChange={(_, val) => setIgnoreStaticIP(val)} />
                 <Checkbox label={_("Ignore MAC address if set statically")} id="restore-dialog-ignoreStaticMAC"
                           name="ignoreStaticMAC" isChecked={ignoreStaticMAC}
-                          onChange={setIgnoreStaticMAC} />
+                          onChange={(_, val) => setIgnoreStaticMAC(val)} />
             </Form>
         </Modal>
     );

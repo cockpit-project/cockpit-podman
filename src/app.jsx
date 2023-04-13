@@ -19,12 +19,10 @@
 
 import React from 'react';
 import { Page, PageSection, PageSectionVariants } from "@patternfly/react-core/dist/esm/components/Page";
-import { Alert, AlertActionCloseButton, AlertActionLink } from "@patternfly/react-core/dist/esm/components/Alert";
-import { AlertGroup } from "@patternfly/react-core/dist/esm/components/AlertGroup";
+import { Alert, AlertActionCloseButton, AlertActionLink, AlertGroup } from "@patternfly/react-core/dist/esm/components/Alert";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
-import { Title } from "@patternfly/react-core/dist/esm/components/Title";
-import { EmptyState, EmptyStateIcon, EmptyStateSecondaryActions, EmptyStateVariant } from "@patternfly/react-core/dist/esm/components/EmptyState";
+import { EmptyState, EmptyStateHeader, EmptyStateFooter, EmptyStateIcon, EmptyStateActions, EmptyStateVariant } from "@patternfly/react-core/dist/esm/components/EmptyState";
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { WithDialogs } from "dialogs.jsx";
@@ -668,24 +666,23 @@ class Application extends React.Component {
         if (!this.state.systemServiceAvailable && !this.state.userServiceAvailable) {
             return (
                 <EmptyState variant={EmptyStateVariant.full}>
-                    <EmptyStateIcon icon={ExclamationCircleIcon} />
-                    <Title headingLevel="h2" size="lg">
-                        { _("Podman service is not active") }
-                    </Title>
-                    <Checkbox isChecked={this.state.enableService}
+                    <EmptyStateHeader titleText={_("Podman service is not active")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
+                    <EmptyStateFooter>
+                        <Checkbox isChecked={this.state.enableService}
                               id="enable"
                               label={_("Automatically start podman on boot")}
-                              onChange={ checked => this.setState({ enableService: checked }) } />
-                    <Button onClick={this.startService}>
-                        {_("Start podman")}
-                    </Button>
-                    { cockpit.manifests.system &&
-                        <EmptyStateSecondaryActions>
+                              onChange={ (_event, checked) => this.setState({ enableService: checked }) } />
+                        <Button onClick={this.startService}>
+                            {_("Start podman")}
+                        </Button>
+                        { cockpit.manifests.system &&
+                        <EmptyStateActions>
                             <Button variant="link" onClick={this.goToServicePage}>
                                 {_("Troubleshoot")}
                             </Button>
-                        </EmptyStateSecondaryActions>
-                    }
+                        </EmptyStateActions>
+                        }
+                    </EmptyStateFooter>
                 </EmptyState>
             );
         }

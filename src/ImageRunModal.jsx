@@ -6,7 +6,7 @@ import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/co
 import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
-import { Select, SelectGroup, SelectOption, SelectVariant } from "@patternfly/react-core/dist/esm/components/Select";
+import { Select, SelectGroup, SelectOption, SelectVariant } from "@patternfly/react-core/dist/esm/deprecated/components/Select";
 import { NumberInput } from "@patternfly/react-core/dist/esm/components/NumberInput";
 import { InputGroup, InputGroupText, InputGroupTextVariant } from "@patternfly/react-core/dist/esm/components/InputGroup";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
@@ -101,7 +101,7 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
                 <Button variant='secondary'
                     className="btn-close"
                     id={id + "-btn-close"}
-                    isSmall
+                    size="sm"
                     aria-label={_("Remove item")}
                     icon={<MinusIcon />}
                     onClick={() => removeitem(idx)} />
@@ -498,7 +498,7 @@ export class ImageRunModal extends React.Component {
         });
     };
 
-    onImageSelectToggle = isOpen => {
+    onImageSelectToggle = (_, isOpen) => {
         this.setState({
             isImageSelectOpen: isOpen,
         });
@@ -800,7 +800,7 @@ export class ImageRunModal extends React.Component {
                         {(image || localImage) &&
                         <FormGroup fieldId="run-image-dialog-pull-latest-image">
                             <Checkbox isChecked={this.state.pullLatestImage} id="run-image-dialog-pull-latest-image"
-                                      onChange={value => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
+                                      onChange={(_event, value) => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
                             />
                         </FormGroup>
                         }
@@ -821,14 +821,14 @@ export class ImageRunModal extends React.Component {
                             <Checkbox id="run-image-dialog-tty"
                               isChecked={this.state.hasTTY}
                               label={_("With terminal")}
-                              onChange={checked => this.onValueChanged('hasTTY', checked)} />
+                              onChange={(_event, checked) => this.onValueChanged('hasTTY', checked)} />
                         </FormGroup>
 
                         <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
                             <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-memory-limit">
                                 <Checkbox id="run-image-dialog-memory-limit-checkbox"
                                   isChecked={this.state.memoryConfigure}
-                                  onChange={checked => this.onValueChanged('memoryConfigure', checked)} />
+                                  onChange={(_event, checked) => this.onValueChanged('memoryConfigure', checked)} />
                                 <NumberInput
                                    value={dialogValues.memory}
                                    id="run-image-dialog-memory"
@@ -869,7 +869,7 @@ export class ImageRunModal extends React.Component {
                                 <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
                                     <Checkbox id="run-image-dialog-cpu-priority-checkbox"
                                         isChecked={this.state.cpuSharesConfigure}
-                                        onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
+                                        onChange={(_event, checked) => this.onValueChanged('cpuSharesConfigure', checked)} />
                                     <NumberInput
                                         id="run-image-cpu-priority"
                                         value={dialogValues.cpuShares}

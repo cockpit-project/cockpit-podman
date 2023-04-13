@@ -28,7 +28,7 @@ export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, 
                 <Checkbox id={id + "-mode"}
                     label={_("Writable")}
                     isChecked={item.mode == "rw"}
-                    onChange={value => onChange(idx, 'mode', value ? "rw" : "ro")} />
+                    onChange={(_event, value) => onChange(idx, 'mode', value ? "rw" : "ro")} />
             </FormGroup>
             { options && options.selinuxAvailable &&
             <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={id + "-selinux"}>
@@ -45,7 +45,7 @@ export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, 
                     className="btn-close"
                     id={id + "-btn-close"}
                     aria-label={_("Remove item")}
-                    isSmall
+                    size="sm"
                     icon={<MinusIcon />}
                     onClick={() => removeitem(idx)} />
             </FormGroup>

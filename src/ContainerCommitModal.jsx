@@ -118,11 +118,11 @@ const ContainerCommitModal = ({ container, localImages }) => {
             <FormGroup fieldId="commit-dialog-pause" label={_("Options")} isStack hasNoPaddingTop>
                 <Checkbox id="commit-dialog-pause"
                           isChecked={pause}
-                          onChange={setPause}
+                          onChange={(_, val) => setPause(val)}
                           label={_("Pause container when creating image")} />
                 <Checkbox id="commit-dialog-docker"
                           isChecked={useDocker}
-                          onChange={setUseDocker}
+                          onChange={(_, val) => setUseDocker(val)}
                           description={_("Docker format is useful when sharing the image with Docker or Moby Engine")}
                           label={_("Use legacy Docker format")} />
             </FormGroup>

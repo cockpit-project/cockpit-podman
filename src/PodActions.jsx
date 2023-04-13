@@ -4,7 +4,7 @@ import * as client from './client.js';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Alert } from "@patternfly/react-core/dist/esm/components/Alert";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
-import { Dropdown, DropdownItem, DropdownPosition, DropdownSeparator, KebabToggle } from "@patternfly/react-core/dist/esm/components/Dropdown";
+import { Dropdown, DropdownItem, DropdownPosition, DropdownSeparator, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { useDialogs } from "dialogs.jsx";
@@ -186,7 +186,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
     return (
         <Dropdown onSelect={() => setOpen(!isOpen)}
                          position={DropdownPosition.right}
-                         toggle={<KebabToggle onToggle={(value, _) => setOpen(value)} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
+                         toggle={<KebabToggle onToggle={(_event, value, _) => setOpen(value)} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
                          isOpen={isOpen}
                          isPlain
         dropdownItems={dropdownItems} />
