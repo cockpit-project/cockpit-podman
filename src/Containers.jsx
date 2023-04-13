@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
-import { Card, CardActions, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
+import { Card, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
 import { Divider } from "@patternfly/react-core/dist/esm/components/Divider";
-import { Dropdown, DropdownItem, DropdownSeparator, KebabToggle } from "@patternfly/react-core/dist/esm/components/Dropdown";
+import { Dropdown, DropdownItem, DropdownSeparator, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
 import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { LabelGroup } from "@patternfly/react-core/dist/esm/components/LabelGroup";
@@ -283,7 +283,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
     );
 
     const kebab = (
-        <Dropdown toggle={<KebabToggle onToggle={isOpen => setActionsKebabOpen(isOpen)} />}
+        <Dropdown toggle={<KebabToggle onToggle={(_event, isOpen) => setActionsKebabOpen(isOpen)} />}
                   isOpen={isActionsKebabOpen}
                   isPlain
                   position="right"
@@ -515,7 +515,7 @@ class Containers extends React.Component {
                               enableFlip
                               bodyContent={renderContainerPublishedPorts(infraContainer.Ports)}
                             >
-                                <Button isSmall variant="link" className="pod-details-button pod-details-ports-btn"
+                                <Button size="sm" variant="link" className="pod-details-button pod-details-ports-btn"
                                         icon={<PortIcon className="pod-details-button-color" />}
                                 >
                                     {infraContainer.Ports.length}
@@ -530,7 +530,7 @@ class Containers extends React.Component {
                       enableFlip
                       bodyContent={renderContainerVolumes(infraContainerDetails.Mounts)}
                         >
-                            <Button isSmall variant="link" className="pod-details-button pod-details-volumes-btn"
+                            <Button size="sm" variant="link" className="pod-details-button pod-details-volumes-btn"
                             icon={<VolumeIcon className="pod-details-button-color" />}
                             >
                                 {infraContainerDetails.Mounts.length}
@@ -741,9 +741,8 @@ class Containers extends React.Component {
 
         const card = (
             <Card id="containers-containers" className="containers-containers">
-                <CardHeader>
+                <CardHeader actions={{ actions: filterRunning }}>
                     <CardTitle><Text component={TextVariants.h2}>{_("Containers")}</Text></CardTitle>
-                    <CardActions>{filterRunning}</CardActions>
                 </CardHeader>
                 <CardBody>
                     <Flex direction={{ default: 'column' }}>
@@ -782,13 +781,26 @@ class Containers extends React.Component {
                                         } else {
                                             tableProps['aria-label'] = _("Containers");
                                         }
+
+                                        const actions = caption && (
+                                            <>
+                                                <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
+                                                <Button variant="secondary"
+                                                        className="create-container-in-pod"
+                                                        isDisabled={localImages === null}
+                                                        onClick={() => createContainer(this.props.pods[section])}>
+                                                    {_("Create container in pod")}
+                                                </Button>
+                                                <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
+                                            </>
+                                        );
                                         return (
                                             <Card key={'table-' + section}
                                              id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                              isPlain={section == "no-pod"}
                                              isFlat={section != "no-pod"}
                                              className="container-pod">
-                                                {caption && <CardHeader>
+                                                {caption && <CardHeader actions={{ actions, className: "panel-actions" }}>
                                                     <CardTitle>
                                                         <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
                                                             <h3 className='pod-name'>{caption}</h3>
@@ -796,16 +808,6 @@ class Containers extends React.Component {
                                                             {this.renderPodDetails(this.props.pods[section], podStatus)}
                                                         </Flex>
                                                     </CardTitle>
-                                                    <CardActions className='panel-actions'>
-                                                        <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
-                                                        <Button variant="secondary"
-                                                                className="create-container-in-pod"
-                                                                isDisabled={localImages === null}
-                                                                onClick={() => createContainer(this.props.pods[section])}>
-                                                            {_("Create container in pod")}
-                                                        </Button>
-                                                        <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
-                                                    </CardActions>
                                                 </CardHeader>}
                                                 <ListingTable variant='compact'
                                                           emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}

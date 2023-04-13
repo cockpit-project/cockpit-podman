@@ -65,7 +65,7 @@ export class ImageSearchModal extends React.Component {
         this.props.downloadImage(selectedImageName, this.state.imageTag, this.state.isSystem);
     }
 
-    onItemSelected(key) {
+    onItemSelected(_, key) {
         this.setState({ selected: key.split('-').slice(-1)[0] });
     }
 

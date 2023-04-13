@@ -53,13 +53,13 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
         >
             <Form isHorizontal>
                 <Checkbox label={_("Keep all temporary checkpoint files")} id="checkpoint-dialog-keep"
-                              name="keep" isChecked={keep} onChange={setKeep} />
+                              name="keep" isChecked={keep} onChange={(_, val) => setKeep(val)} />
                 <Checkbox label={_("Leave running after writing checkpoint to disk")}
                               id="checkpoint-dialog-leaveRunning" name="leaveRunning"
-                              isChecked={leaveRunning} onChange={setLeaveRunning} />
+                              isChecked={leaveRunning} onChange={(_, val) => setLeaveRunning(val)} />
                 <Checkbox label={_("Support preserving established TCP connections")}
                               id="checkpoint-dialog-tcpEstablished" name="tcpEstablished"
-                              isChecked={tcpEstablished} onChange={setTcpEstablished} />
+                              isChecked={tcpEstablished} onChange={(_, val) => setTcpEstablished(val) } />
             </Form>
         </Modal>
     );

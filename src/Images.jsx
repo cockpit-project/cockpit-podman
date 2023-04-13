@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
-import { Dropdown, DropdownItem, KebabToggle } from "@patternfly/react-core/dist/esm/components/Dropdown";
+import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { ExpandableSection } from "@patternfly/react-core/dist/esm/components/ExpandableSection";
 import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
@@ -396,7 +396,7 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
                     e.stopPropagation();
                     runImage();
                 }}
-                isSmall
+                size="sm"
                 data-image={image.Id}>
             {_("Create container")}
         </Button>

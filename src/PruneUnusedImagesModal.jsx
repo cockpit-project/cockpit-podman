@@ -33,7 +33,7 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
                   isChecked={checked}
                   id={name}
                   name={name}
-                  onChange={handleChange}
+                  onChange={(_, val) => handleChange(val)}
                   aria-owns={listNameId}
                 />
             }

@@ -1148,7 +1148,7 @@ class TestApplication(testlib.MachineCase):
 
         # Check that console reconnects when container starts
         b.click(".pf-m-expanded button:contains('Console')")
-        b.wait_text(".pf-m-expanded .pf-c-title", "Container is not running")
+        b.wait_text(".pf-m-expanded .pf-c-empty-state", "Container is not running")
         self.performContainerAction("swamped-crate", "Start")
         b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
         b.focus(".pf-m-expanded .xterm-helper-textarea")

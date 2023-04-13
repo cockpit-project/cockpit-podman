@@ -75,7 +75,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) 
                 <Button variant='secondary'
                             className="btn-close"
                             id={id + "-btn-close"}
-                            isSmall
+                            size="sm"
                             aria-label={_("Remove item")}
                             icon={<MinusIcon />}
                             onClick={() => removeitem(idx)} />

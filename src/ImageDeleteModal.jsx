@@ -104,7 +104,7 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
                                         aria-label={x}
                                         key={x}
                                         label={x}
-                                        onChange={checked => onValueChanged(x, checked)} />
+                                        onChange={(_event, checked) => onValueChanged(x, checked)} />
                         );
                     })}
                 </StackItem>
