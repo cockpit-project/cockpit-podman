@@ -24,8 +24,24 @@ const outdir = 'dist';
 // Obtain package name from package.json
 const packageJson = JSON.parse(fs.readFileSync('package.json'));
 
-const getTime = () => new Date().toTimeString()
-        .split(' ')[0];
+function notifyEndPlugin() {
+    return {
+        name: 'notify-end',
+        setup(build) {
+            let startTime;
+
+            build.onStart(() => {
+                startTime = new Date();
+            });
+
+            build.onEnd(() => {
+                const endTime = new Date();
+                const timeStamp = endTime.toTimeString().split(' ')[0];
+                console.log(`${timeStamp}: Build finished in ${endTime - startTime} ms`);
+            });
+        }
+    };
+}
 
 const cwd = process.cwd();
 
@@ -62,12 +78,7 @@ const context = await esbuild.context({
         ...production ? [cockpitCompressPlugin()] : [],
         cockpitRsyncEsbuildPlugin({ dest: packageJson.name }),
 
-        {
-            name: 'notify-end',
-            setup(build) {
-                build.onEnd(() => console.log(`${getTime()}: Build finished`));
-            }
-        },
+        notifyEndPlugin(),
     ]
 });
 
