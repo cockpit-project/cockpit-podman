@@ -317,7 +317,7 @@ class Application extends React.Component {
                         if (event && event.Action === "restart")
                             reply.State = "restarting";
                         this.updateState("containers", reply.Id + system.toString(), reply);
-                        if (reply.State == "running") {
+                        if (["running", "created", "exited", "paused", "stopped"].find(containerState => containerState === reply.State)) {
                             this.inspectContainerDetail(reply.Id, system);
                         } else {
                             this.setState(prevState => {
