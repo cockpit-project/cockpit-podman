@@ -7,6 +7,10 @@ on:
 jobs:
   cockpit-lib-update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
     steps:
       - name: Set up dependencies
         run: |
