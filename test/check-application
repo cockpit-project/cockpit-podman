@@ -498,6 +498,16 @@ class TestApplication(testlib.MachineCase):
         # images are sorted alphabetically
         self.assertRegex(text, ".*/test-alpine.*/test-busybox.*/test-registry")
 
+        # build a dummy image so that the timestamp is "today" (for predictable pixel tests)
+        # ensure that CMD neither comes first (podman rmi leaves that layer otherwise)
+        # nor last (then the topmost layer does not match the image ID)
+        IMG_HELLO_LATEST = "localhost/test-hello:latest"
+        self.machine.execute(f"""set -eu; D={self.vm_tmpdir}/hello;
+        mkdir $D
+        printf 'FROM scratch\\nCOPY test.txt /\\nCMD ["/run.sh"]\\nCOPY test.txt /test2.txt\\n' > $D/Containerfile
+        echo hello > $D/test.txt""")
+        self.execute(auth, f"podman build -t {IMG_HELLO_LATEST} {self.vm_tmpdir}/hello")
+
         # prepare image ids - much easier to pick a specific container
         images = {}
         for image in self.execute(auth, "podman images --noheading --no-trunc").strip().split("\n"):
@@ -506,20 +516,29 @@ class TestApplication(testlib.MachineCase):
             images[f"{items[0]}:{items[1]}"] = items[2].split(":")[-1]
 
         # show image listing toggle
-        busybox_sel = f"#containers-images tbody tr[data-row-id={images[IMG_BUSYBOX_LATEST]}{auth}]".lower()
-        b.wait_visible(busybox_sel)
-        b.click(busybox_sel + " td.pf-c-table__toggle button")
-        b.click(busybox_sel + " .pf-c-dropdown__toggle")
-        b.wait_visible(busybox_sel + " button.btn-delete")
-        b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Commandsh")
+        hello_sel = f"#containers-images tbody tr[data-row-id={images[IMG_HELLO_LATEST]}{auth}]".lower()
+        b.wait_visible(hello_sel)
+        b.click(hello_sel + " td.pf-c-table__toggle button")
+        b.click(hello_sel + " .pf-c-dropdown__toggle")
+        b.wait_visible(hello_sel + " button.btn-delete")
+        b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Command/run.sh")
         # Show history
         b.click("#containers-images tbody.pf-m-expanded .pf-c-tabs__list li:nth-child(2) button")
         b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"ID\"]:first",
-                       images[IMG_BUSYBOX_LATEST][:12])
-        b.assert_pixels('#containers-images .pf-c-table__expandable-row.pf-m-expanded', "history",
-                        ignore=[".ignore-pixels"],
-                        skip_layouts=["rtl"])
-        b.click(busybox_sel + " td.pf-c-table__toggle button")
+                       images[IMG_HELLO_LATEST][:12])
+        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created\"]:first",
+                       "today at")
+        # topmost (last) layer
+        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]:first",
+                       "COPY")
+        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]:first",
+                       "in /test2.txt")
+        # initial (first) layer
+        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]:last",
+                       "COPY")
+
+        self.execute(auth, f"podman rmi {IMG_HELLO_LATEST}")
+        b.wait_not_present(hello_sel)
 
         # make sure no running containers shown; on CoreOS there's the cockpit/ws container
         self.filter_containers('running')
@@ -662,6 +681,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:3")
         self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:4")
 
+        busybox_sel = f"#containers-images tbody tr[data-row-id={images[IMG_BUSYBOX_LATEST]}{auth}]".lower()
         b.click(busybox_sel + " td.pf-c-table__toggle button")
 
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:1")
