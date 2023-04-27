@@ -6,6 +6,7 @@ import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import * as dockerNames from 'docker-names';
 
+import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import { ErrorNotification } from './Notification.jsx';
 import { PublishPort } from './PublishPort.jsx';
 import { DynamicListForm } from './DynamicListForm.jsx';
@@ -92,9 +93,7 @@ export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable,
     const defaultBody = (
         <Form>
             {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
-            <FormGroup fieldId='create-pod-dialog-name' label={_("Name")} className="ct-m-horizontal"
-                    validated={nameError ? "error" : "default"}
-                    helperTextInvalid={nameError}>
+            <FormGroup fieldId='create-pod-dialog-name' label={_("Name")} className="ct-m-horizontal">
                 <TextInput id='create-pod-dialog-name'
                        className="pod-name"
                        placeholder={_("Pod name")}
@@ -102,6 +101,7 @@ export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable,
                        validated={nameError ? "error" : "default"}
                        aria-label={nameError}
                        onChange={value => onValueChanged('podName', value)} />
+                <FormHelper fieldId="create-pod-dialog-name" helperTextInvalid={nameError} />
             </FormGroup>
             { userServiceAvailable && systemServiceAvailable &&
                 <FormGroup isInline hasNoPaddingTop fieldId='create-pod-dialog-owner' label={_("Owner")} className="ct-m-horizontal">

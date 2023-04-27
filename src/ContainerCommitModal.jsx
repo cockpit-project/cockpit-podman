@@ -6,6 +6,7 @@ import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import cockpit from 'cockpit';
 
+import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import { ErrorNotification } from './Notification.jsx';
@@ -86,13 +87,12 @@ const ContainerCommitModal = ({ container, localImages }) => {
     const commitContent = (
         <Form isHorizontal>
             {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError("")} />}
-            <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}
-                       validated={nameError ? "error" : "default"}
-                       helperTextInvalid={nameError}>
+            <FormGroup fieldId="commit-dialog-image-name" label={_("New image name")}>
                 <TextInput id="commit-dialog-image-name"
                            value={imageName}
                            validated={nameError ? "error" : "default"}
                            onChange={value => { setNameError(""); setImageName(value) }} />
+                <FormHelper fieldId="commit-dialog-image-name" helperTextInvalid={nameError} />
             </FormGroup>
 
             <FormGroup fieldId="commit-dialog-image-tag" label={_("Tag")}>
