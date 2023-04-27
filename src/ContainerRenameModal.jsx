@@ -9,6 +9,7 @@ import * as client from './client.js';
 import * as utils from './util.js';
 import { ErrorNotification } from './Notification.jsx';
 import { useDialogs } from "dialogs.jsx";
+import { FormHelper } from 'cockpit-components-form-helper.jsx';
 
 const _ = cockpit.gettext;
 
@@ -63,15 +64,14 @@ const ContainerRenameModal = ({ container, version, updateContainerAfterEvent })
 
     const renameContent = (
         <Form isHorizontal>
-            <FormGroup fieldId="rename-dialog-container-name" label={_("New container name")}
-                    validated={nameError ? "error" : "default"}
-                    helperTextInvalid={nameError}>
+            <FormGroup fieldId="rename-dialog-container-name" label={_("New container name")}>
                 <TextInput id="rename-dialog-container-name"
                         value={name}
                         validated={nameError ? "error" : "default"}
                         type="text"
                         aria-label={nameError}
                         onChange={value => handleInputChange("name", value)} />
+                <FormHelper fieldId="commit-dialog-image-name" helperTextInvalid={nameError} />
             </FormGroup>
         </Form>
     );
