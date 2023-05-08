@@ -534,7 +534,7 @@ export class ImageRunModal extends React.Component {
 
     debouncedInputChanged = debounce(300, this.handleImageSelectInput);
 
-    handleOwnerSelect = (_, event) => {
+    handleOwnerSelect = (event) => {
         const value = event.currentTarget.value;
         this.setState({
             owner: value
@@ -845,7 +845,7 @@ export class ImageRunModal extends React.Component {
                                     value={this.state.memoryUnit}
                                     isDisabled={!this.state.memoryConfigure}
                                     className="dialog-run-form-select"
-                                    onChange={value => this.onValueChanged('memoryUnit', value)}>
+                                    onChange={(_event, value) => this.onValueChanged('memoryUnit', value)}>
                                     <FormSelectOption value={units.KB.name} key={units.KB.name} label={_("KB")} />
                                     <FormSelectOption value={units.MB.name} key={units.MB.name} label={_("MB")} />
                                     <FormSelectOption value={units.GB.name} key={units.GB.name} label={_("GB")} />
@@ -902,7 +902,7 @@ export class ImageRunModal extends React.Component {
                                     <FormSelect id="run-image-dialog-restart-policy"
                               aria-label={_("Restart policy help")}
                               value={dialogValues.restartPolicy}
-                              onChange={value => this.onValueChanged('restartPolicy', value)}>
+                              onChange={(_event, value) => this.onValueChanged('restartPolicy', value)}>
                                         <FormSelectOption value='no' key='no' label={_("No")} />
                                         <FormSelectOption value='on-failure' key='on-failure' label={_("On failure")} />
                                         <FormSelectOption value='always' key='always' label={_("Always")} />

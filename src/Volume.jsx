@@ -34,7 +34,7 @@ export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, 
             <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={id + "-selinux"}>
                 <FormSelect id={id + "-selinux"} className='pf-c-form-control'
                             value={item.selinux}
-                            onChange={value => onChange(idx, 'selinux', value)}>
+                            onChange={(_event, value) => onChange(idx, 'selinux', value)}>
                     <FormSelectOption value='' key='' label={_("No label")} />
                     <FormSelectOption value='z' key='z' label={_("Shared")} />
                     <FormSelectOption value='Z' key='Z' label={_("Private")} />
