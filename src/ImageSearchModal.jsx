@@ -53,7 +53,7 @@ export class ImageSearchModal extends React.Component {
             this.activeConnection.close();
     }
 
-    onToggleUser(_, ev) {
+    onToggleUser(ev) {
         this.setState({ isSystem: ev.currentTarget.value === "system" });
     }
 
@@ -175,7 +175,7 @@ export class ImageSearchModal extends React.Component {
                         <FormGroup fieldId="registry-select" label={_("in")}>
                             <FormSelect id='registry-select'
                                 value={this.state.registry}
-                                onChange={value =>
+                                onChange={(_event, value) =>
                                     this.setState({ registry: value }, () => this.onSearchTriggered(false))
                                 }>
                                 <FormSelectOption value="" key="all" label={_("All registries")} />

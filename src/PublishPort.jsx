@@ -66,7 +66,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) 
                 <FormSelect className='pf-c-form-control container-port-protocol'
                             id={id + "-protocol"}
                             value={item.protocol}
-                            onChange={value => onChange(idx, 'protocol', value)}>
+                            onChange={(_event, value) => onChange(idx, 'protocol', value)}>
                     <FormSelectOption value='tcp' key='tcp' label={_("TCP")} />
                     <FormSelectOption value='udp' key='udp' label={_("UDP")} />
                 </FormSelect>
