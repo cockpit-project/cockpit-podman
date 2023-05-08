@@ -665,25 +665,29 @@ class Application extends React.Component {
 
         if (!this.state.systemServiceAvailable && !this.state.userServiceAvailable) {
             return (
-                <EmptyState variant={EmptyStateVariant.full}>
-                    <EmptyStateHeader titleText={_("Podman service is not active")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
-                    <EmptyStateFooter>
-                        <Checkbox isChecked={this.state.enableService}
-                              id="enable"
-                              label={_("Automatically start podman on boot")}
-                              onChange={ (_event, checked) => this.setState({ enableService: checked }) } />
-                        <Button onClick={this.startService}>
-                            {_("Start podman")}
-                        </Button>
-                        { cockpit.manifests.system &&
-                        <EmptyStateActions>
-                            <Button variant="link" onClick={this.goToServicePage}>
-                                {_("Troubleshoot")}
-                            </Button>
-                        </EmptyStateActions>
-                        }
-                    </EmptyStateFooter>
-                </EmptyState>
+                <Page>
+                    <PageSection variant={PageSectionVariants.light}>
+                        <EmptyState variant={EmptyStateVariant.full}>
+                            <EmptyStateHeader titleText={_("Podman service is not active")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
+                            <EmptyStateFooter>
+                                <Checkbox isChecked={this.state.enableService}
+                                      id="enable"
+                                      label={_("Automatically start podman on boot")}
+                                      onChange={ (_event, checked) => this.setState({ enableService: checked }) } />
+                                <Button onClick={this.startService}>
+                                    {_("Start podman")}
+                                </Button>
+                                { cockpit.manifests.system &&
+                                <EmptyStateActions>
+                                    <Button variant="link" onClick={this.goToServicePage}>
+                                        {_("Troubleshoot")}
+                                    </Button>
+                                </EmptyStateActions>
+                                }
+                            </EmptyStateFooter>
+                        </EmptyState>
+                    </PageSection>
+                </Page>
             );
         }
 
