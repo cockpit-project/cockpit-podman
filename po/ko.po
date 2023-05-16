@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-06 02:46+0000\n"
-"PO-Revision-Date: 2023-05-06 15:20+0000\n"
+"POT-Creation-Date: 2023-05-14 02:48+0000\n"
+"PO-Revision-Date: 2023-05-14 16:20+0000\n"
 "Last-Translator: 김인수 <simmon@nplob.com>\n"
 "Language-Team: Korean <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/ko/>\n"
@@ -56,7 +56,7 @@ msgstr "변수를 추가합니다"
 msgid "Add volume"
 msgstr "볼륨 추가"
 
-#: src/Containers.jsx:694 src/ContainerHeader.jsx:21 src/ImageRunModal.jsx:655
+#: src/ContainerHeader.jsx:21 src/Containers.jsx:694 src/ImageRunModal.jsx:655
 msgid "All"
 msgstr "모두"
 
@@ -102,12 +102,12 @@ msgstr ""
 "니다. 숫자가 클 수록 이 컨테이너 우선순위를 갖습니다. 낮은 번호는 우선 순위"
 "가 낮아집니다."
 
-#: src/ContainerDeleteModal.jsx:34 src/ContainerCheckpointModal.jsx:50
-#: src/PodCreateModal.jsx:156 src/ContainerRenameModal.jsx:96
-#: src/PodActions.jsx:49 src/ImageSearchModal.jsx:244
-#: src/PruneUnusedImagesModal.jsx:97 src/ForceRemoveModal.jsx:25
-#: src/ContainerRestoreModal.jsx:53 src/ImageDeleteModal.jsx:94
-#: src/ImageRunModal.jsx:1113 src/ContainerCommitModal.jsx:157
+#: src/PodActions.jsx:49 src/ForceRemoveModal.jsx:25
+#: src/ContainerCheckpointModal.jsx:50 src/ContainerDeleteModal.jsx:34
+#: src/ImageSearchModal.jsx:244 src/PodCreateModal.jsx:156
+#: src/PruneUnusedImagesModal.jsx:97 src/ContainerCommitModal.jsx:157
+#: src/ImageDeleteModal.jsx:94 src/ContainerRenameModal.jsx:96
+#: src/ContainerRestoreModal.jsx:53 src/ImageRunModal.jsx:1113
 msgid "Cancel"
 msgstr "취소"
 
@@ -139,9 +139,9 @@ msgstr "볼륨을 보려면 누르세요"
 msgid "Cockpit component for Podman containers"
 msgstr "포드맨 컨테이너를 위한 cockpit 구성요소"
 
+#: src/ContainerCommitModal.jsx:112 src/ContainerDetails.jsx:40
 #: src/ContainerHealthLogs.jsx:67 src/ImageDetails.jsx:15
-#: src/ContainerDetails.jsx:40 src/ImageRunModal.jsx:814
-#: src/ImageRunModal.jsx:964 src/ContainerCommitModal.jsx:112
+#: src/ImageRunModal.jsx:814 src/ImageRunModal.jsx:964
 msgid "Command"
 msgstr "명령"
 
@@ -226,12 +226,12 @@ msgstr "$0에서 컨테이너 생성"
 msgid "Create container in pod"
 msgstr "포드에서 컨테이너 생성"
 
-#: src/PodCreateModal.jsx:149 src/Containers.jsx:703
+#: src/Containers.jsx:703 src/PodCreateModal.jsx:149
 msgid "Create pod"
 msgstr "포드 생성"
 
-#: src/ImageHistory.jsx:33 src/ContainerDetails.jsx:64 src/Images.jsx:181
-#: src/util.js:9 src/util.js:12
+#: src/util.js:9 src/util.js:12 src/Images.jsx:181 src/ContainerDetails.jsx:64
+#: src/ImageHistory.jsx:33
 msgid "Created"
 msgstr "생성일"
 
@@ -267,8 +267,8 @@ msgstr "시작 기간 감소"
 msgid "Decrease timeout"
 msgstr "시간종료 감소"
 
-#: src/ContainerDeleteModal.jsx:33 src/Containers.jsx:281 src/Images.jsx:421
-#: src/PodActions.jsx:45 src/PodActions.jsx:179
+#: src/PodActions.jsx:45 src/PodActions.jsx:179 src/ContainerDeleteModal.jsx:33
+#: src/Containers.jsx:281 src/Images.jsx:421
 msgid "Delete"
 msgstr "삭제"
 
@@ -276,7 +276,7 @@ msgstr "삭제"
 msgid "Delete $0"
 msgstr "$0 삭제"
 
-#: src/ContainerDeleteModal.jsx:31 src/ForceRemoveModal.jsx:18
+#: src/ForceRemoveModal.jsx:18 src/ContainerDeleteModal.jsx:31
 msgid "Delete $0?"
 msgstr "$0 삭제?"
 
@@ -362,7 +362,7 @@ msgstr "예제, 당신의 이름 <yourname@example.com>"
 msgid "Example: $0"
 msgstr "예제: $0"
 
-#: src/ContainerDetails.jsx:14 src/util.js:9 src/util.js:12
+#: src/util.js:9 src/util.js:12 src/ContainerDetails.jsx:14
 msgid "Exited"
 msgstr "종료됨"
 
@@ -458,7 +458,7 @@ msgstr "pod $0 재개에 실패"
 msgid "Failed to run container $0"
 msgstr "컨테이너 $0를 실행하는 데 실패"
 
-#: src/ContainerHealthLogs.jsx:101 src/Containers.jsx:132
+#: src/Containers.jsx:132 src/ContainerHealthLogs.jsx:101
 msgid "Failed to run health check on container $0"
 msgstr "컨테이너 $0에서 상태를 점검하는데 실패함"
 
@@ -506,11 +506,11 @@ msgstr "강제 삭제"
 msgid "Force delete pod $0?"
 msgstr "pod $0 강제 삭제?"
 
-#: src/Containers.jsx:202 src/PodActions.jsx:119
+#: src/PodActions.jsx:119 src/Containers.jsx:202
 msgid "Force restart"
 msgstr "강제 재시작"
 
-#: src/ContainerHealthLogs.jsx:42 src/Containers.jsx:194 src/PodActions.jsx:97
+#: src/PodActions.jsx:97 src/Containers.jsx:194 src/ContainerHealthLogs.jsx:42
 #: src/ImageRunModal.jsx:60
 msgid "Force stop"
 msgstr "강제 멈춤"
@@ -575,11 +575,11 @@ msgstr "호스트 포트"
 msgid "Host port help"
 msgstr "호스트 포트 도움말"
 
-#: src/ContainerDetails.jsx:32 src/Images.jsx:182
+#: src/Images.jsx:182 src/ContainerDetails.jsx:32
 msgid "ID"
 msgstr "ID"
 
-#: src/ContainerDetails.jsx:48 src/PublishPort.jsx:17
+#: src/PublishPort.jsx:17 src/ContainerDetails.jsx:48
 msgid "IP address"
 msgstr "IP 주소"
 
@@ -619,7 +619,7 @@ msgstr "정적인 상태라면 IP 주소 무시"
 msgid "Ignore MAC address if set statically"
 msgstr "정적인 상태라면 맥 주소 무시"
 
-#: src/ContainerDetails.jsx:36 src/Images.jsx:179 src/ImageRunModal.jsx:757
+#: src/Images.jsx:179 src/ContainerDetails.jsx:36 src/ImageRunModal.jsx:757
 msgid "Image"
 msgstr "이미지"
 
@@ -726,7 +726,7 @@ msgstr "로컬"
 msgid "Local images"
 msgstr "로컬 이미지"
 
-#: src/ContainerHealthLogs.jsx:109 src/Containers.jsx:420
+#: src/Containers.jsx:420 src/ContainerHealthLogs.jsx:109
 msgid "Logs"
 msgstr "기록"
 
@@ -846,8 +846,8 @@ msgstr "실행 만"
 msgid "Options"
 msgstr "옵션"
 
-#: src/PodCreateModal.jsx:107 src/Containers.jsx:552 src/Images.jsx:180
-#: src/ImageSearchModal.jsx:162 src/ContainerHeader.jsx:15
+#: src/ContainerHeader.jsx:15 src/Containers.jsx:552
+#: src/ImageSearchModal.jsx:162 src/Images.jsx:180 src/PodCreateModal.jsx:107
 #: src/ImageRunModal.jsx:702
 msgid "Owner"
 msgstr "소유자"
@@ -866,7 +866,7 @@ msgid ""
 msgstr ""
 "대량으로 가져오기 위해 키=값 쌍의 하나 이상의 행에 입력부분에 붙여 넣습니다"
 
-#: src/Containers.jsx:210 src/PodActions.jsx:164
+#: src/PodActions.jsx:164 src/Containers.jsx:210
 msgid "Pause"
 msgstr "일시정지"
 
@@ -902,7 +902,7 @@ msgstr "포드맨 서비스가 동작하지 않습니다"
 msgid "Port mapping"
 msgstr "포트 대응"
 
-#: src/ImageDetails.jsx:39 src/ContainerIntegration.jsx:108
+#: src/ContainerIntegration.jsx:108 src/ImageDetails.jsx:39
 msgid "Ports"
 msgstr "포트"
 
@@ -946,7 +946,7 @@ msgstr "읽기-전용 접근"
 msgid "Read-write access"
 msgstr "읽기-쓰기 접근"
 
-#: src/Volume.jsx:47 src/PublishPort.jsx:79 src/ImageRunModal.jsx:105
+#: src/PublishPort.jsx:79 src/Volume.jsx:47 src/ImageRunModal.jsx:105
 msgid "Remove item"
 msgstr "항목 제거"
 
@@ -966,8 +966,8 @@ msgstr "컨테이너 $0 이름변경"
 msgid "Resource limits can be set"
 msgstr "자원 한계가 설정 될 수 있습니다"
 
-#: src/ContainerHealthLogs.jsx:40 src/Containers.jsx:198 src/PodActions.jsx:108
-#: src/util.js:9 src/ImageRunModal.jsx:58
+#: src/PodActions.jsx:108 src/Containers.jsx:198 src/util.js:9
+#: src/ContainerHealthLogs.jsx:40 src/ImageRunModal.jsx:58
 msgid "Restart"
 msgstr "재시작"
 
@@ -1009,7 +1009,7 @@ msgstr "설정된 TCP 연결로 복구"
 msgid "Restricted by user account permissions"
 msgstr "사용자 계졍 권한에 의해 제한됨"
 
-#: src/Containers.jsx:217 src/PodActions.jsx:149
+#: src/PodActions.jsx:149 src/Containers.jsx:217
 msgid "Resume"
 msgstr "다시 시작"
 
@@ -1021,11 +1021,11 @@ msgstr "재시도"
 msgid "Retry another term."
 msgstr "다른 용어를 재시도."
 
-#: src/ContainerHealthLogs.jsx:105 src/Containers.jsx:271
+#: src/Containers.jsx:271 src/ContainerHealthLogs.jsx:105
 msgid "Run health check"
 msgstr "상태 점검을 실행"
 
-#: src/ImageUsedBy.jsx:35 src/util.js:9 src/util.js:12
+#: src/util.js:9 src/util.js:12 src/ImageUsedBy.jsx:35
 msgid "Running"
 msgstr "작동중"
 
@@ -1081,15 +1081,15 @@ msgstr "중간 이미지 보기"
 msgid "Show less"
 msgstr "덜 보기"
 
-#: src/ContainerIntegration.jsx:84 src/PruneUnusedImagesModal.jsx:48
+#: src/PruneUnusedImagesModal.jsx:48 src/ContainerIntegration.jsx:84
 msgid "Show more"
-msgstr "더 보여주기"
+msgstr "더 보기"
 
 #: src/ImageHistory.jsx:33
 msgid "Size"
 msgstr "크기"
 
-#: src/Containers.jsx:237 src/app.jsx:713 src/PodActions.jsx:134
+#: src/PodActions.jsx:134 src/Containers.jsx:237 src/app.jsx:713
 msgid "Start"
 msgstr "시작"
 
@@ -1117,7 +1117,7 @@ msgstr "상태"
 msgid "Status"
 msgstr "상태"
 
-#: src/ContainerHealthLogs.jsx:41 src/Containers.jsx:190 src/PodActions.jsx:86
+#: src/PodActions.jsx:86 src/Containers.jsx:190 src/ContainerHealthLogs.jsx:41
 #: src/ImageRunModal.jsx:59
 msgid "Stop"
 msgstr "중지"
@@ -1130,7 +1130,7 @@ msgstr "정지됨"
 msgid "Support preserving established TCP connections"
 msgstr "설정된 TCP 연결 유지 지원"
 
-#: src/PodCreateModal.jsx:109 src/ContainerHeader.jsx:20
+#: src/ContainerHeader.jsx:20 src/PodCreateModal.jsx:109
 #: src/ImageRunModal.jsx:709 src/ImageRunModal.jsx:744
 msgid "System"
 msgstr "시스템"
@@ -1204,7 +1204,7 @@ msgstr "$0 이후 상승"
 msgid "Use legacy Docker format"
 msgstr "레거시 도커 형식을 사용합니다"
 
-#: src/ImageDetails.jsx:33 src/Images.jsx:184
+#: src/Images.jsx:184 src/ImageDetails.jsx:33
 msgid "Used by"
 msgstr "사용되었습니다"
 
@@ -1291,7 +1291,7 @@ msgstr "초"
 msgid "select all"
 msgstr "모두 선택"
 
-#: src/Containers.jsx:396 src/Images.jsx:131 src/ImageSearchModal.jsx:163
+#: src/Containers.jsx:396 src/ImageSearchModal.jsx:163 src/Images.jsx:131
 msgid "system"
 msgstr "systemd"
 
