@@ -50,7 +50,7 @@ The Cockpit user interface for Podman containers.
 # Nothing to build
 
 %install
-%make_install
+%make_install PREFIX=/usr
 appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*
 
 %files

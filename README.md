@@ -32,7 +32,7 @@ make
 
 # Installing
 
-`sudo make install` installs the package in `/usr/share/cockpit/`. This depends
+`sudo make install` installs the package in `/usr/local/share/cockpit/`. This depends
 on the `dist` target, which generates the distribution tarball.
 
 You can also run `make rpm` to build RPMs for local installation.

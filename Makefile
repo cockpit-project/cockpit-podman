@@ -9,6 +9,7 @@ export TEST_OS
 TARFILE=$(RPM_NAME)-$(VERSION).tar.xz
 NODE_CACHE=$(RPM_NAME)-node-$(VERSION).tar.xz
 SPEC=$(RPM_NAME).spec
+PREFIX ?= /usr/local
 APPSTREAMFILE=org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check for node_modules/
@@ -103,12 +104,12 @@ clean:
 	rm -f po/LINGUAS
 
 install: $(DIST_TEST) po/LINGUAS
-	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
-	cp -r dist/* $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
-	mkdir -p $(DESTDIR)/usr/share/metainfo/
+	mkdir -p $(DESTDIR)$(PREFIX)/share/cockpit/$(PACKAGE_NAME)
+	cp -r dist/* $(DESTDIR)$(PREFIX)/share/cockpit/$(PACKAGE_NAME)
+	mkdir -p $(DESTDIR)$(PREFIX)/share/metainfo/
 	msgfmt --xml -d po \
 		--template $(APPSTREAMFILE) \
-		-o $(DESTDIR)/usr/share/metainfo/$(APPSTREAMFILE)
+		-o $(DESTDIR)$(PREFIX)/share/metainfo/$(APPSTREAMFILE)
 
 # this requires a built source tree and avoids having to install anything system-wide
 devel-install: $(DIST_TEST)
