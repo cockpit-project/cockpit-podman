@@ -1550,6 +1550,10 @@ class TestApplication(testlib.MachineCase):
         b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
         b.set_input_text("#run-image-dialog-name", container_name)
 
+        # Test invalid input
+        b.set_input_text("#create-image-image-select-typeahead", "|alpi*ne?\\")
+        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", "localhost/test-alpine:latest")
+
         # No local results found
         b.set_input_text("#create-image-image-select-typeahead", "notfound")
 
