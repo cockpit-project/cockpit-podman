@@ -22,7 +22,7 @@ export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, 
             <FormGroup className="pf-m-3-col-on-md" label={_("Container path")} fieldId={id + "-container-path"}>
                 <TextInput id={id + "-container-path"}
                     value={item.containerPath || ''}
-                    onChange={value => onChange(idx, 'containerPath', value)} />
+                    onChange={(_event, value) => onChange(idx, 'containerPath', value)} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md" label={_("Mode")} fieldId={id + "-mode"}>
                 <Checkbox id={id + "-mode"}
@@ -32,7 +32,7 @@ export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, 
             </FormGroup>
             { options && options.selinuxAvailable &&
             <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={id + "-selinux"}>
-                <FormSelect id={id + "-selinux"} className='pf-c-form-control'
+                <FormSelect id={id + "-selinux"} className='pf-v5-c-form-control'
                             value={item.selinux}
                             onChange={(_event, value) => onChange(idx, 'selinux', value)}>
                     <FormSelectOption value='' key='' label={_("No label")} />

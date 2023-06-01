@@ -4,15 +4,20 @@
 }
 
 /* Danger dropdown items should be red */
-.pf-c-dropdown__menu-item.pf-m-danger:not(.pf-m-disabled, .pf-m-aria-disabled) {
-    color: var(--pf-global--danger-color--200);
+.pf-v5-c-dropdown__menu-item.pf-m-danger:not(.pf-m-disabled, .pf-m-aria-disabled) {
+    color: var(--pf-v5-global--danger-color--200);
 }
 
-#containers-images .pf-c-table.pf-m-compact .pf-c-table__action {
-    --pf-c-table__action--PaddingTop: 0.5rem;
-    --pf-c-table__action--PaddingBottom: 0.5rem;
+#containers-images .pf-v5-c-table.pf-m-compact .pf-v5-c-table__action {
+    --pf-v5-c-table__action--PaddingTop: 0.5rem;
+    --pf-v5-c-table__action--PaddingBottom: 0.5rem;
 }
 
-.containers-images .pf-c-expandable-section__content {
+.containers-images .pf-v5-c-expandable-section__content {
     margin-top: 0;
+}
+
+/* Override font-size due to h2 being wrapped in a Flex */
+.containers-images-title {
+    font-size: var(--pf-v5-global--FontSize--2xl);
 }

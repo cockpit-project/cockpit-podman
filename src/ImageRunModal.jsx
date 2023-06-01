@@ -90,12 +90,12 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
             <FormGroup className="pf-m-6-col-on-md" label={_("Key")} fieldId={id + "-key-address"}>
                 <TextInput id={id + "-key"}
                        value={item.envKey || ''}
-                       onChange={value => handleEnvValue('envKey', value, idx, onChange, additem, itemCount, item.envValue)} />
+                       onChange={(_, value) => handleEnvValue('envKey', value, idx, onChange, additem, itemCount, item.envValue)} />
             </FormGroup>
             <FormGroup className="pf-m-6-col-on-md" label={_("Value")} fieldId={id + "-value-address"}>
                 <TextInput id={id + "-value"}
                        value={item.envValue || ''}
-                       onChange={value => handleEnvValue('envValue', value, idx, onChange, additem, itemCount, item.envKey)} />
+                       onChange={(_, value) => handleEnvValue('envValue', value, idx, onChange, additem, itemCount, item.envKey)} />
             </FormGroup>
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='secondary'
@@ -652,7 +652,7 @@ export class ImageRunModal extends React.Component {
         // Add the search component
         const footer = (
             <ToggleGroup className='image-search-footer' aria-label={_("Search by registry")}>
-                <ToggleGroupItem text={_("All")} key='all' isSelected={this.state.searchByRegistry == 'all'} onChange={(_, ev) => {
+                <ToggleGroupItem text={_("All")} key='all' isSelected={this.state.searchByRegistry == 'all'} onChange={(ev, _) => {
                     ev.stopPropagation();
                     this.setState({ searchByRegistry: 'all' });
                 }}
@@ -661,7 +661,7 @@ export class ImageRunModal extends React.Component {
                     ev.stopPropagation();
                 }}
                 />
-                <ToggleGroupItem text={_("Local")} key='local' isSelected={this.state.searchByRegistry == 'local'} onChange={(_, ev) => {
+                <ToggleGroupItem text={_("Local")} key='local' isSelected={this.state.searchByRegistry == 'local'} onChange={(ev, _) => {
                     ev.stopPropagation();
                     this.setState({ searchByRegistry: 'local' });
                 }}
@@ -675,7 +675,7 @@ export class ImageRunModal extends React.Component {
                         <ToggleGroupItem
                             text={index} key={index}
                             isSelected={ this.state.searchByRegistry == index }
-                            onChange={ (_, ev) => {
+                            onChange={ (ev, _) => {
                                 ev.stopPropagation();
                                 this.setState({ searchByRegistry: index });
                             } }
@@ -694,10 +694,10 @@ export class ImageRunModal extends React.Component {
                            className="image-name"
                            placeholder={_("Container name")}
                            value={dialogValues.containerName}
-                           onChange={value => this.onValueChanged('containerName', value)} />
+                           onChange={(_, value) => this.onValueChanged('containerName', value)} />
                 </FormGroup>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
-                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-c-form pf-m-horizontal">
+                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-v5-c-form pf-m-horizontal">
                         { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
                         <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}
                                    labelIcon={
@@ -735,7 +735,7 @@ export class ImageRunModal extends React.Component {
                                                   </TextContent>
                                               </>
                                           }>
-                                           <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                           <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                                <OutlinedQuestionCircleIcon />
                                            </button>
                                        </Popover>
@@ -765,7 +765,7 @@ export class ImageRunModal extends React.Component {
                                         <FlexItem>{cockpit.format(_("Searching: $0"), "quay.io/busybox")}</FlexItem>
                                     </Flex>
                                 }>
-                                  <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                  <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                       <OutlinedQuestionCircleIcon />
                                   </button>
                               </Popover>
@@ -789,7 +789,7 @@ export class ImageRunModal extends React.Component {
                                 onClear={this.clearImageSelection}
                                 // onFilter must be set or the spinner crashes https://github.com/patternfly/patternfly-react/issues/6384
                                 onFilter={() => {}}
-                                onTypeaheadInputChanged={value => this.debouncedInputChanged(value)}
+                                onTypeaheadInputChanged={this.debouncedInputChanged}
                                 footer={footer}
                                 isDisabled={!!this.props.image}
                             >
@@ -814,7 +814,7 @@ export class ImageRunModal extends React.Component {
                         <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
                             <TextInput id='run-image-dialog-command'
                            value={dialogValues.command || ''}
-                           onChange={value => this.onValueChanged('command', value)} />
+                           onChange={(_, value) => this.onValueChanged('command', value)} />
                         </FormGroup>
 
                         <FormGroup fieldId="run=image-dialog-tty">
@@ -861,7 +861,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("CPU Shares help")}
                                       enableFlip
                                       bodyContent={_("CPU shares determine the priority of running containers. Default priority is 1024. A higher number prioritizes this container. A lower number decreases priority.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                           <OutlinedQuestionCircleIcon />
                                       </button>
                                   </Popover>
@@ -893,7 +893,7 @@ export class ImageRunModal extends React.Component {
                               <Popover aria-label={_("Restart policy help")}
                                 enableFlip
                                 bodyContent={this.props.userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
-                                  <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                  <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                       <OutlinedQuestionCircleIcon />
                                   </button>
                               </Popover>
@@ -929,7 +929,7 @@ export class ImageRunModal extends React.Component {
                         </Grid>
                         }
                     </Tab>
-                    <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-c-form">
+                    <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-v5-c-form">
 
                         <DynamicListForm id='run-image-dialog-publish'
                                  emptyStateString={_("No ports exposed")}
@@ -960,11 +960,11 @@ export class ImageRunModal extends React.Component {
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
                                  itemcomponent={ <EnvVar />} />
                     </Tab>
-                    <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck" className="pf-c-form pf-m-horizontal">
+                    <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck" className="pf-v5-c-form pf-m-horizontal">
                         <FormGroup fieldId='run-image-dialog-healthcheck-command' label={_("Command")}>
                             <TextInput id='run-image-dialog-healthcheck-command'
                            value={dialogValues.healthcheck_command || ''}
-                           onChange={value => this.onValueChanged('healthcheck_command', value)} />
+                           onChange={(_, value) => this.onValueChanged('healthcheck_command', value)} />
                         </FormGroup>
 
                         <FormGroup fieldId='run-image-healthcheck-interval' label={_("Interval")}
@@ -972,7 +972,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check interval help")}
                                       enableFlip
                                       bodyContent={_("Interval how often health check is run.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                           <OutlinedQuestionCircleIcon />
                                       </button>
                                   </Popover>
@@ -997,7 +997,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check timeout help")}
                                       enableFlip
                                       bodyContent={_("The maximum time allowed to complete the health check before an interval is considered failed.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                           <OutlinedQuestionCircleIcon />
                                       </button>
                                   </Popover>
@@ -1022,7 +1022,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check start period help")}
                                       enableFlip
                                       bodyContent={_("The initialization time needed for a container to bootstrap.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                           <OutlinedQuestionCircleIcon />
                                       </button>
                                   </Popover>
@@ -1047,7 +1047,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check retries help")}
                                       enableFlip
                                       bodyContent={_("The number of retries allowed before a healthcheck is considered to be unhealthy.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                           <OutlinedQuestionCircleIcon />
                                       </button>
                                   </Popover>
@@ -1070,7 +1070,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health failure check action help")}
                                       enableFlip
                                       bodyContent={_("Action to take once the container transitions to an unhealthy state.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                           <OutlinedQuestionCircleIcon />
                                       </button>
                                   </Popover>

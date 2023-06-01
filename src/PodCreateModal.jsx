@@ -100,7 +100,7 @@ export const PodCreateModal = ({ user, selinuxAvailable, systemServiceAvailable,
                        value={podName}
                        validated={nameError ? "error" : "default"}
                        aria-label={nameError}
-                       onChange={value => onValueChanged('podName', value)} />
+                       onChange={(_event, value) => onValueChanged('podName', value)} />
                 <FormHelper fieldId="create-pod-dialog-name" helperTextInvalid={nameError} />
             </FormGroup>
             { userServiceAvailable && systemServiceAvailable &&
