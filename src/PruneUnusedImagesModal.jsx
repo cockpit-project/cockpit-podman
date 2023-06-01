@@ -39,7 +39,7 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
             }
             <List id={listNameId}>
                 {shownImages.map((image, index) =>
-                    <ListItem className="pf-u-ml-md" key={index}>
+                    <ListItem className="pf-v5-u-ml-md" key={index}>
                         {utils.image_name(image)}
                     </ListItem>
                 )}

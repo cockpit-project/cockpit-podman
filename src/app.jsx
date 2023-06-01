@@ -139,7 +139,7 @@ class Application extends React.Component {
         }
     }
 
-    onContainerFilterChanged(_event, value) {
+    onContainerFilterChanged(value) {
         this.setState({
             containersFilter: value
         });
@@ -802,7 +802,7 @@ class Application extends React.Component {
                                  variant={PageSectionVariants.light}>
                         <ContainerHeader
                             handleFilterChanged={this.onFilterChanged}
-                            handleOwnerChanged={(_event, value) => this.onOwnerChanged(value)}
+                            handleOwnerChanged={this.onOwnerChanged}
                             ownerFilter={this.state.ownerFilter}
                             textFilter={this.state.textFilter}
                             twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}

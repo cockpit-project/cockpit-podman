@@ -70,7 +70,7 @@ const ContainerRenameModal = ({ container, version, updateContainerAfterEvent })
                         validated={nameError ? "error" : "default"}
                         type="text"
                         aria-label={nameError}
-                        onChange={value => handleInputChange("name", value)} />
+                        onChange={(_, value) => handleInputChange("name", value)} />
                 <FormHelper fieldId="commit-dialog-image-name" helperTextInvalid={nameError} />
             </FormGroup>
         </Form>

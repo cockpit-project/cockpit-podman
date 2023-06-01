@@ -1,25 +1,25 @@
 @use "ct-card.scss";
 @use "page.scss";
 @import "global-variables";
-// For pf-line-clamp
+// For pf-v5-line-clamp
 @import "@patternfly/patternfly/sass-utilities/mixins.scss";
 // For pf-u-disabled-color-100
 @import "@patternfly/patternfly/utilities/Text/text.css";
 
-#app .pf-c-card.containers-containers, #app .pf-c-card.containers-images {
+#app .pf-v5-c-card.containers-containers, #app .pf-v5-c-card.containers-images {
     @extend .ct-card;
 }
 
 #containers-images, #containers-containers {
     // Decrease padding for the image/container toggle button list
-    .pf-c-table.pf-m-compact .pf-c-table__toggle {
+    .pf-v5-c-table.pf-m-compact .pf-v5-c-table__toggle {
         padding-left: 0;
     }
 }
 
 @media screen and (max-width: 768px) {
     // Badges should not stretch in mobile mode
-    .pf-c-table [data-label] > .pf-c-badge {
+    .pf-v5-c-table [data-label] > .pf-v5-c-badge {
         justify-self: start;
     }
 }
@@ -30,12 +30,12 @@
 }
 
 .container-block small {
-    @include pf-line-clamp("1");
-    color: var(--pf-global--Color--200);
+    @include pf-v5-line-clamp("1");
+    color: var(--pf-v5-global--Color--200);
 }
 
 .container-name {
-    font-size: var(--pf-global--FontSize--lg);
+    font-size: var(--pf-v5-global--FontSize--lg);
     font-weight: 400;
 }
 
@@ -43,7 +43,7 @@
     max-width: 15em;
 }
 
-.pf-c-alert__description {
+.pf-v5-c-alert__description {
     overflow-wrap: anywhere;
 }
 
@@ -54,26 +54,26 @@
 }
 
 .ct-badge-container-running, .ct-badge-pod-running {
-  background-color: var(--pf-global--info-color--100);
+  background-color: var(--pf-v5-global--info-color--100);
   color: white;
 }
 
 .ct-badge-container-healthy {
-  background-color: var(--pf-global--success-color--100);
+  background-color: var(--pf-v5-global--success-color--100);
   color: white;
 }
 
 .ct-badge-container-unhealthy {
-  background-color: var(--pf-global--danger-color--100);
+  background-color: var(--pf-v5-global--danger-color--100);
   color: white;
 }
 
 .green {
-    color: var(--pf-global--success-color--100);
+    color: var(--pf-v5-global--success-color--100);
 }
 
 .red {
-  color: var(--pf-global--danger-color--100);
+  color: var(--pf-v5-global--danger-color--100);
 }
 
 // Hide the header nav from the expandable rows - this should be better done with JS but the current cockpit-listing-panel implementation does not support this variant
@@ -82,7 +82,7 @@
 }
 
 .ct-grey-text {
-   color: var(--pf-global--Color--200);
+   color: var(--pf-v5-global--Color--200);
 }
 
 .content-action {
@@ -92,19 +92,19 @@
 
 // Remove doubled-up padding and borders on nested tables in mobile
 .ct-listing-panel-body .ct-table tr {
-    --pf-c-table-tr--responsive--PaddingTop: 0;
-    --pf-c-table-tr--responsive--PaddingRight: 0;
-    --pf-c-table-tr--responsive--PaddingBottom: 0;
-    --pf-c-table-tr--responsive--PaddingLeft: 0;
+    --pf-v5-c-table-tr--responsive--PaddingTop: 0;
+    --pf-v5-c-table-tr--responsive--PaddingRight: 0;
+    --pf-v5-c-table-tr--responsive--PaddingBottom: 0;
+    --pf-v5-c-table-tr--responsive--PaddingLeft: 0;
 }
 
-@media (max-width: $pf-global--breakpoint--md - 1) {
+@media (max-width: $pf-v5-global--breakpoint--md - 1) {
     .show-only-when-wide {
         display: none;
     }
 }
 
-@media (min-width: $pf-global--breakpoint--md) {
+@media (min-width: $pf-v5-global--breakpoint--md) {
     .show-only-when-narrow {
         display: none;
     }
@@ -112,6 +112,6 @@
     // Add  borders to no pod containers list and images list
     .container-pod.pf-m-plain tbody,
     .containers-images tbody {
-        border: var(--pf-c-card--m-flat--BorderWidth) solid var(--pf-c-card--m-flat--BorderColor);
+        border: var(--pf-v5-c-card--m-flat--BorderWidth) solid var(--pf-v5-c-card--m-flat--BorderColor);
     }
 }
