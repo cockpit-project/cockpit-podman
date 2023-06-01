@@ -1,10 +1,10 @@
 @import "global-variables";
 
 // Ensure the width fits within the screen boundaries (with padding on the sides)
-.pf-c-select__menu {
+.pf-v5-c-select__menu {
     // 3xl is the left+right padding for an iPhone SE;
     // this works on other screen sizes as well
-    max-width: calc(100vw - var(--pf-global--spacer--3xl));
+    max-width: calc(100vw - var(--pf-v5-global--spacer--3xl));
 }
 
 // Make sure the footer is visible with more then 5 results.
@@ -16,32 +16,32 @@
 }
 
 // Fix the dot next to spinner: https://github.com/patternfly/patternfly-react/issues/6383
-.pf-c-select__list-item.pf-m-loading {
+.pf-v5-c-select__list-item.pf-v5-m-loading {
     list-style-type: none;
 }
 
 .image-search-footer {
     flex-wrap: wrap;
 
-    .pf-c-toggle-group__text {
+    .pf-v5-c-toggle-group__text {
         word-wrap: break-word;
     }
 }
 
  // PF4 does not yet support multiple form fields for the same label
-.ct-input-group-spacer-sm.pf-l-flex {
+.ct-input-group-spacer-sm.pf-v5-l-flex {
     // Limit width for select entries and inputs in the input groups otherwise they take up the whole space
-    > .pf-c-select, .pf-c-form-control:not(.pf-c-select__toggle-typeahead) {
+    > .pf-v5-c-select, .pf-v5-c-form-control:not(.pf-v5-c-select__toggle-typeahead) {
       max-width: 8ch;
     }
 }
 
 // HACK: A local copy of pf-m-horizontal (as ct-m-horizontal),
 // but applied at the FormGroup level instead of Form
-@media (min-width: $pf-global--breakpoint--md) {
-    .pf-c-form__group.ct-m-horizontal {
+@media (min-width: $pf-v5-global--breakpoint--md) {
+    .pf-v5-c-form__group.ct-m-horizontal {
         display: grid;
-        grid-column-gap: var(--pf-c-form--m-horizontal__group-label--md--GridColumnGap);
-        grid-template-columns: var(--pf-c-form--m-horizontal__group-label--md--GridColumnWidth) var(--pf-c-form--m-horizontal__group-control--md--GridColumnWidth);
+        grid-column-gap: var(--pf-v5-c-form--m-horizontal__group-label--md--GridColumnGap);
+        grid-template-columns: var(--pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth) var(--pf-v5-c-form--m-horizontal__group-control--md--GridColumnWidth);
     }
 }

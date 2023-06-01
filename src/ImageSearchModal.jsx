@@ -170,7 +170,7 @@ export class ImageSearchModal extends React.Component {
                                        placeholder={_("Search by name or description")}
                                        value={this.state.imageIdentifier}
                                        onKeyPress={this.onKeyPress}
-                                       onChange={value => this.onValueChanged('imageIdentifier', value)} />
+                                       onChange={(_event, value) => this.onValueChanged('imageIdentifier', value)} />
                         </FormGroup>
                         <FormGroup fieldId="registry-select" label={_("in")}>
                             <FormSelect id='registry-select'
@@ -234,7 +234,7 @@ export class ImageSearchModal extends React.Component {
                                       type='text'
                                       placeholder="latest"
                                       value={this.state.imageTag || ''}
-                                      onChange={value => this.onValueChanged('imageTag', value)} />
+                                      onChange={(_event, value) => this.onValueChanged('imageTag', value)} />
                            </FormGroup>
                        </Form>
                        <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>

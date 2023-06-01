@@ -1,54 +1,54 @@
 @import "global-variables";
 
 .container-pod {
-    .pf-c-card__header {
+    .pf-v5-c-card__header {
         border-color: #ddd;
-        padding-top: var(--pf-global--spacer--md);
+        padding-top: var(--pf-v5-global--spacer--md);
     }
 
     .pod-header-details {
 	border-color: #ddd;
-	margin-top: var(--pf-global--spacer--md);
-	margin-left: var(--pf-global--spacer--md);
-	margin-right: var(--pf-global--spacer--md);
+	margin-top: var(--pf-v5-global--spacer--md);
+	margin-left: var(--pf-v5-global--spacer--md);
+	margin-right: var(--pf-v5-global--spacer--md);
     }
 
     .pod-details-button {
        padding-left: 0;
        padding-right: 0;
-       margin-right: var(--pf-global--spacer--md);
+       margin-right: var(--pf-v5-global--spacer--md);
     }
 
     .pod-details-button-color {
-       color: var(--pf-c-button--m-secondary--Color);
+       color: var(--pf-v5-c-button--m-secondary--Color);
     }
 
-    .pf-c-card__title {
+    .pf-v5-c-card__title {
         padding: 0;
-        font-weight: var(--pf-global--FontWeight--normal);
-        font-size: var(--pf-global--FontSize--sm);
+        font-weight: var(--pf-v5-global--FontWeight--normal);
+        font-size: var(--pf-v5-global--FontSize--sm);
 
         .pod-name {
-            font-weight: var(--pf-global--FontWeight--bold);
-            font-size: var(--pf-global--FontSize--md);
+            font-weight: var(--pf-v5-global--FontWeight--bold);
+            font-size: var(--pf-v5-global--FontSize--md);
             padding-right: 1rem;
         }
     }
 
-    > .pf-c-card__header {
+    > .pf-v5-c-card__header {
         &:not(:last-child) {
-            padding-bottom: var(--pf-global--spacer-sm);
+            padding-bottom: var(--pf-v5-global--spacer-sm);
         }
 
         // Reduce vertical padding of pod header items
-        > .pf-c-card__title > .pf-l-flex {
-            row-gap: var(--pf-global--spacer--sm);
+        > .pf-v5-c-card__title > .pf-l-flex {
+            row-gap: var(--pf-v5-global--spacer--sm);
         }
     }
 }
 
 .pod-stat {
-    @media (max-width: $pf-global--breakpoint--sm - 1) {
+    @media (max-width: $pf-v5-global--breakpoint--sm - 1) {
         // Place each pod stat on its own row
         flex-basis: 100%;
         display: grid;
@@ -68,7 +68,7 @@
 }
 
 .ct-table-empty td {
-    padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md) var(--pf-global--spacer--lg);
+    padding: var(--pf-v5-global--spacer--sm) var(--pf-v5-global--spacer--md) var(--pf-v5-global--spacer--lg);
 }
 
 /* HACK - force DescriptionList to wrap but not fill the width */
@@ -78,11 +78,11 @@
 }
 
 /* Upstream issue https://github.com/patternfly/patternfly/pull/3714 */
-.containers-containers .pf-c-toolbar__content-section {
-    gap: var(--pf-global--spacer--sm);
+.containers-containers .pf-v5-c-toolbar__content-section {
+    gap: var(--pf-v5-global--spacer--sm);
 }
 
 /* Drop the excessive margin for a Dropdown button */
-.containers-containers .pf-c-toolbar__content-section > :nth-last-child(2) {
+.containers-containers .pf-v5-c-toolbar__content-section > :nth-last-child(2) {
     margin-right: 0;
 }

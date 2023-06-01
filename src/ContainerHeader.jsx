@@ -15,7 +15,7 @@ const ContainerHeader = ({ user, twoOwners, ownerFilter, handleOwnerChanged, tex
                             {_("Owner")}
                         </ToolbarItem>
                         <ToolbarItem>
-                            <FormSelect id="containers-containers-owner" value={ownerFilter} onChange={handleOwnerChanged}>
+                            <FormSelect id="containers-containers-owner" value={ownerFilter} onChange={(_, value) => handleOwnerChanged(value)}>
                                 <FormSelectOption value='user' label={user} />
                                 <FormSelectOption value='system' label={_("System")} />
                                 <FormSelectOption value='all' label={_("All")} />
@@ -27,7 +27,7 @@ const ContainerHeader = ({ user, twoOwners, ownerFilter, handleOwnerChanged, tex
                     <TextInput id="containers-filter"
                                    placeholder={_("Type to filter…")}
                                    value={textFilter}
-                                   onChange={handleFilterChanged} />
+                                   onChange={(_, value) => handleFilterChanged(value)} />
                 </ToolbarItem>
             </ToolbarContent>
         </Toolbar>

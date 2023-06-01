@@ -35,13 +35,11 @@ COCKPIT_REPO_FILES = \
 	pkg/lib \
 	test/common \
 	test/static-code \
-	tools/git-utils.sh \
-	tools/make-bots \
 	tools/node-modules \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = 355c0aa59e3991243e10a61183e62ea129d3261a # 292 + 8 commits
+COCKPIT_REPO_COMMIT = 756b59469637dd2dee00d086b883cffd16dc5efc # 293 + conditional pfv5
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
@@ -201,8 +199,8 @@ prepare-check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common test/reference
 check: prepare-check
 	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests ${RUN_TESTS_OPTIONS}
 
-bots: tools/make-bots
-	tools/make-bots
+bots: $(COCKPIT_REPO_STAMP)
+	test/common/make-bots
 
 test/reference: test/common
 	test/common/pixel-tests pull

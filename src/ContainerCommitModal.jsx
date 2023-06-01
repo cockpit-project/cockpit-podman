@@ -91,7 +91,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
                 <TextInput id="commit-dialog-image-name"
                            value={imageName}
                            validated={nameError ? "error" : "default"}
-                           onChange={value => { setNameError(""); setImageName(value) }} />
+                           onChange={(_, value) => { setNameError(""); setImageName(value) }} />
                 <FormHelper fieldId="commit-dialog-image-name" helperTextInvalid={nameError} />
             </FormGroup>
 
@@ -99,20 +99,20 @@ const ContainerCommitModal = ({ container, localImages }) => {
                 <TextInput id="commit-dialog-image-tag"
                            placeholder="latest" // Do not translate
                            value={tag}
-                           onChange={value => { setNameError(""); setTag(value) }} />
+                           onChange={(_, value) => { setNameError(""); setTag(value) }} />
             </FormGroup>
 
             <FormGroup fieldId="commit-dialog-author" label={_("Author")}>
                 <TextInput id="commit-dialog-author"
                            placeholder={_("Example, Your Name <yourname@example.com>")}
                            value={author}
-                           onChange={setAuthor} />
+                           onChange={(_, value) => setAuthor(value)} />
             </FormGroup>
 
             <FormGroup fieldId="commit-dialog-command" label={_("Command")}>
                 <TextInput id="commit-dialog-command"
                            value={command}
-                           onChange={setCommand} />
+                           onChange={(_, value) => setCommand(value)} />
             </FormGroup>
 
             <FormGroup fieldId="commit-dialog-pause" label={_("Options")} isStack hasNoPaddingTop>

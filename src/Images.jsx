@@ -142,7 +142,7 @@ class Images extends React.Component {
                                      userPodmanRestartAvailable={this.props.userPodmanRestartAvailable}
                                      userLingeringEnabled={this.props.userLingeringEnabled}
                                      version={this.props.version} />,
-                props: { className: 'pf-c-table__action content-action' }
+                props: { className: 'pf-v5-c-table__action content-action' }
             },
         ];
 
@@ -282,13 +282,13 @@ class Images extends React.Component {
         return (
             <Card id="containers-images" key="images" className="containers-images">
                 <CardHeader>
-                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-u-w-100">
+                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-v5-u-w-100">
                         <FlexItem grow={{ default: 'grow' }}>
                             <Flex>
                                 <CardTitle>
-                                    <Text component={TextVariants.h2}>{_("Images")}</Text>
+                                    <Text component={TextVariants.h2} className="containers-images-title">{_("Images")}</Text>
                                 </CardTitle>
-                                <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
+                                <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-v5-global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
                         </FlexItem>
                         <FlexItem>
