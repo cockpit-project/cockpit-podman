@@ -61,6 +61,44 @@ def checkImage(browser, name, owner):
         })""", name, owner)
 
 
+# HACK: temporary workaround till we bump testlib
+def become_superuser(browser, user=None, password=None, passwordless=False):
+    cur_frame = browser.cdp.cur_frame
+    browser.switch_to_top()
+
+    browser.open_superuser_dialog()
+
+    pf_prefix = "" if browser.machine.system_before(293) else "-v5"
+
+    if passwordless:
+        browser.wait_in_text(f".pf{pf_prefix}-c-modal-box:contains('Administrative access')", "You now have administrative access.")
+        browser.click(f".pf{pf_prefix}-c-modal-box button:contains('Close')")
+        browser.wait_not_present(f".pf{pf_prefix}-c-modal-box:contains('You now have administrative access.')")
+    else:
+        browser.wait_in_text(f".pf{pf_prefix}-c-modal-box:contains('Switch to administrative access')", f"Password for {user or 'admin'}:")
+        browser.set_input_text(f".pf{pf_prefix}-c-modal-box:contains('Switch to administrative access') input", password or "foobar")
+        browser.click(f".pf{pf_prefix}-c-modal-box button:contains('Authenticate')")
+        browser.wait_not_present(f".pf{pf_prefix}-c-modal-box:contains('Switch to administrative access')")
+
+    browser.check_superuser_indicator("Administrative access")
+    browser.switch_to_frame(cur_frame)
+
+
+# HACK: temporary workaround till we bump testlib
+def drop_superuser(browser):
+    cur_frame = browser.cdp.cur_frame
+    browser.switch_to_top()
+
+    pf_prefix = "" if browser.machine.system_before(293) else "-v5"
+
+    browser.open_superuser_dialog()
+    browser.click(f".pf{pf_prefix}-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
+    browser.wait_not_present(f".pf{pf_prefix}-c-modal-box:contains('Switch to limited access')")
+    browser.check_superuser_indicator("Limited access")
+
+    browser.switch_to_frame(cur_frame)
+
+
 @testlib.nondestructive
 class TestApplication(testlib.MachineCase):
 
@@ -346,7 +384,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers .container-name:contains('b')")
 
         # Drop privileges - all system things should disappear
-        b.drop_superuser()
+        if b.machine.system_before(293):
+            b.drop_superuser()
+        else:
+            drop_superuser(b)
         b.wait_not_present("#containers-containers .pod-name:contains('pod_system')")
         b.wait_not_present("#containers-containers .container-name:contains('a')")
         b.wait_visible("#containers-containers .pod-name:contains('pod_user')")
@@ -368,7 +409,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present('div.pf-c-modal-box header:contains("Search for an image")')
 
         # Gain privileges
-        b.become_superuser(passwordless=self.machine.image == "rhel4edge")
+        if b.machine.system_before(293):
+            b.become_superuser(passwordless=self.machine.image == "rhel4edge")
+        else:
+            become_superuser(b, passwordless=self.machine.image == "rhel4edge")
 
         # We are notified that we can also start the system one
         b.wait_in_text("#overview div.pf-c-alert .pf-c-alert__title", "System Podman service is also available")
@@ -401,7 +445,10 @@ class TestApplication(testlib.MachineCase):
         # Checking images is harder but if there would be more than one this would fail
         b.wait_visible(f"#containers-images:contains('{IMG_REGISTRY}')")
 
-        b.drop_superuser()
+        if b.machine.system_before(293):
+            b.drop_superuser()
+        else:
+            drop_superuser(b)
 
         b.wait_visible("#containers-containers .pod-name:contains('pod_user')")
         b.wait_visible("#containers-containers .container-name:contains('b')")
