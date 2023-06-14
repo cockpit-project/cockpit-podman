@@ -2563,6 +2563,21 @@ class TestApplication(testlib.MachineCase):
         b.click(".pf-m-expanded button:contains('Logs')")
         b.wait_in_text(".pf-m-expanded .pf-c-empty-state__content", "failed to obtain logs for Container")
 
+    @testlib.skipOstree("/lib is read-only")
+    def testManifest(self):
+        b = self.browser
+        m = self.machine
+        self.restore_file("/lib/systemd/system/podman.socket", post_restore_action="systemctl daemon-reload")
+        m.execute("rm /lib/systemd/system/podman.socket")
+        self.login_and_go(None)
+        b.wait_in_text("#host-apps .pf-m-current", "Overview")
+
+        # HACK: is_pybridge should also check TEST_SCENARIO
+        if self.is_pybridge() or os.getenv('TEST_SCENARIO') == 'pybridge':
+            self.assertNotIn("Podman", b.text("#host-apps"))
+        else:
+            self.assertIn("Podman", b.text("#host-apps"))
+
 
 if __name__ == '__main__':
     testlib.test_main()
