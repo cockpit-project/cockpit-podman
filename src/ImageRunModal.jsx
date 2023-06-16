@@ -699,9 +699,9 @@ export class ImageRunModal extends React.Component {
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-c-form pf-m-horizontal">
                         { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
-                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}
+                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")} style={{ zIndex: "1" }}
                                    labelIcon={
-                                       <Popover aria-label={_("Owner help")}
+                                       <Popover aria-label={_("Owner help")} minWidth='0'
                                           enableFlip
                                           bodyContent={
                                               <>
