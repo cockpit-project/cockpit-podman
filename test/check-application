@@ -35,7 +35,7 @@ IMG_REGISTRY_LATEST = IMG_REGISTRY + ":latest"
 
 # Ubuntu 2204 lacks user systemd units https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
 DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
-DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-testing']
+DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-stable', 'debian-testing']
 
 
 def podman_version(cls):
@@ -161,7 +161,7 @@ class TestApplication(testlib.MachineCase):
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1008249
-        self.has_criu = m.image not in ["debian-testing", "ubuntu-stable", "ubuntu-2204"]
+        self.has_criu = "debian" not in m.image and "ubuntu" not in m.image
         self.has_selinux = "arch" not in m.image and "debian" not in m.image and "ubuntu" not in m.image
         self.has_cgroupsV2 = m.image not in ["centos-8-stream"] and not m.image.startswith('rhel-8')
 
