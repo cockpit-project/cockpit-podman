@@ -33,7 +33,8 @@ IMG_BUSYBOX_LATEST = IMG_BUSYBOX + ":latest"
 IMG_REGISTRY = "localhost/test-registry"
 IMG_REGISTRY_LATEST = IMG_REGISTRY + ":latest"
 
-# Ubuntu 2204 lacks user systemd units https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
+# Ubuntu 2204 lacks user systemd units
+# https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
 DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
 DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-stable', 'debian-testing']
 
@@ -174,6 +175,10 @@ class TestApplication(testlib.MachineCase):
         self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())
 
+    def getRestartPolicy(self, auth, container_name):
+        cmd = f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}"
+        return self.execute(auth, cmd).strip()
+
     def waitNumImages(self, expected):
         self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected)
 
@@ -295,8 +300,10 @@ class TestApplication(testlib.MachineCase):
             self.assertIn(unit, ["GB", "MB", "KB"])
             return float(memory)
 
-        containerId = self.machine.execute(f"podman run -d --pod pod-1 --name test-pod-1-system --stop-timeout 0 {IMG_ALPINE} sleep 100").strip()
-        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE, "command": "sleep 100", "state": "Running", "id": containerId}])
+        run_cmd = f"podman run -d --pod pod-1 --name test-pod-1-system --stop-timeout 0 {IMG_ALPINE} sleep 100"
+        containerId = self.machine.execute(run_cmd).strip()
+        self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
+                                         "command": "sleep 100", "state": "Running", "id": containerId}])
         cpu = get_pod_cpu_usage("pod-1")
         b.wait(lambda: get_pod_memory("pod-1") > 0)
 
@@ -354,8 +361,10 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#containers-filter', '')
         self.machine.execute("podman pod create --infra=false --name pod-2")
         self.waitPodContainer("pod-2", [])
-        containerId = self.machine.execute(f"podman run -d --pod pod-2 --name test-pod-2-system --stop-timeout 0 {IMG_ALPINE} sleep 100").strip()
-        self.waitPodContainer("pod-2", [{"name": "test-pod-2-system", "image": IMG_ALPINE, "command": "sleep 100", "state": "Running", "id": containerId}])
+        run_cmd = f"podman run -d --pod pod-2 --name test-pod-2-system --stop-timeout 0 {IMG_ALPINE} sleep 100"
+        containerId = self.machine.execute(run_cmd).strip()
+        self.waitPodContainer("pod-2", [{"name": "test-pod-2-system", "image": IMG_ALPINE,
+                                         "command": "sleep 100", "state": "Running", "id": containerId}])
         self.machine.execute("podman rm --force -t0 test-pod-2-system")
         self.waitPodContainer("pod-2", [])
         self.performPodAction("pod-2", "system", "Delete")
@@ -585,16 +594,14 @@ class TestApplication(testlib.MachineCase):
         b.click("#containers-images tbody.pf-m-expanded .pf-c-tabs__list li:nth-child(2) button")
         b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"ID\"]:first",
                        images[IMG_HELLO_LATEST][:12])
-        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created\"]:first",
-                       "today at")
+        created_sel = "#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created\"]"
+        b.wait_in_text(f"{created_sel}:first", "today at")
         # topmost (last) layer
-        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]:first",
-                       "COPY")
-        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]:first",
-                       "in /test2.txt")
+        created_sel = "#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]"
+        b.wait_in_text(f"{created_sel}:first", "COPY")
+        b.wait_in_text(f"{created_sel}:first", "in /test2.txt")
         # initial (first) layer
-        b.wait_in_text("#containers-images .pf-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]:last",
-                       "COPY")
+        b.wait_in_text(f"{created_sel}:last", "COPY")
 
         self.execute(auth, f"podman rmi {IMG_HELLO_LATEST}")
         b.wait_not_present(hello_sel)
@@ -776,11 +783,14 @@ class TestApplication(testlib.MachineCase):
             self.execute(auth, f"podman run -dt --name net_check --stop-timeout 0 {IMG_ALPINE}")
             self.toggleExpandedContainer("net_check")
             b.wait_in_text(".pf-m-expanded .container-details-networking",
-                           self.execute(auth, "podman inspect --format '{{.NetworkSettings.Gateway}}' net_check").strip())
+                           self.execute(auth, """
+                           podman inspect --format '{{.NetworkSettings.Gateway}}' net_check""").strip())
             b.wait_in_text(".pf-m-expanded .container-details-networking",
-                           self.execute(auth, "podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check").strip())
+                           self.execute(auth, """
+                           podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check""").strip())
             b.wait_in_text(".pf-m-expanded .container-details-networking",
-                           self.execute(auth, "podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check").strip())
+                           self.execute(auth, """
+                           podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check""").strip())
             self.execute(auth, "podman stop net_check")
             b.wait(lambda: self.execute(True, "podman ps --all | grep -e net_check -e Exited"))
             self.toggleExpandedContainer("net_check")
@@ -939,7 +949,9 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#commit-dialog-image-name", "newname")
         self.confirm_modal("Commit")
         waitImageCount(self.user_images_count + 3)
-        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:latest").strip(), "[sleep 1000]")
+        self.assertEqual(self.execute(auth,
+                                      "podman inspect --format '{{.Config.Cmd}}' newname:latest").strip(),
+                         "[sleep 1000]")
 
         # Test commit of running container with pause (also conflicting name through :latest)
         # This only works on rootless with cgroupsv2
@@ -1009,7 +1021,8 @@ class TestApplication(testlib.MachineCase):
 
             def expectDownloadErrorForNonExistingTag(self):
                 b.wait_not_present('div.pf-c-modal-box')
-                b.wait_visible(f'h4.pf-c-alert__title:contains("Danger alert:Failed to download image localhost:5000/{self.imageName}:{self.imageTag}")')
+                title = f"Danger alert:Failed to download image localhost:5000/{self.imageName}:{self.imageTag}"
+                b.wait_visible(f'h4.pf-c-alert__title:contains("{title}")')
 
                 return self
 
@@ -1030,7 +1043,9 @@ class TestApplication(testlib.MachineCase):
                 b.wait_not_present('h4.pf-c-alert__title:contains("Failed to download image")')
 
                 # Find out this image ID
-                self.imageSha = execute(self.user == "system", f"podman inspect --format '{{{{.Id}}}}' localhost:5000/{self.imageName}:{self.imageTag or 'latest'}").strip()
+                container_name = f"localhost:5000/{self.imageName}:{self.imageTag or 'latest'}"
+                self.imageSha = execute(self.user == "system",
+                                        f"podman inspect --format '{{{{.Id}}}}' {container_name}").strip()
 
                 return self
 
@@ -1040,7 +1055,8 @@ class TestApplication(testlib.MachineCase):
                 # Select the image row
 
                 # show image listing toggle
-                sel = f"#containers-images tbody tr[data-row-id={self.imageSha}{'true' if self.user == 'system' else 'false'}]"
+                imageId = f"{self.imageSha}{'true' if self.user == 'system' else 'false'}"
+                sel = f"#containers-images tbody tr[data-row-id={imageId}]"
                 b.wait_visible(sel)
                 b.click(sel + " td.pf-c-table__toggle button")
 
@@ -1048,7 +1064,8 @@ class TestApplication(testlib.MachineCase):
                 b.click(sel + " .pf-c-dropdown__toggle")
                 b.click(sel + ' button.btn-delete')
 
-                b.set_checked(f".pf-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']", True)
+                b.set_checked(f".pf-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']",
+                              True)
                 if another:
                     b.set_checked(f".pf-c-check__input[aria-label='{another}']", True)
 
@@ -1133,7 +1150,9 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers('all')
 
         # run a container
-        self.execute(auth, f"podman run -d --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh -c 'echo 123; sleep infinity'; podman stop swamped-crate")
+        self.execute(auth, f"""
+                podman run -d --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh -c 'echo 123; sleep infinity';
+                podman stop swamped-crate""")
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         b.wait_visible("#containers-containers")
@@ -1265,12 +1284,16 @@ class TestApplication(testlib.MachineCase):
             b.click('.pf-c-modal-box button:contains(Checkpoint)')
             b.wait_not_present('.modal_dialog')
 
-            b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
+            b.wait(lambda: "checkpoint/restore requires at least criu"
+                   in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
             return
 
         # Run a container
         mac_address = '92:d0:c6:0a:29:38'
-        self.execute(True, f"podman run -dit --mac-address {mac_address} --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh; podman stop swamped-crate")
+        self.execute(True, f"""
+            podman run -dit --mac-address {mac_address} --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh;
+            podman stop swamped-crate
+        """)
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         # Check that the restore option is not present (i.e. start is a regular button)
@@ -1296,7 +1319,8 @@ class TestApplication(testlib.MachineCase):
         else:
             # expect proper error message
             b.wait_in_text(".pf-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
-            b.wait(lambda: "checkpoint/restore requires at least criu" in b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
+            b.wait(lambda: "checkpoint/restore requires at least criu" in
+                   b.text(".pf-c-alert.pf-m-danger > .pf-c-alert__description").lower())
             return
 
         # Restore the container
@@ -1311,7 +1335,8 @@ class TestApplication(testlib.MachineCase):
 
         # A new MAC address should have been generated
         # Fixed in podman 4.4.0 https://github.com/containers/podman/issues/16666
-        new_mac_address = self.execute(True, "podman inspect --format '{{.NetworkSettings.MacAddress}}' swamped-crate").strip()
+        cmd = "podman inspect --format '{{.NetworkSettings.MacAddress}}' swamped-crate"
+        new_mac_address = self.execute(True, cmd).strip()
         if podman_version(self) >= (4, 4, 0):
             self.assertNotEqual(new_mac_address, mac_address)
         else:
@@ -1643,7 +1668,8 @@ class TestApplication(testlib.MachineCase):
         b.set_checked("#run-image-dialog-tty", True)
 
         # Set up command line
-        b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
+        b.set_input_text('#run-image-dialog-command',
+                         "sh -c 'for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity'")
 
         if auth:
             # Set restart policy to 3 retries
@@ -1687,7 +1713,8 @@ class TestApplication(testlib.MachineCase):
         b.click('#run-image-dialog-env-2-btn-close')
         b.click('.env-form .btn-add')
         # Test inputting an key=var entry
-        b.set_val('#run-image-dialog-env-2-value', "RHUBARB=STRAWBERRY DURIAN=LEMON TEST_URL=wss://cockpit/?start=1&stop=0")
+        b.set_val('#run-image-dialog-env-2-value',
+                  "RHUBARB=STRAWBERRY DURIAN=LEMON TEST_URL=wss://cockpit/?start=1&stop=0")
         # set_val does not trigger onChange so append a space.
         b.set_input_text('#run-image-dialog-env-2-value', ' ', append=True, value_check=False)
 
@@ -1753,10 +1780,11 @@ class TestApplication(testlib.MachineCase):
             self.assertEqual(memory, '500000000')
 
         if auth:
-            cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-with-tty || podman inspect --format '{{.HostConfig.CPUShares}}' busybox-with-tty").strip()
+            cpuShares = self.execute(auth,
+                                     "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-with-tty").strip()
             self.assertEqual(cpuShares, '512')
 
-        restartPolicy = self.execute(auth, "podman inspect --format '{{.HostConfig.RestartPolicy}}' busybox-with-tty").strip()
+        restartPolicy = self.getRestartPolicy(auth, "busybox-with-tty")
         if auth:
             self.assertEqual(restartPolicy, '{on-failure 3}')
         else:
@@ -1856,11 +1884,14 @@ class TestApplication(testlib.MachineCase):
         b.wait_text(".pf-m-expanded .container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
 
         # firefox optimizes these out when not visible
-        b.eval_js("document.querySelector('.pf-m-expanded .container-logs .xterm-accessibility-tree').scrollIntoView()")
+        b.eval_js("""
+            document.querySelector('.pf-m-expanded .container-logs .xterm-accessibility-tree').scrollIntoView()
+        """)
         b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "6")
 
         b.click(".pf-m-expanded button:contains('Console')")
-        b.wait(lambda: get_int(b.text(".pf-m-expanded .container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
+        b.wait(lambda:
+               get_int(b.text(".pf-m-expanded .container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
 
         # Create another instance without port publishing
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
@@ -1872,7 +1903,8 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#run-image-dialog-name", "busybox-without-publish")
 
         # Set up command line
-        b.set_input_text('#run-image-dialog-command', "sh -c 'for i in $(seq 20); do echo $i; sleep 3; done; sleep infinity'")
+        b.set_input_text('#run-image-dialog-command',
+                         "sh -c 'for i in $(seq 20); do echo $i; sleep 3; done; sleep infinity'")
 
         # Run without tty, console should be able to `exec`
         b.set_checked("#run-image-dialog-tty", False)
@@ -1882,11 +1914,15 @@ class TestApplication(testlib.MachineCase):
 
         self.waitContainerRow("busybox-without-publish")
         self.toggleExpandedContainer("busybox-without-publish")
-        b.wait_not_present('#containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")')
+        b.wait_not_present("""
+            #containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")
+        """)
 
         # Rootless only works with CGroupsV2
         if auth or self.has_cgroupsV2:
-            cpuShares = self.execute(auth, "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish").strip()
+            cpuShares = self.execute(auth, """
+                podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish
+            """).strip()
             # podman ≥ 1.8 translates 0 default into actual value
             self.assertIn(cpuShares, ['0', '1024'])
 
@@ -1927,9 +1963,10 @@ class TestApplication(testlib.MachineCase):
         self.filter_containers("running")
         id_with_tty = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
 
-        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") td.pf-c-table__toggle button')
+        container_sel = f'#containers-images tbody tr:contains("{IMG_BUSYBOX}")'
+        b.click(f'{container_sel} td.pf-c-table__toggle button')
         # running container, just selects it, but leaves "Only running" alone
-        b.click(f"#containers-images tbody tr:contains('{IMG_BUSYBOX}') + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-with-tty')")
+        b.click(f"{container_sel} + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-with-tty')")  # noqa: E501
         b.wait_js_cond('window.location.hash === "#' + id_with_tty + '"')
         b.wait_val("#containers-containers-filter", "running")
         # FIXME: expanding running container details does not actually work right now
@@ -1955,7 +1992,8 @@ class TestApplication(testlib.MachineCase):
 
         self.filter_containers("running")
         b.wait_not_in_text("#containers-containers", "busybox-not-started")
-        b.click(f"#containers-images tbody tr:contains('{IMG_BUSYBOX}') + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-not-started')")
+        container_sel = f"#containers-images tbody tr:contains('{IMG_BUSYBOX}') + tr div.ct-listing-panel-body"
+        b.click(f"{container_sel} dt:contains('Used by') + dd button:contains('busybox-not-started')")
         b.wait_js_cond(f"window.location.hash === '#{sha}'")
         b.wait_val("#containers-containers-filter", "all")
         b.wait_in_text("#containers-containers", "busybox-not-started")
@@ -2057,11 +2095,14 @@ class TestApplication(testlib.MachineCase):
         b.click("button:contains(Prune unused images)")
 
         if auth:
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", (self.user_images_count + self.system_images_count) - leftover_images)
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li",
+                           (self.user_images_count + self.system_images_count) - leftover_images)
         elif root:
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", self.system_images_count - leftover_images)
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li",
+                           self.system_images_count - leftover_images)
         else:
-            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", self.user_images_count - leftover_images)
+            b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li",
+                           self.user_images_count - leftover_images)
         b.click(".pf-c-modal-box button:contains(Prune)")
 
         # When being superuser, admin images are also removed
@@ -2110,7 +2151,8 @@ class TestApplication(testlib.MachineCase):
         # Pruning again, should delete all system images
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
-        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li", self.system_images_count - 1 if self.machine.ostree_image else self.system_images_count)
+        b.wait_js_func("ph_count_check", ".pf-c-modal-box__body .pf-c-list li",
+                       self.system_images_count - 1 if self.machine.ostree_image else self.system_images_count)
         b.click(".pf-c-modal-box button:contains(Prune)")
         self.waitNumImages(1 if self.machine.ostree_image else 0)
 
@@ -2132,8 +2174,10 @@ class TestApplication(testlib.MachineCase):
 
         # Create running and non-running containers
         self.execute(auth, "podman pod create --name pod")
-        notrunninginpodId = self.execute(auth, f"podman run --name inpod --pod pod -tid {IMG_BUSYBOX} sh -c 'exit 1'").strip()
-        runninginpodId = self.execute(auth, f"podman run --name inpodrunning --pod pod -tid {IMG_BUSYBOX} sh -c 'sleep infinity'").strip()
+        notrunninginpodId = self.execute(auth, f"""
+            podman run --name inpod --pod pod -tid {IMG_BUSYBOX} sh -c 'exit 1'""").strip()
+        runninginpodId = self.execute(auth, f"""
+            podman run --name inpodrunning --pod pod -tid {IMG_BUSYBOX} sh -c 'sleep infinity'""").strip()
 
         self.execute(auth, f"podman run --name notrunning -tid {IMG_BUSYBOX} sh -c  'exit 1'")
         self.execute(auth, f"podman run --name containerrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'")
@@ -2278,7 +2322,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(4)")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(2) svg.red")
         b.wait_visible('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak")')
-        self.assertGreater(int(b.text('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak") + dd')), 3)
+        failures = int(b.text('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak") + dd'))
+        self.assertGreater(failures, 3)
         if auth:
             b.wait_js_func("ph_count_check", ".pf-m-expanded table[aria-label=Logs] tbody tr", 5)
             b.assert_pixels(".pf-m-expanded .pf-c-table__expandable-row-content",
@@ -2316,10 +2361,12 @@ class TestApplication(testlib.MachineCase):
         self.toggleExpandedContainer(containername)
         b.wait(lambda: self.getContainerAttr(containername, "State") == "RunningHealthy")
         b.click(".pf-m-expanded button:contains('Health check')")
-        b.wait_in_text('.pf-m-expanded #container-details-healthcheck dt:contains("When unhealthy") + dd', 'Force stop')
+        b.wait_in_text('.pf-m-expanded #container-details-healthcheck dt:contains("When unhealthy") + dd',
+                       'Force stop')
         # Removing the file should kill the container
         status = self.execute(auth, f"podman exec {containername} rm -f /healthy").strip()
-        b.wait(lambda: self.getContainerAttr(containername, "State", "span:not(.ct-badge-container-unhealthy)") in NOT_RUNNING)
+        b.wait(lambda: self.getContainerAttr(containername,
+                                             "State", "span:not(.ct-badge-container-unhealthy)") in NOT_RUNNING)
         status = self.execute(auth, f"podman inspect --format '{{{{.State.Health.Status}}}}' {containername}").strip()
         self.assertEqual(status, "unhealthy")
 
@@ -2345,7 +2392,9 @@ class TestApplication(testlib.MachineCase):
             self.addCleanup(self.machine.execute, "systemctl --user disable podman-restart.service")
             self.machine.execute("loginctl enable-linger $(id -u admin)")
             # HACK: verify that the file we watch exists
-            self.assertTrue(self.machine.execute("if test -e /var/lib/systemd/linger/admin; then echo yes; fi").strip() != "")
+            self.assertTrue(self.machine.execute("""
+                    if test -e /var/lib/systemd/linger/admin; then echo yes; fi
+            """).strip() != "")
             self.addCleanup(self.machine.execute, "loginctl disable-linger $(id -u admin)")
 
         # Drop user images for easy selection
@@ -2368,17 +2417,16 @@ class TestApplication(testlib.MachineCase):
 
         container_name = 'none'
         create_container(container_name)
-        restartPolicy = self.execute(auth, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
-        self.assertEqual(restartPolicy, '{ 0}')
+        self.assertEqual(self.getRestartPolicy(auth, container_name), '{ 0}')
 
         container_name = 'restart'
         create_container(container_name, 'always')
-        restartPolicy = self.execute(auth, f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}").strip()
-        self.assertEqual(restartPolicy, '{always 0}')
+        self.assertEqual(self.getRestartPolicy(auth, container_name), '{always 0}')
         if auth:
             podmanRestartEnabled = self.execute(True, "systemctl is-enabled podman-restart.service || true").strip()
         else:
-            podmanRestartEnabled = self.execute(False, "systemctl --user is-enabled podman-restart.service || true").strip()
+            podmanRestartEnabled = self.execute(False,
+                                                "systemctl --user is-enabled podman-restart.service || true").strip()
         self.assertEqual(podmanRestartEnabled, 'enabled')
 
     def _testCreateContainerInPod(self, auth):
@@ -2555,8 +2603,11 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer(pod_name, [])
 
         container_name = 'test-pod-1-system' if auth else 'test-pod-1'
-        containerId = self.execute(auth, f"podman run -d --pod {pod_name} --name {container_name} --stop-timeout 0 {IMG_ALPINE} sleep 500").strip()
-        self.waitPodContainer(pod_name, [{"name": container_name, "image": IMG_ALPINE, "command": "sleep 500", "state": "Running", "id": containerId}], auth)
+        cmd = f"podman run -d --pod {pod_name} --name {container_name} --stop-timeout 0 {IMG_ALPINE} sleep 500"
+        containerId = self.execute(auth, cmd).strip()
+        self.waitPodContainer(pod_name,
+                              [{"name": container_name, "image": IMG_ALPINE,
+                                "command": "sleep 500", "state": "Running", "id": containerId}], auth)
 
         self.toggleExpandedContainer(container_name)
         b.click(".pf-m-expanded button:contains('Integration')")
@@ -2598,7 +2649,8 @@ class TestApplication(testlib.MachineCase):
         container_name = "logissue"
         self.login()
 
-        self.execute(False, f"podman run --log-driver=passthrough --name {container_name} -d {IMG_ALPINE} false </dev/null")
+        self.execute(False,
+                     f"podman run --log-driver=passthrough --name {container_name} -d {IMG_ALPINE} false </dev/null")
         self.waitContainerRow(container_name)
         self.toggleExpandedContainer(container_name)
         b.click(".pf-m-expanded button:contains('Logs')")
