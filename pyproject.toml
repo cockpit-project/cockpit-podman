@@ -1,0 +1,46 @@
+[tool.ruff]
+select = [
+    "A",       # flake8-builtins
+    "B",       # flake8-bugbear
+    "C4",      # flake8-comprehensions
+    "D300",    # pydocstyle: Forbid ''' in docstrings
+    "DTZ",     # flake8-datetimez
+    "E",       # pycodestyle
+    "EXE",     # flake8-executable
+    "F",       # pyflakes
+    "FBT",     # flake8-boolean-trap
+    "G",       # flake8-logging-format
+    "I",       # isort
+    "ICN",     # flake8-import-conventions
+    "ISC",     # flake8-implicit-str-concat
+    "PLE",     # pylint errors
+    "PGH",     # pygrep-hooks
+    "RSE",     # flake8-raise
+    "RUF",     # ruff rules
+    "T10",     # flake8-debugger
+    "TCH",     # flake8-type-checking
+    "W",       # warnings (mostly whitespace)
+    "YTT",     # flake8-2020
+]
+exclude = [
+    ".git/",
+    "modules/",
+    "node_modules/",
+]
+ignore = [
+    "A003",  # Class attribute is shadowing a python builtin
+    "B011",  # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+    "E731",  # Do not assign a `lambda` expression, use a `def`
+    "FBT002", # Boolean default value in function definition
+    "FBT003", # Boolean positional value in function call
+    "PT011", # `pytest.raises(OSError)` is too broad
+]
+line-length = 118
+src = []
+
+[tool.ruff.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.isort]
+known-first-party = ["cockpit"]
