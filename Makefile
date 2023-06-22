@@ -34,6 +34,7 @@ all: $(DIST_TEST)
 COCKPIT_REPO_FILES = \
 	pkg/lib \
 	test/common \
+	test/static-code \
 	tools/git-utils.sh \
 	tools/make-bots \
 	tools/node-modules \
@@ -188,8 +189,8 @@ print-vm:
 # run static code checks for python code
 PYEXEFILES=$(shell git grep -lI '^#!.*python')
 
-codecheck:
-	flake8 $(PYEXEFILES)
+codecheck: test/static-code $(NODE_MODULES_TEST)
+	test/static-code
 
 # convenience target to setup all the bits needed for the integration tests
 # without actually running them
