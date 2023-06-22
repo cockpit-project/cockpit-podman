@@ -3,8 +3,8 @@
 # See https://github.com/cockpit-project/cockpit/blob/main/test/common/testlib.py
 # "class Browser" and "class MachineCase" for the available API.
 
-import os
 import json
+import os
 import sys
 
 # import Cockpit's machinery for test VMs and its browser test API
@@ -12,8 +12,8 @@ TEST_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.join(TEST_DIR, "common"))
 sys.path.append(os.path.join(os.path.dirname(TEST_DIR), "bots/machine"))
 
-from machine_core import ssh_connection  # noqa
-import testlib  # noqa
+import testlib  # noqa: E402
+from machine_core import ssh_connection  # noqa: E402
 
 REGISTRIES_CONF = """
 [registries.search]
@@ -2019,12 +2019,12 @@ class TestApplication(testlib.MachineCase):
             b.wait_in_text('#containers-containers .pf-c-empty-state', 'No running containers')
             b.wait_in_text('#containers-images .pf-c-empty-state', 'No images')
 
-    def check_content(self, type, present, not_present):
+    def check_content(self, kind, present, not_present):
         b = self.browser
         for item in present:
-            b.wait_visible(f'#containers-{type} tbody tr:first-child:contains({item})')
+            b.wait_visible(f'#containers-{kind} tbody tr:first-child:contains({item})')
         for item in not_present:
-            b.wait_not_present(f'#containers-{type} tbody tr:first-child:contains({item})')
+            b.wait_not_present(f'#containers-{kind} tbody tr:first-child:contains({item})')
 
     def check_containers(self, present, not_present):
         self.check_content("containers", present, not_present)
@@ -2032,7 +2032,7 @@ class TestApplication(testlib.MachineCase):
     def check_images(self, present, not_present):
         self.check_content("images", present, not_present)
 
-    def waitContainer(self, row_id, auth, name="", image="", cmd="", owner="", state=[], pod="no-pod"):
+    def waitContainer(self, row_id, auth, name="", image="", cmd="", owner="", state=None, pod="no-pod"):
         """Check the container with row_name has the expected values
             "image" can be substring, "state" might be string or array of possible states, other are
             checked for exact match.
@@ -2050,7 +2050,7 @@ class TestApplication(testlib.MachineCase):
                 b.wait_text(sel + " td[data-label=Owner]", owner)
             else:
                 b.wait_text(sel + " td[data-label=Owner]", "user: " + owner)
-        if state:
+        if state is not None:
             if not isinstance(state, list):
                 state = [state]
             b.wait(lambda: b.text(sel + " td[data-label=State]") in state)
@@ -2121,7 +2121,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
 
     def testPruneUnusedImagesSystemSelections(self):
-        ''' Test the prune unused images selection options'''
+        """ Test the prune unused images selection options"""
         b = self.browser
         self.login(True)
 
@@ -2167,7 +2167,7 @@ class TestApplication(testlib.MachineCase):
         self._testPruneUnusedContainersSystem(False)
 
     def _testPruneUnusedContainersSystem(self, auth):
-        '''Test the prune unused container image dialog'''
+        """Test the prune unused container image dialog"""
 
         b = self.browser
         self.login(auth)
@@ -2216,7 +2216,7 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod", pods, auth)
 
     def testCreateContainerValidation(self):
-        ''' Test the validation errors'''
+        """ Test the validation errors"""
         b = self.browser
         self.login(False)
         container_name = 'portused'
