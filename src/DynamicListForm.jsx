@@ -11,7 +11,7 @@ export class DynamicListForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            list: [],
+            list: this.props.prefill ?? [],
         };
         this.keyCounter = 0;
         this.removeItem = this.removeItem.bind(this);

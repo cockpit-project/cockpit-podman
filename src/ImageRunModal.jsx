@@ -18,7 +18,7 @@ import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
-import { ErrorNotification } from './Notification.jsx';
+import { ErrorNotification, WarningNotification } from './Notification.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import rest from './rest.js';
@@ -54,10 +54,10 @@ const units = {
 
 // healthchecks.go HealthCheckOnFailureAction
 const HealthCheckOnFailureActionOrder = [
-    { value: 0, label: _("No action") },
-    { value: 3, label: _("Restart") },
-    { value: 4, label: _("Stop") },
-    { value: 2, label: _("Force stop") },
+    { value: 0, label: _("No action"), apiName: "none" },
+    { value: 3, label: _("Restart"), apiName: "restart" },
+    { value: 4, label: _("Stop"), apiName: "stop" },
+    { value: 2, label: _("Force stop"), apiName: "kill" },
 ];
 
 const handleEnvValue = (key, value, idx, onChange, additem, itemCount, companionField) => {
@@ -175,6 +175,9 @@ export class ImageRunModal extends React.Component {
     componentDidMount() {
         this._isMounted = true;
         this.onSearchTriggered(this.state.searchText);
+
+        if (this.props.prefill)
+            this.prefillModal();
     }
 
     componentWillUnmount() {
@@ -635,6 +638,75 @@ export class ImageRunModal extends React.Component {
         return owner === systemOwner;
     };
 
+    prefillModal() {
+        const container = this.props.container;
+        const containerDetail = this.props.containerDetail;
+        const image = this.props.localImages.find(img => img.Id === container.ImageID);
+        const owner = container.isSystem ? 'system' : this.props.user;
+
+        if (containerDetail.Config.CreateCommand) {
+            this.setState({
+                dialogWarning: _("This container was not created by cockpit"),
+                dialogWarningDetail: _("Some options may not be copied to the new container."),
+            });
+        }
+
+        const env = containerDetail.Config.Env.filter(variable => {
+            if (image.Env.includes(variable)) {
+                return false;
+            }
+
+            return !variable.match(/((HOME|TERM|HOSTNAME)=.*)|container=podman/);
+        }).map((variable, index) => {
+            const split = variable.split('=');
+            return { key: index, envKey: split[0], envValue: split[1] };
+        });
+
+        const publish = container.Ports
+            ? container.Ports.map((port, index) => {
+                return { key: index, IP: port.hostIP || port.host_ip, containerPort: port.containerPort || port.container_port, hostPort: port.hostPort || port.host_port, protocol: port.protocol };
+            })
+            : [];
+
+        const volumes = containerDetail.Mounts.map((mount, index) => {
+            // podman does not expose SELinux labels
+            return { key: index, containerPath: mount.Destination, hostPath: mount.Source, mode: (mount.RW ? 'rw' : 'ro'), selinux: '' };
+        });
+
+        // check if memory and cpu limitations or healthcheck are used
+        const memoryConfigure = containerDetail.HostConfig.Memory > 0;
+        const cpuSharesConfigure = containerDetail.HostConfig.CpuShares > 0;
+        const healthcheck = !!containerDetail.Config.Healthcheck;
+        const healthCheckOnFailureAction = (this.props.version.split(".")) >= [4, 3, 0]
+            ? HealthCheckOnFailureActionOrder.find(item => item.apiName === containerDetail.Config.HealthcheckOnFailureAction).value
+            : null;
+
+        this.setState({
+            command: container.Command ? container.Command.join(' ') : "",
+            containerName: container.Names[0] + "_copy",
+            env,
+            hasTTY: containerDetail.Config.Tty,
+            publish,
+            // memory in MB
+            memory: memoryConfigure ? (containerDetail.HostConfig.Memory / 1000000) : 512,
+            cpuShares: cpuSharesConfigure ? containerDetail.HostConfig.CpuShares : 1024,
+            memoryConfigure,
+            cpuSharesConfigure,
+            volumes,
+            owner,
+            // unless-stopped: Identical to always
+            restartPolicy: containerDetail.HostConfig.RestartPolicy.Name === 'unless-stopped' ? 'always' : containerDetail.HostConfig.RestartPolicy.Name,
+            selectedImage: image,
+            healthcheck_command: healthcheck ? containerDetail.Config.Healthcheck.Test.join(' ') : "",
+            // convert to seconds
+            healthcheck_interval: healthcheck ? (containerDetail.Config.Healthcheck.Interval / 1000000000) : 30,
+            healthcheck_timeout: healthcheck ? (containerDetail.Config.Healthcheck.Timeout / 1000000000) : 30,
+            healthcheck_start_period: healthcheck ? (containerDetail.Config.Healthcheck.StartPeriod / 1000000000) : 0,
+            healthcheck_retries: healthcheck ? containerDetail.Config.Healthcheck.Retries : 3,
+            healthcheck_action: healthcheck ? healthCheckOnFailureAction : 0,
+        });
+    }
+
     render() {
         const Dialogs = this.context;
         const { image } = this.props;
@@ -688,6 +760,7 @@ export class ImageRunModal extends React.Component {
 
         const defaultBody = (
             <Form>
+                {this.state.dialogWarning && <WarningNotification warningMessage={this.state.dialogWarning} warningDetail={this.state.dialogWarningDetail} />}
                 {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                 <FormGroup fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
                     <TextInput id='run-image-dialog-name'
@@ -938,6 +1011,7 @@ export class ImageRunModal extends React.Component {
                                  actionLabel={_("Add port mapping")}
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
+                                 prefill={this.state.publish}
                                  itemcomponent={ <PublishPort />} />
 
                         <DynamicListForm id='run-image-dialog-volume'
@@ -948,6 +1022,7 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('volumes', value)}
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
                                  options={{ selinuxAvailable: this.props.selinuxAvailable }}
+                                 prefill={this.state.volumes}
                                  itemcomponent={ <Volume />} />
 
                         <DynamicListForm id='run-image-dialog-env'
@@ -958,6 +1033,7 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
+                                 prefill={this.state.env}
                                  itemcomponent={ <EnvVar />} />
                     </Tab>
                     <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck" className="pf-c-form pf-m-horizontal">
@@ -1089,6 +1165,44 @@ export class ImageRunModal extends React.Component {
                 </Tabs>
             </Form>
         );
+
+        const cardFooter = () => {
+            let createRunText = _("Create and run");
+            let createText = _("Create");
+
+            if (this.props.prefill) {
+                createRunText = _("Clone and run");
+                createText = _("Clone");
+            }
+
+            return (
+                <>
+                    <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={(!image && selectedImage === "")}>
+                        {createRunText}
+                    </Button>
+                    <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={(!image && selectedImage === "")}>
+                        {createText}
+                    </Button>
+                    <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
+                        {_("Cancel")}
+                    </Button>
+                </>
+            );
+        };
+
+        const modalTitle = () => {
+            let titleText = _("Create container");
+
+            if (this.props.prefill && this.props.pod)
+                titleText = _("Clone container in $0");
+            else if (this.props.prefill)
+                titleText = _("Clone container");
+            else if (this.props.pod)
+                titleText = _("Create container in $0");
+
+            return this.props.pod ? cockpit.format(titleText, this.props.pod.Name) : titleText;
+        };
+
         return (
             <Modal isOpen
                    position="top" variant="medium"
@@ -1101,18 +1215,8 @@ export class ImageRunModal extends React.Component {
                            Dialogs.close();
                        }
                    }}
-                   title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
-                   footer={<>
-                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={!image && selectedImage === ""}>
-                           {_("Create and run")}
-                       </Button>
-                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={!image && selectedImage === ""}>
-                           {_("Create")}
-                       </Button>
-                       <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
-                           {_("Cancel")}
-                       </Button>
-                   </>}
+                   title={modalTitle()}
+                   footer={cardFooter()}
             >
                 {defaultBody}
             </Modal>

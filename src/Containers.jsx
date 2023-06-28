@@ -41,7 +41,7 @@ import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, healthcheck, onAddNotification, version, localImages, updateContainerAfterEvent }) => {
+const ContainerActions = ({ container, containerDetail, healthcheck, onAddNotification, version, localImages, updateContainerAfterEvent, copyContainer }) => {
     const Dialogs = useDialogs();
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State == "running";
@@ -256,6 +256,15 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
         }
     }
 
+    if (container && containerDetail && localImages) {
+        actions.push(
+            <DropdownItem key="clone-container"
+                          onClick={() => copyContainer(container, containerDetail, localImages)}>
+                {_("Clone")}
+            </DropdownItem>
+        );
+    }
+
     actions.push(<DropdownSeparator key="separator-1" />);
     actions.push(
         <DropdownItem key="commit"
@@ -361,6 +370,8 @@ class Containers extends React.Component {
         onDownloadContainer = onDownloadContainer.bind(this);
         onDownloadContainerFinished = onDownloadContainerFinished.bind(this);
 
+        this.copyContainer = this.copyContainer.bind(this);
+
         window.addEventListener('resize', this.onWindowResize);
     }
 
@@ -429,7 +440,11 @@ class Containers extends React.Component {
         ];
 
         if (!container.isDownloading) {
-            columns.push({ title: <ContainerActions version={this.props.version} container={container} healthcheck={healthcheck} onAddNotification={this.props.onAddNotification} localImages={localImages} updateContainerAfterEvent={this.props.updateContainerAfterEvent} />, props: { className: "pf-c-table__action" } });
+            columns.push({
+                title: <ContainerActions version={this.props.version} container={container} containerDetail={containerDetail} healthcheck={healthcheck} onAddNotification={this.props.onAddNotification}
+                            localImages={localImages} updateContainerAfterEvent={this.props.updateContainerAfterEvent} copyContainer={this.copyContainer} />,
+                props: { className: "pf-c-table__action" }
+            });
         }
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
@@ -574,6 +589,23 @@ class Containers extends React.Component {
     onOpenPruneUnusedContainersDialog = () => {
         this.setState({ showPruneUnusedContainersModal: true });
     };
+
+    copyContainer(container, containerDetail, localImages) {
+        this.context.show(<ImageRunModal user={this.props.user}
+                                    localImages={localImages}
+                                    pod={this.props.pods[container.Pod + container.isSystem]}
+                                    registries={this.props.registries}
+                                    selinuxAvailable={this.props.selinuxAvailable}
+                                    podmanRestartAvailable={this.props.podmanRestartAvailable}
+                                    userServiceAvailable={this.props.userServiceAvailable}
+                                    systemServiceAvailable={this.props.systemServiceAvailable}
+                                    onAddNotification={this.props.onAddNotification}
+                                    version={this.props.version}
+                                    container={container}
+                                    containerDetail={containerDetail}
+                                    prefill
+        />);
+    }
 
     render() {
         const Dialogs = this.context;
