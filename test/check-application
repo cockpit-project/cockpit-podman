@@ -1229,6 +1229,7 @@ class TestApplication(testlib.MachineCase):
         if not auth:
             # Check that the checkpoint option is not present for rootless
             b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-dropdown__toggle")
+            b.wait_visible(self.getContainerAction(IMG_BUSYBOX, 'Force stop'))
             b.wait_not_present(self.getContainerAction(IMG_BUSYBOX, 'Checkpoint'))
             b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-dropdown__toggle")
         # Stop the container
