@@ -401,6 +401,18 @@ class TestApplication(testlib.MachineCase):
         b.click("#table-pod-3-title .pod-details-volumes-btn")
         b.wait_in_text(".pf-v5-c-popover__content", "/tmp ↔ /app")
 
+    def testPods2(self):
+        self.testPods()
+
+    def testPods3(self):
+        self.testPods()
+
+    def testPods4(self):
+        self.testPods()
+
+    def testPods5(self):
+        self.testPods()
+
     def testBasicSystem(self):
         self._testBasic(True)
 
@@ -559,6 +571,8 @@ class TestApplication(testlib.MachineCase):
             expected_ws += "ws"
 
         self.login(auth)
+        b.eval_js('window.debugging = "podman"')
+        b.cdp.trace = True
 
         # Check all containers
         if auth:
@@ -1510,6 +1524,15 @@ class TestApplication(testlib.MachineCase):
     def testCreateContainerSystem(self):
         self._testCreateContainer(True)
 
+    def testCreateContainerSystem2(self):
+        self._testCreateContainer(True)
+
+    def testCreateContainerSystem3(self):
+        self._testCreateContainer(True)
+
+    def testCreateContainerSystem4(self):
+        self._testCreateContainer(True)
+
     def testCreateContainerUser(self):
         self._testCreateContainer(False)
 
@@ -1536,6 +1559,9 @@ class TestApplication(testlib.MachineCase):
 
         b = self.browser
         container_name = "busybox-downloaded"
+
+        b.eval_js('window.debugging = "podman"')
+        b.cdp.trace = True
 
         b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
         b.set_input_text("#run-image-dialog-name", container_name)
@@ -1634,6 +1660,8 @@ class TestApplication(testlib.MachineCase):
             self.execute(False, "podman rmi --all")
 
         self.login(auth)
+        b.eval_js('window.debugging = "podman"')
+        b.cdp.trace = True
 
         b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
 
@@ -2278,6 +2306,8 @@ class TestApplication(testlib.MachineCase):
             self.execute(False, f"podman rmi {IMG_BUSYBOX}")
 
         self.login(auth)
+        b.eval_js('window.debugging = "podman"')
+        b.cdp.trace = True
 
         b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
 
@@ -2399,7 +2429,25 @@ class TestApplication(testlib.MachineCase):
     def testHealthcheckSystem(self):
         self._testHealthcheck(True)
 
+    def testHealthcheckSystem2(self):
+        self._testHealthcheck(True)
+
+    def testHealthcheckSystem3(self):
+        self._testHealthcheck(True)
+
+    def testHealthcheckSystem4(self):
+        self._testHealthcheck(True)
+
     def testHealthcheckUser(self):
+        self._testHealthcheck(False)
+
+    def testHealthcheckUser2(self):
+        self._testHealthcheck(False)
+
+    def testHealthcheckUser3(self):
+        self._testHealthcheck(False)
+
+    def testHealthcheckUser4(self):
         self._testHealthcheck(False)
 
     # Ubuntu 2204 lacks user systemd units
@@ -2578,6 +2626,18 @@ class TestApplication(testlib.MachineCase):
     def testCreatePodUser(self):
         self._createPod(False)
 
+    def testCreatePodUser2(self):
+        self._createPod(False)
+
+    def testCreatePodUser3(self):
+        self._createPod(False)
+
+    def testCreatePodUser4(self):
+        self._createPod(False)
+
+    def testCreatePodUser5(self):
+        self._createPod(False)
+
     def _createPod(self, auth):
         b = self.browser
         m = self.machine
@@ -2624,6 +2684,9 @@ class TestApplication(testlib.MachineCase):
 
             b.set_file_autocomplete_val("#create-pod-dialog-volume-1 .pf-v5-c-select", rwdir)
             b.set_input_text('#create-pod-dialog-volume-1-container-path', '/tmp/rw')
+
+        b.eval_js('window.debugging = "podman"')
+        b.cdp.trace = True
 
         b.click("#create-pod-create-btn")
         b.set_val("#containers-containers-filter", "all")
