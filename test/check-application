@@ -175,6 +175,16 @@ class TestApplication(testlib.MachineCase):
         self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())
 
+    def tearDown(self):
+        if self.getError():
+            # dump container logs for debugging
+            for auth in [False, True]:
+                print(f"----- {auth and 'system' or 'user'} containers -----", file=sys.stderr)
+                self.execute(auth, "podman ps -a >&2")
+                self.execute(auth, 'for c in $(podman ps -aq); do echo "---- $c ----" >&2; podman logs $c >&2; done')
+
+        super().tearDown()
+
     def getRestartPolicy(self, auth, container_name):
         cmd = f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}"
         return self.execute(auth, cmd).strip()
