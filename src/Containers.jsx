@@ -468,6 +468,8 @@ class Containers extends React.Component {
             props: {
                 key: container.Id + container.isSystem.toString(),
                 "data-row-id": container.Id + container.isSystem.toString(),
+                "data-pid": container.Pid,
+                "data-started-at": container.StartedAt,
             },
         };
     }

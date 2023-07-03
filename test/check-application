@@ -1215,15 +1215,19 @@ class TestApplication(testlib.MachineCase):
             self.assertEqual(self.getContainerAttr(IMG_BUSYBOX, "CPU"), "n/a")
             self.assertEqual(memory, "n/a")
 
-        # Restart the container
-        old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate")
+        # Restart the container; there is no steady state change in the visible UI, so look for
+        # a changed data-pid attribute
+        old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate").strip()
+        b.wait_in_text(f'#containers-containers tr[data-pid="{old_pid}"]', "swamped-crate")
         self.performContainerAction(IMG_BUSYBOX, "Force restart")
-        b.wait(lambda: old_pid != self.execute(auth,
-                                               "podman inspect --format '{{.State.Pid}}' swamped-crate".strip()))
+        for _ in range(10):
+            new_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate").strip()
+            if new_pid and new_pid != old_pid:
+                break
+        else:
+            self.fail("Timed out waiting for pid change")
+        b.wait_in_text(f'#containers-containers tr[data-pid="{new_pid}"]', "swamped-crate")
         self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX, state='Running')
-
-        self.filter_containers('all')
-        b.wait_visible("#containers-containers")
 
         self.waitContainerRow(IMG_BUSYBOX)
         if not auth:
