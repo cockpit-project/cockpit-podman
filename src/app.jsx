@@ -150,12 +150,8 @@ class Application extends React.Component {
 
     updateState(state, id, newValue) {
         this.setState(prevState => {
-            const copyState = Object.assign({}, prevState[state]);
-
-            copyState[id] = newValue;
-
             return {
-                [state]: copyState,
+                [state]: { ...prevState[state], [id]: newValue }
             };
         });
     }
