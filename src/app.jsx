@@ -406,6 +406,7 @@ class Application extends React.Component {
         case 'died':
         case 'exec_died':
         case 'kill':
+        case 'cleanup':
         case 'mount':
         case 'pause':
         case 'prune':
@@ -419,7 +420,6 @@ class Application extends React.Component {
             this.updateContainerAfterEvent(event.Actor.ID, system, event);
             break;
         case 'remove':
-        case 'cleanup':
             // HACK: we don't get a pod event when a container in a pod is removed.
             // https://github.com/containers/podman/issues/15408
             if (event.Actor.Attributes.podId) {
