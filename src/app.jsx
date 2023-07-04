@@ -199,7 +199,7 @@ class Application extends React.Component {
     }
 
     updateContainersAfterEvent(system, init) {
-        client.getContainers(system)
+        return client.getContainers(system)
                 .then(reply => Promise.all(
                     (reply || []).map(container =>
                         this.isContainerCheckpointPresent(container.Id, system)
@@ -267,7 +267,7 @@ class Application extends React.Component {
     }
 
     updatePodsAfterEvent(system) {
-        client.getPods(system)
+        return client.getPods(system)
                 .then(reply => {
                     this.setState(prevState => {
                         // Copy only pods that could not be deleted with this event
@@ -294,7 +294,7 @@ class Application extends React.Component {
     }
 
     updateContainerAfterEvent(id, system, event) {
-        client.getContainers(system, id)
+        return client.getContainers(system, id)
                 .then(reply => Promise.all(
                     (reply || []).map(container =>
                         this.isContainerCheckpointPresent(container.Id, system)
@@ -344,7 +344,7 @@ class Application extends React.Component {
     }
 
     updatePodAfterEvent(id, system) {
-        client.getPods(system, id)
+        return client.getPods(system, id)
                 .then(reply => {
                     if (reply && reply.length > 0) {
                         reply = reply[0];
@@ -394,12 +394,10 @@ class Application extends React.Component {
         case 'start':
             // HACK: We don't get 'started' event for pods got started by the first container which was added to them
             // https://github.com/containers/podman/issues/7213
-            if (event.Actor.Attributes.podId) {
-                this.updatePodAfterEvent(event.Actor.Attributes.podId, system);
-            } else {
-                this.updatePodsAfterEvent(system);
-            }
-            this.updateContainerAfterEvent(event.Actor.ID, system, event);
+            (event.Actor.Attributes.podId
+                ? this.updatePodAfterEvent(event.Actor.Attributes.podId, system)
+                : this.updatePodsAfterEvent(system)
+            ).then(() => this.updateContainerAfterEvent(event.Actor.ID, system, event));
             break;
         case 'checkpoint':
         case 'create':
@@ -420,14 +418,14 @@ class Application extends React.Component {
             this.updateContainerAfterEvent(event.Actor.ID, system, event);
             break;
         case 'remove':
-            // HACK: we don't get a pod event when a container in a pod is removed.
-            // https://github.com/containers/podman/issues/15408
-            if (event.Actor.Attributes.podId) {
-                this.updatePodAfterEvent(event.Actor.Attributes.podId, system);
-            } else {
-                this.updatePodsAfterEvent(system);
-            }
-            this.updateContainersAfterEvent(system);
+            this.updateContainersAfterEvent(system).then(() => {
+                // HACK: we don't get a pod event when a container in a pod is removed.
+                // https://github.com/containers/podman/issues/15408
+                if (event.Actor.Attributes.podId)
+                    this.updatePodAfterEvent(event.Actor.Attributes.podId, system);
+                else
+                    this.updatePodsAfterEvent(system);
+            });
             break;
         /* The following events need only to update the Image list */
         case 'commit':
