@@ -46,7 +46,7 @@ const ContainerRenameModal = ({ container, version, updateContainer }) => {
                     Dialogs.close();
                     // HACK: This is a workaround for missing API rename event in Podman versions less than 4.1.
                     if (version.localeCompare("4.1", undefined, { numeric: true, sensitivity: 'base' }) < 0) {
-                        updateContainer(container.Id, container.isSystem);
+                        updateContainer(container.Id, container.isSystem); // not-covered: only on old version
                     }
                 })
                 .catch(ex => {
