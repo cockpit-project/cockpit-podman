@@ -13,7 +13,7 @@ import { FormHelper } from 'cockpit-components-form-helper.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerRenameModal = ({ container, version, updateContainerAfterEvent }) => {
+const ContainerRenameModal = ({ container, version, updateContainer }) => {
     const Dialogs = useDialogs();
     const [name, setName] = useState(container.Names[0]);
     const [nameError, setNameError] = useState(null);
@@ -46,7 +46,7 @@ const ContainerRenameModal = ({ container, version, updateContainerAfterEvent })
                     Dialogs.close();
                     // HACK: This is a workaround for missing API rename event in Podman versions less than 4.1.
                     if (version.localeCompare("4.1", undefined, { numeric: true, sensitivity: 'base' }) < 0) {
-                        updateContainerAfterEvent(container.Id, container.isSystem);
+                        updateContainer(container.Id, container.isSystem);
                     }
                 })
                 .catch(ex => {

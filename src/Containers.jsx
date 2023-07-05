@@ -41,7 +41,7 @@ import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, healthcheck, onAddNotification, version, localImages, updateContainerAfterEvent }) => {
+const ContainerActions = ({ container, healthcheck, onAddNotification, version, localImages, updateContainer }) => {
     const Dialogs = useDialogs();
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State == "running";
@@ -156,7 +156,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
             version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
             Dialogs.show(<ContainerRenameModal container={container}
                                                version={version}
-                                               updateContainerAfterEvent={updateContainerAfterEvent} />);
+                                               updateContainer={updateContainer} />);
         }
     };
 
@@ -429,7 +429,7 @@ class Containers extends React.Component {
         ];
 
         if (!container.isDownloading) {
-            columns.push({ title: <ContainerActions version={this.props.version} container={container} healthcheck={healthcheck} onAddNotification={this.props.onAddNotification} localImages={localImages} updateContainerAfterEvent={this.props.updateContainerAfterEvent} />, props: { className: "pf-v5-c-table__action" } });
+            columns.push({ title: <ContainerActions version={this.props.version} container={container} healthcheck={healthcheck} onAddNotification={this.props.onAddNotification} localImages={localImages} updateContainer={this.props.updateContainer} />, props: { className: "pf-v5-c-table__action" } });
         }
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
