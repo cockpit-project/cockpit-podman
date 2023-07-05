@@ -353,6 +353,8 @@ class Application extends React.Component {
                 });
     }
 
+    // see https://docs.podman.io/en/latest/markdown/podman-events.1.html
+
     handleImageEvent(event, system) {
         switch (event.Action) {
         case 'push':
