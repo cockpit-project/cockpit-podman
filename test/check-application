@@ -6,6 +6,7 @@
 import json
 import os
 import sys
+import time
 
 import testlib
 from machine_core import ssh_connection
@@ -277,9 +278,21 @@ class TestApplication(testlib.MachineCase):
         b.click(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle] li > button.pod-action-{action.lower()}")
         b.wait_not_present(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle]")
 
+    def getPid(self, container: str, *, auth: bool) -> int:
+        out = self.execute(auth, "podman inspect --format '{{.State.Pid}}' " + container).strip()
+        return int(out)
+
+    def waitPidChange(self, container: str, old_pid: int, *, auth: bool) -> int:
+        for _ in range(10):
+            new_pid = self.getPid(container, auth=auth)
+            if new_pid != 0 and new_pid != old_pid:
+                return new_pid
+            time.sleep(1)
+        else:
+            self.fail("Timed out waiting for pid change")
+
     def testPods(self):
         b = self.browser
-        m = self.machine
 
         self.login()
 
@@ -352,9 +365,9 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": "Running", "id": containerId}])
 
-        old_pid = m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system")
+        old_pid = self.getPid("test-pod-1-system", auth=True)
         self.performPodAction("pod-1", "system", "Restart")
-        b.wait(lambda: old_pid != m.execute("podman inspect --format '{{.State.Pid}}' test-pod-1-system".strip()))
+        self.waitPidChange("test-pod-1-system", old_pid, auth=True)
 
         self.performPodAction("pod-1", "system", "Delete")
         b.click(".pf-v5-c-modal-box button:contains(Delete)")
@@ -1212,15 +1225,10 @@ class TestApplication(testlib.MachineCase):
 
         # Restart the container; there is no steady state change in the visible UI, so look for
         # a changed data-pid attribute
-        old_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate").strip()
+        old_pid = self.getPid("swamped-crate", auth=auth)
         b.wait_in_text(f'#containers-containers tr[data-pid="{old_pid}"]', "swamped-crate")
         self.performContainerAction(IMG_BUSYBOX, "Force restart")
-        for _ in range(10):
-            new_pid = self.execute(auth, "podman inspect --format '{{.State.Pid}}' swamped-crate").strip()
-            if new_pid and new_pid != old_pid:
-                break
-        else:
-            self.fail("Timed out waiting for pid change")
+        new_pid = self.waitPidChange("swamped-crate", old_pid, auth=auth)
         b.wait_in_text(f'#containers-containers tr[data-pid="{new_pid}"]', "swamped-crate")
         self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX, state='Running')
 
