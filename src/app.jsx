@@ -70,18 +70,13 @@ class Application extends React.Component {
             location: {},
         };
         this.onAddNotification = this.onAddNotification.bind(this);
-        this.updateState = this.updateState.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
         this.onContainerFilterChanged = this.onContainerFilterChanged.bind(this);
-        this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
-        this.updateContainerStats = this.updateContainerStats.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
-        this.handleImageEvent = this.handleImageEvent.bind(this);
-        this.handleContainerEvent = this.handleContainerEvent.bind(this);
         this.checkUserService = this.checkUserService.bind(this);
         this.onNavigate = this.onNavigate.bind(this);
     }
