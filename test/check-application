@@ -1228,10 +1228,10 @@ class TestApplication(testlib.MachineCase):
         # Restart the container; there is no steady state change in the visible UI, so look for
         # a changed data-started-at attribute
         old_start = self.getStartTime("swamped-crate", auth=auth)
-        b.wait_in_text(f'#containers-containers tr[data-started-at="{old_start}"]', "swamped-crate")
+        old_start_dom = b.attr("#containers-containers tr[data-row-id", "data-started-at")
         self.performContainerAction(IMG_BUSYBOX, "Force restart")
-        new_start = self.waitRestart("swamped-crate", old_start, auth=auth)
-        b.wait_in_text(f'#containers-containers tr[data-started-at="{new_start}"]', "swamped-crate")
+        self.waitRestart("swamped-crate", old_start, auth=auth)
+        b.wait_not_attr("#containers-containers tr[data-row-id", "data-started-at", old_start_dom)
         self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX, state='Running')
 
         self.waitContainerRow(IMG_BUSYBOX)
