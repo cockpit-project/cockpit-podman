@@ -189,7 +189,7 @@ class Application extends React.Component {
                 .then(scriptResult => scriptResult === "0\n");
     }
 
-    updateContainers(system, init) {
+    initContainers(system) {
         return client.getContainers(system)
                 .then(reply => Promise.all(
                     (reply || []).map(container =>
@@ -220,11 +220,9 @@ class Application extends React.Component {
                             [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
                         };
                     });
-                    if (init) {
-                        this.updateContainerStats(system);
-                        for (const container of reply || []) {
-                            this.inspectContainerDetail(container.Id, system);
-                        }
+                    this.updateContainerStats(system);
+                    for (const container of reply || []) {
+                        this.inspectContainerDetail(container.Id, system);
                     }
                 })
                 .catch(console.log);
@@ -371,6 +369,8 @@ class Application extends React.Component {
     }
 
     handleContainerEvent(event, system) {
+        const id = event.Actor.ID;
+
         switch (event.Action) {
         /* The following events do not need to trigger any state updates */
         case 'attach':
@@ -390,7 +390,7 @@ class Application extends React.Component {
             (event.Actor.Attributes.podId
                 ? this.updatePod(event.Actor.Attributes.podId, system)
                 : this.updatePods(system)
-            ).then(() => this.updateContainer(event.Actor.ID, system, event));
+            ).then(() => this.updateContainer(id, system, event));
             break;
         case 'checkpoint':
         case 'create':
@@ -408,19 +408,32 @@ class Application extends React.Component {
         case 'unmount':
         case 'unpause':
         case 'rename': // rename event is available starting podman v4.1; until then the container does not get refreshed after renaming
-            this.updateContainer(event.Actor.ID, system, event);
+            this.updateContainer(id, system, event);
             break;
+
         case 'remove':
-            this.updateContainers(system).then(() => {
-                // HACK: we don't get a pod event when a container in a pod is removed.
-                // https://github.com/containers/podman/issues/15408
-                if (event.Actor.Attributes.podId)
-                    this.updatePod(event.Actor.Attributes.podId, system);
-                else
+            this.setState(prevState => {
+                const containers = { ...prevState.containers };
+                delete containers[id + system.toString()];
+                let pods;
+
+                if (event.Actor.Attributes.podId) {
+                    const podIdx = event.Actor.Attributes.podId + system.toString();
+                    const newPod = { ...prevState.pods[podIdx] };
+                    newPod.Containers = newPod.Containers.filter(container => container.Id !== id);
+                    pods = { ...prevState.pods, [podIdx]: newPod };
+                } else {
+                    // HACK: with podman < 4.3.0 we don't get a pod event when a container in a pod is removed
+                    // https://github.com/containers/podman/issues/15408
+                    pods = prevState.pods;
                     this.updatePods(system);
+                }
+
+                return { containers, pods };
             });
             break;
-        /* The following events need only to update the Image list */
+
+        // only needs to update the Image list, this ought to be an image event
         case 'commit':
             this.updateImages(system);
             break;
@@ -440,7 +453,11 @@ class Application extends React.Component {
             this.updatePod(event.Actor.ID, system);
             break;
         case 'remove':
-            this.updatePods(system);
+            this.setState(prevState => {
+                const pods = { ...prevState.pods };
+                delete pods[event.Actor.ID + system.toString()];
+                return { pods };
+            });
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
@@ -487,7 +504,7 @@ class Application extends React.Component {
                         cgroupVersion: reply.host.cgroupVersion,
                     });
                     this.updateImages(system);
-                    this.updateContainers(system, true);
+                    this.initContainers(system);
                     this.updatePods(system);
                     client.streamEvents(system,
                                         message => this.handleEvent(message, system))
