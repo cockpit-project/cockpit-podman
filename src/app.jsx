@@ -334,6 +334,13 @@ class Application extends React.Component {
         case 'export':
         case 'import':
         case 'init':
+        case 'health_status': // HACK: broken, https://github.com/containers/podman/issues/19237; see exec_died
+        case 'kill':
+        case 'mount':
+        case 'prune':
+        case 'restart':
+        case 'sync':
+        case 'unmount':
         case 'wait':
             break;
         /* The following events need only to update the Container list
@@ -349,19 +356,13 @@ class Application extends React.Component {
             ).then(() => this.updateContainer(id, system, event));
             break;
         case 'checkpoint':
+        case 'cleanup':
         case 'create':
         case 'died':
-        case 'exec_died':
-        case 'kill':
-        case 'cleanup':
-        case 'mount':
+        case 'exec_died': // HACK: pick up health check runs, see https://github.com/containers/podman/issues/19237
         case 'pause':
-        case 'prune':
-        case 'restart':
         case 'restore':
         case 'stop':
-        case 'sync':
-        case 'unmount':
         case 'unpause':
         case 'rename': // rename event is available starting podman v4.1; until then the container does not get refreshed after renaming
             this.updateContainer(id, system, event);
