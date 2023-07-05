@@ -5,7 +5,7 @@ import { formatRelative } from 'date-fns';
 const _ = cockpit.gettext;
 
 // https://github.com/containers/podman/blob/main/libpod/define/containerstate.go
-// "Restarting" comes from special handling of restart case in Application.updateContainerAfterEvent()
+// "Restarting" comes from special handling of restart case in Application.updateContainer()
 export const states = [_("Exited"), _("Paused"), _("Stopped"), _("Removing"), _("Configured"), _("Created"), _("Restart"), _("Running")];
 
 // https://github.com/containers/podman/blob/main/libpod/define/podstate.go

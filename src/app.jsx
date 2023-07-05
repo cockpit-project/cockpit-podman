@@ -74,7 +74,7 @@ class Application extends React.Component {
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
         this.onContainerFilterChanged = this.onContainerFilterChanged.bind(this);
-        this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
+        this.updateContainer = this.updateContainer.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
         this.checkUserService = this.checkUserService.bind(this);
@@ -189,7 +189,7 @@ class Application extends React.Component {
                 .then(scriptResult => scriptResult === "0\n");
     }
 
-    updateContainersAfterEvent(system, init) {
+    updateContainers(system, init) {
         return client.getContainers(system)
                 .then(reply => Promise.all(
                     (reply || []).map(container =>
@@ -230,7 +230,7 @@ class Application extends React.Component {
                 .catch(console.log);
     }
 
-    updateImagesAfterEvent(system) {
+    updateImages(system) {
         client.getImages(system)
                 .then(reply => {
                     this.setState(prevState => {
@@ -257,7 +257,7 @@ class Application extends React.Component {
                 });
     }
 
-    updatePodsAfterEvent(system) {
+    updatePods(system) {
         return client.getPods(system)
                 .then(reply => {
                     this.setState(prevState => {
@@ -284,7 +284,7 @@ class Application extends React.Component {
                 });
     }
 
-    updateContainerAfterEvent(id, system, event) {
+    updateContainer(id, system, event) {
         return client.getContainers(system, id)
                 .then(reply => Promise.all(
                     (reply || []).map(container =>
@@ -322,7 +322,7 @@ class Application extends React.Component {
                 .catch(console.log);
     }
 
-    updateImageAfterEvent(id, system) {
+    updateImage(id, system) {
         client.getImages(system, id)
                 .then(reply => {
                     const immage = reply[id];
@@ -334,7 +334,7 @@ class Application extends React.Component {
                 });
     }
 
-    updatePodAfterEvent(id, system) {
+    updatePod(id, system) {
         return client.getPods(system, id)
                 .then(reply => {
                     if (reply && reply.length > 0) {
@@ -356,14 +356,14 @@ class Application extends React.Component {
         case 'push':
         case 'save':
         case 'tag':
-            this.updateImageAfterEvent(event.Actor.ID, system);
+            this.updateImage(event.Actor.ID, system);
             break;
         case 'pull': // Pull event has not event.id
         case 'untag':
         case 'remove':
         case 'prune':
         case 'build':
-            this.updateImagesAfterEvent(system);
+            this.updateImages(system);
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
@@ -388,9 +388,9 @@ class Application extends React.Component {
             // HACK: We don't get 'started' event for pods got started by the first container which was added to them
             // https://github.com/containers/podman/issues/7213
             (event.Actor.Attributes.podId
-                ? this.updatePodAfterEvent(event.Actor.Attributes.podId, system)
-                : this.updatePodsAfterEvent(system)
-            ).then(() => this.updateContainerAfterEvent(event.Actor.ID, system, event));
+                ? this.updatePod(event.Actor.Attributes.podId, system)
+                : this.updatePods(system)
+            ).then(() => this.updateContainer(event.Actor.ID, system, event));
             break;
         case 'checkpoint':
         case 'create':
@@ -408,21 +408,21 @@ class Application extends React.Component {
         case 'unmount':
         case 'unpause':
         case 'rename': // rename event is available starting podman v4.1; until then the container does not get refreshed after renaming
-            this.updateContainerAfterEvent(event.Actor.ID, system, event);
+            this.updateContainer(event.Actor.ID, system, event);
             break;
         case 'remove':
-            this.updateContainersAfterEvent(system).then(() => {
+            this.updateContainers(system).then(() => {
                 // HACK: we don't get a pod event when a container in a pod is removed.
                 // https://github.com/containers/podman/issues/15408
                 if (event.Actor.Attributes.podId)
-                    this.updatePodAfterEvent(event.Actor.Attributes.podId, system);
+                    this.updatePod(event.Actor.Attributes.podId, system);
                 else
-                    this.updatePodsAfterEvent(system);
+                    this.updatePods(system);
             });
             break;
         /* The following events need only to update the Image list */
         case 'commit':
-            this.updateImagesAfterEvent(system);
+            this.updateImages(system);
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
@@ -437,10 +437,10 @@ class Application extends React.Component {
         case 'start':
         case 'stop':
         case 'unpause':
-            this.updatePodAfterEvent(event.Actor.ID, system);
+            this.updatePod(event.Actor.ID, system);
             break;
         case 'remove':
-            this.updatePodsAfterEvent(system);
+            this.updatePods(system);
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
@@ -486,9 +486,9 @@ class Application extends React.Component {
                         registries: reply.registries,
                         cgroupVersion: reply.host.cgroupVersion,
                     });
-                    this.updateImagesAfterEvent(system);
-                    this.updateContainersAfterEvent(system, true);
-                    this.updatePodsAfterEvent(system);
+                    this.updateImages(system);
+                    this.updateContainers(system, true);
+                    this.updatePods(system);
                     client.streamEvents(system,
                                         message => this.handleEvent(message, system))
                             .then(() => {
@@ -767,7 +767,7 @@ class Application extends React.Component {
                 podmanRestartAvailable={this.state.podmanRestartAvailable}
                 userPodmanRestartAvailable={this.state.userPodmanRestartAvailable}
                 userLingeringEnabled={this.state.userLingeringEnabled}
-                updateContainerAfterEvent={this.updateContainerAfterEvent}
+                updateContainer={this.updateContainer}
             />
         );
 
