@@ -57,7 +57,7 @@ export function getContainers(system, id) {
             .then(reply => JSON.parse(reply));
 }
 
-export const getContainerStats = (system, callback) => podmanMonitor("libpod/containers/stats", "GET", { stream: true }, callback, system);
+export const streamContainerStats = (system, callback) => podmanMonitor("libpod/containers/stats", "GET", { stream: true }, callback, system);
 
 export function inspectContainer(system, id) {
     const options = {
