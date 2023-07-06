@@ -210,7 +210,7 @@ class Application extends React.Component {
                             if (container.isSystem !== system)
                                 copyContainers[id] = container;
                         });
-                        for (const container of reply || []) {
+                        for (const container of reply) {
                             container.isSystem = system;
                             copyContainers[container.Id + system.toString()] = container;
                         }
@@ -221,7 +221,7 @@ class Application extends React.Component {
                         };
                     });
                     this.updateContainerStats(system);
-                    for (const container of reply || []) {
+                    for (const container of reply) {
                         this.inspectContainerDetail(container.Id, system);
                     }
                 })
