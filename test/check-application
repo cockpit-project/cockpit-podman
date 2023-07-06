@@ -812,10 +812,14 @@ class TestApplication(testlib.MachineCase):
             self.execute(auth, "podman stop net_check")
             b.wait(lambda: self.execute(True, "podman ps --all | grep -e net_check -e Exited"))
             self.toggleExpandedContainer("net_check")
+            sha = self.execute(auth, "podman inspect --format '{{.Id}}' net_check").strip()
+            self.waitContainer(sha, auth, state='Exited')
 
         # delete image alpine that has been used by a container
         self.execute(auth, f"podman run -d --name test-sh4 --stop-timeout 0 {IMG_ALPINE} sh")
-        self.waitContainerRow("test-sh4")
+        # our pixel test expects both containers to be in state "Exited"
+        sha = self.execute(auth, "podman inspect --format '{{.Id}}' test-sh4").strip()
+        self.waitContainer(sha, auth, name="test-sh4", state='Exited')
         if auth:
             b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl", "mobile"])
         alpine_sel = f"#containers-images tbody tr[data-row-id={images[IMG_ALPINE_LATEST]}{auth}]".lower()
