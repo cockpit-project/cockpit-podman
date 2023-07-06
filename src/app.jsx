@@ -166,7 +166,7 @@ class Application extends React.Component {
     }
 
     updateContainerStats(system) {
-        client.getContainerStats(system, reply => {
+        client.streamContainerStats(system, reply => {
             if (reply.Error != null) // executed when container stop
                 console.warn("Failed to update container stats:", JSON.stringify(reply.message));
             else {
