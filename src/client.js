@@ -36,13 +36,7 @@ function podmanMonitor(name, method, args, callback, system) {
     return connection.monitor(options, callback, system);
 }
 
-export function streamEvents(system, callback) {
-    return new Promise((resolve, reject) => {
-        podmanMonitor("libpod/events", "GET", {}, callback, system)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
-}
+export const streamEvents = (system, callback) => podmanMonitor("libpod/events", "GET", {}, callback, system);
 
 export function getInfo(system) {
     return new Promise((resolve, reject) => {
@@ -55,28 +49,22 @@ export function getInfo(system) {
 }
 
 export function getContainers(system, id) {
-    return new Promise((resolve, reject) => {
-        const options = { all: true };
-        if (id)
-            options.filters = JSON.stringify({ id: [id] });
+    const options = { all: true };
+    if (id)
+        options.filters = JSON.stringify({ id: [id] });
 
-        podmanCall("libpod/containers/json", "GET", options, system)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    return podmanCall("libpod/containers/json", "GET", options, system)
+            .then(reply => JSON.parse(reply));
 }
 
 export const getContainerStats = (system, callback) => podmanMonitor("libpod/containers/stats", "GET", { stream: true }, callback, system);
 
 export function inspectContainer(system, id) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            size: false // set true to display filesystem usage
-        };
-        podmanCall("libpod/containers/" + id + "/json", "GET", options, system)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    const options = {
+        size: false // set true to display filesystem usage
+    };
+    return podmanCall("libpod/containers/" + id + "/json", "GET", options, system)
+            .then(reply => JSON.parse(reply));
 }
 
 export const delContainer = (system, id, force) => podmanCall("libpod/containers/" + id, "DELETE", { force }, system);
@@ -84,11 +72,8 @@ export const delContainer = (system, id, force) => podmanCall("libpod/containers
 export const renameContainer = (system, id, config) => podmanCall("libpod/containers/" + id + "/rename", "POST", config, system);
 
 export function createContainer(system, config) {
-    return new Promise((resolve, reject) => {
-        podmanCall("libpod/containers/create", "POST", {}, system, JSON.stringify(config))
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    return podmanCall("libpod/containers/create", "POST", {}, system, JSON.stringify(config))
+            .then(reply => JSON.parse(reply));
 }
 
 export const commitContainer = (system, commitData) => podmanCall("libpod/commit", "POST", commitData, system);
@@ -112,11 +97,8 @@ export function execContainer(system, id) {
         Cmd: ["/bin/sh"],
     };
 
-    return new Promise((resolve, reject) => {
-        podmanCall("libpod/containers/" + id + "/exec", "POST", {}, system, JSON.stringify(args))
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    return podmanCall("libpod/containers/" + id + "/exec", "POST", {}, system, JSON.stringify(args))
+            .then(reply => JSON.parse(reply));
 }
 
 export function resizeContainersTTY(system, id, exec, width, height) {
@@ -147,66 +129,50 @@ function parseImageInfo(info) {
 }
 
 export function getImages(system, id) {
-    return new Promise((resolve, reject) => {
-        const options = {};
-        if (id)
-            options.filters = JSON.stringify({ id: [id] });
-        podmanCall("libpod/images/json", "GET", options, system)
-                .then(reply => {
-                    const immages = JSON.parse(reply);
-                    const images = {};
-                    const promises = [];
+    const options = {};
+    if (id)
+        options.filters = JSON.stringify({ id: [id] });
+    return podmanCall("libpod/images/json", "GET", options, system)
+            .then(reply => {
+                const immages = JSON.parse(reply);
+                const images = {};
+                const promises = [];
 
-                    for (const image of immages || []) {
-                        images[image.Id] = image;
-                        promises.push(podmanCall("libpod/images/" + image.Id + "/json", "GET", {}, system));
-                    }
+                for (const image of immages || []) {
+                    images[image.Id] = image;
+                    promises.push(podmanCall("libpod/images/" + image.Id + "/json", "GET", {}, system));
+                }
 
-                    Promise.all(promises)
-                            .then(replies => {
-                                for (const reply of replies) {
-                                    const info = JSON.parse(reply);
-                                    images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
-                                    images[info.Id].isSystem = system;
-                                }
-                                resolve(images);
-                            })
-                            .catch(reject);
-                })
-                .catch(reject);
-    });
+                return Promise.all(promises)
+                        .then(replies => {
+                            for (const reply of replies) {
+                                const info = JSON.parse(reply);
+                                images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
+                                images[info.Id].isSystem = system;
+                            }
+                            return images;
+                        });
+            });
 }
 
 export function getPods(system, id) {
-    return new Promise((resolve, reject) => {
-        const options = {};
-        if (id)
-            options.filters = JSON.stringify({ id: [id] });
-        podmanCall("libpod/pods/json", "GET", options, system)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    const options = {};
+    if (id)
+        options.filters = JSON.stringify({ id: [id] });
+    return podmanCall("libpod/pods/json", "GET", options, system)
+            .then(reply => JSON.parse(reply));
 }
 
 export function delImage(system, id, force) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            force,
-        };
-        podmanCall("libpod/images/" + id, "DELETE", options, system)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    return podmanCall("libpod/images/" + id, "DELETE", { force }, system)
+            .then(reply => JSON.parse(reply));
 }
 
 export const untagImage = (system, id, repo, tag) => podmanCall("libpod/images/" + id + "/untag", "POST", { repo, tag }, system);
 
 export function pullImage(system, reference) {
     return new Promise((resolve, reject) => {
-        const options = {
-            reference,
-        };
-        podmanCall("libpod/images/pull", "POST", options, system)
+        podmanCall("libpod/images/pull", "POST", { reference }, system)
                 .then(r => {
                     // Need to check the last response if it contains error
                     const responses = r.trim().split("\n");
@@ -224,19 +190,13 @@ export function pullImage(system, reference) {
 }
 
 export function pruneUnusedImages(system) {
-    return new Promise((resolve, reject) => {
-        podmanCall("libpod/images/prune?all=true", "POST", {}, system).then(resolve)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    return podmanCall("libpod/images/prune?all=true", "POST", {}, system)
+            .then(reply => JSON.parse(reply));
 }
 
 export function imageHistory(system, id) {
-    return new Promise((resolve, reject) => {
-        podmanCall(`libpod/images/${id}/history`, "GET", {}, system)
-                .then(reply => resolve(JSON.parse(reply)))
-                .catch(reject);
-    });
+    return podmanCall(`libpod/images/${id}/history`, "GET", {}, system)
+            .then(reply => JSON.parse(reply));
 }
 
 export const imageExists = (system, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
