@@ -55,7 +55,7 @@ const ContainerRenameModal = ({ container, version, updateContainer }) => {
                 });
     };
 
-    const handleKeyPress = (event) => {
+    const handleKeyDown = (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
             handleRename();
@@ -80,7 +80,7 @@ const ContainerRenameModal = ({ container, version, updateContainer }) => {
         <Modal isOpen
             position="top" variant="medium"
             onClose={Dialogs.close}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             title={cockpit.format(_("Rename container $0"), container.Names[0])}
             footer={<>
                 <Button variant="primary"
