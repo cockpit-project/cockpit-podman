@@ -100,7 +100,7 @@ export const ImageSearchModal = ({ downloadImage, registries, user, userServiceA
                 });
     };
 
-    const onKeyPress = (e) => {
+    const onKeyDown = (e) => {
         if (e.key != ' ') { // Space should not trigger search
             const forceSearch = e.key == 'Enter';
             if (forceSearch) {
@@ -165,7 +165,7 @@ export const ImageSearchModal = ({ downloadImage, registries, user, userServiceA
                                    type='text'
                                    placeholder={_("Search by name or description")}
                                    value={imageIdentifier}
-                                   onKeyDown={onKeyPress}
+                                   onKeyDown={onKeyDown}
                                    onChange={(_event, value) => setImageIdentifier(value)} />
                     </FormGroup>
                     <FormGroup fieldId="registry-select" label={_("in")}>
