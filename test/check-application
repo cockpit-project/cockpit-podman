@@ -371,7 +371,8 @@ class TestApplication(testlib.MachineCase):
 
         self.performPodAction("pod-1", "system", "Delete")
         b.click(".pf-v5-c-modal-box button:contains(Delete)")
-        b.wait_in_text(".pf-v5-c-modal-box__body", "running or paused containers cannot be removed without force")
+        # Alert should be shown, that running pods need to be force deleted.
+        b.wait_visible(".pf-v5-c-modal-box__body .pf-v5-c-alert")
         b.wait_in_text(".pf-v5-c-modal-box__body .pf-v5-c-list", "test-pod-1-system")
         b.click(".pf-v5-c-modal-box button:contains('Force delete')")
         self.waitPodRow("pod-1", False)
