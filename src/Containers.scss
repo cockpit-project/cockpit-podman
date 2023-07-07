@@ -47,6 +47,12 @@
     }
 }
 
+// override ct-card font size, so cpu/ram don't look absurdly big
+#app .pf-v5-c-card.container-pod div.pf-v5-c-card__title-text {
+    font-weight: normal;
+    font-size: var(--pf-v5-global--FontSize--md);
+}
+
 .pod-stat {
     @media (max-width: $pf-v5-global--breakpoint--sm - 1) {
         // Place each pod stat on its own row
