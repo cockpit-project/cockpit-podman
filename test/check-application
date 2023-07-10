@@ -1329,6 +1329,10 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("swamped-crate", "Start")
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
+        self.toggleExpandedContainer("swamped-crate")
+        b.wait_visible(".pf-m-expanded button:contains('Details')")
+        b.wait_not_present(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint")')
+
         # Checkpoint the container
         self.performContainerAction("swamped-crate", "Checkpoint")
         b.set_checked('.pf-v5-c-modal-box input#checkpoint-dialog-keep', True)
@@ -1340,6 +1344,10 @@ class TestApplication(testlib.MachineCase):
 
         if self.has_criu:
             b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
+            b.wait_in_text(
+                f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint") + dd',
+                'today at'
+            )
         else:
             # expect proper error message
             b.wait_in_text(".pf-v5-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
