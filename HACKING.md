@@ -79,7 +79,7 @@ css or other issues:
 # Running tests locally
 
 Run `make vm` to build an RPM and install it into a standard Cockpit test VM.
-This will be `fedora-37` by default. You can set `$TEST_OS` to use a different
+This will be `fedora-38` by default. You can set `$TEST_OS` to use a different
 image, for example
 
     TEST_OS=centos-8-stream make vm
