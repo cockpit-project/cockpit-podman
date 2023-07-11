@@ -278,18 +278,19 @@ class TestApplication(testlib.MachineCase):
         b.click(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle] li > button.pod-action-{action.lower()}")
         b.wait_not_present(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle]")
 
-    def getPid(self, container: str, *, auth: bool) -> int:
-        out = self.execute(auth, "podman inspect --format '{{.State.Pid}}' " + container).strip()
-        return int(out)
+    def getStartTime(self, container: str, *, auth: bool) -> str:
+        # don't format the raw time strings from the API, force json format
+        out = self.execute(auth, "podman inspect --format '{{json .State.StartedAt}}' " + container)
+        return out.strip().replace('"', '')
 
-    def waitPidChange(self, container: str, old_pid: int, *, auth: bool) -> int:
+    def waitRestart(self, container: str, old_start: str, *, auth: bool) -> int:
         for _ in range(10):
-            new_pid = self.getPid(container, auth=auth)
-            if new_pid != 0 and new_pid != old_pid:
-                return new_pid
+            new_start = self.getStartTime(container, auth=auth)
+            if new_start > old_start:
+                return new_start
             time.sleep(1)
         else:
-            self.fail("Timed out waiting for pid change")
+            self.fail("Timed out waiting for StartedAt change")
 
     def testPods(self):
         b = self.browser
@@ -365,9 +366,9 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": "Running", "id": containerId}])
 
-        old_pid = self.getPid("test-pod-1-system", auth=True)
+        old_start = self.getStartTime("test-pod-1-system", auth=True)
         self.performPodAction("pod-1", "system", "Restart")
-        self.waitPidChange("test-pod-1-system", old_pid, auth=True)
+        self.waitRestart("test-pod-1-system", old_start, auth=True)
 
         self.performPodAction("pod-1", "system", "Delete")
         b.click(".pf-v5-c-modal-box button:contains(Delete)")
@@ -1229,12 +1230,12 @@ class TestApplication(testlib.MachineCase):
             self.assertEqual(memory, "n/a")
 
         # Restart the container; there is no steady state change in the visible UI, so look for
-        # a changed data-pid attribute
-        old_pid = self.getPid("swamped-crate", auth=auth)
-        b.wait_in_text(f'#containers-containers tr[data-pid="{old_pid}"]', "swamped-crate")
+        # a changed data-started-at attribute
+        old_start = self.getStartTime("swamped-crate", auth=auth)
+        b.wait_in_text(f'#containers-containers tr[data-started-at="{old_start}"]', "swamped-crate")
         self.performContainerAction(IMG_BUSYBOX, "Force restart")
-        new_pid = self.waitPidChange("swamped-crate", old_pid, auth=auth)
-        b.wait_in_text(f'#containers-containers tr[data-pid="{new_pid}"]', "swamped-crate")
+        new_start = self.waitRestart("swamped-crate", old_start, auth=auth)
+        b.wait_in_text(f'#containers-containers tr[data-started-at="{new_start}"]', "swamped-crate")
         self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX, state='Running')
 
         self.waitContainerRow(IMG_BUSYBOX)
