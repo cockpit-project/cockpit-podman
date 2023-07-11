@@ -49,7 +49,6 @@ class Application extends React.Component {
             containers: null,
             containersFilter: "all",
             containersStats: {},
-            containersDetails: {},
             userContainersLoaded: null,
             systemContainersLoaded: null,
             userPodsLoaded: null,
@@ -171,39 +170,31 @@ class Application extends React.Component {
         });
     }
 
-    inspectContainerDetail(id, system) {
-        client.inspectContainer(system, id)
-                .then(reply => {
-                    this.updateState("containersDetails", reply.Id + system.toString(), reply);
-                })
-                .catch(e => console.log(e));
-    }
-
     initContainers(system) {
         return client.getContainers(system)
-                .then(reply => {
+                .then(containerList => Promise.all(
+                    containerList.map(container => client.inspectContainer(system, container.Id))
+                ))
+                .then(containerDetails => {
                     this.setState(prevState => {
-                        // Copy only containers that could not be deleted with this event
-                        // So when event from system come, only copy user containers and vice versa
+                        // keep/copy the containers for !system
                         const copyContainers = {};
                         Object.entries(prevState.containers || {}).forEach(([id, container]) => {
                             if (container.isSystem !== system)
                                 copyContainers[id] = container;
                         });
-                        for (const container of reply) {
-                            container.isSystem = system;
-                            copyContainers[container.Id + system.toString()] = container;
+                        for (const detail of containerDetails) {
+                            detail.isSystem = system;
+                            copyContainers[detail.Id + system.toString()] = detail;
                         }
 
+                        console.log("initContainers", system ? "system:" : "user:", copyContainers);
                         return {
                             containers: copyContainers,
                             [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
                         };
                     });
                     this.updateContainerStats(system);
-                    for (const container of reply) {
-                        this.inspectContainerDetail(container.Id, system);
-                    }
                 })
                 .catch(console.log);
     }
@@ -263,29 +254,14 @@ class Application extends React.Component {
     }
 
     updateContainer(id, system, event) {
-        return client.getContainers(system, id)
-                .then(reply => {
-                    if (reply && reply.length > 0) {
-                        reply = reply[0];
-
-                        reply.isSystem = system;
-                        // HACK: during restart State never changes from "running"
-                        //       override it to reconnect console after restart
-                        if (event && event.Action === "restart")
-                            reply.State = "restarting";
-                        this.updateState("containers", reply.Id + system.toString(), reply);
-                        if (["running", "created", "exited", "paused", "stopped"].find(containerState => containerState === reply.State)) {
-                            this.inspectContainerDetail(reply.Id, system);
-                        } else {
-                            this.setState(prevState => {
-                                const copyDetails = Object.assign({}, prevState.containersDetails);
-                                const copyStats = Object.assign({}, prevState.containersStats);
-                                delete copyDetails[reply.Id + system.toString()];
-                                delete copyStats[reply.Id + system.toString()];
-                                return { containersDetails: copyDetails, containersStats: copyStats };
-                            });
-                        }
-                    }
+        return client.inspectContainer(system, id)
+                .then(details => {
+                    details.isSystem = system;
+                    // HACK: during restart State never changes from "running"
+                    //       override it to reconnect console after restart
+                    if (event?.Action === "restart")
+                        details.State.Status = "restarting";
+                    this.updateState("containers", details.Id + system.toString(), details);
                 })
                 .catch(console.log);
     }
@@ -673,7 +649,7 @@ class Application extends React.Component {
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
                 const container = this.state.containers[c];
-                const image = container.ImageID + container.isSystem.toString();
+                const image = container.Image + container.isSystem.toString();
                 if (imageContainerList[image]) {
                     imageContainerList[image].push({
                         container,
@@ -739,7 +715,6 @@ class Application extends React.Component {
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
                 pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
                 containersStats={this.state.containersStats}
-                containersDetails={this.state.containersDetails}
                 filter={this.state.containersFilter}
                 handleFilterChange={this.onContainerFilterChanged}
                 textFilter={this.state.textFilter}

@@ -25,7 +25,7 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
             tcpEstablished,
         })
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to checkpoint container $0"), containerWillCheckpoint.Names);
+                    const error = cockpit.format(_("Failed to checkpoint container $0"), containerWillCheckpoint.Name);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                     setProgress(false);
                 })
@@ -38,7 +38,7 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
         <Modal isOpen
                showClose={false}
                position="top" variant="medium"
-               title={cockpit.format(_("Checkpoint container $0"), containerWillCheckpoint.Names)}
+               title={cockpit.format(_("Checkpoint container $0"), containerWillCheckpoint.Name)}
                footer={<>
                    <Button variant="primary" isDisabled={inProgress}
                            isLoading={inProgress}

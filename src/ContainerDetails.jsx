@@ -8,19 +8,18 @@ import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 const _ = cockpit.gettext;
 
 const render_container_state = (container) => {
-    if (container.State === "running") {
-        return cockpit.format(_("Up since $0"), utils.localize_time(container.StartedAt));
+    if (container.State.Status === "running") {
+        return cockpit.format(_("Up since $0"), utils.localize_time(Date.parse(container.State.StartedAt) / 1000));
     }
     return cockpit.format(_("Exited"));
 };
 
-const ContainerDetails = ({ container, containerDetail }) => {
+const ContainerDetails = ({ container }) => {
     const networkOptions = (
-        containerDetail &&
         [
-            containerDetail.NetworkSettings.IPAddress,
-            containerDetail.NetworkSettings.Gateway,
-            containerDetail.NetworkSettings.MacAddress,
+            container.NetworkSettings?.IPAddress,
+            container.NetworkSettings?.Gateway,
+            container.NetworkSettings?.MacAddress,
         ].some(itm => !!itm)
     );
 
@@ -34,27 +33,27 @@ const ContainerDetails = ({ container, containerDetail }) => {
                     </DescriptionListGroup>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
-                        <DescriptionListDescription>{container.Image}</DescriptionListDescription>
+                        <DescriptionListDescription>{container.ImageName}</DescriptionListDescription>
                     </DescriptionListGroup>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
-                        <DescriptionListDescription>{container.Command ? utils.quote_cmdline(container.Command) : ""}</DescriptionListDescription>
+                        <DescriptionListDescription>{container.Config?.Cmd ? utils.quote_cmdline(container.Config.Cmd) : ""}</DescriptionListDescription>
                     </DescriptionListGroup>
                 </DescriptionList>
             </FlexItem>
             <FlexItem>
                 {networkOptions && <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
-                    {containerDetail && containerDetail.NetworkSettings.IPAddress && <DescriptionListGroup>
+                    {container.NetworkSettings?.IPAddress && <DescriptionListGroup>
                         <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
-                        <DescriptionListDescription>{containerDetail.NetworkSettings.IPAddress}</DescriptionListDescription>
+                        <DescriptionListDescription>{container.NetworkSettings.IPAddress}</DescriptionListDescription>
                     </DescriptionListGroup>}
-                    {containerDetail && containerDetail.NetworkSettings.Gateway && <DescriptionListGroup>
+                    {container.NetworkSettings?.Gateway && <DescriptionListGroup>
                         <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
-                        <DescriptionListDescription>{containerDetail.NetworkSettings.Gateway}</DescriptionListDescription>
+                        <DescriptionListDescription>{container.NetworkSettings.Gateway}</DescriptionListDescription>
                     </DescriptionListGroup>}
-                    {containerDetail && containerDetail.NetworkSettings.MacAddress && <DescriptionListGroup>
+                    {container.NetworkSettings?.MacAddress && <DescriptionListGroup>
                         <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
-                        <DescriptionListDescription>{containerDetail.NetworkSettings.MacAddress}</DescriptionListDescription>
+                        <DescriptionListDescription>{container.NetworkSettings.MacAddress}</DescriptionListDescription>
                     </DescriptionListGroup>}
                 </DescriptionList>}
             </FlexItem>

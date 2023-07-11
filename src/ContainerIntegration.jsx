@@ -10,25 +10,23 @@ import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 
 const _ = cockpit.gettext;
 
-export const renderContainerPublishedPorts = (ports) => {
+// ports is a mapping like { "5000/tcp": [{"HostIp": "", "HostPort": "6000"}] }
+export const renderContainerPublishedPorts = ports => {
     if (!ports)
         return null;
 
-    const result = ports.map(port => {
-        // podman v4 has different names than v3
-        const protocol = port.protocol;
-        const hostPort = port.hostPort || port.host_port;
-        const containerPort = port.containerPort || port.container_port;
-        const hostIp = port.hostIP || port.host_ip || '0.0.0.0';
-
-        return (
-            <ListItem key={ protocol + hostPort + containerPort }>
-                { hostIp }:{ hostPort } &rarr; { containerPort }/{ protocol }
-            </ListItem>
-        );
+    const items = [];
+    Object.entries(ports).forEach(([containerPort, hostBindings]) => {
+        (hostBindings ?? []).forEach(binding => {
+            items.push(
+                <ListItem key={ containerPort + binding.HostIp + binding.HostPort }>
+                    { binding.HostIp || "0.0.0.0" }:{ binding.HostPort } &rarr; { containerPort }
+                </ListItem>
+            );
+        });
     });
 
-    return <List isPlain>{result}</List>;
+    return <List isPlain>{items}</List>;
 };
 
 export const renderContainerVolumes = (volumes) => {
@@ -89,18 +87,18 @@ const ContainerEnv = ({ containerEnv, imageEnv }) => {
     return <List isPlain>{result}</List>;
 };
 
-const ContainerIntegration = ({ container, containerDetail, localImages }) => {
-    if (containerDetail === null || localImages === null) {
+const ContainerIntegration = ({ container, localImages }) => {
+    if (localImages === null) {
         return (
             <EmptyStatePanel title={_("Loading details...")} loading />
         );
     }
 
-    const ports = renderContainerPublishedPorts(container.Ports);
-    const volumes = renderContainerVolumes(containerDetail.Mounts);
+    const ports = renderContainerPublishedPorts(container.NetworkSettings.Ports);
+    const volumes = renderContainerVolumes(container.Mounts);
 
-    const image = localImages.filter(img => img.Id === container.ImageID)[0];
-    const env = <ContainerEnv containerEnv={containerDetail.Config.Env} imageEnv={image.Env || []} />;
+    const image = localImages.filter(img => img.Id === container.Image)[0];
+    const env = <ContainerEnv containerEnv={container.Config.Env} imageEnv={image.Env || []} />;
 
     return (
         <DescriptionList isAutoColumnWidths columnModifier={{ md: '3Col' }} className='container-integration'>
