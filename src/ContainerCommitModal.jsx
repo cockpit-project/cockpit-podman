@@ -21,7 +21,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
     const [imageName, setImageName] = useState("");
     const [tag, setTag] = useState("");
     const [author, setAuthor] = useState("");
-    const [command, setCommand] = useState(container.Command ? utils.quote_cmdline(container.Command) : "");
+    const [command, setCommand] = useState(container.Config.Cmd ? utils.quote_cmdline(container.Config.Cmd) : "");
     const [pause, setPause] = useState(false);
     const [useDocker, setUseDocker] = useState(false);
 
@@ -78,7 +78,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
         client.commitContainer(container.isSystem, commitData)
                 .then(() => Dialogs.close())
                 .catch(ex => {
-                    setDialogError(cockpit.format(_("Failed to commit container $0"), container.Names));
+                    setDialogError(cockpit.format(_("Failed to commit container $0"), container.Name));
                     setDialogErrorDetail(cockpit.format("$0: $1", ex.message, ex.reason));
                     setCommitInProgress(false);
                 });
@@ -134,7 +134,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
                  showClose={false}
                  position="top" variant="medium"
                  title={_("Commit container")}
-                 description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{container.Names}</b>)}
+                 description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{container.Name}</b>)}
                  footer={<>
                      <Button variant="primary"
                              className="btn-ctr-commit"

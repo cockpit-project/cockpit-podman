@@ -17,7 +17,7 @@ const ImageUsedBy = ({ containers, showAll }) => {
         <List isPlain>
             {containers.map(c => {
                 const container = c.container;
-                const isRunning = container.State == "running";
+                const isRunning = container.State?.Status === "running";
                 return (
                     <ListItem key={container.Id}>
                         <Flex>
@@ -30,7 +30,7 @@ const ImageUsedBy = ({ containers, showAll }) => {
                                         if (!isRunning)
                                             showAll();
                                     }}>
-                                {container.Names}
+                                {container.Name}
                             </Button>
                             {isRunning && <Badge className="ct-badge-container-running">{_("Running")}</Badge>}
                         </Flex>

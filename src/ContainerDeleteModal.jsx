@@ -18,7 +18,7 @@ const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
         Dialogs.close();
         client.delContainer(container.isSystem, id, false)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to remove container $0"), container.Names);
+                    const error = cockpit.format(_("Failed to remove container $0"), container.Name);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -28,7 +28,7 @@ const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
                position="top" variant="medium"
                titleIconVariant="warning"
                onClose={Dialogs.close}
-               title={cockpit.format(_("Delete $0?"), containerWillDelete.Names)}
+               title={cockpit.format(_("Delete $0?"), containerWillDelete.Name)}
                footer={<>
                    <Button variant="danger" className="btn-ctr-delete" onClick={handleRemoveContainer}>{_("Delete")}</Button>{' '}
                    <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>

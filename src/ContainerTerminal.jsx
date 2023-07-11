@@ -91,7 +91,6 @@ class ContainerTerminal extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         // Connect channel when there is none and either container started or tty was resolved
-        // tty is being read as part of containerDetails and it is asynchronous so we need to wait for it
         if (!this.state.channel && (
             (this.props.containerStatus === "running" && prevProps.containerStatus !== "running") ||
             (this.props.tty !== undefined && prevProps.tty === undefined)))

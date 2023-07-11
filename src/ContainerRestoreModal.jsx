@@ -28,7 +28,7 @@ const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
             ignoreStaticMAC,
         })
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to restore container $0"), containerWillRestore.Names);
+                    const error = cockpit.format(_("Failed to restore container $0"), containerWillRestore.Name);
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                     setInProgress(false);
                 })
@@ -41,7 +41,7 @@ const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
         <Modal isOpen
                showClose={false}
                position="top" variant="medium"
-               title={cockpit.format(_("Restore container $0"), containerWillRestore.Names)}
+               title={cockpit.format(_("Restore container $0"), containerWillRestore.Name)}
                footer={<>
                    <Button variant="primary" isDisabled={inProgress}
                            isLoading={inProgress}

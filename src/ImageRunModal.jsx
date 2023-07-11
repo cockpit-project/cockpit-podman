@@ -331,7 +331,7 @@ export class ImageRunModal extends React.Component {
             // Assign temporary properties to allow rendering
             tempImage.Id = tempImage.name;
             tempImage.isSystem = isSystem;
-            tempImage.State = _("downloading");
+            tempImage.State = { Status: _("downloading") };
             tempImage.Created = new Date();
             tempImage.Names = [tempImage.name];
             tempImage.Image = createConfig.image;
