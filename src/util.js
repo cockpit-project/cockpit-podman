@@ -163,3 +163,19 @@ export function image_name(image) {
 export function is_valid_container_name(name) {
     return /^[a-zA-Z0-9][a-zA-Z0-9_\\.-]*$/.test(name);
 }
+
+/* Clears a single field in validationFailed object.
+ *
+ * Arguments:
+ *   - validationFailed (object): Object containing list of fields with validation error
+ *   - key (string): Specified which field from validationFailed object is clear
+ *   - onValidationChange (func)
+ */
+export const validationClear = (validationFailed, key, onValidationChange) => {
+    if (!validationFailed)
+        return;
+
+    const delta = { ...validationFailed };
+    delete delta[key];
+    onValidationChange(delta);
+};
