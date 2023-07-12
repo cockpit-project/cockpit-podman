@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
@@ -7,13 +8,50 @@ import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput"
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { OutlinedQuestionCircleIcon, TrashIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
+import ipaddr from "ipaddr.js";
+
+import { FormHelper } from "cockpit-components-form-helper.jsx";
+import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
-export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
+const MAX_PORT = 65535;
+
+export function validatePublishPort(value, key) {
+    switch (key) {
+    case "IP":
+        if (value && !ipaddr.isValid(value))
+            return _("Must be a valid IP address");
+        break;
+    case "hostPort": {
+        if (value) {
+            const hostPort = parseInt(value);
+            if (hostPort < 1 || hostPort > MAX_PORT)
+                return _("1 to 65535");
+        }
+
+        break;
+    }
+    case "containerPort": {
+        if (!value)
+            return _("Container port must not be empty");
+
+        const containerPort = parseInt(value);
+        if (containerPort < 1 || containerPort > MAX_PORT)
+            return _("1 to 65535");
+
+        break;
+    }
+    default:
+        console.error(`Unknown key "${key}"`); // not-covered: unreachable assertion
+    }
+}
+
+export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount, validationFailed, onValidationChange }) =>
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-6-col-on-md"
+                id={id + "-ip-address-group"}
                 label={_("IP address")}
                 fieldId={id + "-ip-address"}
                 labelIcon={
@@ -27,9 +65,16 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) 
                 }>
                 <TextInput id={id + "-ip-address"}
                         value={item.IP || ''}
-                        onChange={(_event, value) => onChange(idx, 'IP', value)} />
+                        validated={validationFailed?.IP ? "error" : "default"}
+                        onChange={(_event, value) => {
+                            utils.validationClear(validationFailed, "IP", onValidationChange);
+                            utils.validationDebounce(() => onValidationChange({ ...validationFailed, IP: validatePublishPort(value, "IP") }));
+                            onChange(idx, 'IP', value);
+                        }} />
+                <FormHelper helperTextInvalid={validationFailed?.IP} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
+                    id={id + "-host-port-group"}
                     label={_("Host port")}
                     fieldId={id + "-host-port"}
                     labelIcon={
@@ -45,20 +90,33 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) 
                             type='number'
                             step={1}
                             min={1}
-                            max={65535}
+                            max={MAX_PORT}
                             value={item.hostPort || ''}
-                            onChange={(_event, value) => onChange(idx, 'hostPort', value)} />
+                            validated={validationFailed?.hostPort ? "error" : "default"}
+                            onChange={(_event, value) => {
+                                utils.validationClear(validationFailed, "hostPort", onValidationChange);
+                                utils.validationDebounce(() => onValidationChange({ ...validationFailed, hostPort: validatePublishPort(value, "hostPort") }));
+                                onChange(idx, 'hostPort', value);
+                            }} />
+                <FormHelper helperTextInvalid={validationFailed?.hostPort} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
+                        id={id + "-container-port-group"}
                         label={_("Container port")}
                         fieldId={id + "-container-port"} isRequired>
                 <TextInput id={id + "-container-port"}
                             type='number'
                             step={1}
                             min={1}
-                            max={65535}
+                            max={MAX_PORT}
+                            validated={validationFailed?.containerPort ? "error" : "default"}
                             value={item.containerPort || ''}
-                            onChange={(_event, value) => onChange(idx, 'containerPort', value)} />
+                            onChange={(_event, value) => {
+                                utils.validationClear(validationFailed, "containerPort", onValidationChange);
+                                utils.validationDebounce(() => onValidationChange({ ...validationFailed, containerPort: validatePublishPort(value, "containerPort") }));
+                                onChange(idx, 'containerPort', value);
+                            }} />
+                <FormHelper helperTextInvalid={validationFailed?.containerPort} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
                         label={_("Protocol")}
