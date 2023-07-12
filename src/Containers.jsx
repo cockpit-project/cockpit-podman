@@ -41,7 +41,7 @@ import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, healthcheck, onAddNotification, version, localImages, updateContainer }) => {
+const ContainerActions = ({ container, containerDetail, healthcheck, onAddNotification, version, localImages, updateContainer }) => {
     const Dialogs = useDialogs();
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State == "running";
@@ -241,7 +241,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
         if (version.localeCompare("3", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
             addRenameAction();
         }
-        if (container.isSystem && container.hasCheckpoint) {
+        if (container.isSystem && containerDetail?.State.CheckpointPath) {
             actions.push(
                 <DropdownSeparator key="separator-0" />,
                 <DropdownItem key="restore"
@@ -429,7 +429,16 @@ class Containers extends React.Component {
         ];
 
         if (!container.isDownloading) {
-            columns.push({ title: <ContainerActions version={this.props.version} container={container} healthcheck={healthcheck} onAddNotification={this.props.onAddNotification} localImages={localImages} updateContainer={this.props.updateContainer} />, props: { className: "pf-v5-c-table__action" } });
+            columns.push({
+                title: <ContainerActions version={this.props.version}
+                                         container={container}
+                                         containerDetail={containerDetail}
+                                         healthcheck={healthcheck}
+                                         onAddNotification={this.props.onAddNotification}
+                                         localImages={localImages}
+                                         updateContainer={this.props.updateContainer} />,
+                props: { className: "pf-v5-c-table__action" }
+            });
         }
 
         const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
