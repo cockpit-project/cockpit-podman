@@ -2264,6 +2264,16 @@ class TestApplication(testlib.MachineCase):
         self.waitPodContainer("pod", pods, auth)
 
     def testCreateContainerValidation(self):
+        def validateField(groupSelector, value, errorMessage, resetValue=""):
+            b.set_input_text(f"{groupSelector} input", value)
+            b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn:not(:disabled)")
+            b.wait_in_text(f"{groupSelector} .pf-v5-c-helper-text__item-text", errorMessage)
+            b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn[aria-disabled=true]")
+            # Reset to acceptable value and verify the validation message is not present
+            b.set_input_text(f"{groupSelector} input", resetValue)
+            b.wait_not_present(f"{groupSelector} .pf-v5-c-helper-text__item-text")
+            b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn:not(:disabled)")
+
         """ Test the validation errors"""
         b = self.browser
         self.login(False)
@@ -2277,11 +2287,22 @@ class TestApplication(testlib.MachineCase):
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
 
-        b.set_input_text("#run-image-dialog-name", container_name)
-
         # Switch to Integration tab
         b.click("#pf-tab-1-create-image-dialog-tab-integration")
+
+        # Test validation of port mapping
         b.click('.publish-port-form .btn-add')
+        b.set_input_text("#run-image-dialog-publish-0-container-port-group input", "1")
+        validateField("#run-image-dialog-publish-0-ip-address-group", "abcd", "valid IP address")
+        validateField("#run-image-dialog-publish-0-host-port-group", "-1", "1 to 65535")
+        validateField("#run-image-dialog-publish-0-host-port-group", "99999", "1 to 65535")
+        validateField("#run-image-dialog-publish-0-container-port-group", "-1", "1 to 65535", resetValue="1")
+        validateField("#run-image-dialog-publish-0-container-port-group", "", "must not be empty", resetValue="1")
+        validateField("#run-image-dialog-publish-0-container-port-group", "99999", "1 to 65535", resetValue="1")
+
+        b.set_input_text("#run-image-dialog-name", container_name)
+
+        # Port address is already in use
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5000')
         b.set_input_text('#run-image-dialog-publish-0-container-port', '5000')
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')

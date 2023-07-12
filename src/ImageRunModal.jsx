@@ -24,9 +24,10 @@ import * as client from './client.js';
 import rest from './rest.js';
 import cockpit from 'cockpit';
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
-import { PublishPort } from './PublishPort.jsx';
+import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { DynamicListForm } from 'DynamicListForm.jsx';
 import { Volume } from './Volume.jsx';
+import { EnvVar } from './Env.jsx';
 
 import { debounce } from 'throttle-debounce';
 
@@ -163,7 +164,6 @@ export class ImageRunModal extends React.Component {
             healthcheck_start_period: 0,
             healthcheck_retries: 3,
             healthcheck_action: 0,
-
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
@@ -307,6 +307,9 @@ export class ImageRunModal extends React.Component {
     };
 
     async onCreateClicked(runImage = false) {
+        if (!this.validateForm())
+            return;
+
         const Dialogs = this.props.dialogs;
         const createConfig = this.getCreateConfig();
         const { pullLatestImage } = this.state;
@@ -633,6 +636,54 @@ export class ImageRunModal extends React.Component {
         return owner === systemOwner;
     };
 
+    isFormInvalid = validationFailed => {
+        const groupHasError = row => Object.values(row)
+                .filter(val => val) // Filter out empty/undefined properties
+                .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+
+        // If at least one group is invalid, then the whole form is invalid
+        return validationFailed.publish?.some(groupHasError) ||
+            validationFailed.volumes?.some(groupHasError) ||
+            validationFailed.env?.some(groupHasError);
+    };
+
+    validateForm = () => {
+        const publish = this.state.publish;
+        const validationFailed = { };
+
+        const publishValidation = publish.map(a => {
+            return {
+                IP: validatePublishPort(a.IP, "IP"),
+                hostPort: validatePublishPort(a.hostPort, "hostPort"),
+                containerPort: validatePublishPort(a.containerPort, "containerPort"),
+            };
+        });
+        if (publishValidation.some(entry => Object.keys(entry).length > 0))
+            validationFailed.publish = publishValidation;
+
+        this.setState({ validationFailed });
+
+        return this.isFormValid(validationFailed);
+    };
+
+    /* Updates a validation object of the whole dynamic list's form (e.g. the whole port-mapping form)
+    *
+    * Arguments
+    *   - key: [publish/volumes/env] - Specifies the validation of which dynamic form of the Image run dialog is being updated
+    *   - value: An array of validation errors of the form. Each item of the array represents a row of the dynamic list.
+    *            Index needs to corellate with a row number
+    */
+    dynamicListOnValidationChange = (value, key) => {
+        const validationFailedDelta = { ...this.state.validationFailed };
+
+        validationFailedDelta[key] = value;
+
+        if (validationFailedDelta[key].every(a => a === undefined))
+            delete validationFailedDelta[key];
+
+        this.onValueChanged('validationFailed', validationFailedDelta);
+    };
+
     render() {
         const Dialogs = this.props.dialogs;
         const { registries, podmanRestartAvailable, userLingeringEnabled, userPodmanRestartAvailable, selinuxAvailable, version } = this.props.podmanInfo;
@@ -935,10 +986,11 @@ export class ImageRunModal extends React.Component {
                                  formclass='publish-port-form'
                                  label={_("Port mapping")}
                                  actionLabel={_("Add port mapping")}
+                                 validationFailed={dialogValues.validationFailed.publish}
+                                 onValidationChange={value => this.dynamicListOnValidationChange(value, "publish")}
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                                  itemcomponent={ <PublishPort />} />
-
                         <DynamicListForm id='run-image-dialog-volume'
                                  emptyStateString={_("No volumes specified")}
                                  formclass='volume-form'
@@ -1102,10 +1154,10 @@ export class ImageRunModal extends React.Component {
                    }}
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
-                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={!image && selectedImage === ""}>
+                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={(!image && selectedImage === "") || this.isFormInvalid(dialogValues.validationFailed)}>
                            {_("Create and run")}
                        </Button>
-                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={!image && selectedImage === ""}>
+                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={(!image && selectedImage === "") || this.isFormInvalid(dialogValues.validationFailed)}>
                            {_("Create")}
                        </Button>
                        <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
