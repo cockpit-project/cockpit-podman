@@ -2287,6 +2287,8 @@ class TestApplication(testlib.MachineCase):
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
 
+        validateField("#image-name-group", "registry", "Name already in use")
+
         # Switch to Integration tab
         b.click("#pf-tab-1-create-image-dialog-tab-integration")
 

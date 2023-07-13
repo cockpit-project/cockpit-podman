@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { FormHelper } from "cockpit-components-form-helper.jsx";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
@@ -258,7 +259,7 @@ export class ImageRunModal extends React.Component {
     };
 
     async onCreateClicked(runImage = false) {
-        if (!this.validateForm())
+        if (!await this.validateForm())
             return;
 
         const Dialogs = this.props.dialogs;
@@ -595,11 +596,21 @@ export class ImageRunModal extends React.Component {
         // If at least one group is invalid, then the whole form is invalid
         return validationFailed.publish?.some(groupHasError) ||
             validationFailed.volumes?.some(groupHasError) ||
-            validationFailed.env?.some(groupHasError);
+            validationFailed.env?.some(groupHasError) ||
+            !!validationFailed.containerName;
     };
 
-    validateForm = () => {
-        const { publish, volumes, env } = this.state;
+    async validateContainerName(containerName) {
+        try {
+            await client.containerExists(this.isSystem(), containerName);
+        } catch (error) {
+            return;
+        }
+        return _("Name already in use");
+    }
+
+    async validateForm() {
+        const { publish, volumes, env, containerName } = this.state;
         const validationFailed = { };
 
         const publishValidation = publish.map(a => {
@@ -630,10 +641,15 @@ export class ImageRunModal extends React.Component {
         if (envValidation.some(entry => Object.keys(entry).length > 0))
             validationFailed.env = envValidation;
 
+        const containerNameValidation = await this.validateContainerName(containerName);
+
+        if (containerNameValidation)
+            validationFailed.containerName = containerNameValidation;
+
         this.setState({ validationFailed });
 
-        return this.isFormValid(validationFailed);
-    };
+        return !this.isFormInvalid(validationFailed);
+    }
 
     /* Updates a validation object of the whole dynamic list's form (e.g. the whole port-mapping form)
     *
@@ -708,12 +724,22 @@ export class ImageRunModal extends React.Component {
         const defaultBody = (
             <Form>
                 {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                <FormGroup fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
+                <FormGroup id="image-name-group" fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
                     <TextInput id='run-image-dialog-name'
                            className="image-name"
                            placeholder={_("Container name")}
+                           validated={dialogValues.validationFailed.containerName ? "error" : "default"}
                            value={dialogValues.containerName}
-                           onChange={(_, value) => this.onValueChanged('containerName', value)} />
+                           onChange={(_, value) => {
+                               utils.validationClear(dialogValues.validationFailed, "containerName", (value) => this.onValueChanged("validationFailed", value));
+                               utils.validationDebounce(async () => {
+                                   const delta = await this.validateContainerName(value);
+                                   if (delta)
+                                       this.onValueChanged("validationFailed", { ...dialogValues.validationFailed, containerName: delta });
+                               });
+                               this.onValueChanged('containerName', value);
+                           }} />
+                    <FormHelper helperTextInvalid={dialogValues.validationFailed.containerName} />
                 </FormGroup>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-v5-c-form pf-m-horizontal">
