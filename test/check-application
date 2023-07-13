@@ -1180,7 +1180,9 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         b.wait_visible("#containers-containers")
-        self.waitContainerRow("swamped-crate")
+        container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
+        self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
+                           state='Exited', owner="system" if auth else "admin")
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-dropdown__toggle")
 
         if not auth:
@@ -1196,7 +1198,6 @@ class TestApplication(testlib.MachineCase):
         # Start the container
         self.performContainerAction(IMG_BUSYBOX, "Start")
 
-        container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
         self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
                            state='Running', owner="system" if auth else "admin")
 
