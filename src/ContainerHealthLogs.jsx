@@ -91,7 +91,7 @@ const ContainerHealthLogs = ({ container, onAddNotification, state }) => {
                         <Button variant="secondary" onClick={() => {
                             client.runHealthcheck(container.isSystem, container.Id)
                                     .catch(ex => {
-                                        const error = cockpit.format(_("Failed to run health check on container $0"), container.Name);
+                                        const error = cockpit.format(_("Failed to run health check on container $0"), container.Name); // not-covered: OS error
                                         onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                                     });
                         }}>

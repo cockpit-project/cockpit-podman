@@ -56,7 +56,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
 
                 return client.delContainer(container.isSystem, id, true)
                         .catch(ex => {
-                            const error = cockpit.format(_("Failed to force remove container $0"), container.Name);
+                            const error = cockpit.format(_("Failed to force remove container $0"), container.Name); // not-covered: OS error
                             onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                             throw ex;
                         })
@@ -83,7 +83,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
             args.t = 0;
         client.postContainer(container.isSystem, "stop", container.Id, args)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to stop container $0"), container.Name);
+                    const error = cockpit.format(_("Failed to stop container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -93,7 +93,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
 
         client.postContainer(container.isSystem, "start", container.Id, {})
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to start container $0"), container.Name);
+                    const error = cockpit.format(_("Failed to start container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -103,7 +103,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
 
         client.postContainer(container.isSystem, "unpause", container.Id, {})
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to resume container $0"), container.Name);
+                    const error = cockpit.format(_("Failed to resume container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -113,7 +113,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
 
         client.postContainer(container.isSystem, "pause", container.Id, {})
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to pause container $0"), container.Name);
+                    const error = cockpit.format(_("Failed to pause container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -130,7 +130,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
 
         client.runHealthcheck(container.isSystem, container.Id)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to run health check on container $0"), container.Name);
+                    const error = cockpit.format(_("Failed to run health check on container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -144,7 +144,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, version, 
             args.t = 0;
         client.postContainer(container.isSystem, "restart", container.Id, args)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to restart container $0"), container.Name);
+                    const error = cockpit.format(_("Failed to restart container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };

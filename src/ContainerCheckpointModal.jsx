@@ -25,7 +25,7 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
             tcpEstablished,
         })
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to checkpoint container $0"), containerWillCheckpoint.Name);
+                    const error = cockpit.format(_("Failed to checkpoint container $0"), containerWillCheckpoint.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                     setProgress(false);
                 })

@@ -28,7 +28,7 @@ const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
             ignoreStaticMAC,
         })
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to restore container $0"), containerWillRestore.Name);
+                    const error = cockpit.format(_("Failed to restore container $0"), containerWillRestore.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                     setInProgress(false);
                 })
