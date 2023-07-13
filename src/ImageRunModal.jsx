@@ -15,7 +15,7 @@ import { Text, TextContent, TextList, TextListItem, TextVariants } from "@patter
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
-import { OutlinedQuestionCircleIcon, TrashIcon } from '@patternfly/react-icons';
+import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
 import { ErrorNotification } from './Notification.jsx';
@@ -59,55 +59,6 @@ const HealthCheckOnFailureActionOrder = [
     { value: 4, label: _("Stop") },
     { value: 2, label: _("Force stop") },
 ];
-
-const handleEnvValue = (key, value, idx, onChange, additem, itemCount, companionField) => {
-    // Allow the input of KEY=VALUE separated value pairs for bulk import only if the other
-    // field is not empty.
-    if (value.includes('=') && !companionField) {
-        const parts = value.trim().split(" ");
-        let index = idx;
-        for (const part of parts) {
-            const [envKey, ...envVar] = part.split('=');
-            if (!envKey || !envVar) {
-                continue;
-            }
-
-            if (index !== idx) {
-                additem();
-            }
-            onChange(index, 'envKey', envKey);
-            onChange(index, 'envValue', envVar.join('='));
-            index++;
-        }
-    } else {
-        onChange(idx, key, value);
-    }
-};
-
-const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
-    (
-        <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-6-col-on-md" label={_("Key")} fieldId={id + "-key-address"}>
-                <TextInput id={id + "-key"}
-                       value={item.envKey || ''}
-                       onChange={(_, value) => handleEnvValue('envKey', value, idx, onChange, additem, itemCount, item.envValue)} />
-            </FormGroup>
-            <FormGroup className="pf-m-6-col-on-md" label={_("Value")} fieldId={id + "-value-address"}>
-                <TextInput id={id + "-value"}
-                       value={item.envValue || ''}
-                       onChange={(_, value) => handleEnvValue('envValue', value, idx, onChange, additem, itemCount, item.envKey)} />
-            </FormGroup>
-            <FormGroup className="pf-m-1-col-on-md remove-button-group">
-                <Button variant='plain'
-                    className="btn-close"
-                    id={id + "-btn-close"}
-                    size="sm"
-                    aria-label={_("Remove item")}
-                    icon={<TrashIcon />}
-                    onClick={() => removeitem(idx)} />
-            </FormGroup>
-        </Grid>
-    );
 
 export class ImageRunModal extends React.Component {
     constructor(props) {
