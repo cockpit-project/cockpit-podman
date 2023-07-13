@@ -179,3 +179,5 @@ export const pruneUnusedImages = system => podmanJson("libpod/images/prune?all=t
 export const imageHistory = (system, id) => podmanJson(`libpod/images/${id}/history`, "GET", {}, system);
 
 export const imageExists = (system, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
+
+export const containerExists = (system, id) => podmanCall("libpod/containers/" + id + "/exists", "GET", {}, system);
