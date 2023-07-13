@@ -18,7 +18,7 @@ const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
         Dialogs.close();
         client.delContainer(container.isSystem, id, false)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to remove container $0"), container.Name);
+                    const error = cockpit.format(_("Failed to remove container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };

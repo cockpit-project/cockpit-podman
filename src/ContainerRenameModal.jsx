@@ -50,7 +50,7 @@ const ContainerRenameModal = ({ container, version, updateContainer }) => {
                     }
                 })
                 .catch(ex => {
-                    setDialogError(cockpit.format(_("Failed to rename container $0"), container.Name));
+                    setDialogError(cockpit.format(_("Failed to rename container $0"), container.Name)); // not-covered: OS error
                     setDialogErrorDetail(cockpit.format("$0: $1", ex.message, ex.reason));
                 });
     };
