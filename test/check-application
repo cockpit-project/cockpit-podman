@@ -2305,6 +2305,11 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#run-image-dialog-volume-0-container-path-group input", "/somepath")
         validateField("#run-image-dialog-volume-0-container-path-group", "", "not be empty", resetValue="/somepath")
 
+        # Test validation of environment variables
+        b.click('.env-form .btn-add')
+        b.set_input_text("#run-image-dialog-env-0-key-group input", "sometext")
+        validateField("#run-image-dialog-env-0-key-group", "", "must not be empty", resetValue="sometext")
+
         b.set_input_text("#run-image-dialog-name", container_name)
 
         # Port address is already in use
