@@ -2300,6 +2300,11 @@ class TestApplication(testlib.MachineCase):
         validateField("#run-image-dialog-publish-0-container-port-group", "", "must not be empty", resetValue="1")
         validateField("#run-image-dialog-publish-0-container-port-group", "99999", "1 to 65535", resetValue="1")
 
+        # Test validation of volumes
+        b.click('.volume-form .btn-add')
+        b.set_input_text("#run-image-dialog-volume-0-container-path-group input", "/somepath")
+        validateField("#run-image-dialog-volume-0-container-path-group", "", "not be empty", resetValue="/somepath")
+
         b.set_input_text("#run-image-dialog-name", container_name)
 
         # Port address is already in use

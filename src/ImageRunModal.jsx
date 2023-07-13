@@ -26,7 +26,7 @@ import cockpit from 'cockpit';
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { DynamicListForm } from 'DynamicListForm.jsx';
-import { Volume } from './Volume.jsx';
+import { validateVolume, Volume } from './Volume.jsx';
 import { EnvVar } from './Env.jsx';
 
 import { debounce } from 'throttle-debounce';
@@ -648,7 +648,7 @@ export class ImageRunModal extends React.Component {
     };
 
     validateForm = () => {
-        const publish = this.state.publish;
+        const { publish, volumes } = this.state;
         const validationFailed = { };
 
         const publishValidation = publish.map(a => {
@@ -660,6 +660,15 @@ export class ImageRunModal extends React.Component {
         });
         if (publishValidation.some(entry => Object.keys(entry).length > 0))
             validationFailed.publish = publishValidation;
+
+        const volumesValidation = volumes.map(a => {
+            return {
+                hostPath: validateVolume(a.hostPath, "hostPath"),
+                containerPath: validateVolume(a.containerPath, "containerPath"),
+            };
+        });
+        if (volumesValidation.some(entry => Object.keys(entry).length > 0))
+            validationFailed.volumes = volumesValidation;
 
         this.setState({ validationFailed });
 
@@ -996,6 +1005,8 @@ export class ImageRunModal extends React.Component {
                                  formclass='volume-form'
                                  label={_("Volumes")}
                                  actionLabel={_("Add volume")}
+                                 validationFailed={dialogValues.validationFailed.volumes}
+                                 onValidationChange={value => this.dynamicListOnValidationChange(value, "volumes")}
                                  onChange={value => this.onValueChanged('volumes', value)}
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
                                  options={{ selinuxAvailable }}
