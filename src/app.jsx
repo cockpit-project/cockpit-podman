@@ -188,7 +188,6 @@ class Application extends React.Component {
                             copyContainers[detail.Id + system.toString()] = detail;
                         }
 
-                        console.log("initContainers", system ? "system:" : "user:", copyContainers);
                         return {
                             containers: copyContainers,
                             [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
