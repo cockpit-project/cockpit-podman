@@ -43,9 +43,9 @@ const HealthcheckOnFailureActionText = {
 };
 
 const ContainerHealthLogs = ({ container, onAddNotification, state }) => {
-    const healthCheck = container.Config?.Healthcheck ?? container.Config?.Health ?? {};
-    const healthState = container.State?.Healthcheck ?? container.State?.Health ?? {};
-    const logs = [...(healthState.Log || [])].reverse();
+    const healthCheck = container.Config?.Healthcheck ?? container.Config?.Health ?? {}; // not-covered: only on old version
+    const healthState = container.State?.Healthcheck ?? container.State?.Health ?? {}; // not-covered: only on old version
+    const logs = [...(healthState.Log || [])].reverse(); // not-covered: Log should always exist, belt-and-suspenders
 
     return (
         <>

@@ -380,12 +380,12 @@ class Containers extends React.Component {
         // this needs to get along with stub containers from image run dialog, where most properties don't exist yet
         // HACK: Podman renamed `Healthcheck` to `Health` randomly
         // https://github.com/containers/podman/commit/119973375
-        const healthcheck = container.State?.Health?.Status ?? container.State?.Healthcheck?.Status;
-        const status = container.State?.Status ?? "";
+        const healthcheck = container.State?.Health?.Status ?? container.State?.Healthcheck?.Status; // not-covered: only on old version
+        const status = container.State?.Status ?? ""; // not-covered: race condition
 
         let proc = "";
         let mem = "";
-        if (this.props.cgroupVersion == 'v1' && !container.isSystem && status == 'running') {
+        if (this.props.cgroupVersion == 'v1' && !container.isSystem && status == 'running') { // not-covered: only on old version
             proc = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
             mem = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
         }
@@ -641,8 +641,8 @@ class Containers extends React.Component {
             filtered.sort((a, b) => {
                 // Show unhealthy containers first
                 if (this.props.containers[a] && this.props.containers[b]) {
-                    const a_health = this.props.containers[a].State.Health || this.props.containers[a].State.Healthcheck;
-                    const b_health = this.props.containers[b].State.Health || this.props.containers[b].State.Healthcheck;
+                    const a_health = this.props.containers[a].State.Health || this.props.containers[a].State.Healthcheck; // not-covered: only on old version
+                    const b_health = this.props.containers[b].State.Health || this.props.containers[b].State.Healthcheck; // not-covered: only on old version
                     if (a_health.Status !== b_health.Status) {
                         if (a_health.Status === "unhealthy")
                             return -1;

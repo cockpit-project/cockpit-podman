@@ -17,7 +17,7 @@ export const renderContainerPublishedPorts = ports => {
 
     const items = [];
     Object.entries(ports).forEach(([containerPort, hostBindings]) => {
-        (hostBindings ?? []).forEach(binding => {
+        (hostBindings ?? []).forEach(binding => { // not-covered: null was observed in the wild, but unknown how to reproduce
             items.push(
                 <ListItem key={ containerPort + binding.HostIp + binding.HostPort }>
                     { binding.HostIp || "0.0.0.0" }:{ binding.HostPort } &rarr; { containerPort }
@@ -88,7 +88,7 @@ const ContainerEnv = ({ containerEnv, imageEnv }) => {
 };
 
 const ContainerIntegration = ({ container, localImages }) => {
-    if (localImages === null) {
+    if (localImages === null) { // not-covered: not a stable UI state
         return (
             <EmptyStatePanel title={_("Loading details...")} loading />
         );
