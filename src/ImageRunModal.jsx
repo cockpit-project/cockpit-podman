@@ -27,7 +27,7 @@ import { onDownloadContainer, onDownloadContainerFinished } from './Containers.j
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { DynamicListForm } from 'DynamicListForm.jsx';
 import { validateVolume, Volume } from './Volume.jsx';
-import { EnvVar } from './Env.jsx';
+import { EnvVar, validateEnvVar } from './Env.jsx';
 
 import { debounce } from 'throttle-debounce';
 
@@ -599,7 +599,7 @@ export class ImageRunModal extends React.Component {
     };
 
     validateForm = () => {
-        const { publish, volumes } = this.state;
+        const { publish, volumes, env } = this.state;
         const validationFailed = { };
 
         const publishValidation = publish.map(a => {
@@ -620,6 +620,15 @@ export class ImageRunModal extends React.Component {
         });
         if (volumesValidation.some(entry => Object.keys(entry).length > 0))
             validationFailed.volumes = volumesValidation;
+
+        const envValidation = env.map(a => {
+            return {
+                envKey: validateEnvVar(a.envKey, "envKey"),
+                envValue: validateEnvVar(a.envValue, "envValue"),
+            };
+        });
+        if (envValidation.some(entry => Object.keys(entry).length > 0))
+            validationFailed.env = envValidation;
 
         this.setState({ validationFailed });
 
@@ -968,6 +977,8 @@ export class ImageRunModal extends React.Component {
                                  formclass='env-form'
                                  label={_("Environment variables")}
                                  actionLabel={_("Add variable")}
+                                 validationFailed={dialogValues.validationFailed.env}
+                                 onValidationChange={value => this.dynamicListOnValidationChange(value, "env")}
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
