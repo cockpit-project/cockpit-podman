@@ -37,7 +37,7 @@ const ContainerDetails = ({ container }) => {
                     </DescriptionListGroup>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
-                        <DescriptionListDescription>{container.Config?.Cmd ? utils.quote_cmdline(container.Config.Cmd) : ""}</DescriptionListDescription>
+                        <DescriptionListDescription>{utils.quote_cmdline(container.Config?.Cmd)}</DescriptionListDescription>
                     </DescriptionListGroup>
                 </DescriptionList>
             </FlexItem>

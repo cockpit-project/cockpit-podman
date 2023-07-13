@@ -21,7 +21,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
     const [imageName, setImageName] = useState("");
     const [tag, setTag] = useState("");
     const [author, setAuthor] = useState("");
-    const [command, setCommand] = useState(container.Config.Cmd ? utils.quote_cmdline(container.Config.Cmd) : "");
+    const [command, setCommand] = useState(utils.quote_cmdline(container.Config.Cmd));
     const [pause, setPause] = useState(false);
     const [useDocker, setUseDocker] = useState(false);
 
