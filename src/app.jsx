@@ -78,6 +78,8 @@ class Application extends React.Component {
         this.goToServicePage = this.goToServicePage.bind(this);
         this.checkUserService = this.checkUserService.bind(this);
         this.onNavigate = this.onNavigate.bind(this);
+
+        this.pendingUpdateContainer = {}; // id+system → promise
     }
 
     onAddNotification(notification) {
@@ -253,16 +255,25 @@ class Application extends React.Component {
     }
 
     updateContainer(id, system, event) {
-        return client.inspectContainer(system, id)
+        /* when firing off multiple calls in parallel, podman can return them in a random order.
+         * This messes up the state. So we need to serialize them for a particular container. */
+        const idx = id + system.toString();
+        const wait = this.pendingUpdateContainer[idx] ?? Promise.resolve();
+
+        const new_wait = wait.then(() => client.inspectContainer(system, id))
                 .then(details => {
                     details.isSystem = system;
                     // HACK: during restart State never changes from "running"
                     //       override it to reconnect console after restart
                     if (event?.Action === "restart")
                         details.State.Status = "restarting";
-                    this.updateState("containers", details.Id + system.toString(), details);
+                    this.updateState("containers", idx, details);
                 })
                 .catch(console.log);
+        this.pendingUpdateContainer[idx] = new_wait;
+        new_wait.finally(() => { delete this.pendingUpdateContainer[idx] });
+
+        return new_wait;
     }
 
     updateImage(id, system) {
