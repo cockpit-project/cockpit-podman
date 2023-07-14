@@ -29,11 +29,6 @@ IMG_BUSYBOX_LATEST = IMG_BUSYBOX + ":latest"
 IMG_REGISTRY = "localhost/test-registry"
 IMG_REGISTRY_LATEST = IMG_REGISTRY + ":latest"
 
-# Ubuntu 2204 lacks user systemd units
-# https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
-DISTROS_WITHOUT_PODMAN_USER_RESTART = ['ubuntu-stable', 'ubuntu-2204']
-DISTROS_WITHOUT_PODMAN_POD_VOLUMES = ['ubuntu-stable', 'ubuntu-2204', 'debian-stable', 'debian-testing']
-
 
 def podman_version(cls):
     version = cls.execute(False, "podman -v").strip().split(' ')[-1]
@@ -2404,11 +2399,12 @@ class TestApplication(testlib.MachineCase):
     def testHealthcheckSystem(self):
         self._testHealthcheck(True)
 
-    @testlib.skipImage("Ubuntu-stable does not get health check run signals", "ubuntu-stable")
     def testHealthcheckUser(self):
         self._testHealthcheck(False)
 
-    @testlib.skipImage("podman-restart not available in debian/ubuntu", *DISTROS_WITHOUT_PODMAN_USER_RESTART)
+    # Ubuntu 2204 lacks user systemd units
+    # https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
+    @testlib.skipImage("podman-restart not available for user", "ubuntu-2204")
     def testPodmanRestartEnabledUser(self):
         self._testPodmanRestartEnabled(False)
 
@@ -2611,7 +2607,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#create-pod-dialog-publish-2-container-port', '9001')
 
         # Volumes
-        if self.machine.image not in DISTROS_WITHOUT_PODMAN_POD_VOLUMES:
+        if self.machine.image not in ["ubuntu-2204"]:
             b.click('.volume-form .btn-add')
             rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
             m.execute(f"chown admin:admin {rodir}")
@@ -2642,7 +2638,7 @@ class TestApplication(testlib.MachineCase):
 
         self.toggleExpandedContainer(container_name)
         b.click(".pf-m-expanded button:contains('Integration')")
-        if self.machine.image not in DISTROS_WITHOUT_PODMAN_POD_VOLUMES:
+        if self.machine.image not in ["ubuntu-2204"]:
             b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Volumes") + dd',
                            f"{rodir} \u2194 /tmp/ro")
             b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Volumes") + dd',
@@ -2674,7 +2670,7 @@ class TestApplication(testlib.MachineCase):
             b.set_val("#containers-containers-filter", "all")
             self.waitPodContainer(pod_name, [])
 
-    @testlib.skipImage("passthrough log driver not supported", "ubuntu-*")
+    @testlib.skipImage("passthrough log driver not supported", "ubuntu-2204")
     def testLogErrors(self):
         b = self.browser
         container_name = "logissue"
