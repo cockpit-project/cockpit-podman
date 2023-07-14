@@ -33,7 +33,6 @@ import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
-import { debug } from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -277,27 +276,6 @@ class Application extends React.Component {
         return new_wait;
     }
 
-    /* lightweight version of updateContainer, but still needs the same serialization */
-    updateContainerState(id, system, props) {
-        const idx = id + system.toString();
-
-        if (!this.state.containers[idx])
-            // we got an event for a container which we didn't introspect yet
-            return this.updateContainer(id, system);
-
-        const wait = this.pendingUpdateContainer[idx] ?? Promise.resolve();
-
-        wait.then(() => this.setState(prevState => {
-            const containers = { ...prevState.containers };
-            const newContainer = { ...containers[idx], State: { ...containers[idx].State, ...props } };
-            containers[idx] = newContainer;
-            debug(system, "updateContainerState", idx, "to", JSON.stringify(newContainer.State));
-            return { containers };
-        }));
-        this.pendingUpdateContainer[idx] = wait;
-        wait.finally(() => { delete this.pendingUpdateContainer[idx] });
-    }
-
     updateImage(id, system) {
         client.getImages(system, id)
                 .then(reply => {
@@ -365,15 +343,6 @@ class Application extends React.Component {
         case 'unmount':
         case 'wait':
             break;
-
-        /* The following events just change the State properties */
-        case 'pause':
-            this.updateContainerState(id, system, { Status: "paused" });
-            break;
-        case 'unpause':
-            this.updateContainerState(id, system, { Status: "running" });
-            break;
-
         /* The following events need only to update the Container list
          * We do get the container affected in the event object but for
          * now we 'll do a batch update
@@ -384,28 +353,17 @@ class Application extends React.Component {
             (event.Actor.Attributes.podId
                 ? this.updatePod(event.Actor.Attributes.podId, system)
                 : this.updatePods(system)
-            ).then(() => this.updateContainerState(
-                id, system,
-                {
-                    Status: "running",
-                    StartedAt: new Date(event.timeNano / 1000000).toISOString()
-                }));
+            ).then(() => this.updateContainer(id, system, event));
             break;
-
-        case 'died':
-        case 'stop':
-            this.updateContainerState(id, system, { Status: "stopped" });
-            break;
-
-        case 'cleanup':
-            // don't bother with setting FinishedAt, we don't use it anywhere
-            this.updateContainerState(id, system, { Status: "exited" });
-            break;
-
         case 'checkpoint':
+        case 'cleanup':
         case 'create':
+        case 'died':
         case 'exec_died': // HACK: pick up health check runs, see https://github.com/containers/podman/issues/19237
+        case 'pause':
         case 'restore':
+        case 'stop':
+        case 'unpause':
         case 'rename': // rename event is available starting podman v4.1; until then the container does not get refreshed after renaming
             this.updateContainer(id, system, event);
             break;
