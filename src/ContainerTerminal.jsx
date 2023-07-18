@@ -21,6 +21,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import cockpit from 'cockpit';
 import { Terminal } from "xterm";
+import { CanvasAddon } from 'xterm-addon-canvas';
 import { ErrorNotification } from './Notification.jsx';
 
 import * as client from './client.js';
@@ -64,7 +65,7 @@ class ContainerTerminal extends React.Component {
 
         this.terminalRef = React.createRef();
 
-        const term = new Terminal({
+        this.term = new Terminal({
             cols: 80,
             rows: 24,
             screenKeys: true,
@@ -75,7 +76,6 @@ class ContainerTerminal extends React.Component {
         });
 
         this.state = {
-            term,
             container: props.containerId,
             sessionId: props.containerId,
             channel: null,
@@ -106,9 +106,9 @@ class ContainerTerminal extends React.Component {
         // 21 inner padding of xterm.js
         // xterm.js scrollbar 20
         const padding = 24 * 4 + 3 + 21 + 20;
-        const realWidth = this.state.term._core._renderService.dimensions.actualCellWidth;
+        const realWidth = this.term._core._renderService.dimensions.css.cell.width;
         const cols = Math.floor((width - padding) / realWidth);
-        this.state.term.resize(cols, 24);
+        this.term.resize(cols, 24);
         client.resizeContainersTTY(this.props.system, this.state.sessionId, this.props.tty, cols, 24)
                 .catch(e => this.setState({ errorMessage: e.message }));
     }
@@ -172,10 +172,11 @@ class ContainerTerminal extends React.Component {
 
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
-            this.state.term.open(this.terminalRef.current);
+            this.term.open(this.terminalRef.current);
+            this.term.loadAddon(new CanvasAddon());
             this.setState({ opened: true });
 
-            this.state.term.onData((data) => {
+            this.term.onData((data) => {
                 if (this.state.channel)
                     this.state.channel.send(encoder.encode(data));
             });
@@ -227,21 +228,20 @@ class ContainerTerminal extends React.Component {
         this.disconnectChannel();
         if (this.state.channel)
             this.state.channel.close();
-        this.state.term.dispose();
+        this.term.dispose();
     }
 
     onChannelMessage(buffer) {
         if (buffer)
-            this.state.term.write(decoder.decode(buffer));
+            this.term.write(decoder.decode(buffer));
         return buffer.length;
     }
 
     onChannelClose(event, options) {
-        const term = this.state.term;
-        term.write('\x1b[31m disconnected \x1b[m\r\n');
+        this.term.write('\x1b[31m disconnected \x1b[m\r\n');
         this.disconnectChannel();
         this.setState({ channel: null });
-        term.cursorHidden = true;
+        this.term.cursorHidden = true;
     }
 
     disconnectChannel() {
