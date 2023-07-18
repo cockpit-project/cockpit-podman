@@ -20,6 +20,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Terminal } from "xterm";
+import { CanvasAddon } from 'xterm-addon-canvas';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
@@ -82,7 +83,7 @@ class ContainerLogs extends React.Component {
         // 21 inner padding of xterm.js
         // xterm.js scrollbar 20
         const padding = 24 * 4 + 3 + 21 + 20;
-        const realWidth = this.view._core._renderService.dimensions.actualCellWidth;
+        const realWidth = this.view._core._renderService.dimensions.css.cell.width;
         const cols = Math.floor((width - padding) / realWidth);
         this.view.resize(cols, 24);
     }
@@ -101,6 +102,7 @@ class ContainerLogs extends React.Component {
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
             this.view.open(this.logRef.current);
+            this.view.loadAddon(new CanvasAddon());
             this.setState({ opened: true });
         }
         this.resize(this.props.width);
