@@ -2551,9 +2551,30 @@ class TestApplication(testlib.MachineCase):
 
         # the container name should be in the "Rename container" header
         b.wait_in_text("#pf-modal-part-1", container_name)
+        b.set_input_text("#rename-dialog-container-name", "")
+        b.wait_in_text("#commit-dialog-image-name-helper", "Container name is required")
+        b.set_input_text("#rename-dialog-container-name", "banana???")
+        b.wait_in_text("#commit-dialog-image-name-helper", "Name can only contain letters, numbers")
 
         b.set_input_text("#rename-dialog-container-name", container_name_new)
         b.click('#btn-rename-dialog-container')
+        b.wait_not_present("#rename-dialog-container-name")
+
+        self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
+        self.waitContainerRow(container_name_new)
+
+        # rename using the enter key
+        self.toggleExpandedContainer(container_name_new)
+        self.performContainerAction(container_name_new, "Rename")
+
+        container_name_new = "rename-new-enter"
+        b.set_input_text("#rename-dialog-container-name", "")
+        b.focus("#rename-dialog-container-name")
+        b.key_press("\r")  # Simulate enter key
+        b.wait_in_text("#commit-dialog-image-name-helper", "Container name is required")
+        b.set_input_text("#rename-dialog-container-name", container_name_new)
+        b.focus("#rename-dialog-container-name")
+        b.key_press("\r")  # Simulate enter key
         b.wait_not_present("#rename-dialog-container-name")
 
         self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
