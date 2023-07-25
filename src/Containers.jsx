@@ -804,7 +804,7 @@ class Containers extends React.Component {
         };
 
         const card = (
-            <Card id="containers-containers" className="containers-containers">
+            <Card id="containers-containers" className="containers-containers" isClickable isSelectable>
                 <CardHeader actions={{ actions: filterRunning }}>
                     <CardTitle><Text component={TextVariants.h2}>{_("Containers")}</Text></CardTitle>
                 </CardHeader>
@@ -862,7 +862,9 @@ class Containers extends React.Component {
                                              id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                              isPlain={section == "no-pod"}
                                              isFlat={section != "no-pod"}
-                                             className="container-pod">
+                                             className="container-pod"
+                                             isClickable
+                                             isSelectable>
                                                 {caption && <CardHeader actions={{ actions, className: "panel-actions" }}>
                                                     <CardTitle>
                                                         <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
