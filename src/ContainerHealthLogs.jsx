@@ -100,6 +100,7 @@ const ContainerHealthLogs = ({ container, onAddNotification, state }) => {
                     </FlexItem>}
             </Flex>
             <ListingTable aria-label={_("Logs")}
+                          className="health-logs"
                           variant='compact'
                           columns={[_("Last 5 runs"), _("Started at")]}
                           rows={
