@@ -8,7 +8,7 @@ import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
 import { Select, SelectGroup, SelectOption, SelectVariant } from "@patternfly/react-core/dist/esm/deprecated/components/Select";
 import { NumberInput } from "@patternfly/react-core/dist/esm/components/NumberInput";
-import { InputGroup, InputGroupText, InputGroupTextVariant } from "@patternfly/react-core/dist/esm/components/InputGroup";
+import { InputGroup, InputGroupText } from "@patternfly/react-core/dist/esm/components/InputGroup";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { Tab, TabTitleText, Tabs } from "@patternfly/react-core/dist/esm/components/Tabs";
 import { Text, TextContent, TextList, TextListItem, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
@@ -987,7 +987,7 @@ export class ImageRunModal extends React.Component {
                                         onMinus={() => this.onMinusOne('healthcheck_interval')}
                                         onPlus={() => this.onPlusOne('healthcheck_interval')}
                                         onChange={ev => this.onValueChanged('healthcheck_interval', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
-                                <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
+                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
                             </InputGroup>
                         </FormGroup>
                         <FormGroup fieldId='run-image-healthcheck-timeout' label={_("Timeout")}
@@ -1012,7 +1012,7 @@ export class ImageRunModal extends React.Component {
                                         onMinus={() => this.onMinusOne('healthcheck_timeout')}
                                         onPlus={() => this.onPlusOne('healthcheck_timeout')}
                                         onChange={ev => this.onValueChanged('healthcheck_timeout', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
-                                <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
+                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
                             </InputGroup>
                         </FormGroup>
                         <FormGroup fieldId='run-image-healthcheck-start-period' label={_("Start period")}
@@ -1037,7 +1037,7 @@ export class ImageRunModal extends React.Component {
                                         onMinus={() => this.onMinusOne('healthcheck_start_period')}
                                         onPlus={() => this.onPlusOne('healthcheck_start_period')}
                                         onChange={ev => this.onValueChanged('healthcheck_start_period', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
-                                <InputGroupText variant={InputGroupTextVariant.plain}>{_("seconds")}</InputGroupText>
+                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
                             </InputGroup>
                         </FormGroup>
                         <FormGroup fieldId='run-image-healthcheck-retries' label={_("Retries")}
