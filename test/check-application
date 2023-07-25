@@ -1025,7 +1025,7 @@ class TestApplication(testlib.MachineCase):
                 # HACK: Sometimes the value is not shown fully. FIXME
                 b.set_input_text("#search-image-dialog-name", self.imageName, value_check=False)
                 if self.imageTag:
-                    b.set_input_text(".image-tag-entry", self.imageTag)
+                    b.set_input_text(".image-tag-entry input", self.imageTag)
 
                 return self
 
@@ -1786,7 +1786,7 @@ class TestApplication(testlib.MachineCase):
 
         if auth:
             b.assert_pixels(".pf-v5-c-modal-box", "integration",
-                            ignore=["#run-image-dialog-volume-0 input.pf-v5-c-select__toggle-typeahead"],
+                            ignore=["#run-image-dialog-volume-0 .pf-v5-c-select__toggle-typeahead"],
                             skip_layouts=["rtl"])
 
         if self.has_selinux:
@@ -2300,7 +2300,7 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-healthcheck-interval input', '325')
         b.set_input_text('#run-image-healthcheck-timeout input', '35')
         b.set_input_text('#run-image-healthcheck-start-period input', '5')
-        b.click('#run-image-healthcheck-retries button:nth-child(1)')
+        b.click('#run-image-healthcheck-retries .pf-v5-c-input-group__item:nth-child(1) button')
         b.wait_val("#run-image-healthcheck-retries input", 2)
         if auth:
             b.assert_pixels('.pf-v5-c-modal-box', "healthcheck-modal", skip_layouts=["rtl"])
