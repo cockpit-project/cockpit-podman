@@ -116,3 +116,10 @@
         border: var(--pf-v5-c-card--m-flat--BorderWidth) solid var(--pf-v5-c-card--m-flat--BorderColor);
     }
 }
+
+// Override table padding on mobile
+@media (max-width: $pf-v5-global--breakpoint--md) {
+    .health-logs.pf-m-grid-md.pf-v5-c-table tr:where(.pf-v5-c-table__tr):not(.pf-v5-c-table__expandable-row) {
+        padding: 0;
+    }
+}
