@@ -26,7 +26,7 @@ jobs:
     - centos-stream-9-x86_64
     - centos-stream-9-aarch64
     - centos-stream-8-x86_64
-  
+
   - job: tests
     trigger: pull_request
     targets:
@@ -50,6 +50,13 @@ jobs:
       create-archive:
         - sh -exc "curl -L -O https://github.com/cockpit-project/cockpit-podman/releases/download/${PACKIT_PROJECT_VERSION}/${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
         - sh -exc "ls ${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
+
+  - job: copr_build
+    trigger: commit
+    branch: "^main$"
+    owner: "@cockpit"
+    project: "main-builds"
+    preserve_project: True
 
   - job: propose_downstream
     trigger: release
