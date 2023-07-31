@@ -33,6 +33,9 @@ parser.add_argument('-e', '--no-eslint', { action: 'store_true', help: "Disable 
 parser.add_argument('-s', '--no-stylelint', { action: 'store_true', help: "Disable stylelint linting", default: lintDefault });
 const args = parser.parse_args();
 
+if (args.rsync)
+    process.env.RSYNC = args.rsync;
+
 function notifyEndPlugin() {
     return {
         name: 'notify-end',
