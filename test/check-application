@@ -599,7 +599,7 @@ class TestApplication(testlib.MachineCase):
             images[f"{items[0]}:{items[1]}"] = items[2].split(":")[-1]
 
         # show image listing toggle
-        hello_sel = f"#containers-images tbody tr[data-row-id={images[IMG_HELLO_LATEST]}{auth}]".lower()
+        hello_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_HELLO_LATEST]}{auth}\"]".lower()
         b.wait_visible(hello_sel)
         b.click(hello_sel + " td.pf-v5-c-table__toggle button")
         b.click(hello_sel + " .pf-v5-c-dropdown__toggle")
@@ -607,16 +607,18 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Command/run.sh")
         # Show history
         b.click("#containers-images tbody.pf-m-expanded .pf-v5-c-tabs__list li:nth-child(2) button")
-        b.wait_in_text("#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded td[data-label=\"ID\"]:first",
+        first_row_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded tr:first-child"
+        b.wait_in_text(f"{first_row_sel} td[data-label=\"ID\"]",
                        images[IMG_HELLO_LATEST][:12])
-        created_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded td[data-label=\"Created\"]"
-        b.wait_in_text(f"{created_sel}:first", "today at")
+        created_sel = f"{first_row_sel} td[data-label=\"Created\"]"
+        b.wait_in_text(f"{created_sel}", "today at")
         # topmost (last) layer
-        created_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded td[data-label=\"Created by\"]"
-        b.wait_in_text(f"{created_sel}:first", "COPY")
-        b.wait_in_text(f"{created_sel}:first", "in /test2.txt")
+        created_sel = f"{first_row_sel} td[data-label=\"Created by\"]"
+        b.wait_in_text(f"{created_sel}", "COPY")
+        b.wait_in_text(f"{created_sel}", "in /test2.txt")
         # initial (first) layer
-        b.wait_in_text(f"{created_sel}:last", "COPY")
+        last_row_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded tr:last-child"
+        b.wait_in_text(f"{last_row_sel} td[data-label=\"Created by\"]", "COPY")
 
         self.execute(auth, f"podman rmi {IMG_HELLO_LATEST}")
         b.wait_not_present(hello_sel)
@@ -762,7 +764,7 @@ class TestApplication(testlib.MachineCase):
         self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:3")
         self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:4")
 
-        busybox_sel = f"#containers-images tbody tr[data-row-id={images[IMG_BUSYBOX_LATEST]}{auth}]".lower()
+        busybox_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_BUSYBOX_LATEST]}{auth}\"]".lower()
         b.click(busybox_sel + " td.pf-v5-c-table__toggle button")
 
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:1")
@@ -819,7 +821,7 @@ class TestApplication(testlib.MachineCase):
         self.waitContainer(sha, auth, name="test-sh4", state='Exited')
         if auth:
             b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl", "mobile"])
-        alpine_sel = f"#containers-images tbody tr[data-row-id={images[IMG_ALPINE_LATEST]}{auth}]".lower()
+        alpine_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_ALPINE_LATEST]}{auth}\"]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-v5-c-table__toggle button")
         b.click(alpine_sel + " .pf-v5-c-dropdown__toggle")
@@ -1075,7 +1077,7 @@ class TestApplication(testlib.MachineCase):
 
                 # show image listing toggle
                 imageId = f"{self.imageSha}{'true' if self.user == 'system' else 'false'}"
-                sel = f"#containers-images tbody tr[data-row-id={imageId}]"
+                sel = f"#containers-images tbody tr[data-row-id=\"{imageId}\"]"
                 b.wait_visible(sel)
                 b.click(sel + " td.pf-v5-c-table__toggle button")
 
@@ -2071,7 +2073,7 @@ class TestApplication(testlib.MachineCase):
             "image" can be substring, "state" might be string or array of possible states, other are
             checked for exact match.
         """
-        sel = "#containers-containers #table-" + pod + f" tbody tr[data-row-id={row_id}{auth}]".lower()
+        sel = "#containers-containers #table-" + pod + f" tbody tr[data-row-id=\"{row_id}{auth}\"]".lower()
         b = self.browser
         if name:
             b.wait_text(sel + " .container-name", name)
