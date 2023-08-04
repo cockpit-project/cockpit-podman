@@ -67,7 +67,7 @@ const ContainerDetails = ({ container }) => {
                         <DescriptionListTerm>{_("State")}</DescriptionListTerm>
                         <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
                     </DescriptionListGroup>
-                    {container?.State.Checkpointed && <DescriptionListGroup>
+                    {container.State?.Checkpointed && <DescriptionListGroup>
                         <DescriptionListTerm>{_("Latest checkpoint")}</DescriptionListTerm>
                         <DescriptionListDescription>{utils.localize_time(Date.parse(container.State.CheckpointedAt) / 1000)}</DescriptionListDescription>
                     </DescriptionListGroup>}
