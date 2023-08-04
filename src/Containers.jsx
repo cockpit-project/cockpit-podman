@@ -397,7 +397,7 @@ class Containers extends React.Component {
         }
         const info_block = (
             <div className="container-block">
-                <span className="container-name">{container?.Name}</span>
+                <span className="container-name">{container.Name}</span>
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
             </div>
