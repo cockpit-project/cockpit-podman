@@ -15,7 +15,7 @@ import { Text, TextContent, TextList, TextListItem, TextVariants } from "@patter
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
-import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
+import { OutlinedQuestionCircleIcon, TrashIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
 import { ErrorNotification } from './Notification.jsx';
@@ -97,12 +97,12 @@ const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
                        onChange={(_, value) => handleEnvValue('envValue', value, idx, onChange, additem, itemCount, item.envKey)} />
             </FormGroup>
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
-                <Button variant='secondary'
+                <Button variant='plain'
                     className="btn-close"
                     id={id + "-btn-close"}
                     size="sm"
                     aria-label={_("Remove item")}
-                    icon={<MinusIcon />}
+                    icon={<TrashIcon />}
                     onClick={() => removeitem(idx)} />
             </FormGroup>
         </Grid>

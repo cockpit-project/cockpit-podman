@@ -5,7 +5,7 @@ import { FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
-import { MinusIcon } from '@patternfly/react-icons';
+import { TrashIcon } from '@patternfly/react-icons';
 import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 import cockpit from 'cockpit';
 
@@ -41,12 +41,12 @@ export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, 
                 </FormSelect>
             </FormGroup> }
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
-                <Button variant='secondary'
+                <Button variant='plain'
                     className="btn-close"
                     id={id + "-btn-close"}
                     aria-label={_("Remove item")}
                     size="sm"
-                    icon={<MinusIcon />}
+                    icon={<TrashIcon />}
                     onClick={() => removeitem(idx)} />
             </FormGroup>
         </Grid>
