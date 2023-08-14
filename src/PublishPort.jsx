@@ -5,7 +5,7 @@ import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/co
 import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
-import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
+import { OutlinedQuestionCircleIcon, TrashIcon } from '@patternfly/react-icons';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -72,12 +72,12 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) 
                 </FormSelect>
             </FormGroup>
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
-                <Button variant='secondary'
+                <Button variant='plain'
                             className="btn-close"
                             id={id + "-btn-close"}
                             size="sm"
                             aria-label={_("Remove item")}
-                            icon={<MinusIcon />}
+                            icon={<TrashIcon />}
                             onClick={() => removeitem(idx)} />
             </FormGroup>
         </Grid>
