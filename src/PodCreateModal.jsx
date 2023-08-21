@@ -7,9 +7,9 @@ import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput"
 import * as dockerNames from 'docker-names';
 
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
+import { DynamicListForm } from 'DynamicListForm.jsx';
 import { ErrorNotification } from './Notification.jsx';
 import { PublishPort } from './PublishPort.jsx';
-import { DynamicListForm } from './DynamicListForm.jsx';
 import { Volume } from './Volume.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';

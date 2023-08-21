@@ -25,7 +25,7 @@ import rest from './rest.js';
 import cockpit from 'cockpit';
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
 import { PublishPort } from './PublishPort.jsx';
-import { DynamicListForm } from './DynamicListForm.jsx';
+import { DynamicListForm } from 'DynamicListForm.jsx';
 import { Volume } from './Volume.jsx';
 
 import { debounce } from 'throttle-debounce';
