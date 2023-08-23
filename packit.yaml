@@ -19,8 +19,8 @@ jobs:
   - job: copr_build
     trigger: pull_request
     targets:
-    - fedora-37
     - fedora-38
+    - fedora-39
     - fedora-latest-aarch64
     - fedora-development
     - centos-stream-9-x86_64
@@ -30,8 +30,8 @@ jobs:
   - job: tests
     trigger: pull_request
     targets:
-      - fedora-37
       - fedora-38
+      - fedora-39
       - fedora-latest-aarch64
       - fedora-development
       - centos-stream-9-x86_64
@@ -62,19 +62,19 @@ jobs:
     trigger: release
     dist_git_branches:
       - fedora-development
-      - fedora-37
       - fedora-38
+      - fedora-39
 
   - job: koji_build
     trigger: commit
     dist_git_branches:
       - fedora-development
-      - fedora-37
       - fedora-38
+      - fedora-39
 
   - job: bodhi_update
     trigger: commit
     dist_git_branches:
       # rawhide updates are created automatically
-      - fedora-37
       - fedora-38
+      - fedora-39
