@@ -4,11 +4,13 @@ set -eux
 # test plan name, passed on to run-test.sh
 PLAN="$1"
 
+export TEST_BROWSER=${TEST_BROWSER:-firefox}
+
 TESTS="$(realpath $(dirname "$0"))"
-SOURCE="$(realpath $TESTS/../..)"
+export SOURCE="$(realpath $TESTS/../..)"
 
 # https://tmt.readthedocs.io/en/stable/overview.html#variables
-LOGS="${TMT_TEST_DATA:-$(pwd)/logs}"
+export LOGS="${TMT_TEST_DATA:-$(pwd)/logs}"
 mkdir -p "$LOGS"
 chmod a+w "$LOGS"
 
@@ -74,7 +76,9 @@ loginctl disable-linger $(id -u admin)
 systemctl enable --now cockpit.socket podman.socket
 
 # Run tests as unprivileged user
-su - -c "env TEST_BROWSER=firefox SOURCE=$SOURCE LOGS=$LOGS $TESTS/run-test.sh $PLAN" runtest
+# once we drop support for RHEL 8, use this:
+# runuser -u runtest --whitelist-environment=TEST_BROWSER,TEST_ALLOW_JOURNAL_MESSAGES,TEST_AUDIT_NO_SELINUX,SOURCE,LOGS $TESTS/run-test.sh $PLAN
+runuser -u runtest --preserve-environment env USER=runtest HOME=$(getent passwd runtest | cut -f6 -d:) $TESTS/run-test.sh $PLAN
 
 RC=$(cat $LOGS/exitcode)
 exit ${RC:-1}

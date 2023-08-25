@@ -19,7 +19,6 @@ fi
 
 . /etc/os-release
 export TEST_OS="${ID}-${VERSION_ID/./-}"
-export TEST_AUDIT_NO_SELINUX=1
 
 if [ "${TEST_OS#centos-}" != "$TEST_OS" ]; then
     TEST_OS="${TEST_OS}-stream"
@@ -35,6 +34,10 @@ case "$PLAN" in
 esac
 
 EXCLUDES=""
+
+# make it easy to check in logs
+echo "TEST_ALLOW_JOURNAL_MESSAGES: ${TEST_ALLOW_JOURNAL_MESSAGES:-}"
+echo "TEST_AUDIT_NO_SELINUX: ${TEST_AUDIT_NO_SELINUX:-}"
 
 RC=0
 test/common/run-tests --nondestructive --machine 127.0.0.1:22 --browser 127.0.0.1:9090 $TESTS $EXCLUDES || RC=$?
