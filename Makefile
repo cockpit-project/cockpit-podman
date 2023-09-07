@@ -158,6 +158,10 @@ ifeq ("$(TEST_SCENARIO)","updates-testing")
 VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y update --enablerepo=updates-testing,updates-testing-modular >&2'
 endif
 
+ifeq ("$(TEST_SCENARIO)","podman-next")
+VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update >&2'
+endif
+
 # build a VM with locally built distro pkgs installed
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	# HACK for ostree images: skip the rpm build/install
