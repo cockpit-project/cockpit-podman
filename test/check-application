@@ -880,6 +880,29 @@ class TestApplication(testlib.MachineCase):
         b.click(".pf-v5-c-modal-box .btn-cancel")
         b.wait_not_present(".pf-v5-c-modal-box")
 
+        # Delete intermediate images
+        intermediate_image_sel = "#containers-images tbody:last-child:contains('<none>:<none>')"
+        b.click(".listing-action button:contains('Show intermediate images')")
+        b.click(intermediate_image_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(intermediate_image_sel + " button.btn-delete")
+        self.confirm_modal("Delete")
+        b.wait_not_present(intermediate_image_sel)
+        # Delete intermediate image which is in use
+        tmpdir = self.execute(auth, "mktemp -d").strip()
+        self.execute(auth, f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Dockerfile")
+        IMG_INTERMEDIATE = 'localhost/test-intermediate'
+        self.execute(auth, f"podman build -t {IMG_INTERMEDIATE} {tmpdir}")
+        b.click(f'#containers-images tbody tr:contains("{IMG_INTERMEDIATE}") .ct-container-create')
+        b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
+        b.click("#create-image-create-btn")
+        self.execute(auth, f"podman untag {IMG_INTERMEDIATE}")
+        b.click(intermediate_image_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(intermediate_image_sel + " button.btn-delete")
+        self.confirm_modal("Delete")
+        self.confirm_modal("Force delete")
+        b.wait_not_in_text("#containers-images", "<none>:<none>")
+        b.wait_not_in_text("#containers-containers", IMG_INTERMEDIATE)
+
     def testCommitUser(self):
         self._testCommit(False)
 
