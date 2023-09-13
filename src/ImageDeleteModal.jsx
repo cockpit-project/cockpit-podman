@@ -24,6 +24,7 @@ function sortTags(a, b) {
 export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
     const Dialogs = useDialogs();
     const repoTags = imageWillDelete.RepoTags ? imageWillDelete.RepoTags : [];
+    const isIntermediateImage = repoTags.length === 0;
 
     const [tags, setTags] = useState(repoTags.sort(sortTags).reduce((acc, item, i) => {
         acc[item] = (i === 0);
@@ -55,7 +56,7 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
         if (all)
             client.delImage(imageWillDelete.isSystem, imageWillDelete.Id, false)
                     .catch(ex => {
-                        Dialogs.show(<ForceRemoveModal name={imageWillDelete.RepoTags[0]}
+                        Dialogs.show(<ForceRemoveModal name={isIntermediateImage ? _("intermediate image") : repoTags[0]}
                                                        handleForceRemove={handleForceRemoveImage}
                                                        reason={ex.message} />);
                     });
@@ -75,7 +76,7 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
         }
     };
 
-    const imageName = repoTags[0]?.split(":")[0].split("/").at(-1) ?? "";
+    const imageName = repoTags[0]?.split(":")[0].split("/").at(-1) ?? _("intermediate");
 
     let isAllSelected = null;
     if (checkedTags.length === repoTags.length)
@@ -90,9 +91,9 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
                  onClose={Dialogs.close}
                  title={cockpit.format(_("Delete $0 image?"), imageName)}
                  footer={<>
-                     <Button id="btn-img-delete" variant="danger" isDisabled={checkedTags.length === 0}
+                     <Button id="btn-img-delete" variant="danger" isDisabled={!isIntermediateImage && checkedTags.length === 0}
                              onClick={() => handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
-                         {_("Delete tagged images")}
+                         {isIntermediateImage ? _("Delete image") : _("Delete tagged images")}
                      </Button>
                      <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
                  </>}
