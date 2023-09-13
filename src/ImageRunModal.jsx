@@ -563,6 +563,7 @@ export class ImageRunModal extends React.Component {
         if (regexString.includes('/')) {
             regexString = searchText.replace(searchText.split('/')[0], '');
         }
+        console.log("regexString", regexString);
         const input = new RegExp(regexString, 'i');
 
         const results = imageRegistries
