@@ -375,6 +375,8 @@ class Containers extends React.Component {
     renderRow(containersStats, container, localImages) {
         const containerStats = containersStats[container.Id + container.isSystem.toString()];
         const image = container.ImageName;
+        const isToolboxContainer = container.Config?.Labels?.["com.github.containers.toolbox"] === "true";
+        const isDistroboxContainer = container.Config?.Labels?.manager === "distrobox";
         let localized_health = null;
 
         // this needs to get along with stub containers from image run dialog, where most properties don't exist yet
@@ -397,7 +399,11 @@ class Containers extends React.Component {
         }
         const info_block = (
             <div className="container-block">
-                <span className="container-name">{container.Name}</span>
+                <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                    <span className="container-name">{container.Name}</span>
+                    {isToolboxContainer && <Badge className='ct-badge-toolbox'>toolbox</Badge>}
+                    {isDistroboxContainer && <Badge className='ct-badge-distrobox'>distrobox</Badge>}
+                </Flex>
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
             </div>
