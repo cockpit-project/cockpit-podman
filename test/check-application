@@ -2607,6 +2607,27 @@ class TestApplication(testlib.MachineCase):
         for i in range(31):
             self.execute(True, f"podman rm -f container{i}")
 
+    def testSpecialContainers(self):
+        m = self.machine
+        b = self.browser
+
+        toolbox_label = "com.github.containers.toolbox=true"
+        distrobox_label = "manager=distrobox"
+
+        container_1_id = m.execute(f"podman run -d --name container_1 -l {toolbox_label} {IMG_BUSYBOX}").strip()
+        container_2_id = m.execute(f"podman run -d --name container_2 -l {distrobox_label} {IMG_BUSYBOX}").strip()
+
+        self.login()
+
+        self.waitContainerRow('container_1')
+        self.waitContainerRow('container_2')
+
+        container_1_sel = f"#containers-containers tbody tr[data-row-id=\"{container_1_id}{'true'}\"]"
+        container_2_sel = f"#containers-containers tbody tr[data-row-id=\"{container_2_id}{'true'}\"]"
+
+        b.wait_visible(container_1_sel + " .ct-badge-toolbox:contains('toolbox')")
+        b.wait_visible(container_2_sel + " .ct-badge-distrobox:contains('distrobox')")
+
     def testCreatePodSystem(self):
         self._createPod(True)
 
