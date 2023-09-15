@@ -26,6 +26,14 @@ fi
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
 dnf update -y podman crun conmon criu
 
+# HACK: TF prioritizes Fedora tag repo over all others, in particular our daily COPR for revdep tests
+# This is bad -- let the highest version win instead!
+# https://gitlab.com/testing-farm/infrastructure/-/blob/testing-farm/ranch/public/citool-config/guest-setup/pre-artifact-installation/templates/tag.repo.j2?ref_type=heads
+for f in $(grep -l -r 'testing-farm-tag-repository' /etc/yum.repos.d); do
+    sed -i '/priority/d' "$f"
+done
+dnf update -y cockpit-podman
+
 # Show critical package versions
 rpm -q runc crun podman criu kernel-core selinux-policy cockpit-podman cockpit-bridge || true
 
