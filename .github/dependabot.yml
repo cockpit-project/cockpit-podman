@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+      esbuild:
+        patterns:
+          - "esbuild*"
+      stylelint:
+        patterns:
+          - "stylelint*"
+      patternfly:
+        patterns:
+          - "@patternfly*"

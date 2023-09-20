@@ -1,0 +1,37 @@
+name: Dependabot update node-modules
+on: pull_request
+
+jobs:
+  dependabot:
+    environment: npm-update
+    # 22.04's podman has issues with piping and causes tar errors
+    runs-on: ubuntu-20.04
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Update node-modules for package.json changes
+        run: |
+          make tools/node-modules
+          git config --global user.name "GitHub Workflow"
+          git config --global user.email "cockpituous@cockpit-project.org"
+          mkdir -p ~/.config/cockpit-dev
+          echo ${{ github.token }} >> ~/.config/cockpit-dev/github-token
+          eval $(ssh-agent)
+          ssh-add - <<< '${{ secrets.NODE_CACHE_DEPLOY_KEY }}'
+          ./tools/node-modules install
+          ./tools/node-modules push
+          git add node_modules
+          ssh-add -D
+          ssh-agent -k
+
+      - name: Force push the change to trigger testing workflows
+        run: |
+          sleep 1 # make sure the timestamp changes
+          git commit --amend --no-edit
+          eval $(ssh-agent)
+          ssh-add - <<< '${{ secrets.SELF_DEPLOY_KEY }}'
+          git push --force 'git@github.com:${{ github.repository }}' HEAD
+          ssh-add -D
+          ssh-agent -k
