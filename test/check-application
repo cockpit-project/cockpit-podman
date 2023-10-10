@@ -1306,8 +1306,10 @@ class TestApplication(testlib.MachineCase):
             b.click('.pf-v5-c-modal-box button:contains(Checkpoint)')
             b.wait_not_present('.modal_dialog')
 
-            b.wait(lambda: "checkpoint/restore requires at least criu"
-                   in b.text(".pf-v5-c-alert.pf-m-danger > .pf-v5-c-alert__description").lower())
+            def criu_alert():
+                text = b.text(".pf-v5-c-alert.pf-m-danger > .pf-v5-c-alert__description").lower()
+                return "checkpoint/restore requires at least criu" in text or "failed to check for criu" in text
+            b.wait(criu_alert)
             return
 
         # Run a container
