@@ -335,7 +335,6 @@ class Application extends React.Component {
         case 'export':
         case 'import':
         case 'init':
-        case 'health_status': // HACK: broken, https://github.com/containers/podman/issues/19237; see exec_died
         case 'kill':
         case 'mount':
         case 'prune':
@@ -360,7 +359,8 @@ class Application extends React.Component {
         case 'cleanup':
         case 'create':
         case 'died':
-        case 'exec_died': // HACK: pick up health check runs, see https://github.com/containers/podman/issues/19237
+        case 'exec_died': // HACK: pick up health check runs with older podman versions, see https://github.com/containers/podman/issues/19237
+        case 'health_status':
         case 'pause':
         case 'restore':
         case 'stop':
