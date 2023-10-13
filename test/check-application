@@ -798,7 +798,7 @@ class TestApplication(testlib.MachineCase):
 
         b.click(busybox_sel + " .pf-v5-c-dropdown__toggle")
         b.click(busybox_sel + " button.btn-delete")
-        b.click("button:contains('select all')")
+        b.click("#delete-all")
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']"))
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX}:2']"))
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX}:4']"))
@@ -1018,12 +1018,13 @@ class TestApplication(testlib.MachineCase):
             self.execute(True, f"podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox")
             self.execute(False, f"podman rmi -f {IMG_BUSYBOX}")
 
-        class DownloadImageDialog:
-            def __init__(self, imageName, imageTag=None, user="system"):
+        class DownloadImageDialog():
+            def __init__(self, test_obj, imageName, imageTag=None, user="system"):
                 self.imageName = imageName
                 self.imageTag = imageTag
                 self.user = user
                 self.imageSha = ""
+                self.assertTrue = test_obj.assertTrue
 
             def openDialog(self):
                 # Open get new image modal
@@ -1099,9 +1100,16 @@ class TestApplication(testlib.MachineCase):
                 b.click(sel + " .pf-v5-c-dropdown__toggle")
                 b.click(sel + ' button.btn-delete')
 
-                b.set_checked(f".pf-v5-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']",
-                              True)
                 if another:
+                    b.click("#delete-all")
+                    sel = f".pf-v5-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']"
+                    self.assertTrue(b.get_checked(sel))
+                    self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{another}']"))
+                    b.click("#delete-all")
+                    b.wait_visible("#btn-img-delete:disabled")
+
+                    b.set_checked(
+                        f".pf-v5-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']", True)
                     b.set_checked(f".pf-v5-c-check__input[aria-label='{another}']", True)
 
                 # Confirm deletion in the delete dialog
@@ -1136,14 +1144,14 @@ class TestApplication(testlib.MachineCase):
         b.click(".pf-v5-c-modal-box button:contains('Cancel')")
         b.wait_not_present('div.pf-v5-c-modal-box')
 
-        dialog0 = DownloadImageDialog('my-busybox', user="system")
+        dialog0 = DownloadImageDialog(self, imageName='my-busybox', user="system")
         dialog0.openDialog() \
             .fillDialog() \
             .selectImageAndDownload() \
             .expectDownloadSuccess()
         dialog0.deleteImage()
 
-        dialog1 = DownloadImageDialog('my-busybox', user="user")
+        dialog1 = DownloadImageDialog(self, imageName='my-busybox', user="user")
         dialog1.openDialog() \
             .fillDialog() \
             .selectImageAndDownload() \
@@ -1156,19 +1164,19 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", second_tag)
         dialog1.deleteImage(True, another=second_tag)
 
-        dialog = DownloadImageDialog('my-busybox', 'latest', user="system")
+        dialog = DownloadImageDialog(self, imageName='my-busybox', imageTag='latest', user="system")
         dialog.openDialog() \
               .fillDialog() \
               .selectImageAndDownload() \
               .expectDownloadSuccess() \
               .deleteImage()
 
-        dialog = DownloadImageDialog('foobar')
+        dialog = DownloadImageDialog(self, imageName='foobar')
         dialog.openDialog() \
               .fillDialog() \
               .expectSearchErrorForNotExistingImage()
 
-        dialog = DownloadImageDialog('my-busybox', 'foobar')
+        dialog = DownloadImageDialog(self, imageName='my-busybox', imageTag='foobar')
         dialog.openDialog() \
               .fillDialog() \
               .selectImageAndDownload() \
