@@ -330,7 +330,7 @@ export class ImageRunModal extends React.Component {
             tempImage.isSystem = isSystem;
             tempImage.State = { Status: _("downloading") };
             tempImage.Created = new Date();
-            tempImage.Names = [tempImage.name];
+            tempImage.Name = tempImage.name;
             tempImage.Image = createConfig.image;
             tempImage.isDownloading = true;
 
