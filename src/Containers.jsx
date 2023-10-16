@@ -454,21 +454,24 @@ class Containers extends React.Component {
                 renderer: ContainerDetails,
                 data: { container }
             });
-            tabs.push({
-                name: _("Integration"),
-                renderer: ContainerIntegration,
-                data: { container, localImages }
-            });
-            tabs.push({
-                name: _("Logs"),
-                renderer: ContainerLogs,
-                data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem }
-            });
-            tabs.push({
-                name: _("Console"),
-                renderer: ContainerTerminal,
-                data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem, tty }
-            });
+
+            if (!container.isDownloading) {
+                tabs.push({
+                    name: _("Integration"),
+                    renderer: ContainerIntegration,
+                    data: { container, localImages }
+                });
+                tabs.push({
+                    name: _("Logs"),
+                    renderer: ContainerLogs,
+                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem }
+                });
+                tabs.push({
+                    name: _("Console"),
+                    renderer: ContainerTerminal,
+                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem, tty }
+                });
+            }
         }
 
         if (healthcheck) {
@@ -480,8 +483,7 @@ class Containers extends React.Component {
         }
 
         return {
-            expandedContent: <ListingPanel colSpan='4'
-                                           tabRenderers={tabs} />,
+            expandedContent: <ListingPanel colSpan='4' tabRenderers={tabs} />,
             columns,
             initiallyExpanded: document.location.hash.substr(1) === container.Id,
             props: {
