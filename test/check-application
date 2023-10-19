@@ -166,6 +166,12 @@ class TestApplication(testlib.MachineCase):
         self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())
 
+        # allow console.error
+        self.allow_browser_errors(
+            ".*couldn't search registry \".*\": pinging container registry .*",
+            ".*Error occurred while connecting console: cannot resize session: cannot resize container.*",
+        )
+
     def tearDown(self):
         if self.getError():
             # dump container logs for debugging
@@ -880,6 +886,7 @@ class TestApplication(testlib.MachineCase):
 
     def _testCommit(self, auth):
         b = self.browser
+        self.allow_browser_errors("Failed to commit container .*: CommitFailure: repository name must be lowercase")
 
         self.login(auth)
 
@@ -2275,6 +2282,8 @@ class TestApplication(testlib.MachineCase):
             b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn:not(:disabled)")
 
         """ Test the validation errors"""
+        self.allow_browser_errors(
+            "error: Container failed to be started: Internal Server Error: rootlessport listen tcp 0.0.0.0:5000.*")
         b = self.browser
         self.login(False)
         container_name = 'portused'
