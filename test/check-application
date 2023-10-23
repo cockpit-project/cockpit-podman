@@ -886,7 +886,7 @@ class TestApplication(testlib.MachineCase):
 
     def _testCommit(self, auth):
         b = self.browser
-        self.allow_browser_errors("Failed to commit container .*: CommitFailure: repository name must be lowercase")
+        self.allow_browser_errors("Failed to commit container .* repository name must be lowercase")
 
         self.login(auth)
 
