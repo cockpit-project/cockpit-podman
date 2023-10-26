@@ -619,7 +619,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Command/run.sh")
         # Show history
         b.click("#containers-images tbody.pf-m-expanded .pf-v5-c-tabs__list li:nth-child(2) button")
-        first_row_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded tr:first-child"
+        first_row_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded tbody:first-of-type"
         b.wait_in_text(f"{first_row_sel} td[data-label=\"ID\"]",
                        images[IMG_HELLO_LATEST][:12])
         created_sel = f"{first_row_sel} td[data-label=\"Created\"]"
@@ -629,7 +629,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text(f"{created_sel}", "COPY")
         b.wait_in_text(f"{created_sel}", "in /test2.txt")
         # initial (first) layer
-        last_row_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded tr:last-child"
+        last_row_sel = "#containers-images .pf-v5-c-table__expandable-row.pf-m-expanded tbody:last-of-type"
         b.wait_in_text(f"{last_row_sel} td[data-label=\"Created by\"]", "COPY")
 
         self.execute(auth, f"podman rmi {IMG_HELLO_LATEST}")
@@ -2248,8 +2248,8 @@ class TestApplication(testlib.MachineCase):
         b.click("button:contains(Prune unused containers)")
 
         if auth:
-            b.wait_in_text(".pf-v5-c-modal-box__body tbody tr:nth-child(1) td[data-label=Name]", "adminnotrunning")
-            b.wait_in_text(".pf-v5-c-modal-box__body tbody tr:nth-child(2) td[data-label=Name]", "notrunning")
+            b.wait_in_text(".pf-v5-c-modal-box__body tbody:nth-of-type(1) td[data-label=Name]", "adminnotrunning")
+            b.wait_in_text(".pf-v5-c-modal-box__body tbody:nth-of-type(2) td[data-label=Name]", "notrunning")
         else:
             b.wait_in_text(".pf-v5-c-modal-box__body tbody td[data-label=Name]", "notrunning")
 
