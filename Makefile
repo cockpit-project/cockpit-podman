@@ -155,7 +155,7 @@ rpm: $(TARFILE)
 	rm -r tmp/rpmbuild
 
 ifeq ("$(TEST_SCENARIO)","updates-testing")
-VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y update --enablerepo=updates-testing,updates-testing-modular >&2'
+VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y update --enablerepo=updates-testing >&2'
 endif
 
 ifeq ("$(TEST_SCENARIO)","podman-next")
