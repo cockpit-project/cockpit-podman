@@ -3,20 +3,18 @@
 .container-pod {
     .pf-v5-c-card__header {
         border-color: #ddd;
-        padding-top: var(--pf-v5-global--spacer--md);
+        padding-block-start: var(--pf-v5-global--spacer--md);
     }
 
     .pod-header-details {
 	border-color: #ddd;
-	margin-top: var(--pf-v5-global--spacer--md);
-	margin-left: var(--pf-v5-global--spacer--md);
-	margin-right: var(--pf-v5-global--spacer--md);
+	margin-block-start: var(--pf-v5-global--spacer--md);
+	margin-inline: var(--pf-v5-global--spacer--md);
     }
 
     .pod-details-button {
-       padding-left: 0;
-       padding-right: 0;
-       margin-right: var(--pf-v5-global--spacer--md);
+       padding-inline: 0;
+       margin-inline-end: var(--pf-v5-global--spacer--md);
     }
 
     .pod-details-button-color {
@@ -31,13 +29,13 @@
         .pod-name {
             font-weight: var(--pf-v5-global--FontWeight--bold);
             font-size: var(--pf-v5-global--FontSize--md);
-            padding-right: 1rem;
+            padding-inline-end: 1rem;
         }
     }
 
     > .pf-v5-c-card__header {
         &:not(:last-child) {
-            padding-bottom: var(--pf-v5-global--spacer-sm);
+            padding-block-end: var(--pf-v5-global--spacer-sm);
         }
 
         // Reduce vertical padding of pod header items
@@ -74,7 +72,8 @@
 }
 
 .ct-table-empty td {
-    padding: var(--pf-v5-global--spacer--sm) var(--pf-v5-global--spacer--md) var(--pf-v5-global--spacer--lg);
+    padding-block: var(--pf-v5-global--spacer--sm) var(--pf-v5-global--spacer--lg);
+    padding-inline: var(--pf-v5-global--spacer--md);
 }
 
 /* HACK - force DescriptionList to wrap but not fill the width */
@@ -90,5 +89,5 @@
 
 /* Drop the excessive margin for a Dropdown button */
 .containers-containers .pf-v5-c-toolbar__content-section > :nth-last-child(2) {
-    margin-right: 0;
+    margin-inline-end: 0;
 }
