@@ -12,7 +12,7 @@
 }
 
 .image-list-item + .image-list-item {
-    border-top: 1px solid var(--pf-v5-global--BorderColor--200);
+    border-block-start: 1px solid var(--pf-v5-global--BorderColor--200);
 }
 
 .image-list-item > .image-name {
@@ -32,19 +32,18 @@
 }
 
 .image-tag-entry {
-    max-width: 15rem;
+    max-inline-size: 15rem;
 }
 
 @media (max-width: 340px) {
     /* Shrink buttons to accommodate iPhone 5/SE */
     .podman-search .modal-footer > .btn {
-        padding-left: 0.25rem;
-        padding-right: 0.25rem;
+        padding-inline: 0.25rem;
     }
 }
 
 .image-search-tag-form {
-    margin-bottom: var(--pf-v5-global--spacer--md);
+    margin-block-end: var(--pf-v5-global--spacer--md);
 }
 
 .podman-search .pf-v5-c-modal-box__footer {
