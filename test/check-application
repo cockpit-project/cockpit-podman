@@ -1016,6 +1016,7 @@ class TestApplication(testlib.MachineCase):
                          f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox")
             # Untag busybox image which duplicates the image we are about to download
             self.execute(True, f"podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox")
+            self.execute(False, f"podman rmi -f {IMG_BUSYBOX}")
 
         class DownloadImageDialog:
             def __init__(self, imageName, imageTag=None, user="system"):
@@ -1147,7 +1148,13 @@ class TestApplication(testlib.MachineCase):
             .fillDialog() \
             .selectImageAndDownload() \
             .expectDownloadSuccess()
-        dialog1.deleteImage(True, another=IMG_BUSYBOX_LATEST)
+        # test recognition/deletion of multiple image tags
+        second_tag = "localhost/copybox:latest"
+        self.execute(False, f"podman tag localhost:5000/my-busybox {second_tag}")
+        # expand details
+        b.click("#containers-images tr:contains('my-busybox') td.pf-v5-c-table__toggle button")
+        b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", second_tag)
+        dialog1.deleteImage(True, another=second_tag)
 
         dialog = DownloadImageDialog('my-busybox', 'latest', user="system")
         dialog.openDialog() \
