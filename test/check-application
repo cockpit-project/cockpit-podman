@@ -1140,6 +1140,7 @@ class TestApplication(testlib.MachineCase):
             .fillDialog() \
             .selectImageAndDownload() \
             .expectDownloadSuccess()
+        dialog0.deleteImage()
 
         dialog1 = DownloadImageDialog('my-busybox', user="user")
         dialog1.openDialog() \
@@ -1147,8 +1148,6 @@ class TestApplication(testlib.MachineCase):
             .selectImageAndDownload() \
             .expectDownloadSuccess()
         dialog1.deleteImage(True, another=IMG_BUSYBOX_LATEST)
-
-        dialog0.deleteImage()
 
         dialog = DownloadImageDialog('my-busybox', 'latest', user="system")
         dialog.openDialog() \
