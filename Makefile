@@ -159,7 +159,7 @@ VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y update --setopt=install_weak_deps=Fal
 endif
 
 ifeq ("$(TEST_SCENARIO)","podman-next")
-VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update >&2'
+VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update --repo 'copr*' >&2'
 endif
 
 # build a VM with locally built distro pkgs installed
