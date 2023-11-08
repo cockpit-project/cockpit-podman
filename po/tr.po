@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-15 02:46+0000\n"
-"PO-Revision-Date: 2023-08-07 10:58+0000\n"
+"POT-Creation-Date: 2023-11-08 02:46+0000\n"
+"PO-Revision-Date: 2023-11-04 11:09+0000\n"
 "Last-Translator: Burak Yavuz <hitowerdigit@hotmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/tr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1\n"
-"X-Generator: Weblate 4.18.2\n"
+"X-Generator: Weblate 5.1.1\n"
 
 #: src/Images.jsx:87
 msgid "$0 container"
@@ -43,24 +43,28 @@ msgid_plural "$0 unused images, $1"
 msgstr[0] "$0 kullanılmayan kalıp, $1"
 msgstr[1] "$0 kullanılmayan kalıp, $1"
 
-#: src/ImageRunModal.jsx:1071
+#: src/PublishPort.jsx:30 src/PublishPort.jsx:41
+msgid "1 to 65535"
+msgstr "1'den 65535'e"
+
+#: src/ImageRunModal.jsx:1122
 msgid "Action to take once the container transitions to an unhealthy state."
 msgstr ""
 "Kapsayıcı sağlıksız bir duruma geçtikten sonra gerçekleştirilecek eylem."
 
-#: src/PodCreateModal.jsx:125 src/ImageRunModal.jsx:937
+#: src/ImageRunModal.jsx:983 src/PodCreateModal.jsx:125
 msgid "Add port mapping"
 msgstr "Bağlantı noktası eşlemesi ekle"
 
-#: src/ImageRunModal.jsx:956
+#: src/ImageRunModal.jsx:1005
 msgid "Add variable"
 msgstr "Değişken ekle"
 
-#: src/PodCreateModal.jsx:135 src/ImageRunModal.jsx:946
+#: src/ImageRunModal.jsx:993 src/PodCreateModal.jsx:135
 msgid "Add volume"
 msgstr "Birim ekle"
 
-#: src/Containers.jsx:763 src/ContainerHeader.jsx:21 src/ImageRunModal.jsx:654
+#: src/Containers.jsx:765 src/ImageRunModal.jsx:690 src/ContainerHeader.jsx:21
 msgid "All"
 msgstr "Tümü"
 
@@ -68,7 +72,7 @@ msgstr "Tümü"
 msgid "All registries"
 msgstr "Tüm kayıtlar"
 
-#: src/ImageRunModal.jsx:907
+#: src/ImageRunModal.jsx:953
 msgid "Always"
 msgstr "Her zaman"
 
@@ -84,19 +88,19 @@ msgstr "Hazırlayan"
 msgid "Automatically start podman on boot"
 msgstr "Podman'ı önyüklemede otomatik olarak başlat"
 
-#: src/Containers.jsx:541 src/Containers.jsx:544 src/Containers.jsx:603
+#: src/Containers.jsx:543 src/Containers.jsx:546 src/Containers.jsx:605
 msgid "CPU"
 msgstr "CPU"
 
-#: src/ImageRunModal.jsx:860
+#: src/ImageRunModal.jsx:906
 msgid "CPU Shares help"
 msgstr "CPU Paylaşımları yardımı"
 
-#: src/ImageRunModal.jsx:858
+#: src/ImageRunModal.jsx:904
 msgid "CPU shares"
 msgstr "CPU paylaşımları"
 
-#: src/ImageRunModal.jsx:862
+#: src/ImageRunModal.jsx:908
 msgid ""
 "CPU shares determine the priority of running containers. Default priority is "
 "1024. A higher number prioritizes this container. A lower number decreases "
@@ -106,13 +110,13 @@ msgstr ""
 "Varsayılan öncelik 1024'dür. Daha yüksek bir sayı bu kapsayıcıya öncelik "
 "verir. Daha düşük bir sayı önceliği azaltır."
 
-#: src/PodCreateModal.jsx:157 src/ForceRemoveModal.jsx:25
-#: src/PruneUnusedContainersModal.jsx:96 src/ContainerCheckpointModal.jsx:50
-#: src/ContainerDeleteModal.jsx:34 src/ImageDeleteModal.jsx:94
-#: src/PruneUnusedImagesModal.jsx:97 src/ContainerCommitModal.jsx:157
-#: src/ContainerRestoreModal.jsx:53 src/ImageRunModal.jsx:1112
-#: src/PodActions.jsx:50 src/ContainerRenameModal.jsx:97
-#: src/ImageSearchModal.jsx:152
+#: src/ContainerDeleteModal.jsx:34 src/ContainerRenameModal.jsx:97
+#: src/ImageRunModal.jsx:1163 src/ContainerRestoreModal.jsx:53
+#: src/PruneUnusedImagesModal.jsx:97 src/ImageDeleteModal.jsx:94
+#: src/PodActions.jsx:50 src/ImageSearchModal.jsx:152
+#: src/ForceRemoveModal.jsx:25 src/PruneUnusedContainersModal.jsx:96
+#: src/ContainerCommitModal.jsx:157 src/PodCreateModal.jsx:157
+#: src/ContainerCheckpointModal.jsx:50
 msgid "Cancel"
 msgstr "İptal"
 
@@ -124,7 +128,7 @@ msgstr "Sağlık denetleniyor"
 msgid "Checkpoint"
 msgstr "Denetim noktası"
 
-#: src/ImageRunModal.jsx:717
+#: src/ImageRunModal.jsx:763
 msgid "Checkpoint and restore support"
 msgstr "Denetim noktası ve geri yükleme desteği"
 
@@ -132,11 +136,11 @@ msgstr "Denetim noktası ve geri yükleme desteği"
 msgid "Checkpoint container $0"
 msgstr "$0 kapsayıcısı denetim noktası"
 
-#: src/Containers.jsx:559
+#: src/Containers.jsx:561
 msgid "Click to see published ports"
 msgstr "Yayınlanan bağlantı noktalarını görmek için tıklayın"
 
-#: src/Containers.jsx:574
+#: src/Containers.jsx:576
 msgid "Click to see volumes"
 msgstr "Birimleri görmek için tıklayın"
 
@@ -144,9 +148,9 @@ msgstr "Birimleri görmek için tıklayın"
 msgid "Cockpit component for Podman containers"
 msgstr "Podman kapsayıcıları için Cockpit bileşeni"
 
-#: src/ContainerHealthLogs.jsx:60 src/ContainerDetails.jsx:39
-#: src/ContainerCommitModal.jsx:112 src/ImageDetails.jsx:15
-#: src/ImageRunModal.jsx:813 src/ImageRunModal.jsx:963
+#: src/ContainerDetails.jsx:39 src/ContainerHealthLogs.jsx:60
+#: src/ImageRunModal.jsx:859 src/ImageRunModal.jsx:1014 src/ImageDetails.jsx:15
+#: src/ContainerCommitModal.jsx:112
 msgid "Command"
 msgstr "Komut"
 
@@ -162,23 +166,23 @@ msgstr "İşle"
 msgid "Commit container"
 msgstr "Kapsayıcı işle"
 
-#: src/util.js:22
+#: src/util.js:23
 msgid "Configured"
 msgstr "Yapılandırıldı"
 
-#: src/Containers.jsx:468
+#: src/Containers.jsx:470
 msgid "Console"
 msgstr "Konsol"
 
-#: src/Containers.jsx:601
+#: src/Containers.jsx:603
 msgid "Container"
 msgstr "Kapsayıcı"
 
-#: src/ImageRunModal.jsx:303
+#: src/ImageRunModal.jsx:255
 msgid "Container failed to be created"
 msgstr "Kapsayıcının oluşturulması başarısız oldu"
 
-#: src/ImageRunModal.jsx:286
+#: src/ImageRunModal.jsx:238
 msgid "Container failed to be started"
 msgstr "Kapsayıcının başlatılması başarısız oldu"
 
@@ -186,7 +190,7 @@ msgstr "Kapsayıcının başlatılması başarısız oldu"
 msgid "Container is not running"
 msgstr "Kapsayıcı çalışmıyor"
 
-#: src/ImageRunModal.jsx:694
+#: src/ImageRunModal.jsx:730
 msgid "Container name"
 msgstr "Kapsayıcı adı"
 
@@ -194,19 +198,27 @@ msgstr "Kapsayıcı adı"
 msgid "Container name is required."
 msgstr "Kapsayıcı adı gerekli."
 
-#: src/Volume.jsx:22
+#: src/Volume.jsx:50
 msgid "Container path"
 msgstr "Kapsayıcı yolu"
 
-#: src/PublishPort.jsx:53
+#: src/Volume.jsx:23
+msgid "Container path must not be empty"
+msgstr "Kapsayıcı yolu boş olmamak zorundadır"
+
+#: src/PublishPort.jsx:105
 msgid "Container port"
 msgstr "Kapsayıcı bağlantı noktası"
 
-#: src/Containers.jsx:817 src/Containers.jsx:823 src/Containers.jsx:853
+#: src/PublishPort.jsx:37
+msgid "Container port must not be empty"
+msgstr "Kapsayıcı bağlantı noktası boş olmamak zorundadır"
+
+#: src/Containers.jsx:819 src/Containers.jsx:825 src/Containers.jsx:855
 msgid "Containers"
 msgstr "Kapsayıcılar"
 
-#: src/PodCreateModal.jsx:154 src/ImageRunModal.jsx:1109
+#: src/ImageRunModal.jsx:1160 src/PodCreateModal.jsx:154
 msgid "Create"
 msgstr "Oluştur"
 
@@ -214,29 +226,29 @@ msgstr "Oluştur"
 msgid "Create a new image based on the current state of the $0 container."
 msgstr "$0 kapsayıcısının şu anki durumuna göre yeni bir kalıp oluşturun."
 
-#: src/ImageRunModal.jsx:1106
+#: src/ImageRunModal.jsx:1157
 msgid "Create and run"
 msgstr "Oluştur ve çalıştır"
 
-#: src/Containers.jsx:780 src/ImageRunModal.jsx:1103 src/Images.jsx:405
+#: src/Containers.jsx:782 src/ImageRunModal.jsx:1154 src/Images.jsx:405
 #: src/Images.jsx:419
 msgid "Create container"
 msgstr "Kapsayıcı oluştur"
 
-#: src/ImageRunModal.jsx:1103
+#: src/ImageRunModal.jsx:1154
 msgid "Create container in $0"
 msgstr "$0 içinde kapsayıcı oluştur"
 
-#: src/Containers.jsx:863
+#: src/Containers.jsx:865
 msgid "Create container in pod"
 msgstr "Bölme içinde kapsayıcı oluştur"
 
-#: src/Containers.jsx:772 src/PodCreateModal.jsx:150
+#: src/Containers.jsx:774 src/PodCreateModal.jsx:150
 msgid "Create pod"
 msgstr "Bölme oluştur"
 
-#: src/PruneUnusedContainersModal.jsx:65 src/ContainerDetails.jsx:63
-#: src/util.js:22 src/util.js:25 src/ImageHistory.jsx:33 src/Images.jsx:178
+#: src/ContainerDetails.jsx:63 src/ImageHistory.jsx:33 src/util.js:23
+#: src/util.js:26 src/PruneUnusedContainersModal.jsx:65 src/Images.jsx:178
 msgid "Created"
 msgstr "Oluşturuldu"
 
@@ -244,31 +256,31 @@ msgstr "Oluşturuldu"
 msgid "Created by"
 msgstr "Oluşturan"
 
-#: src/ImageRunModal.jsx:881
+#: src/ImageRunModal.jsx:927
 msgid "Decrease CPU shares"
 msgstr "CPU paylaşımlarını azalt"
 
-#: src/ImageRunModal.jsx:986
+#: src/ImageRunModal.jsx:1037
 msgid "Decrease interval"
 msgstr "Aralığı azalt"
 
-#: src/ImageRunModal.jsx:920
+#: src/ImageRunModal.jsx:966
 msgid "Decrease maximum retries"
 msgstr "En fazla yeniden denemeyi azalt"
 
-#: src/ImageRunModal.jsx:839
+#: src/ImageRunModal.jsx:885
 msgid "Decrease memory"
 msgstr "Belleği azalt"
 
-#: src/ImageRunModal.jsx:1060
+#: src/ImageRunModal.jsx:1111
 msgid "Decrease retries"
 msgstr "Yeniden denemeleri azalt"
 
-#: src/ImageRunModal.jsx:1036
+#: src/ImageRunModal.jsx:1087
 msgid "Decrease start period"
 msgstr "Başlangıç süresini azalt"
 
-#: src/ImageRunModal.jsx:1011
+#: src/ImageRunModal.jsx:1062
 msgid "Decrease timeout"
 msgstr "Zaman aşımını azalt"
 
@@ -281,7 +293,7 @@ msgstr "Sil"
 msgid "Delete $0"
 msgstr "$0 sil"
 
-#: src/ForceRemoveModal.jsx:18 src/ContainerDeleteModal.jsx:31
+#: src/ContainerDeleteModal.jsx:31 src/ForceRemoveModal.jsx:18
 msgid "Delete $0?"
 msgstr "$0 silinsin mi?"
 
@@ -313,7 +325,7 @@ msgstr "Çalışan bir kapsayıcıyı silmek içindeki tüm verileri silecek."
 msgid "Deleting this pod will remove the following containers:"
 msgstr "Bu bölmeyi silmek aşağıdaki kapsayıcıları kaldıracak:"
 
-#: src/Containers.jsx:453 src/ImageRunModal.jsx:699 src/Images.jsx:147
+#: src/Containers.jsx:453 src/ImageRunModal.jsx:745 src/Images.jsx:147
 msgid "Details"
 msgstr "Ayrıntılar"
 
@@ -339,15 +351,15 @@ msgstr "Yeni kalıbı indir"
 msgid "Empty pod $0 will be permanently removed."
 msgstr "Boş bölme $0 kalıcı olarak kaldırılacaktır."
 
-#: src/ImageDetails.jsx:21 src/ImageRunModal.jsx:808
+#: src/ImageRunModal.jsx:854 src/ImageDetails.jsx:21
 msgid "Entrypoint"
 msgstr "Giriş noktası"
 
-#: src/ContainerIntegration.jsx:114 src/ImageRunModal.jsx:955
+#: src/ContainerIntegration.jsx:114 src/ImageRunModal.jsx:1004
 msgid "Environment variables"
 msgstr "Ortam değişkenleri"
 
-#: src/util.js:25
+#: src/util.js:26
 msgid "Error"
 msgstr "Hata"
 
@@ -363,11 +375,11 @@ msgstr "Konsola bağlanırken hata meydana geldi"
 msgid "Example, Your Name <yourname@example.com>"
 msgstr "Örnek, Adınız <adiniz@ornek.com>"
 
-#: src/ImageRunModal.jsx:763
+#: src/ImageRunModal.jsx:809
 msgid "Example: $0"
 msgstr "Örnek: $0"
 
-#: src/ContainerDetails.jsx:14 src/util.js:22 src/util.js:25
+#: src/ContainerDetails.jsx:14 src/util.js:23 src/util.js:26
 msgid "Exited"
 msgstr "Çıkıldı"
 
@@ -379,7 +391,7 @@ msgstr "Sağlık işlemini çalıştırma başarısız oldu"
 msgid "Failed to checkpoint container $0"
 msgstr "$0 kapsayıcısını denetleme noktası başarısız oldu"
 
-#: src/ImageRunModal.jsx:292
+#: src/ImageRunModal.jsx:244
 msgid "Failed to clean up container"
 msgstr "Kapsayıcıyı temizleme başarısız oldu"
 
@@ -387,7 +399,7 @@ msgstr "Kapsayıcıyı temizleme başarısız oldu"
 msgid "Failed to commit container $0"
 msgstr "$0 kapsayıcısını işleme başarısız oldu"
 
-#: src/ImageRunModal.jsx:354
+#: src/ImageRunModal.jsx:309
 msgid "Failed to create container $0"
 msgstr "$0 kapsayıcısını oluşturma başarısız oldu"
 
@@ -427,7 +439,7 @@ msgstr "Kullanılmayan kapsayıcıları ayıklama başarısız oldu"
 msgid "Failed to prune unused images"
 msgstr "Kullanılmayan kalıpları ayıklama başarısız oldu"
 
-#: src/ImageRunModal.jsx:360
+#: src/ImageRunModal.jsx:315
 msgid "Failed to pull image $0"
 msgstr "$0 kalıbını çekme başarısız oldu"
 
@@ -463,23 +475,23 @@ msgstr "$0 kapsayıcısını sürdürme başarısız oldu"
 msgid "Failed to resume pod $0"
 msgstr "$0 bölmesini sürdürme başarısız oldu"
 
-#: src/ImageRunModal.jsx:347
+#: src/ImageRunModal.jsx:302
 msgid "Failed to run container $0"
 msgstr "$0 kapsayıcısını çalıştırma başarısız oldu"
 
-#: src/Containers.jsx:134 src/ContainerHealthLogs.jsx:94
+#: src/ContainerHealthLogs.jsx:94 src/Containers.jsx:134
 msgid "Failed to run health check on container $0"
 msgstr "$0 kapsayıcısında sağlık denetimi çalıştırma başarısız oldu"
 
-#: src/ImageRunModal.jsx:441 src/ImageSearchModal.jsx:93
+#: src/ImageRunModal.jsx:396 src/ImageSearchModal.jsx:93
 msgid "Failed to search for images."
 msgstr "Kalıpları arama başarısız oldu."
 
-#: src/ImageRunModal.jsx:441 src/ImageSearchModal.jsx:93
+#: src/ImageRunModal.jsx:396 src/ImageSearchModal.jsx:93
 msgid "Failed to search for images: $0"
 msgstr "Kalıpları arama başarısız oldu: $0"
 
-#: src/ImageRunModal.jsx:439 src/ImageSearchModal.jsx:92
+#: src/ImageRunModal.jsx:394 src/ImageSearchModal.jsx:92
 msgid "Failed to search for new images"
 msgstr "Yeni kalıpları arama başarısız oldu"
 
@@ -507,7 +519,7 @@ msgstr "Başarısız olan seri"
 msgid "Force commit"
 msgstr "İşlemeye zorla"
 
-#: src/ForceRemoveModal.jsx:23 src/PodActions.jsx:46
+#: src/PodActions.jsx:46 src/ForceRemoveModal.jsx:23
 msgid "Force delete"
 msgstr "Silmeye zorla"
 
@@ -519,12 +531,12 @@ msgstr "$0 bölmesi silmeye zorlansın mı?"
 msgid "Force restart"
 msgstr "Yeniden başlatmaya zorla"
 
-#: src/Containers.jsx:195 src/ContainerHealthLogs.jsx:42
-#: src/ImageRunModal.jsx:59 src/PodActions.jsx:98
+#: src/ContainerHealthLogs.jsx:42 src/Containers.jsx:195
+#: src/ImageRunModal.jsx:61 src/PodActions.jsx:98
 msgid "Force stop"
 msgstr "Durdurmaya zorla"
 
-#: src/ImageRunModal.jsx:850
+#: src/ImageRunModal.jsx:896
 msgid "GB"
 msgstr "GB"
 
@@ -532,27 +544,27 @@ msgstr "GB"
 msgid "Gateway"
 msgstr "Ağ geçidi"
 
-#: src/Containers.jsx:476 src/ImageRunModal.jsx:962
+#: src/Containers.jsx:479 src/ImageRunModal.jsx:1013
 msgid "Health check"
 msgstr "Sağlık denetimi"
 
-#: src/ImageRunModal.jsx:971
+#: src/ImageRunModal.jsx:1022
 msgid "Health check interval help"
 msgstr "Sağlık denetimi aralığı yardımı"
 
-#: src/ImageRunModal.jsx:1046
+#: src/ImageRunModal.jsx:1097
 msgid "Health check retries help"
 msgstr "Sağlık denetimi yeniden denemeleri yardımı"
 
-#: src/ImageRunModal.jsx:1021
+#: src/ImageRunModal.jsx:1072
 msgid "Health check start period help"
 msgstr "Sağlık denetimi başlangıç dönemi yardımı"
 
-#: src/ImageRunModal.jsx:996
+#: src/ImageRunModal.jsx:1047
 msgid "Health check timeout help"
 msgstr "Sağlık denetimi zaman aşımı yardımı"
 
-#: src/ImageRunModal.jsx:1069
+#: src/ImageRunModal.jsx:1120
 msgid "Health failure check action help"
 msgstr "Sağlık denetimi hatası eylem yardımı"
 
@@ -572,15 +584,15 @@ msgstr "Ara kalıpları gizle"
 msgid "History"
 msgstr "Geçmiş"
 
-#: src/Volume.jsx:17
+#: src/Volume.jsx:36
 msgid "Host path"
 msgstr "Anamakine yolu"
 
-#: src/PublishPort.jsx:33
+#: src/PublishPort.jsx:78
 msgid "Host port"
 msgstr "Anamakine bağlantı noktası"
 
-#: src/PublishPort.jsx:36
+#: src/PublishPort.jsx:81
 msgid "Host port help"
 msgstr "Anamakine b.noktası yardım"
 
@@ -588,23 +600,23 @@ msgstr "Anamakine b.noktası yardım"
 msgid "ID"
 msgstr "Kimlik"
 
-#: src/ContainerDetails.jsx:47 src/PublishPort.jsx:17
+#: src/ContainerDetails.jsx:47 src/PublishPort.jsx:55
 msgid "IP address"
 msgstr "IP adresi"
 
-#: src/PublishPort.jsx:20
+#: src/PublishPort.jsx:58
 msgid "IP address help"
 msgstr "IP adresi yardım"
 
-#: src/ImageRunModal.jsx:728
+#: src/ImageRunModal.jsx:774
 msgid "Ideal for development"
 msgstr "Geliştirme için ideal"
 
-#: src/ImageRunModal.jsx:711
+#: src/ImageRunModal.jsx:757
 msgid "Ideal for running services"
 msgstr "Çalışan hizmetler için ideal"
 
-#: src/PublishPort.jsx:22
+#: src/PublishPort.jsx:60
 msgid ""
 "If host IP is set to 0.0.0.0 or not set at all, the port will be bound on "
 "all IPs on the host."
@@ -612,7 +624,7 @@ msgstr ""
 "Eğer anamakine IP'si 0.0.0.0 olarak ayarlanırsa veya hiç ayarlanmazsa, "
 "bağlantı noktası anamakinedeki tüm IP'lere bağlanır."
 
-#: src/PublishPort.jsx:38
+#: src/PublishPort.jsx:83
 msgid ""
 "If the host port is not set the container port will be randomly assigned a "
 "port on the host."
@@ -628,7 +640,7 @@ msgstr "Sabit olarak ayarlanmışsa IP adresini yoksay"
 msgid "Ignore MAC address if set statically"
 msgstr "Sabit olarak ayarlanmışsa MAC adresini yoksay"
 
-#: src/ContainerDetails.jsx:35 src/ImageRunModal.jsx:756 src/Images.jsx:176
+#: src/ContainerDetails.jsx:35 src/ImageRunModal.jsx:802 src/Images.jsx:176
 msgid "Image"
 msgstr "Kalıp"
 
@@ -640,7 +652,7 @@ msgstr "Kalıp adı benzersiz değil"
 msgid "Image name is required"
 msgstr "Kalıp adı gerekli"
 
-#: src/ImageRunModal.jsx:758
+#: src/ImageRunModal.jsx:804
 msgid "Image selection help"
 msgstr "Kalıp seçim yardımı"
 
@@ -648,47 +660,47 @@ msgstr "Kalıp seçim yardımı"
 msgid "Images"
 msgstr "Kalıplar"
 
-#: src/ImageRunModal.jsx:882
+#: src/ImageRunModal.jsx:928
 msgid "Increase CPU shares"
 msgstr "CPU paylaşımlarını artır"
 
-#: src/ImageRunModal.jsx:987
+#: src/ImageRunModal.jsx:1038
 msgid "Increase interval"
 msgstr "Aralığı artır"
 
-#: src/ImageRunModal.jsx:921
+#: src/ImageRunModal.jsx:967
 msgid "Increase maximum retries"
 msgstr "En fazla yeniden denemeyi artır"
 
-#: src/ImageRunModal.jsx:840
+#: src/ImageRunModal.jsx:886
 msgid "Increase memory"
 msgstr "Belleği artır"
 
-#: src/ImageRunModal.jsx:1061
+#: src/ImageRunModal.jsx:1112
 msgid "Increase retries"
 msgstr "Yeniden denemeleri artır"
 
-#: src/ImageRunModal.jsx:1037
+#: src/ImageRunModal.jsx:1088
 msgid "Increase start period"
 msgstr "Başlangıç süresini artır"
 
-#: src/ImageRunModal.jsx:1012
+#: src/ImageRunModal.jsx:1063
 msgid "Increase timeout"
 msgstr "Zaman aşımını artır"
 
-#: src/Containers.jsx:458 src/ImageRunModal.jsx:931
+#: src/Containers.jsx:460 src/ImageRunModal.jsx:977
 msgid "Integration"
 msgstr "Bütünleştirme"
 
-#: src/ContainerHealthLogs.jsx:64 src/ImageRunModal.jsx:969
+#: src/ContainerHealthLogs.jsx:64 src/ImageRunModal.jsx:1020
 msgid "Interval"
 msgstr "Aralık"
 
-#: src/ImageRunModal.jsx:973
+#: src/ImageRunModal.jsx:1024
 msgid "Interval how often health check is run."
 msgstr "Sağlık denetiminin ne sıklıkta çalıştırıldığı aralığı."
 
-#: src/PodCreateModal.jsx:90 src/ContainerRenameModal.jsx:32
+#: src/ContainerRenameModal.jsx:32 src/PodCreateModal.jsx:90
 msgid ""
 "Invalid characters. Name can only contain letters, numbers, and certain "
 "punctuation (_ . -)."
@@ -696,17 +708,21 @@ msgstr ""
 "Geçersiz karakterler. Ad sadece harf, sayı ve belirli noktalama işaretlerini "
 "(_ . -) içerebilir."
 
-#: src/ImageRunModal.jsx:848
+#: src/ImageRunModal.jsx:894
 msgid "KB"
 msgstr "KB"
 
-#: src/ContainerCheckpointModal.jsx:55 src/ContainerRestoreModal.jsx:58
+#: src/ContainerRestoreModal.jsx:58 src/ContainerCheckpointModal.jsx:55
 msgid "Keep all temporary checkpoint files"
 msgstr "Tüm geçici denetim noktası dosyalarını sakla"
 
-#: src/ImageRunModal.jsx:89
+#: src/Env.jsx:56
 msgid "Key"
 msgstr "Anahtar"
+
+#: src/Env.jsx:18
+msgid "Key must not be empty"
+msgstr "Anahtar boş olmamak zorundadır"
 
 #: src/ContainerHealthLogs.jsx:105
 msgid "Last 5 runs"
@@ -728,19 +744,19 @@ msgstr "Ayrıntılar yükleniyor..."
 msgid "Loading logs..."
 msgstr "Günlükler yükleniyor..."
 
-#: src/Containers.jsx:615 src/ImageUsedBy.jsx:12
+#: src/Containers.jsx:617 src/ImageUsedBy.jsx:12
 msgid "Loading..."
 msgstr "Yükleniyor..."
 
-#: src/ImageRunModal.jsx:663
+#: src/ImageRunModal.jsx:699
 msgid "Local"
 msgstr "Yerel"
 
-#: src/ImageRunModal.jsx:544
+#: src/ImageRunModal.jsx:499
 msgid "Local images"
 msgstr "Yerel kalıplar"
 
-#: src/Containers.jsx:463 src/ContainerHealthLogs.jsx:102
+#: src/ContainerHealthLogs.jsx:102 src/Containers.jsx:465
 msgid "Logs"
 msgstr "Günlükler"
 
@@ -748,27 +764,27 @@ msgstr "Günlükler"
 msgid "MAC address"
 msgstr "MAC adresi"
 
-#: src/ImageRunModal.jsx:849
+#: src/ImageRunModal.jsx:895
 msgid "MB"
 msgstr "MB"
 
-#: src/ImageRunModal.jsx:913
+#: src/ImageRunModal.jsx:959
 msgid "Maximum retries"
 msgstr "En fazla yeniden deneme"
 
-#: src/Containers.jsx:548 src/Containers.jsx:551 src/Containers.jsx:604
+#: src/Containers.jsx:550 src/Containers.jsx:553 src/Containers.jsx:606
 msgid "Memory"
 msgstr "Bellek"
 
-#: src/ImageRunModal.jsx:826
+#: src/ImageRunModal.jsx:872
 msgid "Memory limit"
 msgstr "Bellek sınırı"
 
-#: src/ImageRunModal.jsx:843
+#: src/ImageRunModal.jsx:889
 msgid "Memory unit"
 msgstr "Bellek birimi"
 
-#: src/Volume.jsx:27
+#: src/Volume.jsx:64
 msgid "Mode"
 msgstr "Mod"
 
@@ -778,10 +794,18 @@ msgstr ""
 "Bu kalıp için birden fazla etiket var. Silinecek etiketlenmiş kalıpları "
 "seçin."
 
-#: src/PodCreateModal.jsx:97 src/PruneUnusedContainersModal.jsx:64
-#: src/ImageRunModal.jsx:691
+#: src/PublishPort.jsx:24
+msgid "Must be a valid IP address"
+msgstr "Geçerli bir IP adresi olmak zorundadır"
+
+#: src/ImageRunModal.jsx:727 src/PruneUnusedContainersModal.jsx:64
+#: src/PodCreateModal.jsx:97
 msgid "Name"
 msgstr "Ad"
+
+#: src/ImageRunModal.jsx:609
+msgid "Name already in use"
+msgstr "Ad zaten kullanımda"
 
 #: src/ContainerRenameModal.jsx:68
 msgid "New container name"
@@ -791,15 +815,15 @@ msgstr "Yeni kapsayıcı adı"
 msgid "New image name"
 msgstr "Yeni kalıp adı"
 
-#: src/ImageRunModal.jsx:905
+#: src/ImageRunModal.jsx:951
 msgid "No"
 msgstr "Hayır"
 
-#: src/ContainerHealthLogs.jsx:39 src/ImageRunModal.jsx:56
+#: src/ContainerHealthLogs.jsx:39 src/ImageRunModal.jsx:58
 msgid "No action"
 msgstr "Eylem yok"
 
-#: src/Containers.jsx:612
+#: src/Containers.jsx:614
 msgid "No containers"
 msgstr "Kapsayıcılar yok"
 
@@ -807,15 +831,15 @@ msgstr "Kapsayıcılar yok"
 msgid "No containers are using this image"
 msgstr "Bu kalıbı hiçbir kapsayıcı kullanmıyor"
 
-#: src/Containers.jsx:613
+#: src/Containers.jsx:615
 msgid "No containers in this pod"
 msgstr "Bu bölmede kapsayıcılar yok"
 
-#: src/Containers.jsx:617
+#: src/Containers.jsx:619
 msgid "No containers that match the current filter"
 msgstr "Şu anki süzgeçle eşleşen kapsayıcılar yok"
 
-#: src/ImageRunModal.jsx:953
+#: src/ImageRunModal.jsx:1002
 msgid "No environment variables specified"
 msgstr "Belirtilen ortam değişkenleri yok"
 
@@ -823,7 +847,7 @@ msgstr "Belirtilen ortam değişkenleri yok"
 msgid "No images"
 msgstr "Kalıplar yok"
 
-#: src/ImageRunModal.jsx:781 src/ImageSearchModal.jsx:185
+#: src/ImageRunModal.jsx:827 src/ImageSearchModal.jsx:185
 msgid "No images found"
 msgstr "Bulunan kalıplar yok"
 
@@ -831,11 +855,11 @@ msgstr "Bulunan kalıplar yok"
 msgid "No images that match the current filter"
 msgstr "Şu anki süzgeçle eşleşen kalıplar yok"
 
-#: src/Volume.jsx:38
+#: src/Volume.jsx:75
 msgid "No label"
 msgstr "Etiket yok"
 
-#: src/PodCreateModal.jsx:122 src/ImageRunModal.jsx:934
+#: src/ImageRunModal.jsx:980 src/PodCreateModal.jsx:122
 msgid "No ports exposed"
 msgstr "Açığa çıkan bağlantı noktaları yok"
 
@@ -843,19 +867,19 @@ msgstr "Açığa çıkan bağlantı noktaları yok"
 msgid "No results for $0"
 msgstr "$0 için sonuçlar yok"
 
-#: src/Containers.jsx:619
+#: src/Containers.jsx:621
 msgid "No running containers"
 msgstr "Çalışan kapsayıcılar yok"
 
-#: src/PodCreateModal.jsx:132 src/ImageRunModal.jsx:943
+#: src/ImageRunModal.jsx:990 src/PodCreateModal.jsx:132
 msgid "No volumes specified"
 msgstr "Belirtilen birimler yok"
 
-#: src/ImageRunModal.jsx:906
+#: src/ImageRunModal.jsx:952
 msgid "On failure"
 msgstr "Başarısızlıkla"
 
-#: src/Containers.jsx:764
+#: src/Containers.jsx:766
 msgid "Only running"
 msgstr "Sadece çalışanlar"
 
@@ -863,13 +887,13 @@ msgstr "Sadece çalışanlar"
 msgid "Options"
 msgstr "Seçenekler"
 
-#: src/Containers.jsx:602 src/PodCreateModal.jsx:108
-#: src/PruneUnusedContainersModal.jsx:69 src/ContainerHeader.jsx:15
-#: src/ImageRunModal.jsx:701 src/Images.jsx:177 src/ImageSearchModal.jsx:159
+#: src/Containers.jsx:604 src/ImageRunModal.jsx:747 src/ContainerHeader.jsx:15
+#: src/ImageSearchModal.jsx:159 src/PruneUnusedContainersModal.jsx:69
+#: src/Images.jsx:177 src/PodCreateModal.jsx:108
 msgid "Owner"
 msgstr "Sahibi"
 
-#: src/ImageRunModal.jsx:703
+#: src/ImageRunModal.jsx:749
 msgid "Owner help"
 msgstr "Sahibi yardımı"
 
@@ -877,7 +901,7 @@ msgstr "Sahibi yardımı"
 msgid "Passed health run"
 msgstr "Sağlık çalıştırması geçti"
 
-#: src/ImageRunModal.jsx:959
+#: src/ImageRunModal.jsx:1010
 msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr ""
@@ -892,7 +916,7 @@ msgstr "Duraklat"
 msgid "Pause container when creating image"
 msgstr "Kalıp oluştururken kapsayıcıyı duraklatın"
 
-#: src/util.js:22 src/util.js:25
+#: src/util.js:23 src/util.js:26
 msgid "Paused"
 msgstr "Duraklatıldı"
 
@@ -916,7 +940,7 @@ msgstr "Podman kapsayıcıları"
 msgid "Podman service is not active"
 msgstr "Podman hizmeti etkin değil"
 
-#: src/PodCreateModal.jsx:124 src/ImageRunModal.jsx:936
+#: src/ImageRunModal.jsx:982 src/PodCreateModal.jsx:124
 msgid "Port mapping"
 msgstr "Bağlantı noktası eşleme"
 
@@ -924,19 +948,19 @@ msgstr "Bağlantı noktası eşleme"
 msgid "Ports"
 msgstr "Bağlantı noktaları"
 
-#: src/ImageRunModal.jsx:720
+#: src/ImageRunModal.jsx:766
 msgid "Ports under 1024 can be mapped"
 msgstr "1024 altındaki bağlantı noktaları eşlenebilir"
 
-#: src/Volume.jsx:40
+#: src/Volume.jsx:77
 msgid "Private"
 msgstr "Özel"
 
-#: src/PublishPort.jsx:64
+#: src/PublishPort.jsx:122
 msgid "Protocol"
 msgstr "Protokol"
 
-#: src/PruneUnusedContainersModal.jsx:94 src/PruneUnusedImagesModal.jsx:95
+#: src/PruneUnusedImagesModal.jsx:95 src/PruneUnusedContainersModal.jsx:94
 msgid "Prune"
 msgstr "Ayıkla"
 
@@ -956,7 +980,7 @@ msgstr "Kapsayıcılar ayıklanıyor"
 msgid "Pruning images"
 msgstr "Kalıplar ayıklanıyor"
 
-#: src/ImageRunModal.jsx:802
+#: src/ImageRunModal.jsx:848
 msgid "Pull latest image"
 msgstr "Son kalıbı çek"
 
@@ -972,7 +996,7 @@ msgstr "Salt-okunur erişim"
 msgid "Read-write access"
 msgstr "Okuma-yazma erişimi"
 
-#: src/Volume.jsx:47 src/PublishPort.jsx:79 src/ImageRunModal.jsx:104
+#: src/Env.jsx:91 src/PublishPort.jsx:137 src/Volume.jsx:84
 msgid "Remove item"
 msgstr "Öğeyi kaldır"
 
@@ -980,7 +1004,7 @@ msgstr "Öğeyi kaldır"
 msgid "Removes selected non-running containers"
 msgstr "Seçilen çalışmayan kapsayıcıları kaldırır"
 
-#: src/util.js:22
+#: src/util.js:23
 msgid "Removing"
 msgstr "Kaldırılıyor"
 
@@ -992,28 +1016,28 @@ msgstr "Yeniden adlandır"
 msgid "Rename container $0"
 msgstr "$0 kapsayıcısını yeniden adlandır"
 
-#: src/ImageRunModal.jsx:714
+#: src/ImageRunModal.jsx:760
 msgid "Resource limits can be set"
 msgstr "Kaynak sınırları ayarlanabilir"
 
-#: src/Containers.jsx:199 src/ContainerHealthLogs.jsx:40 src/util.js:22
-#: src/ImageRunModal.jsx:57 src/PodActions.jsx:109
+#: src/ContainerHealthLogs.jsx:40 src/Containers.jsx:199
+#: src/ImageRunModal.jsx:59 src/PodActions.jsx:109 src/util.js:23
 msgid "Restart"
 msgstr "Yeniden başlat"
 
-#: src/ImageRunModal.jsx:890
+#: src/ImageRunModal.jsx:936
 msgid "Restart policy"
 msgstr "Yeniden başlatma ilkesi"
 
-#: src/ImageRunModal.jsx:892 src/ImageRunModal.jsx:902
+#: src/ImageRunModal.jsx:938 src/ImageRunModal.jsx:948
 msgid "Restart policy help"
 msgstr "Yeniden başlatma ilkesi yardımı"
 
-#: src/ImageRunModal.jsx:894
+#: src/ImageRunModal.jsx:940
 msgid "Restart policy to follow when containers exit."
 msgstr "Kapsayıcılardan çıkıldığında izlenecek ilkeyi yeniden başlatın."
 
-#: src/ImageRunModal.jsx:894
+#: src/ImageRunModal.jsx:940
 msgid ""
 "Restart policy to follow when containers exit. Using linger for auto-"
 "starting containers may not work in some circumstances, such as when "
@@ -1036,7 +1060,7 @@ msgstr "$0 kapsayıcısını geri yükle"
 msgid "Restore with established TCP connections"
 msgstr "Kurulu TCP bağlantıları ile geri yükle"
 
-#: src/ImageRunModal.jsx:731
+#: src/ImageRunModal.jsx:777
 msgid "Restricted by user account permissions"
 msgstr "Kullanıcı hesabı izinleri tarafından kısıtlanmış"
 
@@ -1044,7 +1068,7 @@ msgstr "Kullanıcı hesabı izinleri tarafından kısıtlanmış"
 msgid "Resume"
 msgstr "Sürdür"
 
-#: src/ContainerHealthLogs.jsx:68 src/ImageRunModal.jsx:1044
+#: src/ContainerHealthLogs.jsx:68 src/ImageRunModal.jsx:1095
 msgid "Retries"
 msgstr "Yeniden denemeler"
 
@@ -1052,15 +1076,15 @@ msgstr "Yeniden denemeler"
 msgid "Retry another term."
 msgstr "Başka bir terimi yeniden deneyin."
 
-#: src/Containers.jsx:272 src/ContainerHealthLogs.jsx:98
+#: src/ContainerHealthLogs.jsx:98 src/Containers.jsx:272
 msgid "Run health check"
 msgstr "Sağlık denetimini çalıştır"
 
-#: src/ImageUsedBy.jsx:35 src/util.js:22 src/util.js:25
+#: src/ImageUsedBy.jsx:35 src/util.js:23 src/util.js:26
 msgid "Running"
 msgstr "Çalışıyor"
 
-#: src/Volume.jsx:34
+#: src/Volume.jsx:71
 msgid "SELinux"
 msgstr "SELinux"
 
@@ -1068,7 +1092,7 @@ msgstr "SELinux"
 msgid "Search by name or description"
 msgstr "Ada veya açıklamaya göre ara"
 
-#: src/ImageRunModal.jsx:653
+#: src/ImageRunModal.jsx:689
 msgid "Search by registry"
 msgstr "Kayıt defterine göre ara"
 
@@ -1080,7 +1104,7 @@ msgstr "Ara"
 msgid "Search for an image"
 msgstr "Kalıp ara"
 
-#: src/ImageRunModal.jsx:786
+#: src/ImageRunModal.jsx:832
 msgid "Search string or container location"
 msgstr "Arama dizgisi veya kapsayıcı konumu"
 
@@ -1088,15 +1112,15 @@ msgstr "Arama dizgisi veya kapsayıcı konumu"
 msgid "Searching..."
 msgstr "Aranıyor..."
 
-#: src/ImageRunModal.jsx:764
+#: src/ImageRunModal.jsx:810
 msgid "Searching: $0"
 msgstr "Aranan: $0"
 
-#: src/Volume.jsx:39
+#: src/Volume.jsx:76
 msgid "Shared"
 msgstr "Paylaşılan"
 
-#: src/Containers.jsx:759
+#: src/Containers.jsx:761
 msgid "Show"
 msgstr "Göster"
 
@@ -1120,11 +1144,11 @@ msgstr "Daha fazlasını göster"
 msgid "Size"
 msgstr "Boyut"
 
-#: src/Containers.jsx:238 src/app.jsx:683 src/PodActions.jsx:135
+#: src/app.jsx:683 src/Containers.jsx:238 src/PodActions.jsx:135
 msgid "Start"
 msgstr "Başlat"
 
-#: src/ContainerHealthLogs.jsx:72 src/ImageRunModal.jsx:1019
+#: src/ContainerHealthLogs.jsx:72 src/ImageRunModal.jsx:1070
 msgid "Start period"
 msgstr "Başlangıç süresi"
 
@@ -1140,7 +1164,7 @@ msgstr "Kalıpları aramak için yazmaya başlayın."
 msgid "Started at"
 msgstr "Başlama zamanı"
 
-#: src/Containers.jsx:605 src/ContainerDetails.jsx:67
+#: src/ContainerDetails.jsx:67 src/Containers.jsx:607
 msgid "State"
 msgstr "Durum"
 
@@ -1148,12 +1172,12 @@ msgstr "Durum"
 msgid "Status"
 msgstr "Durum"
 
-#: src/Containers.jsx:191 src/ContainerHealthLogs.jsx:41
-#: src/ImageRunModal.jsx:58 src/PodActions.jsx:87
+#: src/ContainerHealthLogs.jsx:41 src/Containers.jsx:191
+#: src/ImageRunModal.jsx:60 src/PodActions.jsx:87
 msgid "Stop"
 msgstr "Durdur"
 
-#: src/util.js:22 src/util.js:25
+#: src/util.js:23 src/util.js:26
 msgid "Stopped"
 msgstr "Durduruldu"
 
@@ -1161,8 +1185,8 @@ msgstr "Durduruldu"
 msgid "Support preserving established TCP connections"
 msgstr "Kurulu TCP bağlantılarını korumayı destekle"
 
-#: src/PodCreateModal.jsx:110 src/ContainerHeader.jsx:20
-#: src/ImageRunModal.jsx:708 src/ImageRunModal.jsx:743
+#: src/ImageRunModal.jsx:754 src/ImageRunModal.jsx:789
+#: src/ContainerHeader.jsx:20 src/PodCreateModal.jsx:110
 msgid "System"
 msgstr "Sistem"
 
@@ -1170,11 +1194,11 @@ msgstr "Sistem"
 msgid "System Podman service is also available"
 msgstr "Sistem Podman hizmeti de kullanılabilir"
 
-#: src/PublishPort.jsx:70
+#: src/PublishPort.jsx:128
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ContainerCommitModal.jsx:98 src/ImageSearchModal.jsx:139
+#: src/ImageSearchModal.jsx:139 src/ContainerCommitModal.jsx:98
 msgid "Tag"
 msgstr "Etiket"
 
@@ -1186,11 +1210,11 @@ msgstr "Etiketler"
 msgid "The Cockpit user interface for Podman containers."
 msgstr "Podman kapsayıcıları için Cockpit kullanıcı arayüzü."
 
-#: src/ImageRunModal.jsx:1023
+#: src/ImageRunModal.jsx:1074
 msgid "The initialization time needed for a container to bootstrap."
 msgstr "Bir kapsayıcının önyükleme yapması için gereken başlatma süresi."
 
-#: src/ImageRunModal.jsx:998
+#: src/ImageRunModal.jsx:1049
 msgid ""
 "The maximum time allowed to complete the health check before an interval is "
 "considered failed."
@@ -1198,7 +1222,7 @@ msgstr ""
 "Bir aralığın başarısız olduğu kabul edilmeden önce sağlık denetimini "
 "tamamlanması için izin verilen en fazla süre."
 
-#: src/ImageRunModal.jsx:1048
+#: src/ImageRunModal.jsx:1099
 msgid ""
 "The number of retries allowed before a healthcheck is considered to be "
 "unhealthy."
@@ -1206,7 +1230,7 @@ msgstr ""
 "Bir sağlık denetiminden önce izin verilen yeniden deneme sayısı sağlıksız "
 "olarak kabul edilir."
 
-#: src/ContainerHealthLogs.jsx:76 src/ImageRunModal.jsx:994
+#: src/ContainerHealthLogs.jsx:76 src/ImageRunModal.jsx:1045
 msgid "Timeout"
 msgstr "Zaman aşımı"
 
@@ -1218,7 +1242,7 @@ msgstr "Sorun Giderme"
 msgid "Type to filter…"
 msgstr "Süzmek için yazın…"
 
-#: src/PublishPort.jsx:71
+#: src/PublishPort.jsx:129
 msgid "UDP"
 msgstr "UDP"
 
@@ -1250,29 +1274,29 @@ msgstr "Kullanıcı"
 msgid "User Podman service is also available"
 msgstr "Kullanıcı Podman hizmeti de kullanılabilir"
 
-#: src/PodCreateModal.jsx:115 src/ImageRunModal.jsx:725
-#: src/ImageRunModal.jsx:749
+#: src/ImageRunModal.jsx:771 src/ImageRunModal.jsx:795
+#: src/PodCreateModal.jsx:115
 msgid "User:"
 msgstr "Kullanıcı:"
 
-#: src/ImageRunModal.jsx:94
+#: src/Env.jsx:72
 msgid "Value"
 msgstr "Değer"
 
-#: src/PodCreateModal.jsx:134 src/ContainerIntegration.jsx:110
-#: src/ImageRunModal.jsx:945
+#: src/ContainerIntegration.jsx:110 src/ImageRunModal.jsx:992
+#: src/PodCreateModal.jsx:134
 msgid "Volumes"
 msgstr "Birimler"
 
-#: src/ContainerHealthLogs.jsx:80 src/ImageRunModal.jsx:1067
+#: src/ContainerHealthLogs.jsx:80 src/ImageRunModal.jsx:1118
 msgid "When unhealthy"
 msgstr "Sağlıksız olduğunda"
 
-#: src/ImageRunModal.jsx:822
+#: src/ImageRunModal.jsx:868
 msgid "With terminal"
 msgstr "Terminal ile"
 
-#: src/Volume.jsx:29
+#: src/Volume.jsx:66
 msgid "Writable"
 msgstr "Yazılabilir"
 
@@ -1280,11 +1304,11 @@ msgstr "Yazılabilir"
 msgid "container"
 msgstr "kapsayıcı"
 
-#: src/ImageRunModal.jsx:331
+#: src/ImageRunModal.jsx:286
 msgid "downloading"
 msgstr "indiriliyor"
 
-#: src/ImageRunModal.jsx:762
+#: src/ImageRunModal.jsx:808
 msgid "host[:port]/[user]/container[:tag]"
 msgstr "anamakine[:b.noktası]/[kullanıcı]/kapsayıcı[:etiket]"
 
@@ -1304,7 +1328,7 @@ msgstr "yok"
 msgid "not available"
 msgstr "kullanılabilir değil"
 
-#: src/Containers.jsx:880
+#: src/Containers.jsx:882
 msgid "pod group"
 msgstr "bölme grubu"
 
@@ -1312,12 +1336,12 @@ msgstr "bölme grubu"
 msgid "podman"
 msgstr "podman"
 
-#: src/Containers.jsx:568
+#: src/Containers.jsx:570
 msgid "ports"
 msgstr "bağlantı noktaları"
 
-#: src/ImageRunModal.jsx:991 src/ImageRunModal.jsx:1016
-#: src/ImageRunModal.jsx:1041
+#: src/ImageRunModal.jsx:1042 src/ImageRunModal.jsx:1067
+#: src/ImageRunModal.jsx:1092
 msgid "seconds"
 msgstr "saniye"
 
@@ -1325,8 +1349,8 @@ msgstr "saniye"
 msgid "select all"
 msgstr "tümünü seç"
 
-#: src/Containers.jsx:428 src/PruneUnusedContainersModal.jsx:28
-#: src/Images.jsx:132 src/ImageSearchModal.jsx:160
+#: src/Containers.jsx:428 src/ImageSearchModal.jsx:160
+#: src/PruneUnusedContainersModal.jsx:28 src/Images.jsx:132
 msgid "system"
 msgstr "sistem"
 
@@ -1339,7 +1363,7 @@ msgstr "kullanılmayan"
 msgid "user:"
 msgstr "kullanıcı:"
 
-#: src/Containers.jsx:583
+#: src/Containers.jsx:585
 msgid "volumes"
 msgstr "birimler"
 
