@@ -2698,7 +2698,19 @@ class TestApplication(testlib.MachineCase):
         self.login(auth)
 
         b.click("#containers-containers-create-pod-btn")
+        b.set_input_text("#create-pod-dialog-name", "")
+        b.wait_visible(".pf-v5-c-modal-box__footer #create-pod-create-btn:disabled")
+        b.wait_in_text("#pod-name-group .pf-v5-c-helper-text__item-text", "Invalid characters")
+
         b.set_input_text("#create-pod-dialog-name", pod_name)
+        b.wait_visible(".pf-v5-c-modal-box__footer #create-pod-create-btn:not(:disabled)")
+
+        b.click('.publish-port-form .btn-add')
+        b.set_input_text("#create-pod-dialog-publish-0-container-port-group input", "-1")
+        b.click(".pf-v5-c-modal-box__footer #create-pod-create-btn")
+        b.wait_in_text("#create-pod-dialog-publish-0-container-port-group .pf-v5-c-helper-text__item-text",
+                       "1 to 65535")
+        b.click("#create-pod-dialog-publish-0-btn-close")
 
         if auth:
             b.wait_visible("#create-pod-dialog-owner-system:checked")
