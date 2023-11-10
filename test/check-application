@@ -2321,6 +2321,8 @@ class TestApplication(testlib.MachineCase):
         b.click('.volume-form .btn-add')
         b.set_input_text("#run-image-dialog-volume-0-container-path-group input", "/somepath")
         validateField("#run-image-dialog-volume-0-container-path-group", "", "not be empty", resetValue="/somepath")
+        validateField("#run-image-dialog-volume-0-host-path-group", "/non-existant/", "No such file or directory",
+                      resetValue="")
 
         # Test validation of environment variables
         b.click('.env-form .btn-add')
