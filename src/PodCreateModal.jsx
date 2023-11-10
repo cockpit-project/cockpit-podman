@@ -9,7 +9,7 @@ import * as dockerNames from 'docker-names';
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import { DynamicListForm } from 'DynamicListForm.jsx';
 import { ErrorNotification } from './Notification.jsx';
-import { PublishPort } from './PublishPort.jsx';
+import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { Volume } from './Volume.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
@@ -23,12 +23,12 @@ const systemOwner = "system";
 export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvailable }) => {
     const { version, selinuxAvailable } = utils.usePodmanInfo();
     const [podName, setPodName] = useState(dockerNames.getRandomName());
-    const [nameError, setNameError] = useState(null);
     const [publish, setPublish] = useState([]);
     const [volumes, setVolumes] = useState([]);
     const [owner, setOwner] = useState(systemServiceAvailable ? systemOwner : user);
     const [dialogError, setDialogError] = useState(null);
     const [dialogErrorDetail, setDialogErrorDetail] = useState(null);
+    const [validationFailed, setValidationFailed] = useState({});
     const Dialogs = useDialogs();
 
     const getCreateConfig = () => {
@@ -66,6 +66,22 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
         return createConfig;
     };
 
+    /* Updates a validation object of the whole dynamic list's form (e.g. the whole port-mapping form)
+    *
+    * Arguments
+    *   - key: [publish/volumes/env] - Specifies the validation of which dynamic form of the Image run dialog is being updated
+    *   - value: An array of validation errors of the form. Each item of the array represents a row of the dynamic list.
+    *            Index needs to corellate with a row number
+    */
+    const dynamicListOnValidationChange = (value, key) => {
+        setValidationFailed(prevState => {
+            prevState[key] = value;
+            if (prevState[key].every(a => a === undefined))
+                delete prevState[key];
+            return prevState;
+        });
+    };
+
     const createPod = (isSystem, createConfig) => {
         client.createPod(isSystem, createConfig)
                 .then(() => Dialogs.close())
@@ -76,33 +92,68 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     };
 
     const onCreateClicked = () => {
+        if (!validateForm())
+            return;
         const createConfig = getCreateConfig();
         createPod(owner === systemOwner, createConfig);
     };
 
-    const onValueChanged = (key, value) => {
-        if (key === "podName") {
-            setPodName(value);
-        }
-        if (utils.is_valid_container_name(value)) {
-            setNameError(null);
-        } else {
-            setNameError(_("Invalid characters. Name can only contain letters, numbers, and certain punctuation (_ . -)."));
-        }
+    const isFormInvalid = validationFailed => {
+        const groupHasError = row => Object.values(row)
+                .filter(val => val) // Filter out empty/undefined properties
+                .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+
+        // If at least one group is invalid, then the whole form is invalid
+        return validationFailed.publish?.some(groupHasError) ||
+            !!validationFailed.podName;
+    };
+
+    const validatePodName = value => {
+        if (!utils.is_valid_container_name(value))
+            return _("Invalid characters. Name can only contain letters, numbers, and certain punctuation (_ . -).");
+    };
+
+    const validateForm = () => {
+        const newValidationFailed = { };
+
+        const publishValidation = publish.map(a => {
+            return {
+                IP: validatePublishPort(a.IP, "IP"),
+                hostPort: validatePublishPort(a.hostPort, "hostPort"),
+                containerPort: validatePublishPort(a.containerPort, "containerPort"),
+            };
+        });
+        if (publishValidation.some(entry => Object.keys(entry).length > 0))
+            newValidationFailed.publish = publishValidation;
+
+        const podNameValidation = validatePodName(podName);
+
+        if (podNameValidation)
+            newValidationFailed.containerName = podNameValidation;
+
+        setValidationFailed(newValidationFailed);
+        return !isFormInvalid(newValidationFailed);
     };
 
     const defaultBody = (
         <Form>
             {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
-            <FormGroup fieldId='create-pod-dialog-name' label={_("Name")} className="ct-m-horizontal">
+            <FormGroup id="pod-name-group" fieldId='create-pod-dialog-name' label={_("Name")} className="ct-m-horizontal">
                 <TextInput id='create-pod-dialog-name'
-                       className="pod-name"
-                       placeholder={_("Pod name")}
-                       value={podName}
-                       validated={nameError ? "error" : "default"}
-                       aria-label={nameError}
-                       onChange={(_event, value) => onValueChanged('podName', value)} />
-                <FormHelper fieldId="create-pod-dialog-name" helperTextInvalid={nameError} />
+                           className="pod-name"
+                           placeholder={_("Pod name")}
+                           value={podName}
+                           validated={validationFailed.podName ? "error" : "default"}
+                           onChange={(_, value) => {
+                               utils.validationClear(validationFailed, "podName", (value) => setValidationFailed(value));
+                               utils.validationDebounce(() => {
+                                   const delta = validatePodName(value);
+                                   if (delta)
+                                       setValidationFailed(prevState => { return { ...prevState, podName: delta } });
+                               });
+                               setPodName(value);
+                           }} />
+                <FormHelper fieldId="create-pod-dialog-name" helperTextInvalid={validationFailed?.podName} />
             </FormGroup>
             { userServiceAvailable && systemServiceAvailable &&
                 <FormGroup isInline hasNoPaddingTop fieldId='create-pod-dialog-owner' label={_("Owner")} className="ct-m-horizontal">
@@ -123,6 +174,8 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
                         formclass='publish-port-form'
                         label={_("Port mapping")}
                         actionLabel={_("Add port mapping")}
+                        validationFailed={validationFailed.publish}
+                        onValidationChange={value => dynamicListOnValidationChange(value, "publish")}
                         onChange={value => setPublish(value)}
                         default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                         itemcomponent={ <PublishPort />} />
@@ -150,7 +203,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
                 title={_("Create pod")}
                 footer={<>
                     <Button variant='primary' id="create-pod-create-btn" onClick={() => onCreateClicked()}
-                            isDisabled={nameError}>
+                            isDisabled={isFormInvalid(validationFailed)}>
                         {_("Create")}
                     </Button>
                     <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
