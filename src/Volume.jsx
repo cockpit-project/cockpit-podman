@@ -17,6 +17,8 @@ const _ = cockpit.gettext;
 export function validateVolume(value, key) {
     switch (key) {
     case "hostPath":
+        if (value)
+            return value;
         break;
     case "containerPath":
         if (!value)
@@ -38,9 +40,9 @@ export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, 
             >
                 <FileAutoComplete id={id + "-host-path"}
                     value={item.hostPath || ''}
-                    onChange={value => {
+                    onChange={(value, error) => {
                         utils.validationClear(validationFailed, "hostPath", onValidationChange);
-                        utils.validationDebounce(() => onValidationChange({ ...validationFailed, hostPath: validateVolume(value, "hostPath") }));
+                        utils.validationDebounce(() => onValidationChange({ ...validationFailed, hostPath: validateVolume(error, "hostPath") }));
                         onChange(idx, 'hostPath', value);
                     }} />
                 <FormHelper helperTextInvalid={validationFailed?.hostPath} />

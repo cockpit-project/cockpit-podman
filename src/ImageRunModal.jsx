@@ -624,8 +624,8 @@ export class ImageRunModal extends React.Component {
             validationFailed.publish = publishValidation;
 
         const volumesValidation = volumes.map(a => {
+            // We can't validate hostPath as that happens via an error callback.
             return {
-                hostPath: validateVolume(a.hostPath, "hostPath"),
                 containerPath: validateVolume(a.containerPath, "containerPath"),
             };
         });
