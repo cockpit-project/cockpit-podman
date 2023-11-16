@@ -877,6 +877,8 @@ class TestApplication(testlib.MachineCase):
         b.click("#create-image-image-select-typeahead")
         b.wait_visible(f".pf-v5-c-select__menu-item:contains('{IMG_REGISTRY}')")
         b.wait_not_present(".pf-v5-c-select__menu-item:contains('none')")
+        b.click(".pf-v5-c-modal-box .btn-cancel")
+        b.wait_not_present(".pf-v5-c-modal-box")
 
     def testCommitUser(self):
         self._testCommit(False)
@@ -1052,11 +1054,11 @@ class TestApplication(testlib.MachineCase):
                 b.click(f".pf-v5-c-data-list .image-name:contains({self.imageName})")
                 b.wait_visible("div.pf-v5-c-modal-box footer button:contains(Download):not([disabled])")
                 b.click("div.pf-v5-c-modal-box footer button:contains(Download)")
+                b.wait_not_present("div.pf-v5-c-modal-box")
 
                 return self
 
             def expectDownloadErrorForNonExistingTag(self):
-                b.wait_not_present('div.pf-v5-c-modal-box')
                 title = f"Danger alert:Failed to download image localhost:5000/{self.imageName}:{self.imageTag}"
                 b.wait_visible(f'h4.pf-v5-c-alert__title:contains("{title}")')
 
@@ -1064,6 +1066,8 @@ class TestApplication(testlib.MachineCase):
 
             def expectSearchErrorForNotExistingImage(self):
                 b.wait_visible(f".pf-v5-c-modal-box__body:contains(No results for {self.imageName})")
+                b.click(".pf-v5-c-modal-box button.btn-cancel")
+                b.wait_not_present(".pf-v5-c-modal-box__body")
 
                 return self
 
