@@ -804,7 +804,7 @@ class TestApplication(testlib.MachineCase):
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX}:4']"))
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
-        b.wait_not_in_text("#containers-images", busybox_sel)
+        b.wait_not_present(busybox_sel)
 
         # Check that we correctly show networking information
         # Rootless don't have this info
@@ -840,7 +840,7 @@ class TestApplication(testlib.MachineCase):
         b.click(alpine_sel + " button.btn-delete")
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
-        b.wait_not_in_text("#containers-images", alpine_sel)
+        b.wait_not_present(alpine_sel)
 
         b.wait_collected_text("#containers-containers .container-name", expected_ws)
         self.execute(auth, f"podman run -d --name c --stop-timeout 0 {IMG_REGISTRY} sh")
