@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import cockpit from 'cockpit';
 
 import { debounce } from 'throttle-debounce';
-import * as dfnlocales from 'date-fns/locale/index.js';
+import * as dfnlocales from 'date-fns/locale';
 import { formatRelative } from 'date-fns';
 const _ = cockpit.gettext;
 
