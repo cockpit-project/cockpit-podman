@@ -887,7 +887,8 @@ class TestApplication(testlib.MachineCase):
         b.click(intermediate_image_sel + " button.btn-delete")
         self.confirm_modal("Delete")
         b.wait_not_present(intermediate_image_sel)
-        # Delete intermediate image which is in use
+
+        # Create intermediate image and use it in a container
         tmpdir = self.execute(auth, "mktemp -d").strip()
         self.execute(auth, f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Dockerfile")
         IMG_INTERMEDIATE = 'localhost/test-intermediate'
@@ -895,6 +896,10 @@ class TestApplication(testlib.MachineCase):
         b.click(f'#containers-images tbody tr:contains("{IMG_INTERMEDIATE}") .ct-container-create')
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
         b.click("#create-image-create-btn")
+        b.wait_not_present("div.pf-v5-c-modal-box")
+        self.waitContainerRow(IMG_INTERMEDIATE)
+
+        # Delete intermediate image which is in use
         self.execute(auth, f"podman untag {IMG_INTERMEDIATE}")
         b.click(intermediate_image_sel + " .pf-v5-c-dropdown__toggle")
         b.click(intermediate_image_sel + " button.btn-delete")
