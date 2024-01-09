@@ -26,7 +26,7 @@ import rest from './rest.js';
 import cockpit from 'cockpit';
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
-import { DynamicListForm } from 'DynamicListForm.jsx';
+import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
 import { validateVolume, Volume } from './Volume.jsx';
 import { EnvVar, validateEnvVar } from './Env.jsx';
 
@@ -166,9 +166,9 @@ export class ImageRunModal extends React.Component {
             createConfig.resource_limits = resourceLimit;
         }
         createConfig.terminal = this.state.hasTTY;
-        if (this.state.publish.length > 0)
+        if (this.state.publish.some(port => port !== undefined))
             createConfig.portmappings = this.state.publish
-                    .filter(port => port.containerPort)
+                    .filter(port => port?.containerPort)
                     .map(port => {
                         const pm = { container_port: parseInt(port.containerPort), protocol: port.protocol };
                         if (port.hostPort !== null)
@@ -177,14 +177,17 @@ export class ImageRunModal extends React.Component {
                             pm.host_ip = port.IP;
                         return pm;
                     });
-        if (this.state.env.length > 0) {
-            const ports = {};
-            this.state.env.forEach(item => { ports[item.envKey] = item.envValue });
-            createConfig.env = ports;
+        if (this.state.env.some(item => item !== undefined)) {
+            const envs = {};
+            this.state.env.forEach(item => {
+                if (item !== undefined)
+                    envs[item.envKey] = item.envValue;
+            });
+            createConfig.env = envs;
         }
-        if (this.state.volumes.length > 0) {
+        if (this.state.volumes.some(volume => volume !== undefined)) {
             createConfig.mounts = this.state.volumes
-                    .filter(volume => volume.hostPath && volume.containerPath)
+                    .filter(volume => volume?.hostPath && volume?.containerPath)
                     .map(volume => {
                         const record = { source: volume.hostPath, destination: volume.containerPath, type: "bind" };
                         record.options = [];
@@ -589,7 +592,7 @@ export class ImageRunModal extends React.Component {
     };
 
     isFormInvalid = validationFailed => {
-        const groupHasError = row => Object.values(row)
+        const groupHasError = row => row && Object.values(row)
                 .filter(val => val) // Filter out empty/undefined properties
                 .length > 0; // If one field has error, the whole group (dynamicList) is invalid
 
@@ -614,6 +617,9 @@ export class ImageRunModal extends React.Component {
         const validationFailed = { };
 
         const publishValidation = publish.map(a => {
+            if (a === undefined)
+                return undefined;
+
             return {
                 IP: validatePublishPort(a.IP, "IP"),
                 hostPort: validatePublishPort(a.hostPort, "hostPort"),
@@ -624,6 +630,9 @@ export class ImageRunModal extends React.Component {
             validationFailed.publish = publishValidation;
 
         const volumesValidation = volumes.map(a => {
+            if (a === undefined)
+                return undefined;
+
             return {
                 hostPath: validateVolume(a.hostPath, "hostPath"),
                 containerPath: validateVolume(a.containerPath, "containerPath"),
@@ -633,6 +642,9 @@ export class ImageRunModal extends React.Component {
             validationFailed.volumes = volumesValidation;
 
         const envValidation = env.map(a => {
+            if (a === undefined)
+                return undefined;
+
             return {
                 envKey: validateEnvVar(a.envKey, "envKey"),
                 envValue: validateEnvVar(a.envValue, "envValue"),
