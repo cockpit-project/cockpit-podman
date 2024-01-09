@@ -1796,10 +1796,10 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-publish-2-host-port', '7001')
         b.click('#run-image-dialog-publish-2-btn-close')
         b.click('.publish-port-form .btn-add')
-        b.set_input_text('#run-image-dialog-publish-2-container-port', '8001')
+        b.set_input_text('#run-image-dialog-publish-3-container-port', '8001')
         b.click('.publish-port-form .btn-add')
-        b.set_input_text('#run-image-dialog-publish-3-ip-address', '127.0.0.2')
-        b.set_input_text('#run-image-dialog-publish-3-container-port', '9001')
+        b.set_input_text('#run-image-dialog-publish-4-ip-address', '127.0.0.2')
+        b.set_input_text('#run-image-dialog-publish-4-container-port', '9001')
 
         # Configure env
         b.click('.env-form .btn-add')
@@ -1814,19 +1814,19 @@ class TestApplication(testlib.MachineCase):
         b.click('#run-image-dialog-env-2-btn-close')
         b.click('.env-form .btn-add')
         # Test inputting an key=var entry
-        b.set_val('#run-image-dialog-env-2-value',
+        b.set_val('#run-image-dialog-env-3-value',
                   "RHUBARB=STRAWBERRY DURIAN=LEMON TEST_URL=wss://cockpit/?start=1&stop=0")
         # set_val does not trigger onChange so append a space.
-        b.set_input_text('#run-image-dialog-env-2-value', ' ', append=True, value_check=False)
+        b.set_input_text('#run-image-dialog-env-3-value', ' ', append=True, value_check=False)
 
         b.click('.env-form .btn-add')
-        b.set_input_text('#run-image-dialog-env-5-key', 'HOSTNAME')
-        b.set_input_text('#run-image-dialog-env-5-value', 'busybox')
+        b.set_input_text('#run-image-dialog-env-6-key', 'HOSTNAME')
+        b.set_input_text('#run-image-dialog-env-6-value', 'busybox')
 
         # Test inputting a var with = in it doesn't reset key
         b.click('.env-form .btn-add')
-        b.set_input_text('#run-image-dialog-env-6-key', 'TEST')
-        b.set_input_text('#run-image-dialog-env-6-value', 'REBASE=1')
+        b.set_input_text('#run-image-dialog-env-7-key', 'TEST')
+        b.set_input_text('#run-image-dialog-env-7-value', 'REBASE=1')
 
         # Configure volumes
         b.click('.volume-form .btn-add')
@@ -1857,13 +1857,13 @@ class TestApplication(testlib.MachineCase):
                             skip_layouts=["rtl"])
 
         if self.has_selinux:
-            b.set_val('#run-image-dialog-volume-1-selinux', "Z")
+            b.set_val('#run-image-dialog-volume-2-selinux', "Z")
         else:
-            b.wait_not_present('#run-image-dialog-volume-1-selinux')
+            b.wait_not_present('#run-image-dialog-volume-2-selinux')
 
-        b.set_file_autocomplete_val("#run-image-dialog-volume-1 .pf-v5-c-select", rwdir)
+        b.set_file_autocomplete_val("#run-image-dialog-volume-2 .pf-v5-c-select", rwdir)
         b.key_press(["\r"])
-        b.set_input_text('#run-image-dialog-volume-1-container-path', '/tmp/rw')
+        b.set_input_text('#run-image-dialog-volume-2-container-path', '/tmp/rw')
         rw_label = m.execute(f"ls -dZ {rwdir}").split(" ")[0]
 
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
@@ -2759,16 +2759,16 @@ class TestApplication(testlib.MachineCase):
 
         # Ports
         b.click('.publish-port-form .btn-add')
-        b.set_input_text('#create-pod-dialog-publish-0-host-port', '6000')
-        b.set_input_text('#create-pod-dialog-publish-0-container-port', '5000')
+        b.set_input_text('#create-pod-dialog-publish-1-host-port', '6000')
+        b.set_input_text('#create-pod-dialog-publish-1-container-port', '5000')
         b.click('.publish-port-form .btn-add')
-        b.set_input_text('#create-pod-dialog-publish-1-ip-address', '127.0.0.1')
-        b.set_input_text('#create-pod-dialog-publish-1-host-port', '6001')
-        b.set_input_text('#create-pod-dialog-publish-1-container-port', '5001')
-        b.set_val('#create-pod-dialog-publish-1-protocol', "udp")
+        b.set_input_text('#create-pod-dialog-publish-2-ip-address', '127.0.0.1')
+        b.set_input_text('#create-pod-dialog-publish-2-host-port', '6001')
+        b.set_input_text('#create-pod-dialog-publish-2-container-port', '5001')
+        b.set_val('#create-pod-dialog-publish-2-protocol', "udp")
         b.click('.publish-port-form .btn-add')
-        b.set_input_text('#create-pod-dialog-publish-2-ip-address', '127.0.0.2')
-        b.set_input_text('#create-pod-dialog-publish-2-container-port', '9001')
+        b.set_input_text('#create-pod-dialog-publish-3-ip-address', '127.0.0.2')
+        b.set_input_text('#create-pod-dialog-publish-3-container-port', '9001')
 
         # Volumes
         if self.machine.image not in ["ubuntu-2204"]:

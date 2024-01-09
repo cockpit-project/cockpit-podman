@@ -7,7 +7,7 @@ import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput"
 import * as dockerNames from 'docker-names';
 
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
-import { DynamicListForm } from 'DynamicListForm.jsx';
+import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
 import { ErrorNotification } from './Notification.jsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { Volume } from './Volume.jsx';
@@ -39,7 +39,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
 
         if (publish.length > 0)
             createConfig.portmappings = publish
-                    .filter(port => port.containerPort)
+                    .filter(port => port?.containerPort)
                     .map(port => {
                         const pm = { container_port: parseInt(port.containerPort), protocol: port.protocol };
                         if (port.hostPort !== null)
@@ -51,7 +51,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
 
         if (volumes.length > 0) {
             createConfig.mounts = volumes
-                    .filter(volume => volume.hostPath && volume.containerPath)
+                    .filter(volume => volume?.hostPath && volume?.containerPath)
                     .map(volume => {
                         const record = { source: volume.hostPath, destination: volume.containerPath, type: "bind" };
                         record.options = [];
@@ -99,7 +99,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     };
 
     const isFormInvalid = validationFailed => {
-        const groupHasError = row => Object.values(row)
+        const groupHasError = row => row && Object.values(row)
                 .filter(val => val) // Filter out empty/undefined properties
                 .length > 0; // If one field has error, the whole group (dynamicList) is invalid
 
@@ -117,14 +117,17 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
         const newValidationFailed = { };
 
         const publishValidation = publish.map(a => {
+            if (a === undefined)
+                return undefined;
+
             return {
                 IP: validatePublishPort(a.IP, "IP"),
                 hostPort: validatePublishPort(a.hostPort, "hostPort"),
                 containerPort: validatePublishPort(a.containerPort, "containerPort"),
             };
         });
-        if (publishValidation.some(entry => Object.keys(entry).length > 0))
-            newValidationFailed.publish = publishValidation;
+        if (publishValidation.some(entry => entry && Object.keys(entry).length > 0))
+            newValidationFailed.publish = publishValidation.filter(entry => entry !== undefined);
 
         const podNameValidation = validatePodName(podName);
 
