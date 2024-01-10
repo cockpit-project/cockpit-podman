@@ -670,7 +670,7 @@ export class ImageRunModal extends React.Component {
     *   - value: An array of validation errors of the form. Each item of the array represents a row of the dynamic list.
     *            Index needs to corellate with a row number
     */
-    dynamicListOnValidationChange = (value, key) => {
+    dynamicListOnValidationChange = (key, value) => {
         const validationFailedDelta = { ...this.state.validationFailed };
 
         validationFailedDelta[key] = value;
@@ -994,7 +994,7 @@ export class ImageRunModal extends React.Component {
                                  label={_("Port mapping")}
                                  actionLabel={_("Add port mapping")}
                                  validationFailed={dialogValues.validationFailed.publish}
-                                 onValidationChange={value => this.dynamicListOnValidationChange(value, "publish")}
+                                 onValidationChange={value => this.dynamicListOnValidationChange('publish', value)}
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                                  itemcomponent={ <PublishPort />} />
@@ -1004,7 +1004,7 @@ export class ImageRunModal extends React.Component {
                                  label={_("Volumes")}
                                  actionLabel={_("Add volume")}
                                  validationFailed={dialogValues.validationFailed.volumes}
-                                 onValidationChange={value => this.dynamicListOnValidationChange(value, "volumes")}
+                                 onValidationChange={value => this.dynamicListOnValidationChange('volumes', value)}
                                  onChange={value => this.onValueChanged('volumes', value)}
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
                                  options={{ selinuxAvailable }}
@@ -1016,7 +1016,7 @@ export class ImageRunModal extends React.Component {
                                  label={_("Environment variables")}
                                  actionLabel={_("Add variable")}
                                  validationFailed={dialogValues.validationFailed.env}
-                                 onValidationChange={value => this.dynamicListOnValidationChange(value, "env")}
+                                 onValidationChange={value => this.dynamicListOnValidationChange('env', value)}
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
