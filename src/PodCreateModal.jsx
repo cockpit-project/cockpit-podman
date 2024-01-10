@@ -73,7 +73,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     *   - value: An array of validation errors of the form. Each item of the array represents a row of the dynamic list.
     *            Index needs to corellate with a row number
     */
-    const dynamicListOnValidationChange = (value, key) => {
+    const dynamicListOnValidationChange = (key, value) => {
         setValidationFailed(prevState => {
             prevState[key] = value;
             if (prevState[key].every(a => a === undefined))
@@ -178,7 +178,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
                         label={_("Port mapping")}
                         actionLabel={_("Add port mapping")}
                         validationFailed={validationFailed.publish}
-                        onValidationChange={value => dynamicListOnValidationChange(value, "publish")}
+                        onValidationChange={value => dynamicListOnValidationChange('publish', value)}
                         onChange={value => setPublish(value)}
                         default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                         itemcomponent={ <PublishPort />} />
