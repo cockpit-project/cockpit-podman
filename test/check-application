@@ -2432,13 +2432,15 @@ class TestApplication(testlib.MachineCase):
         self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' healthy").strip(),
                          "{[true] 5s 5m25s 35s 2}")
 
+        # single successful health check
         b.wait_in_text(".ct-listing-panel-body tbody tr", "Passed health run")
-        b.wait_not_present(".ct-listing-panel-body tbody tr:nth-child(2)")
-        b.wait_visible(".ct-listing-panel-body tbody:nth-child(2) svg.green")
+        b.wait_visible(".ct-listing-panel-body tbody:nth-of-type(1) svg.green")
+        b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(2)")
 
-        # Trigger run manually
+        # Trigger run manually, adds one more healthy run
         self.performContainerAction("healthy", "Run health check")
-        b.wait_visible(".ct-listing-panel-body tbody tr:nth-child(2)")
+        b.wait_visible(".ct-listing-panel-body tbody:nth-of-type(2) svg.green")
+        b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(3)")
 
         self.toggleExpandedContainer("healthy")
 
@@ -2454,9 +2456,9 @@ class TestApplication(testlib.MachineCase):
 
         self.toggleExpandedContainer("sick")
         b.click(".pf-m-expanded button:contains('Health check')")
-        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(1)")
-        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(4)")
-        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody tr:nth-child(2) svg.red")
+        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(1)")
+        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(4)")
+        b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(2) svg.red")
         b.wait_visible('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak")')
         failures = int(b.text('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak") + dd'))
         self.assertGreater(failures, 3)
