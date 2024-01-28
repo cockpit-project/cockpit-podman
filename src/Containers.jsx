@@ -645,17 +645,20 @@ class Containers extends React.Component {
             // Remove infra containers
             filtered = filtered.filter(id => !this.props.containers[id].IsInfra);
 
+            const getHealth = id => {
+                const state = this.props.containers[id]?.State;
+                return state?.Health?.Status || state?.Healthcheck?.Status;
+            };
+
             filtered.sort((a, b) => {
                 // Show unhealthy containers first
-                if (this.props.containers[a] && this.props.containers[b]) {
-                    const a_health = this.props.containers[a].State.Health || this.props.containers[a].State.Healthcheck; // not-covered: only on old version
-                    const b_health = this.props.containers[b].State.Health || this.props.containers[b].State.Healthcheck; // not-covered: only on old version
-                    if (a_health.Status !== b_health.Status) {
-                        if (a_health.Status === "unhealthy")
-                            return -1;
-                        if (b_health.Status === "unhealthy")
-                            return 1;
-                    }
+                const a_health = getHealth(a);
+                const b_health = getHealth(b);
+                if (a_health !== b_health) {
+                    if (a_health === "unhealthy")
+                        return -1;
+                    if (b_health === "unhealthy")
+                        return 1;
                 }
                 // User containers are in front of system ones
                 if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
