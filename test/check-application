@@ -1636,8 +1636,7 @@ class TestApplication(testlib.MachineCase):
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
         sel = " span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
-        output = self.execute(auth, f"podman exec {container_name} ls -lh /latest || true").strip()
-        self.assertEqual('', output)
+        self.execute(auth, f"podman exec {container_name} test ! -e /latest")
 
         # Now that we have downloaded an image, verify that selecting download latest image
         # downloads the latest image we now push to the registry. Note this image has a /latest file
