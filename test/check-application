@@ -142,11 +142,11 @@ class TestApplication(testlib.MachineCase):
         self.addCleanup(self.admin_s.execute, "systemctl --user stop podman.service podman.socket || true")
         # Ubuntu 22.04 has old podman that does not know about --time
         if m.image == 'ubuntu-2204':
-            self.addCleanup(self.admin_s.execute, "podman rm --force --all || true", timeout=300)
-            self.addCleanup(self.admin_s.execute, "podman pod rm --force --all || true", timeout=300)
+            self.addCleanup(self.admin_s.execute, "podman rm --force --all", timeout=300)
+            self.addCleanup(self.admin_s.execute, "podman pod rm --force --all", timeout=300)
         else:
-            self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all || true")
-            self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all || true")
+            self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
+            self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
 
         # But disable it globally so that "systemctl --user disable" does what we expect
         m.execute("systemctl --global disable podman.socket")
