@@ -140,8 +140,8 @@ class TestApplication(testlib.MachineCase):
         self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
         self.restore_dir("/home/admin/.local/share/containers", reboot_safe=True)
         self.addCleanup(self.admin_s.execute, "systemctl --user stop podman.service podman.socket || true")
-        # Ubuntu has old podman that does not know about --time
-        if m.image.startswith("ubuntu"):
+        # Ubuntu 22.04 has old podman that does not know about --time
+        if m.image == 'ubuntu-2204':
             self.addCleanup(self.admin_s.execute, "podman rm --force --all || true", timeout=300)
             self.addCleanup(self.admin_s.execute, "podman pod rm --force --all || true", timeout=300)
         else:
@@ -2109,8 +2109,8 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#containers-filter', '')
 
         if not auth or not self.machine.ostree_image:  # don't kill ws container
-            # Ubuntu has old podman that does not know about --time
-            if not m.image.startswith("ubuntu"):
+            # Ubuntu 22.04 has old podman that does not know about --time
+            if m.image != 'ubuntu-2204':
                 # Remove all containers first as it is not possible to set --time 0 to rmi command
                 self.execute(auth, "podman rm --all --force --time 0")
             self.execute(auth, "podman rmi -af")
