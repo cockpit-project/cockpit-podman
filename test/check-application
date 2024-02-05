@@ -1452,8 +1452,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
 
         def disable_system():
-            self.execute(True, "systemctl disable --now podman.socket")
-            self.execute(True, "killall podman || true")
+            self.execute(True, "systemctl disable --now podman.socket; systemctl stop podman.service")
 
         def enable_system():
             self.execute(True, "systemctl enable --now podman.socket")
