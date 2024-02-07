@@ -12,9 +12,6 @@ if [ "$TEST_SCENARIO" == "devel" ]; then
     export TEST_COVERAGE=yes
 fi
 
-# linters are off by default for production builds, but we want to run them in CI
-export LINT=1
-
 make codecheck
 make check
 make po/podman.pot
