@@ -3,7 +3,6 @@
 # See https://github.com/cockpit-project/cockpit/blob/main/test/common/testlib.py
 # "class Browser" and "class MachineCase" for the available API.
 
-import json
 import os
 import sys
 import time
@@ -2816,14 +2815,6 @@ class TestApplication(testlib.MachineCase):
                        '127.0.0.1:6001 \u2192 5001/udp')
         b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Ports") + dd',
                        ' \u2192 9001/tcp')
-
-        # Validate ports via inspect as we do not show them in the UI yet
-        pod_info = json.loads(self.execute(auth, f"podman pod inspect {pod_name}").strip())
-        port_bindings = pod_info['InfraConfig']['PortBindings']
-        self.assertEqual(port_bindings['5000/tcp'], [{'HostIp': '', 'HostPort': '6000'}])
-        self.assertEqual(port_bindings['5001/udp'], [{'HostIp': '127.0.0.1', 'HostPort': '6001'}])
-        # Host port is randomized as not provided
-        self.assertTrue(port_bindings['9001/tcp'])
 
         # Create pod as admin
         if auth:
