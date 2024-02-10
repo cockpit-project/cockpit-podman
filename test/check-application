@@ -1903,9 +1903,9 @@ class TestApplication(testlib.MachineCase):
                            '7001/tcp')
 
         ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
-        self.assertIn('5000/tcp:[{ 6000}]', ports)
+        self.assertRegex(ports, r'5000/tcp:\[{(0.0.0.0)? 6000}\]')
         self.assertIn('5001/udp:[{127.0.0.1 6001}]', ports)
-        self.assertIn('8001/tcp:[{ ', ports)
+        self.assertIn('8001/tcp:[{', ports)
         self.assertIn('9001/tcp:[{127.0.0.2 ', ports)
         self.assertNotIn('7001/tcp', ports)
 
