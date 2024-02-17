@@ -161,9 +161,6 @@ export class VolumeCreateModal extends React.Component {
     handleTabClick = (event, tabIndex) => {
         // Prevent the form from being submitted.
         event.preventDefault();
-        this.setState({
-            activeTabKey: tabIndex,
-        });
     };
 
     handleOwnerSelect = (_, event) => {
