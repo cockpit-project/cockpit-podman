@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-    Dropdown,
-    DropdownToggle,
-    DropdownToggleAction,
-    DropdownItem,
-} from '@patternfly/react-core';
+import { Dropdown, DropdownItem, DropdownToggle, DropdownToggleAction } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
 
 export const DropDown = ({ actions }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +24,7 @@ export const DropDown = ({ actions }) => {
                         </DropdownToggleAction>
                     ]}
                     splitButtonVariant="action"
-                    onToggle={open => setIsOpen(open)}
+                    onToggle={(_event, open) => setIsOpen(open)}
                 />
             }
             isOpen={isOpen}

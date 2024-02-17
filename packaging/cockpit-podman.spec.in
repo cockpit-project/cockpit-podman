@@ -19,7 +19,7 @@ Name:           cockpit-podman
 Version:        %{VERSION}
 Release:        1%{?dist}
 Summary:        Cockpit component for Podman containers
-License:        LGPLv2+
+License:        LGPL-2.1-or-later
 URL:            https://github.com/cockpit-project/cockpit-podman
 
 Source0:        https://github.com/cockpit-project/%{name}/releases/download/%{version}/%{name}-%{version}.tar.xz
@@ -31,8 +31,14 @@ BuildRequires: gettext
 BuildRequires: libappstream-glib-devel
 %endif
 
-Requires:       cockpit-bridge >= 138
+Requires:       cockpit-bridge
 Requires:       podman >= 2.0.4
+# HACK https://github.com/containers/crun/issues/1091
+%if 0%{?centos} == 9
+Requires:       criu-libs
+%endif
+
+%{NPM_PROVIDES}
 
 %description
 The Cockpit user interface for Podman containers.
@@ -44,12 +50,12 @@ The Cockpit user interface for Podman containers.
 # Nothing to build
 
 %install
-%make_install
+%make_install PREFIX=/usr
 appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*
 
 %files
 %doc README.md
-%license LICENSE dist/index.js.LICENSE.txt.gz
+%license LICENSE dist/index.js.LEGAL.txt dist/index.css.LEGAL.txt
 %{_datadir}/cockpit/*
 %{_datadir}/metainfo/*
 

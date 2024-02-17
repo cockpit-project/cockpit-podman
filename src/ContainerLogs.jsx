@@ -20,6 +20,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Terminal } from "xterm";
+import { CanvasAddon } from 'xterm-addon-canvas';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
@@ -68,6 +69,9 @@ class ContainerLogs extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        // Connect channel when there is none and container started
+        if (!this.state.streamer && this.props.containerStatus === "running" && prevProps.containerStatus !== "running")
+            this.connectStream();
         if (prevProps.width !== this.props.width) {
             this.resize(this.props.width);
         }
@@ -79,7 +83,7 @@ class ContainerLogs extends React.Component {
         // 21 inner padding of xterm.js
         // xterm.js scrollbar 20
         const padding = 24 * 4 + 3 + 21 + 20;
-        const realWidth = this.view._core._renderService.dimensions.actualCellWidth;
+        const realWidth = this.view._core._renderService.dimensions.css.cell.width;
         const cols = Math.floor((width - padding) / realWidth);
         this.view.resize(cols, 24);
     }
@@ -98,6 +102,7 @@ class ContainerLogs extends React.Component {
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
             this.view.open(this.logRef.current);
+            this.view.loadAddon(new CanvasAddon());
             this.setState({ opened: true });
         }
         this.resize(this.props.width);
@@ -107,6 +112,7 @@ class ContainerLogs extends React.Component {
             method: "GET",
             path: client.VERSION + "libpod/containers/" + this.props.containerId + "/logs",
             body: "",
+            binary: true,
             params: {
                 follow: true,
                 stdout: true,
@@ -117,8 +123,9 @@ class ContainerLogs extends React.Component {
         connection.monitor(options, this.onStreamMessage, this.props.system, true)
                 .then(this.onStreamClose)
                 .catch(e => {
+                    const error = JSON.parse(new TextDecoder().decode(e.message));
                     this.setState({
-                        errorMessage: e.message,
+                        errorMessage: error.message,
                         streamer: null,
                     });
                 });
@@ -137,7 +144,7 @@ class ContainerLogs extends React.Component {
             }
             // First 8 bytes encode information about stream and frame
             // See 'Stream format' on https://docs.docker.com/engine/api/v1.40/#operation/ContainerAttach
-            this.view.writeln(data.substring(8));
+            this.view.writeln(data.slice(8));
         }
     }
 

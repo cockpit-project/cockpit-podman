@@ -1,16 +1,36 @@
+import React, { useContext } from "react";
+
 import cockpit from 'cockpit';
 
+import { debounce } from 'throttle-debounce';
 import * as dfnlocales from 'date-fns/locale';
 import { formatRelative } from 'date-fns';
 const _ = cockpit.gettext;
 
+export const PodmanInfoContext = React.createContext();
+export const usePodmanInfo = () => useContext(PodmanInfoContext);
+
+export const WithPodmanInfo = ({ value, children }) => {
+    return (
+        <PodmanInfoContext.Provider value={value}>
+            {children}
+        </PodmanInfoContext.Provider>
+    );
+};
+
 // https://github.com/containers/podman/blob/main/libpod/define/containerstate.go
-export const states = [_("Configured"), _("Created"), _("Running"), _("Stopped"), _("Paused"), _("Exited"), _("Removing")];
+// "Restarting" comes from special handling of restart case in Application.updateContainer()
+export const states = [_("Exited"), _("Paused"), _("Stopped"), _("Removing"), _("Configured"), _("Created"), _("Restart"), _("Running")];
 
 // https://github.com/containers/podman/blob/main/libpod/define/podstate.go
 export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"), _("Exited"), _("Error")];
 
 export const fallbackRegistries = ["docker.io", "quay.io"];
+
+export function debug(system, ...args) {
+    if (window.debugging === "all" || window.debugging?.includes("podman"))
+        console.debug("podman", system ? "system" : "user", ...args);
+}
 
 export function truncate_id(id) {
     if (!id) {
@@ -51,17 +71,6 @@ export function format_memory_and_limit(usage, limit) {
     } else {
         return "";
     }
-}
-
-export function getCommitArr(arr, cmd) {
-    const ret = [];
-    if (cmd === "ONBUILD") {
-        for (let i = 0; i < arr.length; i++) {
-            const temp = "ONBUILD=" + arr[i];
-            ret.push(temp);
-        }
-    }
-    return ret;
 }
 
 /*
@@ -153,29 +162,29 @@ export function unquote_cmdline(text) {
     return words;
 }
 
-/*
- * Return 1 if first argument is newer version, 0 if they are equal and -1 otherwise.
- * Both arguments are required to be strings, in form `\d(\.\d)*`.
- * Taken from cockpit `pkg/storaged/utils.js`.
- */
-export function compare_versions(a, b) {
-    function to_ints(str) {
-        return str.split(".").map(function (s) { return s ? parseInt(s, 10) : 0 });
-    }
-
-    const a_ints = to_ints(a);
-    const b_ints = to_ints(b);
-    const len = Math.min(a_ints.length, b_ints.length);
-
-    for (let i = 0; i < len; i++) {
-        if (a_ints[i] == b_ints[i])
-            continue;
-        return a_ints[i] - b_ints[i];
-    }
-
-    return a_ints.length - b_ints.length;
-}
-
 export function image_name(image) {
     return image.RepoTags ? image.RepoTags[0] : "<none>:<none>";
 }
+
+export function is_valid_container_name(name) {
+    return /^[a-zA-Z0-9][a-zA-Z0-9_\\.-]*$/.test(name);
+}
+
+/* Clears a single field in validationFailed object.
+ *
+ * Arguments:
+ *   - validationFailed (object): Object containing list of fields with validation error
+ *   - key (string): Specified which field from validationFailed object is clear
+ *   - onValidationChange (func)
+ */
+export const validationClear = (validationFailed, key, onValidationChange) => {
+    if (!validationFailed)
+        return;
+
+    const delta = { ...validationFailed };
+    delete delta[key];
+    onValidationChange(delta);
+};
+
+// This method needs to be outside of component as re-render would create a new instance of debounce
+export const validationDebounce = debounce(500, (validationHandler) => validationHandler());

@@ -9,11 +9,11 @@ on:
 
 jobs:
   po-refresh:
+    environment: self
     permissions:
-      contents: write
       pull-requests: write
       statuses: write
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Set up dependencies
         run: |
@@ -21,12 +21,13 @@ jobs:
           sudo apt install -y --no-install-recommends gettext
 
       - name: Clone source repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
           path: src
 
       - name: Clone weblate repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}-weblate
           path: weblate

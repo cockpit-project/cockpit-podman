@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
-import {
-    Button,
-    Card, CardBody, CardHeader, CardFooter,
-    Dropdown, DropdownItem,
-    Flex, FlexItem,
-    ExpandableSection,
-    KebabToggle,
-    Text, TextVariants
-} from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Card, CardBody, CardFooter, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
+import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
+import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { ExpandableSection } from "@patternfly/react-core/dist/esm/components/ExpandableSection";
+import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { cellWidth } from '@patternfly/react-table';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
 import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
 import ImageDetails from './ImageDetails.jsx';
+import ImageHistory from './ImageHistory.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import PruneUnusedImagesModal from './PruneUnusedImagesModal.jsx';
-import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
+import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import './Images.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
@@ -28,6 +26,8 @@ import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 const _ = cockpit.gettext;
 
 class Images extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -51,23 +51,31 @@ class Images extends React.Component {
                 })
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest");
-                    const errorDetail = (<>
-                        <p> {_("Error message")}:
-                            <samp>{cockpit.format("$0 $1", ex.message, ex.reason)}</samp>
-                        </p>
-                    </>);
+                    const errorDetail = (
+                        <>
+                            <p> {_("Error message")}:
+                                <samp>{cockpit.format("$0 $1", ex.message, ex.reason)}</samp>
+                            </p>
+                        </>
+                    );
                     this.setState({ imageDownloadInProgress: undefined });
                     this.props.onAddNotification({ type: 'danger', error, errorDetail });
                 });
     }
 
     onOpenNewImagesDialog = () => {
-        this.setState({ showSearchImageModal: true });
-    }
+        const Dialogs = this.context;
+        Dialogs.show(
+            <ImageSearchModal downloadImage={this.downloadImage}
+                              user={this.props.user}
+                              userServiceAvailable={this.props.userServiceAvailable}
+                              systemServiceAvailable={this.props.systemServiceAvailable} />
+        );
+    };
 
     onOpenPruneUnusedImagesDialog = () => {
         this.setState({ showPruneUnusedImagesModal: true });
-    }
+    };
 
     getUsedByText(image) {
         const { imageContainerList } = this.props;
@@ -113,7 +121,7 @@ class Images extends React.Component {
         }
 
         return { imageStats, unusedImages };
-    }
+    };
 
     renderRow(image) {
         const tabs = [];
@@ -121,18 +129,17 @@ class Images extends React.Component {
 
         const columns = [
             { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
-            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
-            utils.localize_time(image.Created),
-            utils.truncate_id(image.Id),
-            { title: cockpit.format_bytes(image.Size, 1000), props: { modifier: "nowrap" } },
-            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { modifier: "nowrap" } },
+            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
+            { title: utils.localize_time(image.Created), props: { className: "ignore-pixels" } },
+            { title: utils.truncate_id(image.Id), props: { className: "ignore-pixels" } },
+            { title: cockpit.format_bytes(image.Size, 1000), props: { className: "ignore-pixels", modifier: "nowrap" } },
+            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" } },
             {
-                title: <ImageActions image={image} onAddNotification={this.props.onAddNotification} selinuxAvailable={this.props.selinuxAvailable}
-                                     registries={this.props.registries} user={this.props.user}
+                title: <ImageActions image={image} onAddNotification={this.props.onAddNotification}
+                                     user={this.props.user}
                                      userServiceAvailable={this.props.userServiceAvailable}
-                                     systemServiceAvailable={this.props.systemServiceAvailable}
-                                     podmanRestartAvailable={this.props.podmanRestartAvailable} />,
-                props: { className: 'pf-c-table__action content-action' }
+                                     systemServiceAvailable={this.props.systemServiceAvailable} />,
+                props: { className: 'pf-v5-c-table__action content-action' }
             },
         ];
 
@@ -140,18 +147,25 @@ class Images extends React.Component {
             name: _("Details"),
             renderer: ImageDetails,
             data: {
-                image: image,
+                image,
                 containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.Id + image.isSystem.toString()] : null,
                 showAll: this.props.showAll,
+            }
+        });
+        tabs.push({
+            name: _("History"),
+            renderer: ImageHistory,
+            data: {
+                image,
             }
         });
         return {
             expandedContent: <ListingPanel
                                 colSpan='8'
                                 tabRenderers={tabs} />,
-            columns: columns,
+            columns,
             props: {
-                key :image.Id + image.isSystem.toString(),
+                key: image.Id + image.isSystem.toString(),
                 "data-row-id": image.Id + image.isSystem.toString(),
             },
         };
@@ -160,11 +174,11 @@ class Images extends React.Component {
     render() {
         const columnTitles = [
             { title: _("Image"), transforms: [cellWidth(20)] },
-            _("Owner"),
-            _("Created"),
-            _("ID"),
-            _("Disk space"),
-            _("Used by")
+            { title: _("Owner"), props: { className: "ignore-pixels" } },
+            { title: _("Created"), props: { className: "ignore-pixels", width: 15 } },
+            { title: _("ID"), props: { className: "ignore-pixels" } },
+            { title: _("Disk space"), props: { className: "ignore-pixels" } },
+            { title: _("Used by"), props: { className: "ignore-pixels" } },
         ];
         let emptyCaption = _("No images");
         if (this.props.images === null)
@@ -230,10 +244,12 @@ class Images extends React.Component {
 
         let toggleIntermediate = "";
         if (interim) {
-            toggleIntermediate = <span className="listing-action">
-                <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened, isExpanded: true })}>
-                    {intermediateOpened ? _("Hide intermediate images") : _("Show intermediate images")}</Button>
-            </span>;
+            toggleIntermediate = (
+                <span className="listing-action">
+                    <Button variant="link" onClick={() => this.setState({ intermediateOpened: !intermediateOpened, isExpanded: true })}>
+                        {intermediateOpened ? _("Hide intermediate images") : _("Show intermediate images")}</Button>
+                </span>
+            );
         }
         const cardBody = (
             <>
@@ -263,11 +279,13 @@ class Images extends React.Component {
         return (
             <Card id="containers-images" key="images" className="containers-images">
                 <CardHeader>
-                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-u-w-100">
+                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-v5-u-w-100">
                         <FlexItem grow={{ default: 'grow' }}>
                             <Flex>
-                                <Text className="images-title" component={TextVariants.h3}>{_("Images")}</Text>
-                                <Flex style={{ rowGap: "var(--pf-global--spacer--xs)" }}>{imageTitleStats}</Flex>
+                                <CardTitle>
+                                    <Text component={TextVariants.h2} className="containers-images-title">{_("Images")}</Text>
+                                </CardTitle>
+                                <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-v5-global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
                         </FlexItem>
                         <FlexItem>
@@ -278,22 +296,22 @@ class Images extends React.Component {
                     </Flex>
                 </CardHeader>
                 <CardBody>
-                    {filtered.length
+                    {this.props.images && Object.keys(this.props.images).length
                         ? <ExpandableSection toggleText={this.state.isExpanded ? _("Hide images") : _("Show images")}
-                                             onToggle={() => this.setState({ isExpanded: !this.state.isExpanded })}
+                                             onToggle={() => this.setState(prevState => ({ isExpanded: !prevState.isExpanded }))}
                                              isExpanded={this.state.isExpanded}>
                             {cardBody}
                         </ExpandableSection>
                         : cardBody}
                 </CardBody>
-                {this.state.showSearchImageModal &&
-                <ImageSearchModal
-                    close={() => this.setState({ showSearchImageModal: false })}
-                    downloadImage={this.downloadImage}
-                    user={this.props.user}
-                    registries={this.props.registries}
-                    userServiceAvailable={this.props.userServiceAvailable}
-                    systemServiceAvailable={this.props.systemServiceAvailable} /> }
+                {/* The PruneUnusedImagesModal dialog needs to keep
+                  * its list of unused images in sync with reality at
+                  * all times since the API call will delete whatever
+                  * is unused at the exact time of call, and the
+                  * dialog better be showing the correct list of
+                  * unused images at that time.  Thus, we can't use
+                  * Dialog.show for it but include it here in the
+                  * DOM. */}
                 {this.state.showPruneUnusedImagesModal &&
                 <PruneUnusedImagesModal
                   close={() => this.setState({ showPruneUnusedImagesModal: false })}
@@ -320,14 +338,20 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
                   dropdownItems={[
                       <DropdownItem key="download-new-image"
                                     component="button"
-                                    onClick={handleDownloadNewImage}>
+                                    onClick={() => {
+                                        setIsActionsKebabOpen(false);
+                                        handleDownloadNewImage();
+                                    }}>
                           {_("Download new image")}
                       </DropdownItem>,
                       <DropdownItem key="prune-unused-images"
                                     id="prune-unused-images-button"
                                     component="button"
                                     className="pf-m-danger btn-delete"
-                                    onClick={handlePruneUsedImages}
+                                    onClick={() => {
+                                        setIsActionsKebabOpen(false);
+                                        handlePruneUsedImages();
+                                    }}
                                     isDisabled={unusedImages.length === 0}
                                     isAriaDisabled={unusedImages.length === 0}>
                           {_("Prune unused images")}
@@ -336,56 +360,47 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
     );
 };
 
-const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, user, systemServiceAvailable, userServiceAvailable, podmanRestartAvailable }) => {
-    const [showRunImageModal, setShowImageRunModal] = useState(false);
-    const [showImageDeleteModal, setShowImageDeleteModal] = useState(false);
-    const [showImageDeleteErrorModal, setShowImageDeleteErrorModal] = useState(false);
-    const [imageDeleteErrorMsg, setImageDeleteErrorMsg] = useState();
+const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, userServiceAvailable }) => {
+    const Dialogs = useDialogs();
     const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
 
-    const handleRemoveImage = (tags, all) => {
-        setShowImageDeleteModal(false);
-        if (all)
-            client.delImage(image.isSystem, image.Id, false)
-                    .catch(ex => {
-                        setImageDeleteErrorMsg(ex.message);
-                        setShowImageDeleteErrorModal(true);
-                    });
-        else {
-            // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
-            const tag = tags.shift();
-            const i = tag.lastIndexOf(":");
-            client.untagImage(image.isSystem, image.Id, tag.substring(0, i), tag.substring(i + 1, tag.length))
-                    .then(() => {
-                        if (tags.length > 0)
-                            handleRemoveImage(tags, all);
-                    })
-                    .catch(ex => {
-                        const error = cockpit.format(_("Failed to remove image $0"), tag);
-                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    });
-        }
+    const runImage = () => {
+        setIsActionsKebabOpen(false);
+        Dialogs.show(
+            <utils.PodmanInfoContext.Consumer>
+                {(podmanInfo) => (
+                    <DialogsContext.Consumer>
+                        {(Dialogs) => (
+                            <ImageRunModal
+                              systemServiceAvailable={systemServiceAvailable}
+                              userServiceAvailable={userServiceAvailable}
+                              user={user}
+                              image={image}
+                              onAddNotification={onAddNotification}
+                              podmanInfo={podmanInfo}
+                              dialogs={Dialogs}
+                            />
+                        )}
+                    </DialogsContext.Consumer>
+                )}
+            </utils.PodmanInfoContext.Consumer>);
     };
 
-    const handleForceRemoveImage = () => {
-        return client.delImage(image.isSystem, image.Id, true)
-                .then(reply => setShowImageDeleteErrorModal(false))
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to force remove image $0"), image.RepoTags[0]);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    throw ex;
-                });
+    const removeImage = () => {
+        setIsActionsKebabOpen(false);
+        Dialogs.show(<ImageDeleteModal imageWillDelete={image}
+                                       onAddNotification={onAddNotification} />);
     };
 
-    const runImage = (
+    const runImageAction = (
         <Button key={image.Id + "create"}
                 className="ct-container-create show-only-when-wide"
                 variant='secondary'
                 onClick={ e => {
                     e.stopPropagation();
-                    setShowImageRunModal(true);
+                    runImage();
                 }}
-                isSmall
+                size="sm"
                 data-image={image.Id}>
             {_("Create container")}
         </Button>
@@ -400,13 +415,13 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
                       <DropdownItem key={image.Id + "create-menu"}
                                     component="button"
                                     className="show-only-when-narrow"
-                                    onClick={() => setShowImageRunModal(true)}>
+                                    onClick={runImage}>
                           {_("Create container")}
                       </DropdownItem>,
                       <DropdownItem key={image.Id + "delete"}
                                     component="button"
                                     className="pf-m-danger btn-delete"
-                                    onClick={() => setShowImageDeleteModal(true)}>
+                                    onClick={removeImage}>
                           {_("Delete")}
                       </DropdownItem>
                   ]} />
@@ -414,31 +429,8 @@ const ImageActions = ({ image, onAddNotification, registries, selinuxAvailable, 
 
     return (
         <>
-            {runImage}
+            {runImageAction}
             {extraActions}
-            {showImageDeleteErrorModal &&
-                <ForceRemoveModal
-                        name={image.RepoTags[0]}
-                        handleCancel={() => setShowImageDeleteErrorModal(false)}
-                        handleForceRemove={handleForceRemoveImage}
-                        reason={imageDeleteErrorMsg} /> }
-            {showImageDeleteModal &&
-            <ImageDeleteModal
-                imageWillDelete={image}
-                handleCancelImageDeleteModal={() => setShowImageDeleteModal(false)}
-                handleRemoveImage={handleRemoveImage} /> }
-            {showRunImageModal &&
-            <ImageRunModal
-                close={() => setShowImageRunModal(false)}
-                registries={registries}
-                selinuxAvailable={selinuxAvailable}
-                podmanRestartAvailable={podmanRestartAvailable}
-                systemServiceAvailable={systemServiceAvailable}
-                userServiceAvailable={userServiceAvailable}
-                user={user}
-                image={image}
-                onAddNotification={onAddNotification}
-            /> }
         </>
     );
 };

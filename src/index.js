@@ -17,12 +17,14 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
+import "cockpit-dark-theme";
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './lib/patternfly/patternfly-4-cockpit.scss';
+import { createRoot } from 'react-dom/client';
+import 'patternfly/patternfly-5-cockpit.scss';
 import Application from './app.jsx';
 import './podman.scss';
 
 document.addEventListener("DOMContentLoaded", function () {
-    ReactDOM.render(React.createElement(Application, {}), document.getElementById('app'));
+    const root = createRoot(document.getElementById('app'));
+    root.render(<Application />);
 });

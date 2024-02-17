@@ -1,4 +1,5 @@
 import cockpit from "cockpit";
+import { debug } from "./util.js";
 
 function manage_error(reject, error, content) {
     let content_o = {};
@@ -13,6 +14,9 @@ function manage_error(reject, error, content) {
     reject(c);
 }
 
+// calls are async, so keep track of a call counter to associate a result with a call
+let call_id = 0;
+
 function connect(address, system) {
     /* This doesn't create a channel until a request */
     const http = cockpit.http(address, { superuser: system ? "require" : null });
@@ -20,12 +24,22 @@ function connect(address, system) {
 
     connection.monitor = function(options, callback, system, return_raw) {
         return new Promise((resolve, reject) => {
+            let buffer = "";
+
             http.request(options)
                     .stream(data => {
                         if (return_raw)
                             callback(data);
-                        else
-                            callback(JSON.parse(data));
+                        else {
+                            buffer += data;
+                            const chunks = buffer.split("\n");
+                            buffer = chunks.pop();
+
+                            chunks.forEach(chunk => {
+                                debug(system, "monitor", chunk);
+                                callback(JSON.parse(chunk));
+                            });
+                        }
                     })
                     .catch((error, content) => {
                         manage_error(reject, error, content);
@@ -35,11 +49,17 @@ function connect(address, system) {
     };
 
     connection.call = function (options) {
+        const id = call_id++;
+        debug(system, `call ${id}:`, JSON.stringify(options));
         return new Promise((resolve, reject) => {
             options = options || {};
             http.request(options)
-                    .then(resolve)
+                    .then(result => {
+                        debug(system, `call ${id} result:`, JSON.stringify(result));
+                        resolve(result);
+                    })
                     .catch((error, content) => {
+                        debug(system, `call ${id} error:`, JSON.stringify(error), "content", JSON.stringify(content));
                         manage_error(reject, error, content);
                     });
         });

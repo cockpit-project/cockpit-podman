@@ -4,11 +4,11 @@ Source: https://github.com/cockpit-project/cockpit-podman
 Comment:
  This does not directly cover the files in dist/*. These are "minified" and
  compressed JavaScript/HTML files built from src/, lib/, po/, and node_modules/
- with node, npm, and webpack. node_modules/ is not shipped as part of the
+ with node, npm, and a bundler. node_modules/ is not shipped as part of the
  upstream release tarballs, but can be reconstructed precisely through the
  shipped package-lock.json with the command "npm install".  Rebuilding files in
  dist/ requires internet access as that process needs to download additional
- npm modules from the Internet, thus upstream ships the pre-minified webpacks
+ npm modules from the Internet, thus upstream ships the pre-minified bundles
  as part of the upstream release tarball so that the package can be built
  without internet access and lots of extra unpackaged build dependencies.
 

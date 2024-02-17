@@ -1,8 +1,12 @@
-import React from 'react';
-import {
-    Button, DataList, DataListItem, DataListItemRow, DataListCell, DataListItemCells,
-    Flex, Form, FormGroup, FormSelect, FormSelectOption, Modal, Radio, TextInput
-} from '@patternfly/react-core';
+import React, { useState } from 'react';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { DataList, DataListCell, DataListItem, DataListItemCells, DataListItemRow } from "@patternfly/react-core/dist/esm/components/DataList";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
@@ -10,230 +14,205 @@ import { ErrorNotification } from './Notification.jsx';
 import cockpit from 'cockpit';
 import rest from './rest.js';
 import * as client from './client.js';
-import { fallbackRegistries } from './util.js';
+import { fallbackRegistries, usePodmanInfo } from './util.js';
+import { useDialogs } from "dialogs.jsx";
 
 import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
 
-export class ImageSearchModal extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            imageIdentifier: '',
-            imageList: [],
-            searchInProgress: false,
-            searchFinished: false,
-            isSystem: props.systemServiceAvailable,
-            registry: "",
-        };
-        this.onDownloadClicked = this.onDownloadClicked.bind(this);
-        this.onItemSelected = this.onItemSelected.bind(this);
-        this.onSearchTriggered = this.onSearchTriggered.bind(this);
-        this.onValueChanged = this.onValueChanged.bind(this);
-        this.onKeyPress = this.onKeyPress.bind(this);
-        this.onToggleUser = this.onToggleUser.bind(this);
-    }
+export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, systemServiceAvailable }) => {
+    const [searchInProgress, setSearchInProgress] = useState(false);
+    const [searchFinished, setSearchFinished] = useState(false);
+    const [imageIdentifier, setImageIdentifier] = useState('');
+    const [imageList, setImageList] = useState([]);
+    const [imageTag, setImageTag] = useState("");
+    const [isSystem, setIsSystem] = useState(systemServiceAvailable);
+    const [selectedRegistry, setSelectedRegistry] = useState("");
+    const [selected, setSelected] = useState("");
+    const [dialogError, setDialogError] = useState("");
+    const [dialogErrorDetail, setDialogErrorDetail] = useState("");
+    const [typingTimeout, setTypingTimeout] = useState(null);
 
-    componentDidMount() {
-        this._isMounted = true;
-    }
+    let activeConnection = null;
+    const { registries } = usePodmanInfo();
+    const Dialogs = useDialogs();
+    // Registries to use for searching
+    const searchRegistries = registries.search && registries.length !== 0 ? registries.search : fallbackRegistries;
 
-    componentWillUnmount() {
-        this._isMounted = false;
-
-        if (this.activeConnection)
-            this.activeConnection.close();
-    }
-
-    onToggleUser(_, ev) {
-        this.setState({ isSystem: ev.currentTarget.value === "system" });
-    }
-
-    onDownloadClicked() {
-        const selectedImageName = this.state.imageList[this.state.selected].Name;
-
-        this.props.close();
-        this.props.downloadImage(selectedImageName, this.state.imageTag, this.state.isSystem);
-    }
-
-    onItemSelected(key) {
-        this.setState({ selected: key.split('-').slice(-1)[0] });
-    }
-
-    onSearchTriggered(forceSearch) {
+    // Don't use on selectedRegistry state variable for finding out the
+    // registry to search in as with useState we can only call something after a
+    // state update with useEffect but as onSearchTriggered also changes state we
+    // can't use that so instead we pass the selected registry.
+    const onSearchTriggered = (searchRegistry = "", forceSearch = false) => {
         // When search re-triggers close any existing active connection
-        if (this.activeConnection)
-            this.activeConnection.close();
-        this.setState({ searchFinished: false });
+        activeConnection = rest.connect(client.getAddress(isSystem), isSystem);
+        if (activeConnection)
+            activeConnection.close();
+        setSearchFinished(false);
 
         // Do not call the SearchImage API if the input string  is not at least 2 chars,
         // unless Enter is pressed, which should force start the search.
         // The comparison was done considering the fact that we miss always one letter due to delayed setState
-        if (this.state.imageIdentifier.length < 2 && !forceSearch)
+        if (imageIdentifier.length < 2 && !forceSearch)
             return;
 
-        this.setState({ searchInProgress: true });
+        setSearchInProgress(true);
 
-        this.activeConnection = rest.connect(client.getAddress(this.state.isSystem), this.state.isSystem);
-        let registries = Object.keys(this.props.registries).length !== 0 ? [this.state.registry] : fallbackRegistries;
+        let queryRegistries = searchRegistries;
+        if (searchRegistry !== "") {
+            queryRegistries = [searchRegistry];
+        }
         // if a user searches for `docker.io/cockpit` let podman search in the user specified registry.
-        if (this.state.imageIdentifier.includes('/')) {
-            registries = [""];
+        if (imageIdentifier.includes('/')) {
+            queryRegistries = [""];
         }
 
-        const searches = registries.map(rr => {
+        const searches = queryRegistries.map(rr => {
             const registry = rr.length < 1 || rr[rr.length - 1] === "/" ? rr : rr + "/";
-            return this.activeConnection.call({
+            return activeConnection.call({
                 method: "GET",
                 path: client.VERSION + "libpod/images/search",
                 body: "",
                 params: {
-                    term: registry + this.state.imageIdentifier
+                    term: registry + imageIdentifier
                 }
             });
         });
 
         Promise.allSettled(searches)
                 .then(reply => {
-                    if (reply && this._isMounted) {
+                    if (reply) {
                         let results = [];
-                        let dialogError = "";
-                        let dialogErrorDetail = "";
 
                         for (const result of reply) {
                             if (result.status === "fulfilled") {
                                 results = results.concat(JSON.parse(result.value));
                             } else {
-                                dialogError = _("Failed to search for new images");
-                                dialogErrorDetail = cockpit.format(_("Failed to search for images: $0"), result.reason);
+                                setDialogError(_("Failed to search for new images"));
+                                setDialogErrorDetail(result.reason ? cockpit.format(_("Failed to search for images: $0"), result.reason.message) : _("Failed to search for images."));
                             }
                         }
 
-                        this.setState({
-                            imageList: results || [], searchInProgress: false,
-                            searchFinished: true, dialogError, dialogErrorDetail
-                        });
+                        setImageList(results || []);
+                        setSearchInProgress(false);
+                        setSearchFinished(true);
                     }
                 });
-    }
+    };
 
-    onValueChanged(key, value) {
-        if (key == 'imageIdentifier')
-            this.setState({ [key]: value.trim() });
-        else
-            this.setState({ [key]: value });
-    }
-
-    onKeyPress(e) {
+    const onKeyDown = (e) => {
         if (e.key != ' ') { // Space should not trigger search
             const forceSearch = e.key == 'Enter';
             if (forceSearch) {
                 e.preventDefault();
             }
 
-            // Clears the previously set timer.
-            clearTimeout(this.typingTimeout);
-
             // Reset the timer, to make the http call after 250MS
-            this.typingTimeout = setTimeout(() => this.onSearchTriggered(forceSearch), 250);
+            clearTimeout(typingTimeout);
+            setTypingTimeout(setTimeout(() => onSearchTriggered(selectedRegistry, forceSearch), 250));
         }
-    }
+    };
 
-    render() {
-        const defaultBody = (
-            <>
-                <Form isHorizontal>
-                    { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
-                    <FormGroup id="as-user" label={_("Owner")} isInline>
-                        <Radio name="user" value="system" id="system" onChange={this.onToggleUser} isChecked={this.state.isSystem} label={_("system")} />
-                        <Radio name="user" value="user" id="user" onChange={this.onToggleUser} isChecked={!this.state.isSystem} label={this.props.user} />
-                    </FormGroup>}
-                    <Flex spaceItems={{ default: 'inlineFlex', modifier: 'spaceItemsXl' }}>
-                        <FormGroup fieldId="search-image-dialog-name" label={_("Search for")}>
-                            <TextInput id='search-image-dialog-name'
-                                       type='text'
-                                       placeholder={_("Search by name or description")}
-                                       value={this.state.imageIdentifier}
-                                       onKeyPress={this.onKeyPress}
-                                       onChange={value => this.onValueChanged('imageIdentifier', value)} />
-                        </FormGroup>
-                        <FormGroup fieldId="registry-select" label={_("in")}>
-                            <FormSelect id='registry-select'
-                                value={this.state.registry}
-                                onChange={value =>
-                                    this.setState({ registry: value }, () => this.onSearchTriggered(false))
-                                }>
-                                <FormSelectOption value="" key="all" label={_("All registries")} />
-                                {(this.props.registries.search || []).map(r => <FormSelectOption value={r} key={r} label={r} />)}
-                            </FormSelect>
-                        </FormGroup>
-                    </Flex>
-                </Form>
+    const onToggleUser = ev => setIsSystem(ev.currentTarget.value === "system");
+    const onDownloadClicked = () => {
+        const selectedImageName = imageList[selected].Name;
+        if (activeConnection)
+            activeConnection.close();
+        Dialogs.close();
+        downloadImage(selectedImageName, imageTag, isSystem);
+    };
 
-                {this.state.searchInProgress && <EmptyStatePanel loading title={_("Searching...")} /> }
+    const handleClose = () => {
+        if (activeConnection)
+            activeConnection.close();
+        Dialogs.close();
+    };
 
-                {((!this.state.searchInProgress && !this.state.searchFinished) || this.state.imageIdentifier == "") && <EmptyStatePanel title={_("No images found")} paragraph={_("Please start typing to look for images.")} /> }
+    return (
+        <Modal isOpen className="podman-search"
+               position="top" variant="large"
+               onClose={handleClose}
+               title={_("Search for an image")}
+               footer={<>
+                   <Form isHorizontal className="image-search-tag-form">
+                       <FormGroup fieldId="image-search-tag" label={_("Tag")}>
+                           <TextInput className="image-tag-entry"
+                                  id="image-search-tag"
+                                  type='text'
+                                  placeholder="latest"
+                                  value={imageTag || ''}
+                                  onChange={(_event, value) => setImageTag(value)} />
+                       </FormGroup>
+                   </Form>
+                   <Button variant='primary' isDisabled={selected === ""} onClick={onDownloadClicked}>
+                       {_("Download")}
+                   </Button>
+                   <Button variant='link' className='btn-cancel' onClick={handleClose}>
+                       {_("Cancel")}
+                   </Button>
+               </>}
+        >
+            <Form isHorizontal>
+                {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
+                { userServiceAvailable && systemServiceAvailable &&
+                <FormGroup id="as-user" label={_("Owner")} isInline>
+                    <Radio name="user" value="system" id="system" onChange={onToggleUser} isChecked={isSystem} label={_("system")} />
+                    <Radio name="user" value="user" id="user" onChange={onToggleUser} isChecked={!isSystem} label={user} />
+                </FormGroup>}
+                <Flex spaceItems={{ default: 'inlineFlex', modifier: 'spaceItemsXl' }}>
+                    <FormGroup fieldId="search-image-dialog-name" label={_("Search for")}>
+                        <TextInput id='search-image-dialog-name'
+                                   type='text'
+                                   placeholder={_("Search by name or description")}
+                                   value={imageIdentifier}
+                                   onKeyDown={onKeyDown}
+                                   onChange={(_event, value) => setImageIdentifier(value)} />
+                    </FormGroup>
+                    <FormGroup fieldId="registry-select" label={_("in")}>
+                        <FormSelect id='registry-select'
+                            value={selectedRegistry}
+                            onChange={(_ev, value) => { setSelectedRegistry(value); clearTimeout(typingTimeout); onSearchTriggered(value, false) }}>
+                            <FormSelectOption value="" key="all" label={_("All registries")} />
+                            {(searchRegistries || []).map(r => <FormSelectOption value={r} key={r} label={r} />)}
+                        </FormSelect>
+                    </FormGroup>
+                </Flex>
+            </Form>
 
-                {this.state.searchFinished && this.state.imageIdentifier !== '' && <>
-                    {this.state.imageList.length == 0 && <EmptyStatePanel icon={ExclamationCircleIcon}
-                                                                          title={cockpit.format(_("No results for $0"), this.state.imageIdentifier)}
-                                                                          paragraph={_("Please retry another term.")}
-                    />}
-                    {this.state.imageList.length > 0 &&
-                    <DataList isCompact
-                              selectedDataListItemId={"image-list-item-" + this.state.selected}
-                              onSelectDataListItem={this.onItemSelected}>
-                        {this.state.imageList.map((image, iter) => {
-                            return (
-                                <DataListItem id={"image-list-item-" + iter} key={iter}>
-                                    <DataListItemRow>
-                                        <DataListItemCells
-                                                  dataListCells={[
-                                                      <DataListCell key="primary content">
-                                                          <span className='image-name'>{image.Name}</span>
-                                                      </DataListCell>,
-                                                      <DataListCell key="secondary content">
-                                                          <span className='image-description'>{image.Description}</span>
-                                                      </DataListCell>
-                                                  ]}
-                                        />
-                                    </DataListItemRow>
-                                </DataListItem>
-                            );
-                        })}
-                    </DataList>}
-                </>}
-            </>
-        );
+            {searchInProgress && <EmptyStatePanel loading title={_("Searching...")} /> }
 
-        return (
-            <Modal isOpen className="podman-search"
-                   position="top" variant="large"
-                   onClose={this.props.close}
-                   title={_("Search for an image")}
-                   footer={<>
-                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                       <Form isHorizontal className="image-search-tag-form">
-                           <FormGroup fieldId="image-search-tag" label={_("Tag")}>
-                               <TextInput className="image-tag-entry"
-                                      id="image-search-tag"
-                                      type='text'
-                                      placeholder="latest"
-                                      value={this.state.imageTag || ''}
-                                      onChange={value => this.onValueChanged('imageTag', value)} />
-                           </FormGroup>
-                       </Form>
-                       <Button variant='primary' isDisabled={this.state.selected == undefined} onClick={this.onDownloadClicked}>
-                           {_("Download")}
-                       </Button>
-                       <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
-                           {_("Cancel")}
-                       </Button>
-                   </>}
-            >
-                {defaultBody}
-            </Modal>
-        );
-    }
-}
+            {((!searchInProgress && !searchFinished) || imageIdentifier == "") && <EmptyStatePanel title={_("No images found")} paragraph={_("Start typing to look for images.")} /> }
+
+            {searchFinished && imageIdentifier !== '' && <>
+                {imageList.length == 0 && <EmptyStatePanel icon={ExclamationCircleIcon}
+                                                                      title={cockpit.format(_("No results for $0"), imageIdentifier)}
+                                                                      paragraph={_("Retry another term.")}
+                />}
+                {imageList.length > 0 &&
+                <DataList isCompact
+                          selectedDataListItemId={"image-list-item-" + selected}
+                          onSelectDataListItem={(_, key) => setSelected(key.split('-').slice(-1)[0])}>
+                    {imageList.map((image, iter) => {
+                        return (
+                            <DataListItem id={"image-list-item-" + iter} key={iter}>
+                                <DataListItemRow>
+                                    <DataListItemCells
+                                              dataListCells={[
+                                                  <DataListCell key="primary content">
+                                                      <span className='image-name'>{image.Name}</span>
+                                                  </DataListCell>,
+                                                  <DataListCell key="secondary content" wrapModifier="truncate">
+                                                      <span className='image-description'>{image.Description}</span>
+                                                  </DataListCell>
+                                              ]}
+                                    />
+                                </DataListItemRow>
+                            </DataListItem>
+                        );
+                    })}
+                </DataList>}
+            </>}
+        </Modal>
+    );
+};

@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Flex, List, ListItem, Modal, } from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import cockpit from 'cockpit';
 
 import * as client from './client.js';
@@ -29,13 +33,13 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
                   isChecked={checked}
                   id={name}
                   name={name}
-                  onChange={handleChange}
+                  onChange={(_, val) => handleChange(val)}
                   aria-owns={listNameId}
                 />
             }
             <List id={listNameId}>
                 {shownImages.map((image, index) =>
-                    <ListItem className="pf-u-ml-md" key={index}>
+                    <ListItem className="pf-v5-u-ml-md" key={index}>
                         {utils.image_name(image)}
                     </ListItem>
                 )}
@@ -49,82 +53,71 @@ function ImageOptions({ images, checked, isSystem, handleChange, name, showCheck
     );
 }
 
-class PruneUnusedImagesModal extends React.Component {
-    constructor(props) {
-        super(props);
-        const isSystem = this.props.userServiceAvailable && this.props.systemServiceAvailable;
-        this.state = {
-            deleteUserImages: true,
-            deleteSystemImages: isSystem,
-            isPruning: false,
-        };
-    }
+const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, userServiceAvailable, systemServiceAvailable }) => {
+    const [isPruning, setPruning] = useState(false);
+    const [deleteUserImages, setDeleteUserImages] = useState(userServiceAvailable !== null && userServiceAvailable);
+    const [deleteSystemImages, setDeleteSystemImages] = useState(systemServiceAvailable);
 
-    handlePruneUnusedImages = () => {
-        this.setState({ isPruning: true });
+    const handlePruneUnusedImages = () => {
+        setPruning(true);
 
         const actions = [];
-        if (this.state.deleteUserImages) {
+        if (deleteUserImages) {
             actions.push(client.pruneUnusedImages(false));
         }
-        if (this.state.deleteSystemImages) {
+        if (deleteSystemImages) {
             actions.push(client.pruneUnusedImages(true));
         }
-        Promise.all(actions).then(this.props.close)
+        Promise.all(actions).then(close)
                 .catch(ex => {
                     const error = _("Failed to prune unused images");
-                    this.props.onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    this.props.close();
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    close();
                 });
-    }
+    };
 
-    handleChange = (checked, event) => {
-        this.setState({ [event.target.name]: checked });
-    }
+    const isSystem = systemServiceAvailable;
+    const userImages = unusedImages.filter(image => !image.isSystem);
+    const systemImages = unusedImages.filter(image => image.isSystem);
+    const showCheckboxes = userImages.length > 0 && systemImages.length > 0;
 
-    render() {
-        const isSystem = this.props.userServiceAvailable && this.props.systemServiceAvailable;
-        const userImages = this.props.unusedImages.filter(image => !image.isSystem);
-        const systemImages = this.props.unusedImages.filter(image => image.isSystem);
-        const showCheckboxes = userImages.length > 0 && systemImages.length > 0;
-        return (
-            <Modal isOpen
-                   onClose={this.props.close}
-                   position="top" variant="medium"
-                   title={cockpit.format(_("Prune unused images"))}
-                   footer={<>
-                       <Button id="btn-img-delete" variant="danger"
-                               spinnerAriaValueText={this.state.isPruning ? _("Pruning images") : undefined}
-                               isLoading={this.state.isPruning}
-                               isDisabled={!this.state.deleteUserImages && !this.state.deleteSystemImages}
-                               onClick={this.handlePruneUnusedImages}>
-                           {this.state.isPruning ? _("Pruning images") : _("Prune")}
-                       </Button>
-                       <Button variant="link" onClick={() => this.props.close()}>{_("Cancel")}</Button>
-                   </>}
-            >
-                <Flex flex={{ default: 'column' }}>
-                    {isSystem && <ImageOptions
-                  images={systemImages}
-                  name="deleteSystemImages"
-                  checked={this.state.deleteSystemImages}
-                  handleChange={this.handleChange}
-                  showCheckbox={showCheckboxes}
-                  isSystem
-                    />
-                    }
-                    <ImageOptions
-                  images={userImages}
-                  name="deleteUserImages"
-                  checked={this.state.deleteUserImages}
-                  handleChange={this.handleChange}
-                  showCheckbox={showCheckboxes}
-                  isSystem={false}
-                    />
-                </Flex>
-            </Modal>
-        );
-    }
-}
+    return (
+        <Modal isOpen
+               onClose={close}
+               position="top" variant="medium"
+               title={cockpit.format(_("Prune unused images"))}
+               footer={<>
+                   <Button id="btn-img-delete" variant="danger"
+                           spinnerAriaValueText={isPruning ? _("Pruning images") : undefined}
+                           isLoading={isPruning}
+                           isDisabled={!deleteUserImages && !deleteSystemImages}
+                           onClick={handlePruneUnusedImages}>
+                       {isPruning ? _("Pruning images") : _("Prune")}
+                   </Button>
+                   <Button variant="link" onClick={() => close()}>{_("Cancel")}</Button>
+               </>}
+        >
+            <Flex flex={{ default: 'column' }}>
+                {isSystem && <ImageOptions
+              images={systemImages}
+              name="deleteSystemImages"
+              checked={deleteSystemImages}
+              handleChange={setDeleteSystemImages}
+              showCheckbox={showCheckboxes}
+              isSystem
+                />
+                }
+                <ImageOptions
+              images={userImages}
+              name="deleteUserImages"
+              checked={deleteUserImages}
+              handleChange={setDeleteUserImages}
+              showCheckbox={showCheckboxes}
+              isSystem={false}
+                />
+            </Flex>
+        </Modal>
+    );
+};
 
 export default PruneUnusedImagesModal;

@@ -1,16 +1,16 @@
 #!/bin/sh
 set -eux
 
+# test plan name, passed on to run-test.sh
+PLAN="$1"
+
+export TEST_BROWSER=${TEST_BROWSER:-firefox}
+
 TESTS="$(realpath $(dirname "$0"))"
-if [ -d source ]; then
-    # path for standard-test-source
-    SOURCE="$(pwd)/source"
-else
-    SOURCE="$(realpath $TESTS/../..)"
-fi
+export SOURCE="$(realpath $TESTS/../..)"
 
 # https://tmt.readthedocs.io/en/stable/overview.html#variables
-LOGS="${TMT_TEST_DATA:-$(pwd)/logs}"
+export LOGS="${TMT_TEST_DATA:-$(pwd)/logs}"
 mkdir -p "$LOGS"
 chmod a+w "$LOGS"
 
@@ -18,8 +18,21 @@ chmod a+w "$LOGS"
 # we don't need the H.264 codec, and it is sometimes not available (rhbz#2005760)
 dnf install --disablerepo=fedora-cisco-openh264 -y --setopt=install_weak_deps=False firefox
 
+# nodejs 10 is too old for current Cockpit test API
+if grep -q platform:el8 /etc/os-release; then
+    dnf module switch-to -y nodejs:16
+fi
+
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
-dnf update -y podman crun conmon
+dnf update -y podman crun conmon criu
+
+# if we run during cross-project testing against our main-builds COPR, then let that win
+# even if Fedora has a newer revision
+main_builds_repo="$(ls /etc/yum.repos.d/*cockpit*main-builds* 2>/dev/null || true)"
+if [ -n "$main_builds_repo" ]; then
+    echo 'priority=0' >> "$main_builds_repo"
+    dnf distro-sync -y --repo 'copr*' cockpit-podman
+fi
 
 # Show critical package versions
 rpm -q runc crun podman criu kernel-core selinux-policy cockpit-podman cockpit-bridge || true
@@ -51,13 +64,19 @@ echo core > /proc/sys/kernel/core_pattern
 
 # grab a few images to play with; tests run offline, so they cannot download images
 podman rmi --all
-podman pull quay.io/libpod/busybox
-podman pull quay.io/libpod/alpine
-podman pull quay.io/cockpit/registry:2
+
+# set up our expected images, in the same way that we do for upstream CI
+# this sometimes runs into network issues, so retry a few times
+for retry in $(seq 5); do
+    if curl https://raw.githubusercontent.com/cockpit-project/bots/main/images/scripts/lib/podman-images.setup | sh -eux; then
+        break
+    fi
+    sleep $((5 * retry * retry))
+done
 
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
-for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
+for img in localhost/test-alpine localhost/test-busybox localhost/test-registry; do
     podman save  $img | sudo -i -u admin podman load
 done
 loginctl disable-linger $(id -u admin)
@@ -65,7 +84,9 @@ loginctl disable-linger $(id -u admin)
 systemctl enable --now cockpit.socket podman.socket
 
 # Run tests as unprivileged user
-su - -c "env TEST_BROWSER=firefox SOURCE=$SOURCE LOGS=$LOGS $TESTS/run-test.sh" runtest
+# once we drop support for RHEL 8, use this:
+# runuser -u runtest --whitelist-environment=TEST_BROWSER,TEST_ALLOW_JOURNAL_MESSAGES,TEST_AUDIT_NO_SELINUX,SOURCE,LOGS $TESTS/run-test.sh $PLAN
+runuser -u runtest --preserve-environment env USER=runtest HOME=$(getent passwd runtest | cut -f6 -d:) $TESTS/run-test.sh $PLAN
 
 RC=$(cat $LOGS/exitcode)
 exit ${RC:-1}

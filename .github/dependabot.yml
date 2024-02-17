@@ -1,0 +1,38 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      # run these when most of our developers don't work, don't DoS our CI over the day
+      time: "22:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "[no-test]"
+    labels:
+      - "node_modules"
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+      esbuild:
+        patterns:
+          - "esbuild*"
+      stylelint:
+        patterns:
+          - "stylelint*"
+      xterm:
+        patterns:
+          - "xterm*"
+      patternfly:
+        patterns:
+          - "@patternfly*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 3
+    labels:
+      - "no-test"
+    schedule:
+      interval: "weekly"

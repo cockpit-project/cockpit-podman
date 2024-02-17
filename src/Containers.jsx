@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
-import {
-    Badge,
-    Button,
-    Card, CardBody, CardHeader, CardTitle, CardActions,
-    Divider,
-    Dropdown, DropdownItem, DropdownSeparator,
-    Flex,
-    KebabToggle,
-    Text, TextVariants, FormSelect, FormSelectOption,
-    Toolbar, ToolbarContent, ToolbarItem,
-} from '@patternfly/react-core';
-import { cellWidth } from '@patternfly/react-table';
+import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Card, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
+import { Divider } from "@patternfly/react-core/dist/esm/components/Divider";
+import { Dropdown, DropdownItem, DropdownSeparator, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
+import { LabelGroup } from "@patternfly/react-core/dist/esm/components/Label";
+import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
+import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
+import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
+import { cellWidth, SortByDirection } from '@patternfly/react-table';
+import { MicrochipIcon, MemoryIcon, PortIcon, VolumeIcon, } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
 import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
 import ContainerDetails from './ContainerDetails.jsx';
+import ContainerIntegration, { renderContainerPublishedPorts, renderContainerVolumes } from './ContainerIntegration.jsx';
 import ContainerTerminal from './ContainerTerminal.jsx';
 import ContainerLogs from './ContainerLogs.jsx';
+import ContainerHealthLogs from './ContainerHealthLogs.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
 import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
 import ContainerRestoreModal from './ContainerRestoreModal.jsx';
@@ -25,33 +29,50 @@ import ForceRemoveModal from './ForceRemoveModal.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
+import ContainerRenameModal from './ContainerRenameModal.jsx';
+import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import './Containers.scss';
+import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { PodActions } from './PodActions.jsx';
+import { PodCreateModal } from './PodCreateModal.jsx';
+import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, onAddNotification, version, localImages }) => {
-    const [removeErrorModal, setRemoveErrorModal] = useState(false);
-    const [deleteModal, setDeleteModal] = useState(false);
-    const [checkpointInProgress, setCheckpointInProgress] = useState(false);
-    const [checkpointModal, setCheckpointModal] = useState(false);
-    const [restoreInProgress, setRestoreInProgress] = useState(false);
-    const [restoreModal, setRestoreModal] = useState(false);
-    const [commitModal, setCommitModal] = useState(false);
+const ContainerActions = ({ container, healthcheck, onAddNotification, localImages, updateContainer }) => {
+    const Dialogs = useDialogs();
+    const { version } = utils.usePodmanInfo();
     const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
-    const isRunning = container.State == "running";
-    const isPaused = container.State === "paused";
+    const isRunning = container.State.Status == "running";
+    const isPaused = container.State.Status === "paused";
 
     const deleteContainer = (event) => {
-        if (container.State == "running") {
-            setRemoveErrorModal(true);
-            setDeleteModal(false);
-        } else {
-            setDeleteModal(true);
-        }
         setActionsKebabOpen(false);
+
+        if (container.State.Status == "running") {
+            const handleForceRemoveContainer = () => {
+                const id = container ? container.Id : "";
+
+                return client.delContainer(container.isSystem, id, true)
+                        .catch(ex => {
+                            const error = cockpit.format(_("Failed to force remove container $0"), container.Name); // not-covered: OS error
+                            onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                            throw ex;
+                        })
+                        .finally(() => {
+                            Dialogs.close();
+                        });
+            };
+
+            Dialogs.show(<ForceRemoveModal name={container.Name}
+                                           handleForceRemove={handleForceRemoveContainer}
+                                           reason={_("Deleting a running container will erase all data in it.")} />);
+        } else {
+            Dialogs.show(<ContainerDeleteModal containerWillDelete={container}
+                                               onAddNotification={onAddNotification} />);
+        }
     };
 
     const stopContainer = (force) => {
@@ -63,7 +84,7 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
             args.t = 0;
         client.postContainer(container.isSystem, "stop", container.Id, args)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to stop container $0"), container.Names);
+                    const error = cockpit.format(_("Failed to stop container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -73,7 +94,7 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
 
         client.postContainer(container.isSystem, "start", container.Id, {})
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to start container $0"), container.Names);
+                    const error = cockpit.format(_("Failed to start container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -83,7 +104,7 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
 
         client.postContainer(container.isSystem, "unpause", container.Id, {})
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to resume container $0"), container.Names);
+                    const error = cockpit.format(_("Failed to resume container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -93,7 +114,24 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
 
         client.postContainer(container.isSystem, "pause", container.Id, {})
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to pause container $0"), container.Names);
+                    const error = cockpit.format(_("Failed to pause container $0"), container.Name); // not-covered: OS error
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
+    };
+
+    const commitContainer = () => {
+        setActionsKebabOpen(false);
+
+        Dialogs.show(<ContainerCommitModal container={container}
+                                           localImages={localImages} />);
+    };
+
+    const runHealthcheck = () => {
+        setActionsKebabOpen(false);
+
+        client.runHealthcheck(container.isSystem, container.Id)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to run health check on container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
@@ -107,67 +145,42 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
             args.t = 0;
         client.postContainer(container.isSystem, "restart", container.Id, args)
                 .catch(ex => {
-                    const error = cockpit.format(_("Failed to restart container $0"), container.Names);
+                    const error = cockpit.format(_("Failed to restart container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
                 });
     };
 
-    const handleRemoveContainer = () => {
-        const id = container ? container.Id : "";
-
-        setDeleteModal(false);
+    const renameContainer = () => {
         setActionsKebabOpen(false);
 
-        client.delContainer(container.isSystem, id, false)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to remove container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                });
+        if (container.State.Status !== "running" ||
+            version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
+            Dialogs.show(<ContainerRenameModal container={container}
+                                               updateContainer={updateContainer} />);
+        }
     };
 
-    const handleCheckpointContainer = (args) => {
-        setCheckpointInProgress(true);
+    const checkpointContainer = () => {
         setActionsKebabOpen(false);
 
-        client.postContainer(container.isSystem, "checkpoint", container.Id, args)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to checkpoint container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                })
-                .finally(() => {
-                    setCheckpointInProgress(false);
-                    setCheckpointModal(false);
-                });
+        Dialogs.show(<ContainerCheckpointModal containerWillCheckpoint={container}
+                                               onAddNotification={onAddNotification} />);
     };
 
-    const handleRestoreContainer = (args) => {
-        setRestoreInProgress(true);
+    const restoreContainer = () => {
         setActionsKebabOpen(false);
 
-        client.postContainer(container.isSystem, "restore", container.Id, args)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to restore container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                })
-                .finally(() => {
-                    setRestoreInProgress(false);
-                    setRestoreModal(false);
-                });
+        Dialogs.show(<ContainerRestoreModal containerWillRestore={container}
+                                            onAddNotification={onAddNotification} />);
     };
 
-    const handleForceRemoveContainer = () => {
-        const id = container ? container.Id : "";
-
-        setActionsKebabOpen(false);
-
-        return client.delContainer(container.isSystem, id, true)
-                .then(() => {
-                    setRemoveErrorModal(false);
-                }, ex => {
-                    const error = cockpit.format(_("Failed to force remove container $0"), container.Names);
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                    throw ex;
-                });
+    const addRenameAction = () => {
+        actions.push(
+            <DropdownItem key="rename"
+                        onClick={() => renameContainer()}>
+                {_("Rename")}
+            </DropdownItem>
+        );
     };
 
     const actions = [];
@@ -211,7 +224,7 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
             actions.push(
                 <DropdownSeparator key="separator-0" />,
                 <DropdownItem key="checkpoint"
-                              onClick={() => setCheckpointModal(true)}>
+                              onClick={() => checkpointContainer()}>
                     {_("Checkpoint")}
                 </DropdownItem>
             );
@@ -225,24 +238,42 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
                 {_("Start")}
             </DropdownItem>
         );
-        if (container.isSystem && container.hasCheckpoint) {
+        if (version.localeCompare("3", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
+            addRenameAction();
+        }
+        if (container.isSystem && container.State?.CheckpointPath) {
             actions.push(
                 <DropdownSeparator key="separator-0" />,
                 <DropdownItem key="restore"
-                              onClick={() => setRestoreModal(true)}>
+                              onClick={() => restoreContainer()}>
                     {_("Restore")}
                 </DropdownItem>
             );
+        }
+    } else { // running or paused
+        if (version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
+            addRenameAction();
         }
     }
 
     actions.push(<DropdownSeparator key="separator-1" />);
     actions.push(
         <DropdownItem key="commit"
-                      onClick={() => setCommitModal(true)}>
+                      onClick={() => commitContainer()}>
             {_("Commit")}
         </DropdownItem>
     );
+
+    if (isRunning && healthcheck !== "") {
+        actions.push(<DropdownSeparator key="separator-1-1" />);
+        actions.push(
+            <DropdownItem key="healthcheck"
+                          onClick={() => runHealthcheck()}>
+                {_("Run health check")}
+            </DropdownItem>
+        );
+    }
+
     actions.push(<DropdownSeparator key="separator-2" />);
     actions.push(
         <DropdownItem key="delete"
@@ -253,59 +284,14 @@ const ContainerActions = ({ container, onAddNotification, version, localImages }
     );
 
     const kebab = (
-        <Dropdown toggle={<KebabToggle onToggle={isOpen => setActionsKebabOpen(isOpen)} />}
+        <Dropdown toggle={<KebabToggle onToggle={(_event, isOpen) => setActionsKebabOpen(isOpen)} />}
                   isOpen={isActionsKebabOpen}
                   isPlain
                   position="right"
                   dropdownItems={actions} />
     );
 
-    const containerDeleteModal =
-        <ContainerDeleteModal
-            containerWillDelete={container}
-            handleCancelContainerDeleteModal={() => setDeleteModal(false)}
-            handleRemoveContainer={handleRemoveContainer}
-        />;
-    const containerCheckpointModal =
-        <ContainerCheckpointModal
-            handleCheckpointContainer={handleCheckpointContainer}
-            handleCheckpointContainerDeleteModal={() => setCheckpointModal(false)}
-            containerWillCheckpoint={container}
-            checkpointInProgress={checkpointInProgress}
-        />;
-    const containerRestoreModal =
-        <ContainerRestoreModal
-            handleRestoreContainer={handleRestoreContainer}
-            handleRestoreContainerDeleteModal={() => setRestoreModal(false)}
-            containerWillCheckpoint={container}
-            restoreInProgress={restoreInProgress}
-        />;
-    const containerRemoveErrorModal =
-        <ForceRemoveModal
-            name={container.Names}
-            handleCancel={() => setRemoveErrorModal(false)}
-            handleForceRemove={handleForceRemoveContainer}
-            reason={_("Container is currently running.")}
-        />;
-
-    const containerCommitModal =
-        <ContainerCommitModal
-            onHide={() => setCommitModal(false)}
-            container={container}
-            version={version}
-            localImages={localImages}
-        />;
-
-    return (
-        <>
-            {kebab}
-            {deleteModal && containerDeleteModal}
-            {checkpointModal && containerCheckpointModal}
-            {restoreModal && containerRestoreModal}
-            {removeErrorModal && containerRemoveErrorModal}
-            {commitModal && containerCommitModal}
-        </>
-    );
+    return kebab;
 };
 
 export let onDownloadContainer = function funcOnDownloadContainer(container) {
@@ -320,17 +306,55 @@ export let onDownloadContainerFinished = function funcOnDownloadContainerFinishe
     }));
 };
 
+const localize_health = (state) => {
+    if (state === "healthy")
+        return _("Healthy");
+    else if (state === "unhealthy")
+        return _("Unhealthy");
+    else if (state === "starting")
+        return _("Checking health");
+    else
+        console.error("Unexpected health check status", state);
+    return null;
+};
+
+const ContainerOverActions = ({ handlePruneUnusedContainers, unusedContainers }) => {
+    const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
+
+    return (
+        <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} id="containers-actions-dropdown" />}
+                  isOpen={isActionsKebabOpen}
+                  isPlain
+                  position="right"
+                  dropdownItems={[
+                      <DropdownItem key="prune-unused-containers"
+                                    id="prune-unused-containers-button"
+                                    component="button"
+                                    className="pf-m-danger btn-delete"
+                                    onClick={() => {
+                                        setIsActionsKebabOpen(false);
+                                        handlePruneUnusedContainers();
+                                    }}
+                                    isDisabled={unusedContainers.length === 0}>
+                          {_("Prune unused containers")}
+                      </DropdownItem>,
+                  ]} />
+    );
+};
+
 class Containers extends React.Component {
+    static contextType = DialogsContext;
+
     constructor(props) {
         super(props);
         this.state = {
             width: 0,
-            showCreateContainerModal: false,
-            createPod: null,
             downloadingContainers: [],
+            showPruneUnusedContainersModal: false,
         };
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
+        this.podStats = this.podStats.bind(this);
 
         this.cardRef = React.createRef();
 
@@ -348,70 +372,124 @@ class Containers extends React.Component {
         window.removeEventListener('resize', this.onWindowResize);
     }
 
-    renderRow(containersStats, container, containerDetail, localImages) {
+    renderRow(containersStats, container, localImages) {
         const containerStats = containersStats[container.Id + container.isSystem.toString()];
-        const image = container.Image;
+        const image = container.ImageName;
+        const isToolboxContainer = container.Config?.Labels?.["com.github.containers.toolbox"] === "true";
+        const isDistroboxContainer = container.Config?.Labels?.manager === "distrobox";
+        let localized_health = null;
+
+        // this needs to get along with stub containers from image run dialog, where most properties don't exist yet
+        // HACK: Podman renamed `Healthcheck` to `Health` randomly
+        // https://github.com/containers/podman/commit/119973375
+        const healthcheck = container.State?.Health?.Status ?? container.State?.Healthcheck?.Status; // not-covered: only on old version
+        const status = container.State?.Status ?? ""; // not-covered: race condition
 
         let proc = "";
         let mem = "";
-        if (this.props.cgroupVersion == 'v1' && !container.isSystem && container.State == 'running') {
+        if (this.props.cgroupVersion == 'v1' && !container.isSystem && status == 'running') { // not-covered: only on old version
             proc = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
             mem = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
         }
-        if (containerStats) {
+        if (containerStats && status === "running") {
             if (containerStats.CPU != undefined)
                 proc = containerStats.CPU.toFixed(2) + "%";
             if (containerStats.MemUsage != undefined && containerStats.MemLimit != undefined)
                 mem = utils.format_memory_and_limit(containerStats.MemUsage, containerStats.MemLimit);
         }
-        const info_block =
+        const info_block = (
             <div className="container-block">
-                <span className="container-name">{container.Names}</span>
+                <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                    <span className="container-name">{container.Name}</span>
+                    {isToolboxContainer && <Badge className='ct-badge-toolbox'>toolbox</Badge>}
+                    {isDistroboxContainer && <Badge className='ct-badge-distrobox'>distrobox</Badge>}
+                </Flex>
                 <small>{image}</small>
-                <small>{utils.quote_cmdline(container.Command)}</small>
-            </div>;
+                <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
+            </div>
+        );
 
-        let containerStateClass = "ct-badge-container-" + container.State.toLowerCase();
-        if (container.isDownloading) {
+        let containerStateClass = "ct-badge-container-" + status.toLowerCase();
+        if (container.isDownloading)
             containerStateClass += " downloading";
+
+        const containerState = status.charAt(0).toUpperCase() + status.slice(1);
+
+        const state = [<Badge key={containerState} isRead className={containerStateClass}>{_(containerState)}</Badge>]; // States are defined in util.js
+        if (healthcheck) {
+            localized_health = localize_health(healthcheck);
+            if (localized_health)
+                state.push(<Badge key={healthcheck} isRead className={"ct-badge-container-" + healthcheck}>{localized_health}</Badge>);
         }
-        const containerState = container.State.charAt(0).toUpperCase() + container.State.slice(1);
+
         const columns = [
-            { title: info_block },
-            { title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { modifier: "nowrap" } },
-            { title: proc, props: { modifier: "nowrap" } },
-            { title: mem, props: { modifier: "nowrap" } },
-            { title: <Badge isRead className={containerStateClass}>{_(containerState)}</Badge> }, // States are defined in util.js
+            { title: info_block, sortKey: container.Name ?? container.Id },
+            {
+                title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>,
+                props: { modifier: "nowrap" },
+                sortKey: container.isSystem.toString()
+            },
+            { title: proc, props: { modifier: "nowrap" }, sortKey: containerState === "Running" ? containerStats?.CPU ?? -1 : -1 },
+            { title: mem, props: { modifier: "nowrap" }, sortKey: containerStats?.MemUsage ?? -1 },
+            { title: <LabelGroup isVertical>{state}</LabelGroup>, sortKey: containerState },
         ];
 
         if (!container.isDownloading) {
-            columns.push({ title: <ContainerActions version={this.props.version} container={container} onAddNotification={this.props.onAddNotification} localImages={localImages} />, props: { className: "pf-c-table__action" } });
+            columns.push({
+                title: <ContainerActions container={container}
+                                         healthcheck={healthcheck}
+                                         onAddNotification={this.props.onAddNotification}
+                                         localImages={localImages}
+                                         updateContainer={this.props.updateContainer} />,
+                props: { className: "pf-v5-c-table__action" }
+            });
         }
 
-        const tty = containerDetail ? !!containerDetail.Config.Tty : undefined;
+        const tty = !!container.Config?.Tty;
 
-        const tabs = [{
-            name: _("Details"),
-            renderer: ContainerDetails,
-            data: { container: container, containerDetail: containerDetail }
-        }, {
-            name: _("Logs"),
-            renderer: ContainerLogs,
-            data: { containerId: container.Id, width: this.state.width, system: container.isSystem }
-        }, {
-            name: _("Console"),
-            renderer: ContainerTerminal,
-            data: { containerId: container.Id, containerStatus: container.State, width: this.state.width, system: container.isSystem, tty: tty }
-        }];
+        const tabs = [];
+        if (container.State) {
+            tabs.push({
+                name: _("Details"),
+                renderer: ContainerDetails,
+                data: { container }
+            });
+
+            if (!container.isDownloading) {
+                tabs.push({
+                    name: _("Integration"),
+                    renderer: ContainerIntegration,
+                    data: { container, localImages }
+                });
+                tabs.push({
+                    name: _("Logs"),
+                    renderer: ContainerLogs,
+                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem }
+                });
+                tabs.push({
+                    name: _("Console"),
+                    renderer: ContainerTerminal,
+                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem, tty }
+                });
+            }
+        }
+
+        if (healthcheck) {
+            tabs.push({
+                name: _("Health check"),
+                renderer: ContainerHealthLogs,
+                data: { container, onAddNotification: this.props.onAddNotification, state: localized_health }
+            });
+        }
 
         return {
-            expandedContent: <ListingPanel colSpan='4'
-                                           tabRenderers={tabs} />,
-            columns: columns,
+            expandedContent: <ListingPanel colSpan='4' tabRenderers={tabs} />,
+            columns,
             initiallyExpanded: document.location.hash.substr(1) === container.Id,
             props: {
-                key :container.Id + container.isSystem.toString(),
+                key: container.Id + container.isSystem.toString(),
                 "data-row-id": container.Id + container.isSystem.toString(),
+                "data-started-at": container.State?.StartedAt,
             },
         };
     }
@@ -420,17 +498,118 @@ class Containers extends React.Component {
         this.setState({ width: this.cardRef.current.clientWidth });
     }
 
+    podStats(pod) {
+        const { containersStats } = this.props;
+        // when no containers exists pod.Containers is null
+        if (!containersStats || !pod.Containers) {
+            return null;
+        }
+
+        // As podman does not provide per pod memory/cpu statistics we do the following:
+        // - don't add up CPU usage, instead display the highest found CPU usage of the containers in a pod
+        // - add up memory usage so it displays the total memory of the pod.
+        let cpu = 0;
+        let mem = 0;
+        for (const container of pod.Containers) {
+            const containerStats = containersStats[container.Id + pod.isSystem.toString()];
+            if (!containerStats)
+                continue;
+
+            if (containerStats.CPU != undefined) {
+                const val = containerStats.CPU === 0 ? containerStats.CPU : containerStats.CPU.toFixed(2);
+                if (val > cpu)
+                    cpu = val;
+            }
+            if (containerStats.MemUsage != undefined)
+                mem += containerStats.MemUsage;
+        }
+
+        return {
+            cpu,
+            mem,
+        };
+    }
+
+    renderPodDetails(pod, podStatus) {
+        const podStats = this.podStats(pod);
+        const infraContainer = this.props.containers[pod.InfraId + pod.isSystem.toString()];
+        const numPorts = Object.keys(infraContainer?.NetworkSettings?.Ports ?? {}).length;
+
+        return (
+            <>
+                {podStats && podStatus === "Running" &&
+                    <>
+                        <Flex className='pod-stat' spaceItems={{ default: 'spaceItemsSm' }}>
+                            <Tooltip content={_("CPU")}>
+                                <MicrochipIcon />
+                            </Tooltip>
+                            <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("CPU")}</Text>
+                            <Text component={TextVariants.p} className="pod-cpu">{podStats.cpu}%</Text>
+                        </Flex>
+                        <Flex className='pod-stat' spaceItems={{ default: 'spaceItemsSm' }}>
+                            <Tooltip content={_("Memory")}>
+                                <MemoryIcon />
+                            </Tooltip>
+                            <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("Memory")}</Text>
+                            <Text component={TextVariants.p} className="pod-memory">{utils.format_memory_and_limit(podStats.mem) || "0 KB"}</Text>
+                        </Flex>
+                    </>
+                }
+                {infraContainer &&
+                <>
+                    {numPorts > 0 &&
+                        <Tooltip content={_("Click to see published ports")}>
+                            <Popover
+                              enableFlip
+                              bodyContent={renderContainerPublishedPorts(infraContainer.NetworkSettings.Ports)}
+                            >
+                                <Button size="sm" variant="link" className="pod-details-button pod-details-ports-btn"
+                                        icon={<PortIcon className="pod-details-button-color" />}
+                                >
+                                    {numPorts}
+                                    <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("ports")}</Text>
+                                </Button>
+                            </Popover>
+                        </Tooltip>
+                    }
+                    {infraContainer.Mounts && infraContainer.Mounts.length !== 0 &&
+                    <Tooltip content={_("Click to see volumes")}>
+                        <Popover
+                      enableFlip
+                      bodyContent={renderContainerVolumes(infraContainer.Mounts)}
+                        >
+                            <Button size="sm" variant="link" className="pod-details-button pod-details-volumes-btn"
+                            icon={<VolumeIcon className="pod-details-button-color" />}
+                            >
+                                {infraContainer.Mounts.length}
+                                <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("volumes")}</Text>
+                            </Button>
+                        </Popover>
+                    </Tooltip>
+                    }
+                </>
+                }
+            </>
+        );
+    }
+
+    onOpenPruneUnusedContainersDialog = () => {
+        this.setState({ showPruneUnusedContainersModal: true });
+    };
+
     render() {
+        const Dialogs = this.context;
         const columnTitles = [
-            { title: _("Container"), transforms: [cellWidth(20)] },
-            _("Owner"),
-            _("CPU"),
-            _("Memory"),
-            _("State"),
+            { title: _("Container"), transforms: [cellWidth(20)], sortable: true },
+            { title: _("Owner"), sortable: true },
+            { title: _("CPU"), sortable: true },
+            { title: _("Memory"), sortable: true },
+            { title: _("State"), sortable: true },
             ''
         ];
         const partitionedContainers = { 'no-pod': [] };
         let filtered = [];
+        const unusedContainers = [];
 
         let emptyCaption = _("No containers");
         const emptyCaptionPod = _("No containers in this pod");
@@ -442,7 +621,7 @@ class Containers extends React.Component {
             emptyCaption = _("No running containers");
 
         if (this.props.containers !== null && this.props.pods !== null) {
-            filtered = Object.keys(this.props.containers).filter(id => !(this.props.filter == "running") || this.props.containers[id].State == "running");
+            filtered = Object.keys(this.props.containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id].State.Status));
 
             if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
                 filtered = filtered.filter(id => {
@@ -456,21 +635,35 @@ class Containers extends React.Component {
 
             if (this.props.textFilter.length > 0) {
                 const lcf = this.props.textFilter.toLowerCase();
-                filtered = filtered.filter(id => this.props.containers[id].Names[0].toLowerCase().indexOf(lcf) >= 0 ||
+                filtered = filtered.filter(id => this.props.containers[id].Name.toLowerCase().indexOf(lcf) >= 0 ||
                     (this.props.containers[id].Pod &&
                      this.props.pods[this.props.containers[id].Pod + this.props.containers[id].isSystem.toString()].Name.toLowerCase().indexOf(lcf) >= 0) ||
-                    this.props.containers[id].Image.toLowerCase().indexOf(lcf) >= 0
+                    this.props.containers[id].ImageName.toLowerCase().indexOf(lcf) >= 0
                 );
             }
 
             // Remove infra containers
             filtered = filtered.filter(id => !this.props.containers[id].IsInfra);
 
+            const getHealth = id => {
+                const state = this.props.containers[id]?.State;
+                return state?.Health?.Status || state?.Healthcheck?.Status;
+            };
+
             filtered.sort((a, b) => {
+                // Show unhealthy containers first
+                const a_health = getHealth(a);
+                const b_health = getHealth(b);
+                if (a_health !== b_health) {
+                    if (a_health === "unhealthy")
+                        return -1;
+                    if (b_health === "unhealthy")
+                        return 1;
+                }
                 // User containers are in front of system ones
                 if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
                     return this.props.containers[a].isSystem ? 1 : -1;
-                return this.props.containers[a].Names > this.props.containers[b].Names ? 1 : -1;
+                return this.props.containers[a].Name > this.props.containers[b].Name ? 1 : -1;
             });
 
             Object.keys(this.props.pods || {}).forEach(pod => { partitionedContainers[pod] = [] });
@@ -503,68 +696,130 @@ class Containers extends React.Component {
             // If there are pods to show and the generic container list is empty don't show  it at all
             if (Object.keys(partitionedContainers).length > 1 && !partitionedContainers["no-pod"].length)
                 delete partitionedContainers["no-pod"];
+
+            const prune_states = ["created", "configured", "stopped", "exited"];
+            for (const containerid of Object.keys(this.props.containers)) {
+                const container = this.props.containers[containerid];
+                // Ignore pods and running containers
+                if (!prune_states.includes(container.State.Status) || container.Pod)
+                    continue;
+
+                unusedContainers.push({
+                    id: container.Id + container.isSystem.toString(),
+                    name: container.Name,
+                    created: container.Created,
+                    system: container.isSystem,
+                });
+            }
         }
 
         // Convert to the search result output
         let localImages = null;
         if (this.props.images) {
-            localImages = Object.keys(this.props.images).map(id => {
+            localImages = Object.keys(this.props.images).reduce((images, id) => {
                 const img = this.props.images[id];
                 if (img.RepoTags) {
                     img.Index = img.RepoTags[0].split('/')[0];
                     img.Name = img.RepoTags[0];
-                } else {
-                    img.Name = "<none:none>";
-                    img.Index = "";
+                    img.toString = function imgToString() { return this.Name };
+                    images.push(img);
                 }
-                img.toString = function imgToString() { return this.Name };
-
-                return img;
-            });
+                return images;
+            }, []);
         }
 
-        const filterRunning =
+        const createContainer = (inPod) => {
+            if (localImages)
+                Dialogs.show(
+                    <utils.PodmanInfoContext.Consumer>
+                        {(podmanInfo) => (
+                            <DialogsContext.Consumer>
+                                {(Dialogs) => (
+                                    <ImageRunModal user={this.props.user}
+                                                              localImages={localImages}
+                                                              pod={inPod}
+                                                              systemServiceAvailable={this.props.systemServiceAvailable}
+                                                              userServiceAvailable={this.props.userServiceAvailable}
+                                                              onAddNotification={this.props.onAddNotification}
+                                                              podmanInfo={podmanInfo}
+                                                              dialogs={Dialogs} />
+                                )}
+                            </DialogsContext.Consumer>
+                        )}
+                    </utils.PodmanInfoContext.Consumer>);
+        };
+
+        const createPod = () => {
+            Dialogs.show(<PodCreateModal
+                systemServiceAvailable={this.props.systemServiceAvailable}
+                userServiceAvailable={this.props.userServiceAvailable}
+                user={this.props.user}
+                onAddNotification={this.props.onAddNotification} />);
+        };
+
+        const filterRunning = (
             <Toolbar>
-                <ToolbarContent>
+                <ToolbarContent className="containers-containers-toolbarcontent">
                     <ToolbarItem variant="label" htmlFor="containers-containers-filter">
                         {_("Show")}
                     </ToolbarItem>
                     <ToolbarItem>
-                        <FormSelect id="containers-containers-filter" value={this.props.filter} onChange={this.props.handleFilterChange}>
-                            <FormSelectOption value='running' label={_("Only running")} />
+                        <FormSelect id="containers-containers-filter" value={this.props.filter} onChange={(_, value) => this.props.handleFilterChange(value)}>
                             <FormSelectOption value='all' label={_("All")} />
+                            <FormSelectOption value='running' label={_("Only running")} />
                         </FormSelect>
                     </ToolbarItem>
-                    <Divider isVertical />
+                    <Divider orientation={{ default: "vertical" }} />
+                    <ToolbarItem>
+                        <Button variant="secondary" key="create-new-pod-action"
+                                id="containers-containers-create-pod-btn"
+                                onClick={() => createPod()}>
+                            {_("Create pod")}
+                        </Button>
+                    </ToolbarItem>
                     <ToolbarItem>
                         <Button variant="primary" key="get-new-image-action"
-                        id="containers-containers-create-container-btn"
-                        isDisabled={localImages === null}
-                        onClick={() => this.setState({ showCreateContainerModal: true })}>
+                                id="containers-containers-create-container-btn"
+                                isDisabled={localImages === null}
+                                onClick={() => createContainer(null)}>
                             {_("Create container")}
                         </Button>
                     </ToolbarItem>
+                    <ToolbarItem>
+                        <ContainerOverActions unusedContainers={unusedContainers} handlePruneUnusedContainers={this.onOpenPruneUnusedContainersDialog} />
+                    </ToolbarItem>
                 </ToolbarContent>
-                {this.state.showCreateContainerModal && localImages &&
-                <ImageRunModal
-                user={this.props.user}
-                localImages={localImages}
-                close={() => this.setState({ showCreateContainerModal: false, createPod: null })}
-                pod={this.state.createPod}
-                registries={this.props.registries}
-                selinuxAvailable={this.props.selinuxAvailable}
-                podmanRestartAvailable={this.props.podmanRestartAvailable}
-                systemServiceAvailable={this.props.systemServiceAvailable}
-                userServiceAvailable={this.props.userServiceAvailable}
-                onAddNotification={this.props.onAddNotification}
-                /> }
-            </Toolbar>;
+            </Toolbar>
+        );
+
+        const sortRows = (rows, direction, idx) => {
+            // CPU / Memory /States
+            const isNumeric = idx == 2 || idx == 3 || idx == 4;
+            const stateOrderMapping = {};
+            utils.states.forEach((elem, index) => {
+                stateOrderMapping[elem] = index;
+            });
+            const sortedRows = rows.sort((a, b) => {
+                let aitem = a.columns[idx].sortKey ?? a.columns[idx].title;
+                let bitem = b.columns[idx].sortKey ?? b.columns[idx].title;
+                // Sort the states based on the order defined in utils. so Running first.
+                if (idx === 4) {
+                    aitem = stateOrderMapping[aitem];
+                    bitem = stateOrderMapping[bitem];
+                }
+                if (isNumeric) {
+                    return bitem - aitem;
+                } else {
+                    return aitem.localeCompare(bitem);
+                }
+            });
+            return direction === SortByDirection.asc ? sortedRows : sortedRows.reverse();
+        };
 
         const card = (
-            <Card id="containers-containers" className="containers-containers">
-                <CardHeader>
+            <Card id="containers-containers" className="containers-containers" isClickable isSelectable>
+                <CardHeader actions={{ actions: filterRunning }}>
                     <CardTitle><Text component={TextVariants.h2}>{_("Containers")}</Text></CardTitle>
-                    <CardActions>{filterRunning}</CardActions>
                 </CardHeader>
                 <CardBody>
                     <Flex direction={{ default: 'column' }}>
@@ -573,7 +828,9 @@ class Containers extends React.Component {
                                             aria-label={_("Containers")}
                                             emptyCaption={emptyCaption}
                                             columns={columnTitles}
-                                            rows={[]} />
+                                            sortMethod={sortRows}
+                                            rows={[]}
+                                            sortBy={{ index: 0, direction: SortByDirection.asc }} />
                             : Object.keys(partitionedContainers)
                                     .sort((a, b) => {
                                         if (a == "no-pod") return -1;
@@ -588,49 +845,65 @@ class Containers extends React.Component {
                                         const tableProps = {};
                                         const rows = partitionedContainers[section].map(container => {
                                             return this.renderRow(this.props.containersStats, container,
-                                                                  this.props.containersDetails[container.Id + container.isSystem.toString()],
                                                                   localImages);
                                         });
                                         let caption;
                                         let podStatus;
                                         if (section !== 'no-pod') {
-                                            tableProps['aria-label'] = cockpit.format("Containers of Pod $0", this.props.pods[section].Name);
-                                            podStatus = this.props.pods[section].Status;
-                                            caption = this.props.pods[section].Name;
+                                            const pod = this.props.pods[section];
+                                            tableProps['aria-label'] = cockpit.format("Containers of pod $0", pod.Name);
+                                            podStatus = pod.Status;
+                                            caption = pod.Name;
                                         } else {
                                             tableProps['aria-label'] = _("Containers");
                                         }
+
+                                        const actions = caption && (
+                                            <>
+                                                <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
+                                                <Button variant="secondary"
+                                                        className="create-container-in-pod"
+                                                        isDisabled={localImages === null}
+                                                        onClick={() => createContainer(this.props.pods[section])}>
+                                                    {_("Create container in pod")}
+                                                </Button>
+                                                <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
+                                            </>
+                                        );
                                         return (
                                             <Card key={'table-' + section}
                                              id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                              isPlain={section == "no-pod"}
                                              isFlat={section != "no-pod"}
-                                             className="container-section">
-                                                {caption && <CardHeader>
+                                             className="container-pod"
+                                             isClickable
+                                             isSelectable>
+                                                {caption && <CardHeader actions={{ actions, className: "panel-actions" }}>
                                                     <CardTitle>
-                                                        <span className='pod-name'>{caption}</span>
-                                                        <span>{_("pod group")}</span>
+                                                        <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
+                                                            <h3 className='pod-name'>{caption}</h3>
+                                                            <span>{_("pod group")}</span>
+                                                            {this.renderPodDetails(this.props.pods[section], podStatus)}
+                                                        </Flex>
                                                     </CardTitle>
-                                                    <CardActions className='panel-actions'>
-                                                        <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
-                                                        <Button
-                                                          variant="primary"
-                                                          className="create-container-in-pod"
-                                                          onClick={() => this.setState({ showCreateContainerModal: true, createPod: this.props.pods[section] })}>
-                                                            {_("Create container in pod")}
-                                                        </Button>
-                                                        <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
-                                                    </CardActions>
                                                 </CardHeader>}
                                                 <ListingTable variant='compact'
                                                           emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
                                                           columns={columnTitles}
+                                                          sortMethod={sortRows}
                                                           rows={rows}
                                                           {...tableProps} />
                                             </Card>
                                         );
                                     })}
                     </Flex>
+                    {this.state.showPruneUnusedContainersModal &&
+                    <PruneUnusedContainersModal
+                      close={() => this.setState({ showPruneUnusedContainersModal: false })}
+                      unusedContainers={unusedContainers}
+                      onAddNotification={this.props.onAddNotification}
+                      userSystemServiceAvailable={this.props.userServiceAvailable && this.props.systemServiceAvailable}
+                      user={this.props.user} /> }
                 </CardBody>
             </Card>
         );

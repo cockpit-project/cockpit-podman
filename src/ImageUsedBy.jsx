@@ -1,6 +1,9 @@
 import React from 'react';
 import cockpit from 'cockpit';
-import { Button, Badge, Flex, List, ListItem } from "@patternfly/react-core";
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
 
 const _ = cockpit.gettext;
 
@@ -14,7 +17,7 @@ const ImageUsedBy = ({ containers, showAll }) => {
         <List isPlain>
             {containers.map(c => {
                 const container = c.container;
-                const isRunning = container.State == "running";
+                const isRunning = container.State?.Status === "running";
                 return (
                     <ListItem key={container.Id}>
                         <Flex>
@@ -27,7 +30,7 @@ const ImageUsedBy = ({ containers, showAll }) => {
                                         if (!isRunning)
                                             showAll();
                                     }}>
-                                {container.Names}
+                                {container.Name}
                             </Button>
                             {isRunning && <Badge className="ct-badge-container-running">{_("Running")}</Badge>}
                         </Flex>

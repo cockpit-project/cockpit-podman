@@ -1,29 +1,34 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import {
-    Button, Checkbox,
-    EmptyState, EmptyStateBody,
-    Form, FormGroup, FormFieldGroup, FormFieldGroupHeader,
-    FormSelect, FormSelectOption,
-    Grid, GridItem,
-    HelperText, HelperTextItem,
-    Modal, Radio, Select, SelectVariant,
-    SelectOption, SelectGroup,
-    TextInput, Tabs, Tab, TabTitleText,
-    ToggleGroup, ToggleGroupItem,
-    Flex, FlexItem,
-    Popover,
-} from '@patternfly/react-core';
-import { MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
+import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { FormHelper } from "cockpit-components-form-helper.jsx";
+import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
+import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
+import { Select, SelectGroup, SelectOption, SelectVariant } from "@patternfly/react-core/dist/esm/deprecated/components/Select";
+import { NumberInput } from "@patternfly/react-core/dist/esm/components/NumberInput";
+import { InputGroup, InputGroupText } from "@patternfly/react-core/dist/esm/components/InputGroup";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { Tab, TabTitleText, Tabs } from "@patternfly/react-core/dist/esm/components/Tabs";
+import { Text, TextContent, TextList, TextListItem, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
+import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
+import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
+import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import * as dockerNames from 'docker-names';
 
 import { ErrorNotification } from './Notification.jsx';
-import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 import * as utils from './util.js';
 import * as client from './client.js';
 import rest from './rest.js';
 import cockpit from 'cockpit';
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
+import { PublishPort, validatePublishPort } from './PublishPort.jsx';
+import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
+import { validateVolume, Volume } from './Volume.jsx';
+import { EnvVar, validateEnvVar } from './Env.jsx';
 
 import { debounce } from 'throttle-debounce';
 
@@ -48,264 +53,38 @@ const units = {
     },
 };
 
-const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount }) =>
-    (
-        <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-4-col-on-md"
-                label={_("IP address")}
-                fieldId={id + "-ip-address"}
-                labelIcon={
-                    <Popover aria-label={_("IP address help")}
-                        enableFlip
-                        bodyContent={_("If host IP is set to 0.0.0.0 or not set at all, the port will be bound on all IPs on the host.")}>
-                        <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
-                            <OutlinedQuestionCircleIcon />
-                        </button>
-                    </Popover>
-                }>
-                <TextInput id={id + "-ip-address"}
-                        value={item.IP || ''}
-                        onChange={value => onChange(idx, 'IP', value)} />
-            </FormGroup>
-            <FormGroup className="pf-m-2-col-on-md"
-                    label={_("Host port")}
-                    fieldId={id + "-host-port"}
-                    labelIcon={
-                        <Popover aria-label={_("Host port help")}
-                            enableFlip
-                            bodyContent={_("If the host port is not set the container port will be randomly assigned a port on the host.")}>
-                            <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
-                                <OutlinedQuestionCircleIcon />
-                            </button>
-                        </Popover>
-                    }>
-                <TextInput id={id + "-host-port"}
-                            type='number'
-                            step={1}
-                            min={1}
-                            max={65535}
-                            value={item.hostPort || ''}
-                            onChange={value => onChange(idx, 'hostPort', value)} />
-            </FormGroup>
-            <FormGroup className="pf-m-3-col-on-md"
-                        label={_("Container port")}
-                        fieldId={id + "-container-port"} isRequired>
-                <TextInput id={id + "-container-port"}
-                            type='number'
-                            step={1}
-                            min={1}
-                            max={65535}
-                            value={item.containerPort || ''}
-                            onChange={value => onChange(idx, 'containerPort', value)} />
-            </FormGroup>
-            <FormGroup className="pf-m-2-col-on-md"
-                        label={_("Protocol")}
-                        fieldId={id + "-protocol"}>
-                <FormSelect className='pf-c-form-control container-port-protocol'
-                            id={id + "-protocol"}
-                            value={item.protocol}
-                            onChange={value => onChange(idx, 'protocol', value)}>
-                    <FormSelectOption value='tcp' key='tcp' label={_("TCP")} />
-                    <FormSelectOption value='udp' key='udp' label={_("UDP")} />
-                </FormSelect>
-            </FormGroup>
-            <FormGroup className="pf-m-1-col-on-md remove-button-group">
-                <Button variant='secondary'
-                            className="btn-close"
-                            id={id + "-btn-close"}
-                            isSmall
-                            aria-label={_("Remove item")}
-                            icon={<MinusIcon />}
-                            onClick={() => removeitem(idx)} />
-            </FormGroup>
-        </Grid>
-    );
-
-const handleEnvValue = (key, value, idx, onChange, additem, itemCount) => {
-    // Allow the input of KEY=VALUE separated value pairs for bulk import
-    if (value.includes('=')) {
-        const parts = value.trim().split(" ");
-        let index = idx;
-        for (const part of parts) {
-            const [envKey, envVar] = part.split('=', 2);
-            if (!envKey || !envVar) {
-                continue;
-            }
-
-            if (index !== idx) {
-                additem();
-            }
-            onChange(index, 'envKey', envKey);
-            onChange(index, 'envValue', envVar);
-            index++;
-        }
-    } else {
-        onChange(idx, key, value);
-    }
-};
-
-const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount }) =>
-    (
-        <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-5-col-on-md" label={_("Key")} fieldId={id + "-key-address"}>
-                <TextInput id={id + "-key"}
-                       value={item.envKey || ''}
-                       onChange={value => handleEnvValue('envKey', value, idx, onChange, additem, itemCount)} />
-            </FormGroup>
-            <FormGroup className="pf-m-5-col-on-md" label={_("Value")} fieldId={id + "-value-address"}>
-                <TextInput id={id + "-value"}
-                       value={item.envValue || ''}
-                       onChange={value => handleEnvValue('envValue', value, idx, onChange, additem, itemCount)} />
-            </FormGroup>
-            <FormGroup className="pf-m-1-col-on-md remove-button-group">
-                <Button variant='secondary'
-                    className="btn-close"
-                    id={id + "-btn-close"}
-                    isSmall
-                    aria-label={_("Remove item")}
-                    icon={<MinusIcon />}
-                    onClick={() => removeitem(idx)} />
-            </FormGroup>
-        </Grid>
-    );
-
-const Volume = ({ id, item, onChange, idx, removeitem, additem, options, itemCount }) =>
-    (
-        <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-3-col-on-md" label={_("Host path")} fieldId={id + "-host-path"}>
-                <FileAutoComplete id={id + "-host-path"}
-                    value={item.hostPath || ''}
-                    onChange={ value => onChange(idx, 'hostPath', value) } />
-            </FormGroup>
-            <FormGroup className="pf-m-3-col-on-md" label={_("Container path")} fieldId={id + "-container-path"}>
-                <TextInput id={id + "-container-path"}
-                    value={item.containerPath || ''}
-                    onChange={value => onChange(idx, 'containerPath', value)} />
-            </FormGroup>
-            <FormGroup className="pf-m-2-col-on-md" label={_("Mode")} fieldId={id + "-mode"}>
-                <Checkbox id={id + "-mode"}
-                    label={_("Writable")}
-                    isChecked={item.mode == "rw"}
-                    onChange={value => onChange(idx, 'mode', value ? "rw" : "ro")} />
-            </FormGroup>
-            { options && options.selinuxAvailable &&
-            <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={id + "-selinux"}>
-                <FormSelect id={id + "-selinux"} className='pf-c-form-control'
-                            value={item.selinux}
-                            onChange={value => onChange(idx, 'selinux', value)}>
-                    <FormSelectOption value='' key='' label={_("No label")} />
-                    <FormSelectOption value='z' key='z' label={_("Shared")} />
-                    <FormSelectOption value='Z' key='Z' label={_("Private")} />
-                </FormSelect>
-            </FormGroup> }
-            <FormGroup className="pf-m-1-col-on-md remove-button-group">
-                <Button variant='secondary'
-                    className="btn-close"
-                    id={id + "-btn-close"}
-                    aria-label={_("Remove item")}
-                    isSmall
-                    icon={<MinusIcon />}
-                    onClick={() => removeitem(idx)} />
-            </FormGroup>
-        </Grid>
-    );
-
-class DynamicListForm extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            list: [],
-        };
-        this.keyCounter = 0;
-        this.removeItem = this.removeItem.bind(this);
-        this.addItem = this.addItem.bind(this);
-        this.onItemChange = this.onItemChange.bind(this);
-    }
-
-    removeItem(idx, field, value) {
-        this.setState(state => {
-            const items = state.list.concat();
-            items.splice(idx, 1);
-            return { list: items };
-        }, () => this.props.onChange(this.state.list.concat()));
-    }
-
-    addItem() {
-        this.setState(state => {
-            return { list: [...state.list, Object.assign({ key: this.keyCounter++ }, this.props.default)] };
-        }, () => this.props.onChange(this.state.list.concat()));
-    }
-
-    onItemChange(idx, field, value) {
-        this.setState(state => {
-            const items = state.list.concat();
-            items[idx][field] = value || null;
-            return { list: items };
-        }, () => this.props.onChange(this.state.list.concat()));
-    }
-
-    render () {
-        const { id, label, actionLabel, formclass, emptyStateString, helperText } = this.props;
-        const dialogValues = this.state;
-        return (
-            <FormFieldGroup header={
-                <FormFieldGroupHeader
-                    titleText={{ text: label }}
-                    actions={<Button variant="secondary" className="btn-add" onClick={this.addItem}>{actionLabel}</Button>}
-                />
-            } className={"dynamic-form-group " + formclass}>
-                {
-                    dialogValues.list.length
-                        ? <>
-                            {dialogValues.list.map((item, idx) => {
-                                return React.cloneElement(this.props.itemcomponent, {
-                                    idx: idx, item: item, id: id + "-" + idx,
-                                    key: idx,
-                                    onChange: this.onItemChange, removeitem: this.removeItem, additem: this.addItem, options: this.props.options,
-                                    itemCount: Object.keys(dialogValues.list).length,
-                                });
-                            })
-                            }
-                            {helperText &&
-                            <HelperText>
-                                <HelperTextItem>{helperText}</HelperTextItem>
-                            </HelperText>
-                            }
-                        </>
-                        : <EmptyState>
-                            <EmptyStateBody>
-                                {emptyStateString}
-                            </EmptyStateBody>
-                        </EmptyState>
-                }
-            </FormFieldGroup>
-        );
-    }
-}
-DynamicListForm.propTypes = {
-    emptyStateString: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
-    id: PropTypes.string.isRequired,
-    itemcomponent: PropTypes.object.isRequired,
-    formclass: PropTypes.string,
-    options: PropTypes.object,
-};
+// healthchecks.go HealthCheckOnFailureAction
+const HealthCheckOnFailureActionOrder = [
+    { value: 0, label: _("No action") },
+    { value: 3, label: _("Restart") },
+    { value: 4, label: _("Stop") },
+    { value: 2, label: _("Force stop") },
+];
 
 export class ImageRunModal extends React.Component {
     constructor(props) {
         super(props);
-        let command = "sh";
+
+        let command = "";
         if (this.props.image && this.props.image.Command) {
             command = utils.quote_cmdline(this.props.image.Command);
         }
+
+        const entrypoint = utils.quote_cmdline(this.props.image?.Entrypoint);
+
         let selectedImage = "";
         if (this.props.image) {
             selectedImage = utils.image_name(this.props.image);
         }
 
+        let default_owner = this.props.systemServiceAvailable ? systemOwner : this.props.user;
+        if (this.props.pod)
+            default_owner = this.props.pod.isSystem ? systemOwner : this.props.user;
+
         this.state = {
             command,
             containerName: dockerNames.getRandomName(),
+            entrypoint,
             env: [],
             hasTTY: true,
             publish: [],
@@ -321,7 +100,7 @@ export class ImageRunModal extends React.Component {
             restartTries: 5,
             pullLatestImage: false,
             activeTabKey: 0,
-            owner: this.props.systemServiceAvailable ? systemOwner : this.props.user,
+            owner: default_owner,
             /* image select */
             selectedImage,
             searchFinished: false,
@@ -330,6 +109,13 @@ export class ImageRunModal extends React.Component {
             imageResults: {},
             isImageSelectOpen: false,
             searchByRegistry: 'all',
+            /* health check */
+            healthcheck_command: "",
+            healthcheck_interval: 30,
+            healthcheck_timeout: 30,
+            healthcheck_start_period: 0,
+            healthcheck_retries: 3,
+            healthcheck_action: 0,
         };
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
@@ -375,14 +161,14 @@ export class ImageRunModal extends React.Component {
             resourceLimit.memory = { limit: memorySize };
             createConfig.resource_limits = resourceLimit;
         }
-        if (this.state.cpuSharesConfigure && this.state.cpuShares !== 0) {
-            resourceLimit.cpu = { shares: this.state.cpuShares };
+        if (this.state.cpuSharesConfigure && parseInt(this.state.cpuShares) !== 0) {
+            resourceLimit.cpu = { shares: parseInt(this.state.cpuShares) };
             createConfig.resource_limits = resourceLimit;
         }
         createConfig.terminal = this.state.hasTTY;
-        if (this.state.publish.length > 0)
+        if (this.state.publish.some(port => port !== undefined))
             createConfig.portmappings = this.state.publish
-                    .filter(port => port.containerPort)
+                    .filter(port => port?.containerPort)
                     .map(port => {
                         const pm = { container_port: parseInt(port.containerPort), protocol: port.protocol };
                         if (port.hostPort !== null)
@@ -391,14 +177,17 @@ export class ImageRunModal extends React.Component {
                             pm.host_ip = port.IP;
                         return pm;
                     });
-        if (this.state.env.length > 0) {
-            const ports = {};
-            this.state.env.forEach(item => { ports[item.envKey] = item.envValue });
-            createConfig.env = ports;
+        if (this.state.env.some(item => item !== undefined)) {
+            const envs = {};
+            this.state.env.forEach(item => {
+                if (item !== undefined)
+                    envs[item.envKey] = item.envValue;
+            });
+            createConfig.env = envs;
         }
-        if (this.state.volumes.length > 0) {
+        if (this.state.volumes.some(volume => volume !== undefined)) {
             createConfig.mounts = this.state.volumes
-                    .filter(volume => volume.hostPath && volume.containerPath)
+                    .filter(volume => volume?.hostPath && volume?.containerPath)
                     .map(volume => {
                         const record = { source: volume.hostPath, destination: volume.containerPath, type: "bind" };
                         record.options = [];
@@ -417,20 +206,32 @@ export class ImageRunModal extends React.Component {
             }
             // Enable podman-restart.service for system containers, for user
             // sessions enable-linger needs to be enabled for containers to start on boot.
-            if (this.state.restartPolicy === "always" && this.props.systemServiceAvailable) {
+            if (this.state.restartPolicy === "always" && (this.props.podmanInfo.userLingeringEnabled || this.props.systemServiceAvailable)) {
                 this.enablePodmanRestartService();
             }
+        }
+
+        if (this.state.healthcheck_command !== "") {
+            createConfig.healthconfig = {
+                Interval: parseInt(this.state.healthcheck_interval) * 1000000000,
+                Retries: this.state.healthcheck_retries,
+                StartPeriod: parseInt(this.state.healthcheck_start_period) * 1000000000,
+                Test: utils.unquote_cmdline(this.state.healthcheck_command),
+                Timeout: parseInt(this.state.healthcheck_timeout) * 1000000000,
+            };
+            createConfig.health_check_on_failure_action = parseInt(this.state.healthcheck_action);
         }
 
         return createConfig;
     }
 
     createContainer = (isSystem, createConfig, runImage) => {
+        const Dialogs = this.props.dialogs;
         client.createContainer(isSystem, createConfig)
                 .then(reply => {
                     if (runImage) {
                         client.postContainer(isSystem, "start", reply.Id, {})
-                                .then(() => this.props.close())
+                                .then(() => Dialogs.close())
                                 .catch(ex => {
                                     // If container failed to start remove it, so a user can fix the settings and retry and
                                     // won't get another error that the container name is already taken.
@@ -449,7 +250,7 @@ export class ImageRunModal extends React.Component {
                                             });
                                 });
                     } else {
-                        this.props.close();
+                        Dialogs.close();
                     }
                 })
                 .catch(ex => {
@@ -458,9 +259,13 @@ export class ImageRunModal extends React.Component {
                         dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
                     });
                 });
-    }
+    };
 
     async onCreateClicked(runImage = false) {
+        if (!await this.validateForm())
+            return;
+
+        const Dialogs = this.props.dialogs;
         const createConfig = this.getCreateConfig();
         const { pullLatestImage } = this.state;
         const isSystem = this.isSystem();
@@ -475,15 +280,15 @@ export class ImageRunModal extends React.Component {
         if (imageExists && !pullLatestImage) {
             this.createContainer(isSystem, createConfig, runImage);
         } else {
-            this.props.close();
+            Dialogs.close();
             const tempImage = { ...createConfig };
 
             // Assign temporary properties to allow rendering
             tempImage.Id = tempImage.name;
             tempImage.isSystem = isSystem;
-            tempImage.State = _("downloading");
+            tempImage.State = { Status: _("downloading") };
             tempImage.Created = new Date();
-            tempImage.Names = [tempImage.name];
+            tempImage.Name = tempImage.name;
             tempImage.Image = createConfig.image;
             tempImage.isDownloading = true;
 
@@ -520,6 +325,14 @@ export class ImageRunModal extends React.Component {
         this.setState({ [key]: value });
     }
 
+    onPlusOne(key) {
+        this.setState(state => ({ [key]: parseInt(state[key]) + 1 }));
+    }
+
+    onMinusOne(key) {
+        this.setState(state => ({ [key]: parseInt(state[key]) - 1 }));
+    }
+
     handleTabClick = (event, tabIndex) => {
         // Prevent the form from being submitted.
         event.preventDefault();
@@ -549,7 +362,7 @@ export class ImageRunModal extends React.Component {
 
         // If there are registries configured search in them, or if a user searches for `docker.io/cockpit` let
         // podman search in the user specified registry.
-        if (Object.keys(this.props.registries).length !== 0 || value.includes('/')) {
+        if (Object.keys(this.props.podmanInfo.registries).length !== 0 || value.includes('/')) {
             searches.push(this.activeConnection.call({
                 method: "GET",
                 path: client.VERSION + "libpod/images/search",
@@ -583,7 +396,7 @@ export class ImageRunModal extends React.Component {
                             } else {
                                 dialogError = _("Failed to search for new images");
                                 // TODO: add registry context, podman does not include it in the reply.
-                                dialogErrorDetail = cockpit.format(_("Failed to search for images: $0"), result.reason);
+                                dialogErrorDetail = result.reason ? cockpit.format(_("Failed to search for images: $0"), result.reason.message) : _("Failed to search for images.");
                             }
                         }
                         // Group images on registry
@@ -620,9 +433,14 @@ export class ImageRunModal extends React.Component {
                         });
                     }
                 });
-    }
+    };
 
     clearImageSelection = () => {
+        // Reset command if it was prefilled
+        let command = this.state.command;
+        if (this.state.command === utils.quote_cmdline(this.state.selectedImage?.Command))
+            command = "";
+
         this.setState({
             selectedImage: "",
             image: "",
@@ -630,24 +448,34 @@ export class ImageRunModal extends React.Component {
             imageResults: {},
             searchText: "",
             searchFinished: false,
+            command,
+            entrypoint: "",
         });
-    }
+    };
 
-    onImageSelectToggle = isOpen => {
+    onImageSelectToggle = (_, isOpen) => {
         this.setState({
             isImageSelectOpen: isOpen,
         });
-    }
+    };
 
     onImageSelect = (event, value, placeholder) => {
         if (event === undefined)
             return;
 
+        let command = this.state.command;
+        if (value.Command && !command)
+            command = utils.quote_cmdline(value.Command);
+
+        const entrypoint = utils.quote_cmdline(value?.Entrypoint);
+
         this.setState({
             selectedImage: value,
             isImageSelectOpen: false,
+            command,
+            entrypoint,
         });
-    }
+    };
 
     handleImageSelectInput = value => {
         this.setState({
@@ -657,16 +485,16 @@ export class ImageRunModal extends React.Component {
             selectedImage: "",
         });
         this.onSearchTriggered(value);
-    }
+    };
 
     debouncedInputChanged = debounce(300, this.handleImageSelectInput);
 
-    handleOwnerSelect = (_, event) => {
+    handleOwnerSelect = (event) => {
         const value = event.currentTarget.value;
         this.setState({
             owner: value
         });
-    }
+    };
 
     filterImages = () => {
         const { localImages } = this.props;
@@ -686,7 +514,8 @@ export class ImageRunModal extends React.Component {
             imageRegistries.push(this.state.searchByRegistry);
         }
 
-        let regexString = searchText;
+        // Strip out all non-allowed container image characters when filtering.
+        let regexString = searchText.replace(/[^\w_.:-]/g, "");
         // Strip image registry option if set for comparing results for docker.io searching for docker.io/fedora
         // returns docker.io/$username/fedora for example.
         if (regexString.includes('/')) {
@@ -734,7 +563,7 @@ export class ImageRunModal extends React.Component {
         }
 
         return results;
-    }
+    };
 
     // Similar to the output of podman search and podman's /libpod/images/search endpoint only show the root domain.
     truncateRegistryDomain = (domain) => {
@@ -743,23 +572,118 @@ export class ImageRunModal extends React.Component {
             return parts[parts.length - 2] + "." + parts[parts.length - 1];
         }
         return domain;
-    }
+    };
 
     enablePodmanRestartService = () => {
         const argv = ["systemctl", "enable", "podman-restart.service"];
+        if (!this.isSystem()) {
+            argv.splice(1, 0, "--user");
+        }
 
-        cockpit.spawn(argv, { superuser: "require", err: "message" })
+        cockpit.spawn(argv, { superuser: this.isSystem() ? "require" : "", err: "message" })
                 .catch(err => {
                     console.warn("Failed to start podman-restart.service:", JSON.stringify(err));
                 });
-    }
+    };
 
     isSystem = () => {
         const { owner } = this.state;
         return owner === systemOwner;
+    };
+
+    isFormInvalid = validationFailed => {
+        const groupHasError = row => row && Object.values(row)
+                .filter(val => val) // Filter out empty/undefined properties
+                .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+
+        // If at least one group is invalid, then the whole form is invalid
+        return validationFailed.publish?.some(groupHasError) ||
+            validationFailed.volumes?.some(groupHasError) ||
+            validationFailed.env?.some(groupHasError) ||
+            !!validationFailed.containerName;
+    };
+
+    async validateContainerName(containerName) {
+        try {
+            await client.containerExists(this.isSystem(), containerName);
+        } catch (error) {
+            return;
+        }
+        return _("Name already in use");
     }
 
+    async validateForm() {
+        const { publish, volumes, env, containerName } = this.state;
+        const validationFailed = { };
+
+        const publishValidation = publish.map(a => {
+            if (a === undefined)
+                return undefined;
+
+            return {
+                IP: validatePublishPort(a.IP, "IP"),
+                hostPort: validatePublishPort(a.hostPort, "hostPort"),
+                containerPort: validatePublishPort(a.containerPort, "containerPort"),
+            };
+        });
+        if (publishValidation.some(entry => Object.keys(entry).length > 0))
+            validationFailed.publish = publishValidation;
+
+        const volumesValidation = volumes.map(a => {
+            if (a === undefined)
+                return undefined;
+
+            return {
+                hostPath: validateVolume(a.hostPath, "hostPath"),
+                containerPath: validateVolume(a.containerPath, "containerPath"),
+            };
+        });
+        if (volumesValidation.some(entry => Object.keys(entry).length > 0))
+            validationFailed.volumes = volumesValidation;
+
+        const envValidation = env.map(a => {
+            if (a === undefined)
+                return undefined;
+
+            return {
+                envKey: validateEnvVar(a.envKey, "envKey"),
+                envValue: validateEnvVar(a.envValue, "envValue"),
+            };
+        });
+        if (envValidation.some(entry => Object.keys(entry).length > 0))
+            validationFailed.env = envValidation;
+
+        const containerNameValidation = await this.validateContainerName(containerName);
+
+        if (containerNameValidation)
+            validationFailed.containerName = containerNameValidation;
+
+        this.setState({ validationFailed });
+
+        return !this.isFormInvalid(validationFailed);
+    }
+
+    /* Updates a validation object of the whole dynamic list's form (e.g. the whole port-mapping form)
+    *
+    * Arguments
+    *   - key: [publish/volumes/env] - Specifies the validation of which dynamic form of the Image run dialog is being updated
+    *   - value: An array of validation errors of the form. Each item of the array represents a row of the dynamic list.
+    *            Index needs to corellate with a row number
+    */
+    dynamicListOnValidationChange = (key, value) => {
+        const validationFailedDelta = { ...this.state.validationFailed };
+
+        validationFailedDelta[key] = value;
+
+        if (validationFailedDelta[key].every(a => a === undefined))
+            delete validationFailedDelta[key];
+
+        this.onValueChanged('validationFailed', validationFailedDelta);
+    };
+
     render() {
+        const Dialogs = this.props.dialogs;
+        const { registries, podmanRestartAvailable, userLingeringEnabled, userPodmanRestartAvailable, selinuxAvailable, version } = this.props.podmanInfo;
         const { image } = this.props;
         const dialogValues = this.state;
         const { activeTabKey, owner, selectedImage } = this.state;
@@ -770,12 +694,12 @@ export class ImageRunModal extends React.Component {
         }
 
         const localImage = this.state.image || (selectedImage && this.props.localImages.some(img => img.Id === selectedImage.Id));
-        const registries = this.props.registries && this.props.registries.search ? this.props.registries.search : utils.fallbackRegistries;
+        const podmanRegistries = registries && registries.search ? registries.search : utils.fallbackRegistries;
 
         // Add the search component
         const footer = (
             <ToggleGroup className='image-search-footer' aria-label={_("Search by registry")}>
-                <ToggleGroupItem text={_("All")} key='all' isSelected={this.state.searchByRegistry == 'all'} onChange={(_, ev) => {
+                <ToggleGroupItem text={_("All")} key='all' isSelected={this.state.searchByRegistry == 'all'} onChange={(ev, _) => {
                     ev.stopPropagation();
                     this.setState({ searchByRegistry: 'all' });
                 }}
@@ -784,7 +708,7 @@ export class ImageRunModal extends React.Component {
                     ev.stopPropagation();
                 }}
                 />
-                <ToggleGroupItem text={_("Local")} key='local' isSelected={this.state.searchByRegistry == 'local'} onChange={(_, ev) => {
+                <ToggleGroupItem text={_("Local")} key='local' isSelected={this.state.searchByRegistry == 'local'} onChange={(ev, _) => {
                     ev.stopPropagation();
                     this.setState({ searchByRegistry: 'local' });
                 }}
@@ -792,13 +716,13 @@ export class ImageRunModal extends React.Component {
                     ev.stopPropagation();
                 }}
                 />
-                {registries.map(registry => {
+                {podmanRegistries.map(registry => {
                     const index = this.truncateRegistryDomain(registry);
                     return (
                         <ToggleGroupItem
                             text={index} key={index}
                             isSelected={ this.state.searchByRegistry == index }
-                            onChange={ (_, ev) => {
+                            onChange={ (ev, _) => {
                                 ev.stopPropagation();
                                 this.setState({ searchByRegistry: index });
                             } }
@@ -811,25 +735,78 @@ export class ImageRunModal extends React.Component {
 
         const defaultBody = (
             <Form>
-                <FormGroup fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
+                {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
+                <FormGroup id="image-name-group" fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
                     <TextInput id='run-image-dialog-name'
                            className="image-name"
                            placeholder={_("Container name")}
+                           validated={dialogValues.validationFailed.containerName ? "error" : "default"}
                            value={dialogValues.containerName}
-                           onChange={value => this.onValueChanged('containerName', value)} />
+                           onChange={(_, value) => {
+                               utils.validationClear(dialogValues.validationFailed, "containerName", (value) => this.onValueChanged("validationFailed", value));
+                               utils.validationDebounce(async () => {
+                                   const delta = await this.validateContainerName(value);
+                                   if (delta)
+                                       this.onValueChanged("validationFailed", { ...dialogValues.validationFailed, containerName: delta });
+                               });
+                               this.onValueChanged('containerName', value);
+                           }} />
+                    <FormHelper helperTextInvalid={dialogValues.validationFailed.containerName} />
                 </FormGroup>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
-                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-c-form pf-m-horizontal">
+                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-v5-c-form pf-m-horizontal">
                         { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
-                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}>
+                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}
+                                   labelIcon={
+                                       <Popover aria-label={_("Owner help")}
+                                          enableFlip
+                                          bodyContent={
+                                              <>
+                                                  <TextContent>
+                                                      <Text component={TextVariants.h4}>{_("System")}</Text>
+                                                      <TextList>
+                                                          <TextListItem>
+                                                              {_("Ideal for running services")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Resource limits can be set")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Checkpoint and restore support")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Ports under 1024 can be mapped")}
+                                                          </TextListItem>
+                                                      </TextList>
+                                                  </TextContent>
+                                                  <TextContent>
+                                                      <Text component={TextVariants.h4}>{cockpit.format("$0 $1", _("User:"), this.props.user)}</Text>
+                                                      <TextList>
+                                                          <TextListItem>
+                                                              {_("Ideal for development")}
+                                                          </TextListItem>
+                                                          <TextListItem>
+                                                              {_("Restricted by user account permissions")}
+                                                          </TextListItem>
+                                                      </TextList>
+                                                  </TextContent>
+                                              </>
+                                          }>
+                                           <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                                               <OutlinedQuestionCircleIcon />
+                                           </button>
+                                       </Popover>
+                                   }>
                             <Radio value="system"
                                    label={_("System")}
                                    id="run-image-dialog-owner-system"
                                    isChecked={owner === "system"}
+                                   isDisabled={this.props.pod}
                                    onChange={this.handleOwnerSelect} />
                             <Radio value={this.props.user}
                                    label={cockpit.format("$0 $1", _("User:"), this.props.user)}
                                    id="run-image-dialog-owner-user"
+                                   isDisabled={this.props.pod}
                                    isChecked={owner === this.props.user}
                                    onChange={this.handleOwnerSelect} />
                         </FormGroup>
@@ -845,7 +822,7 @@ export class ImageRunModal extends React.Component {
                                         <FlexItem>{cockpit.format(_("Searching: $0"), "quay.io/busybox")}</FlexItem>
                                     </Flex>
                                 }>
-                                  <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                  <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                       <OutlinedQuestionCircleIcon />
                                   </button>
                               </Popover>
@@ -869,7 +846,7 @@ export class ImageRunModal extends React.Component {
                                 onClear={this.clearImageSelection}
                                 // onFilter must be set or the spinner crashes https://github.com/patternfly/patternfly-react/issues/6384
                                 onFilter={() => {}}
-                                onTypeaheadInputChanged={value => this.debouncedInputChanged(value)}
+                                onTypeaheadInputChanged={this.debouncedInputChanged}
                                 footer={footer}
                                 isDisabled={!!this.props.image}
                             >
@@ -880,44 +857,52 @@ export class ImageRunModal extends React.Component {
                         {(image || localImage) &&
                         <FormGroup fieldId="run-image-dialog-pull-latest-image">
                             <Checkbox isChecked={this.state.pullLatestImage} id="run-image-dialog-pull-latest-image"
-                                      onChange={value => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
+                                      onChange={(_event, value) => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
                             />
+                        </FormGroup>
+                        }
+
+                        {dialogValues.entrypoint &&
+                        <FormGroup fieldId='run-image-dialog-entrypoint' hasNoPaddingTop label={_("Entrypoint")}>
+                            <Text id="run-image-dialog-entrypoint">{dialogValues.entrypoint}</Text>
                         </FormGroup>
                         }
 
                         <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
                             <TextInput id='run-image-dialog-command'
                            value={dialogValues.command || ''}
-                           onChange={value => this.onValueChanged('command', value)} />
+                           onChange={(_, value) => this.onValueChanged('command', value)} />
                         </FormGroup>
 
                         <FormGroup fieldId="run=image-dialog-tty">
                             <Checkbox id="run-image-dialog-tty"
                               isChecked={this.state.hasTTY}
                               label={_("With terminal")}
-                              onChange={checked => this.onValueChanged('hasTTY', checked)} />
+                              onChange={(_event, checked) => this.onValueChanged('hasTTY', checked)} />
                         </FormGroup>
 
                         <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
                             <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-memory-limit">
                                 <Checkbox id="run-image-dialog-memory-limit-checkbox"
                                   isChecked={this.state.memoryConfigure}
-                                  onChange={checked => this.onValueChanged('memoryConfigure', checked)} />
-                                <TextInput type='number'
+                                  onChange={(_event, checked) => this.onValueChanged('memoryConfigure', checked)} />
+                                <NumberInput
                                    value={dialogValues.memory}
                                    id="run-image-dialog-memory"
-                                   className="dialog-run-form-input"
-                                   step={1}
                                    min={0}
-                                   isReadOnly={!this.state.memoryConfigure}
+                                   isDisabled={!this.state.memoryConfigure}
                                    onClick={() => !this.state.memoryConfigure && this.onValueChanged('memoryConfigure', true)}
-                                   onChange={value => this.onValueChanged('memory', value)} />
+                                   onPlus={() => this.onPlusOne('memory')}
+                                   onMinus={() => this.onMinusOne('memory')}
+                                   minusBtnAriaLabel={_("Decrease memory")}
+                                   plusBtnAriaLabel={_("Increase memory")}
+                                   onChange={ev => this.onValueChanged('memory', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
                                 <FormSelect id='memory-unit-select'
                                     aria-label={_("Memory unit")}
                                     value={this.state.memoryUnit}
                                     isDisabled={!this.state.memoryConfigure}
                                     className="dialog-run-form-select"
-                                    onChange={value => this.onValueChanged('memoryUnit', value)}>
+                                    onChange={(_event, value) => this.onValueChanged('memoryUnit', value)}>
                                     <FormSelectOption value={units.KB.name} key={units.KB.name} label={_("KB")} />
                                     <FormSelectOption value={units.MB.name} key={units.MB.name} label={_("MB")} />
                                     <FormSelectOption value={units.GB.name} key={units.GB.name} label={_("GB")} />
@@ -933,7 +918,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("CPU Shares help")}
                                       enableFlip
                                       bodyContent={_("CPU shares determine the priority of running containers. Default priority is 1024. A higher number prioritizes this container. A lower number decreases priority.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                           <OutlinedQuestionCircleIcon />
                                       </button>
                                   </Popover>
@@ -941,28 +926,31 @@ export class ImageRunModal extends React.Component {
                                 <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
                                     <Checkbox id="run-image-dialog-cpu-priority-checkbox"
                                         isChecked={this.state.cpuSharesConfigure}
-                                        onChange={checked => this.onValueChanged('cpuSharesConfigure', checked)} />
-                                    <TextInput type='number'
+                                        onChange={(_event, checked) => this.onValueChanged('cpuSharesConfigure', checked)} />
+                                    <NumberInput
                                         id="run-image-cpu-priority"
                                         value={dialogValues.cpuShares}
                                         onClick={() => !this.state.cpuSharesConfigure && this.onValueChanged('cpuSharesConfigure', true)}
-                                        step={1}
                                         min={2}
                                         max={262144}
-                                        isReadOnly={!this.state.cpuSharesConfigure}
-                                        onChange={value => this.onValueChanged('cpuShares', parseInt(value))} />
+                                        isDisabled={!this.state.cpuSharesConfigure}
+                                        onPlus={() => this.onPlusOne('cpuShares')}
+                                        onMinus={() => this.onMinusOne('cpuShares')}
+                                        minusBtnAriaLabel={_("Decrease CPU shares")}
+                                        plusBtnAriaLabel={_("Increase CPU shares")}
+                                        onChange={ev => this.onValueChanged('cpuShares', parseInt(ev.target.value) < 2 ? 2 : ev.target.value)} />
                                 </Flex>
                             </FormGroup>
                         }
-                        {this.isSystem() && this.props.podmanRestartAvailable &&
+                        {((userLingeringEnabled && userPodmanRestartAvailable) || (this.isSystem() && podmanRestartAvailable)) &&
                         <Grid hasGutter md={6} sm={3}>
                             <GridItem>
                                 <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}
                           labelIcon={
                               <Popover aria-label={_("Restart policy help")}
                                 enableFlip
-                                bodyContent={_("Restart policy to follow when containers exit.")}>
-                                  <button onClick={e => e.preventDefault()} className="pf-c-form__group-label-help">
+                                bodyContent={userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
+                                  <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
                                       <OutlinedQuestionCircleIcon />
                                   </button>
                               </Popover>
@@ -971,7 +959,7 @@ export class ImageRunModal extends React.Component {
                                     <FormSelect id="run-image-dialog-restart-policy"
                               aria-label={_("Restart policy help")}
                               value={dialogValues.restartPolicy}
-                              onChange={value => this.onValueChanged('restartPolicy', value)}>
+                              onChange={(_event, value) => this.onValueChanged('restartPolicy', value)}>
                                         <FormSelectOption value='no' key='no' label={_("No")} />
                                         <FormSelectOption value='on-failure' key='on-failure' label={_("On failure")} />
                                         <FormSelectOption value='always' key='always' label={_("Always")} />
@@ -981,40 +969,45 @@ export class ImageRunModal extends React.Component {
                             {dialogValues.restartPolicy === "on-failure" &&
                                 <FormGroup fieldId='run-image-dialog-restart-retries'
                                   label={_("Maximum retries")}>
-                                    <TextInput
-                              type="number"
+                                    <NumberInput
                               id="run-image-dialog-restart-retries"
-                              className="run-image-dialog-restart-retries"
                               value={dialogValues.restartTries}
-                              step={1}
                               min={1}
                               max={65535}
-                              onChange={value => this.onValueChanged('restartTries', value)}
+                              widthChars={5}
+                              minusBtnAriaLabel={_("Decrease maximum retries")}
+                              plusBtnAriaLabel={_("Increase maximum retries")}
+                              onMinus={() => this.onMinusOne('restartTries')}
+                              onPlus={() => this.onPlusOne('restartTries')}
+                              onChange={ev => this.onValueChanged('restartTries', parseInt(ev.target.value) < 1 ? 1 : ev.target.value)}
                                     />
                                 </FormGroup>
                             }
                         </Grid>
                         }
                     </Tab>
-                    <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-c-form">
+                    <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-v5-c-form">
 
                         <DynamicListForm id='run-image-dialog-publish'
                                  emptyStateString={_("No ports exposed")}
                                  formclass='publish-port-form'
                                  label={_("Port mapping")}
                                  actionLabel={_("Add port mapping")}
+                                 validationFailed={dialogValues.validationFailed.publish}
+                                 onValidationChange={value => this.dynamicListOnValidationChange('publish', value)}
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                                  itemcomponent={ <PublishPort />} />
-
                         <DynamicListForm id='run-image-dialog-volume'
                                  emptyStateString={_("No volumes specified")}
                                  formclass='volume-form'
                                  label={_("Volumes")}
                                  actionLabel={_("Add volume")}
+                                 validationFailed={dialogValues.validationFailed.volumes}
+                                 onValidationChange={value => this.dynamicListOnValidationChange('volumes', value)}
                                  onChange={value => this.onValueChanged('volumes', value)}
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
-                                 options={{ selinuxAvailable: this.props.selinuxAvailable }}
+                                 options={{ selinuxAvailable }}
                                  itemcomponent={ <Volume />} />
 
                         <DynamicListForm id='run-image-dialog-env'
@@ -1022,10 +1015,138 @@ export class ImageRunModal extends React.Component {
                                  formclass='env-form'
                                  label={_("Environment variables")}
                                  actionLabel={_("Add variable")}
+                                 validationFailed={dialogValues.validationFailed.env}
+                                 onValidationChange={value => this.dynamicListOnValidationChange('env', value)}
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
                                  itemcomponent={ <EnvVar />} />
+                    </Tab>
+                    <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck" className="pf-v5-c-form pf-m-horizontal">
+                        <FormGroup fieldId='run-image-dialog-healthcheck-command' label={_("Command")}>
+                            <TextInput id='run-image-dialog-healthcheck-command'
+                           value={dialogValues.healthcheck_command || ''}
+                           onChange={(_, value) => this.onValueChanged('healthcheck_command', value)} />
+                        </FormGroup>
+
+                        <FormGroup fieldId='run-image-healthcheck-interval' label={_("Interval")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check interval help")}
+                                      enableFlip
+                                      bodyContent={_("Interval how often health check is run.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <InputGroup>
+                                <NumberInput
+                                        id="run-image-healthcheck-interval"
+                                        value={dialogValues.healthcheck_interval}
+                                        min={0}
+                                        max={262144}
+                                        widthChars={6}
+                                        minusBtnAriaLabel={_("Decrease interval")}
+                                        plusBtnAriaLabel={_("Increase interval")}
+                                        onMinus={() => this.onMinusOne('healthcheck_interval')}
+                                        onPlus={() => this.onPlusOne('healthcheck_interval')}
+                                        onChange={ev => this.onValueChanged('healthcheck_interval', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
+                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
+                            </InputGroup>
+                        </FormGroup>
+                        <FormGroup fieldId='run-image-healthcheck-timeout' label={_("Timeout")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check timeout help")}
+                                      enableFlip
+                                      bodyContent={_("The maximum time allowed to complete the health check before an interval is considered failed.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <InputGroup>
+                                <NumberInput
+                                        id="run-image-healthcheck-timeout"
+                                        value={dialogValues.healthcheck_timeout}
+                                        min={0}
+                                        max={262144}
+                                        widthChars={6}
+                                        minusBtnAriaLabel={_("Decrease timeout")}
+                                        plusBtnAriaLabel={_("Increase timeout")}
+                                        onMinus={() => this.onMinusOne('healthcheck_timeout')}
+                                        onPlus={() => this.onPlusOne('healthcheck_timeout')}
+                                        onChange={ev => this.onValueChanged('healthcheck_timeout', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
+                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
+                            </InputGroup>
+                        </FormGroup>
+                        <FormGroup fieldId='run-image-healthcheck-start-period' label={_("Start period")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check start period help")}
+                                      enableFlip
+                                      bodyContent={_("The initialization time needed for a container to bootstrap.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <InputGroup>
+                                <NumberInput
+                                        id="run-image-healthcheck-start-period"
+                                        value={dialogValues.healthcheck_start_period}
+                                        min={0}
+                                        max={262144}
+                                        widthChars={6}
+                                        minusBtnAriaLabel={_("Decrease start period")}
+                                        plusBtnAriaLabel={_("Increase start period")}
+                                        onMinus={() => this.onMinusOne('healthcheck_start_period')}
+                                        onPlus={() => this.onPlusOne('healthcheck_start_period')}
+                                        onChange={ev => this.onValueChanged('healthcheck_start_period', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
+                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
+                            </InputGroup>
+                        </FormGroup>
+                        <FormGroup fieldId='run-image-healthcheck-retries' label={_("Retries")}
+                              labelIcon={
+                                  <Popover aria-label={_("Health check retries help")}
+                                      enableFlip
+                                      bodyContent={_("The number of retries allowed before a healthcheck is considered to be unhealthy.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            <NumberInput
+                                    id="run-image-healthcheck-retries"
+                                    value={dialogValues.healthcheck_retries}
+                                    min={0}
+                                    max={999}
+                                    widthChars={3}
+                                    minusBtnAriaLabel={_("Decrease retries")}
+                                    plusBtnAriaLabel={_("Increase retries")}
+                                    onMinus={() => this.onMinusOne('healthcheck_retries')}
+                                    onPlus={() => this.onPlusOne('healthcheck_retries')}
+                                    onChange={ev => this.onValueChanged('healthcheck_retries', parseInt(ev.target.value) < 0 ? 0 : ev.target.value)} />
+                        </FormGroup>
+                        {version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
+                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("When unhealthy") }
+                              labelIcon={
+                                  <Popover aria-label={_("Health failure check action help")}
+                                      enableFlip
+                                      bodyContent={_("Action to take once the container transitions to an unhealthy state.")}>
+                                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                                          <OutlinedQuestionCircleIcon />
+                                      </button>
+                                  </Popover>
+                              }>
+                            {HealthCheckOnFailureActionOrder.map(item =>
+                                <Radio value={item.value}
+                                       key={item.value}
+                                       label={item.label}
+                                       id={`run-image-healthcheck-action-${item.value}`}
+                                       isChecked={dialogValues.healthcheck_action === item.value}
+                                       onChange={() => this.onValueChanged('healthcheck_action', item.value)} />
+                            )}
+                        </FormGroup>
+                        }
                     </Tab>
                 </Tabs>
             </Form>
@@ -1033,25 +1154,24 @@ export class ImageRunModal extends React.Component {
         return (
             <Modal isOpen
                    position="top" variant="medium"
-                   onClose={this.props.close}
+                   onClose={Dialogs.close}
                    // TODO: still not ideal on chromium https://github.com/patternfly/patternfly-react/issues/6471
                    onEscapePress={() => {
                        if (this.state.isImageSelectOpen) {
                            this.onImageSelectToggle(!this.state.isImageSelectOpen);
                        } else {
-                           this.props.close();
+                           Dialogs.close();
                        }
                    }}
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
-                       {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
-                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={!image && selectedImage === ""}>
+                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={(!image && selectedImage === "") || this.isFormInvalid(dialogValues.validationFailed)}>
                            {_("Create and run")}
                        </Button>
-                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={!image && selectedImage === ""}>
+                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={(!image && selectedImage === "") || this.isFormInvalid(dialogValues.validationFailed)}>
                            {_("Create")}
                        </Button>
-                       <Button variant='link' className='btn-cancel' onClick={ this.props.close }>
+                       <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
                            {_("Cancel")}
                        </Button>
                    </>}

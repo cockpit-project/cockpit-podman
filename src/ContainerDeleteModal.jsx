@@ -1,18 +1,37 @@
 import React from 'react';
-import { Button, Modal } from '@patternfly/react-core';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { useDialogs } from "dialogs.jsx";
 import cockpit from 'cockpit';
+
+import * as client from './client.js';
 
 const _ = cockpit.gettext;
 
-const ContainerDeleteModal = (props) => {
+const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
+    const Dialogs = useDialogs();
+
+    const handleRemoveContainer = () => {
+        const container = containerWillDelete;
+        const id = container ? container.Id : "";
+
+        Dialogs.close();
+        client.delContainer(container.isSystem, id, false)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to remove container $0"), container.Name); // not-covered: OS error
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
+    };
+
     return (
         <Modal isOpen
                position="top" variant="medium"
-               onClose={props.handleCancelContainerDeleteModal}
-               title={cockpit.format(_("Please confirm deletion of $0"), props.containerWillDelete.Names)}
+               titleIconVariant="warning"
+               onClose={Dialogs.close}
+               title={cockpit.format(_("Delete $0?"), containerWillDelete.Name)}
                footer={<>
-                   <Button variant="danger" className="btn-ctr-delete" onClick={props.handleRemoveContainer}>{_("Delete")}</Button>{' '}
-                   <Button variant="link" onClick={props.handleCancelContainerDeleteModal}>{_("Cancel")}</Button>
+                   <Button variant="danger" className="btn-ctr-delete" onClick={handleRemoveContainer}>{_("Delete")}</Button>{' '}
+                   <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
                </>}
         >
             {_("Deleting a container will erase all data in it.")}

@@ -18,14 +18,14 @@
  */
 
 import React from 'react';
-import {
-    Page, PageSection, PageSectionVariants,
-    Alert, AlertActionLink, AlertActionCloseButton, AlertGroup,
-    Button, Checkbox, Title,
-    EmptyState, EmptyStateVariant, EmptyStateIcon, EmptyStateSecondaryActions,
-    Stack,
-} from '@patternfly/react-core';
+import { Page, PageSection, PageSectionVariants } from "@patternfly/react-core/dist/esm/components/Page";
+import { Alert, AlertActionCloseButton, AlertActionLink, AlertGroup } from "@patternfly/react-core/dist/esm/components/Alert";
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
+import { EmptyState, EmptyStateHeader, EmptyStateFooter, EmptyStateIcon, EmptyStateActions, EmptyStateVariant } from "@patternfly/react-core/dist/esm/components/EmptyState";
+import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { WithDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
 import { superuser } from "superuser";
@@ -34,6 +34,7 @@ import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import Volumes from './Volumes.jsx';
 import * as client from './client.js';
+import { WithPodmanInfo } from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -48,9 +49,8 @@ class Application extends React.Component {
             userImagesLoaded: false,
             systemImagesLoaded: false,
             containers: null,
-            containersFilter: "running",
+            containersFilter: "all",
             containersStats: {},
-            containersDetails: {},
             volumes: null,
             userVolumesLoaded: false,
             systemVolumesLoaded: false,
@@ -67,35 +67,37 @@ class Application extends React.Component {
             version: '1.3.0',
             selinuxAvailable: false,
             podmanRestartAvailable: false,
+            userPodmanRestartAvailable: false,
             currentUser: _("User"),
+            userLingeringEnabled: null,
             privileged: false,
+            location: {},
         };
         this.onAddNotification = this.onAddNotification.bind(this);
-        this.updateState = this.updateState.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
-        this.updateImagesAfterEvent = this.updateImagesAfterEvent.bind(this);
         this.updateVolumesAfterEvent = this.updateVolumesAfterEvent.bind(this);
-        this.updateContainerAfterEvent = this.updateContainerAfterEvent.bind(this);
-        this.updateContainerStats = this.updateContainerStats.bind(this);
+        this.handleVolumeEvent = this.handleVolumeEvent.bind(this);
+        this.onContainerFilterChanged = this.onContainerFilterChanged.bind(this);
+        this.updateContainer = this.updateContainer.bind(this);
         this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
-        this.handleImageEvent = this.handleImageEvent.bind(this);
-        this.handleVolumeEvent = this.handleVolumeEvent.bind(this);
-        this.handleContainerEvent = this.handleContainerEvent.bind(this);
         this.checkUserService = this.checkUserService.bind(this);
+        this.onNavigate = this.onNavigate.bind(this);
+
+        this.pendingUpdateContainer = {}; // id+system → promise
     }
 
     onAddNotification(notification) {
         notification.index = this.state.notifications.length;
 
-        this.setState({
+        this.setState(prevState => ({
             notifications: [
-                ...this.state.notifications,
+                ...prevState.notifications,
                 notification
             ]
-        });
+        }));
     }
 
     onDismissNotification(notificationIndex) {
@@ -108,32 +110,62 @@ class Application extends React.Component {
         }
     }
 
+    updateUrl(options) {
+        cockpit.location.go([], options);
+    }
+
     onFilterChanged(value) {
         this.setState({
             textFilter: value
         });
+
+        const options = this.state.location;
+        if (value === "") {
+            delete options.name;
+            this.updateUrl(Object.assign(options));
+        } else {
+            this.updateUrl(Object.assign(this.state.location, { name: value }));
+        }
     }
 
     onOwnerChanged(value) {
         this.setState({
             ownerFilter: value
         });
+
+        const options = this.state.location;
+        if (value == "all") {
+            delete options.owner;
+            this.updateUrl(Object.assign(options));
+        } else {
+            this.updateUrl(Object.assign(options, { owner: value }));
+        }
+    }
+
+    onContainerFilterChanged(value) {
+        this.setState({
+            containersFilter: value
+        });
+
+        const options = this.state.location;
+        if (value == "running") {
+            delete options.container;
+            this.updateUrl(Object.assign(options));
+        } else {
+            this.updateUrl(Object.assign(options, { container: value }));
+        }
     }
 
     updateState(state, id, newValue) {
         this.setState(prevState => {
-            const copyState = Object.assign({}, prevState[state]);
-
-            copyState[id] = newValue;
-
             return {
-                [state]: copyState,
+                [state]: { ...prevState[state], [id]: newValue }
             };
         });
     }
 
     updateContainerStats(system) {
-        client.getContainerStats(system, reply => {
+        client.streamContainerStats(system, reply => {
             if (reply.Error != null) // executed when container stop
                 console.warn("Failed to update container stats:", JSON.stringify(reply.message));
             else {
@@ -147,48 +179,22 @@ class Application extends React.Component {
         });
     }
 
-    inspectContainerDetail(id, system) {
-        client.inspectContainer(system, id)
-                .then(reply => {
-                    this.updateState("containersDetails", reply.Id + system.toString(), reply);
-                })
-                .catch(e => console.log(e));
-    }
-
-    isContainerCheckpointPresent(id, system) {
-        return client.inspectContainer(system, id)
-                .then(inspectResult => {
-                    const checkpointPath = inspectResult.StaticDir + "/checkpoint";
-                    return cockpit.script(`test -d ${checkpointPath}; echo $?`, [],
-                                          system ? { superuser: "require" } : {});
-                })
-                .then(scriptResult => scriptResult === "0\n");
-    }
-
-    updateContainersAfterEvent(system, init) {
-        client.getContainers(system)
-                .then(reply => Promise.all(
-                    (reply || []).map(container =>
-                        this.isContainerCheckpointPresent(container.Id, system)
-                                .then(checkpointPresent => {
-                                    const newContainer = Object.assign({}, container);
-                                    newContainer.hasCheckpoint = checkpointPresent;
-                                    return newContainer;
-                                })
-                    )
+    initContainers(system) {
+        return client.getContainers(system)
+                .then(containerList => Promise.all(
+                    containerList.map(container => client.inspectContainer(system, container.Id))
                 ))
-                .then(reply => {
+                .then(containerDetails => {
                     this.setState(prevState => {
-                        // Copy only containers that could not be deleted with this event
-                        // So when event from system come, only copy user containers and vice versa
+                        // keep/copy the containers for !system
                         const copyContainers = {};
                         Object.entries(prevState.containers || {}).forEach(([id, container]) => {
                             if (container.isSystem !== system)
                                 copyContainers[id] = container;
                         });
-                        for (const container of reply || []) {
-                            container.isSystem = system;
-                            copyContainers[container.Id + system.toString()] = container;
+                        for (const detail of containerDetails) {
+                            detail.isSystem = system;
+                            copyContainers[detail.Id + system.toString()] = detail;
                         }
 
                         return {
@@ -197,14 +203,11 @@ class Application extends React.Component {
                         };
                     });
                     this.updateContainerStats(system);
-                    for (const container of reply || []) {
-                        this.inspectContainerDetail(container.Id, system);
-                    }
                 })
                 .catch(console.log);
     }
 
-    updateImagesAfterEvent(system) {
+    updateImages(system) {
         client.getImages(system)
                 .then(reply => {
                     this.setState(prevState => {
@@ -258,8 +261,8 @@ class Application extends React.Component {
                 });
     }
 
-    updatePodsAfterEvent(system) {
-        client.getPods(system)
+    updatePods(system) {
+        return client.getPods(system)
                 .then(reply => {
                     this.setState(prevState => {
                         // Copy only pods that could not be deleted with this event
@@ -285,41 +288,29 @@ class Application extends React.Component {
                 });
     }
 
-    updateContainerAfterEvent(id, system) {
-        client.getContainers(system, id)
-                .then(reply => Promise.all(
-                    (reply || []).map(container =>
-                        this.isContainerCheckpointPresent(container.Id, system)
-                                .then(checkpointPresent => {
-                                    const newContainer = Object.assign({}, container);
-                                    newContainer.hasCheckpoint = checkpointPresent;
-                                    return newContainer;
-                                })
-                    )
-                ))
-                .then(reply => {
-                    if (reply && reply.length > 0) {
-                        reply = reply[0];
+    updateContainer(id, system, event) {
+        /* when firing off multiple calls in parallel, podman can return them in a random order.
+         * This messes up the state. So we need to serialize them for a particular container. */
+        const idx = id + system.toString();
+        const wait = this.pendingUpdateContainer[idx] ?? Promise.resolve();
 
-                        reply.isSystem = system;
-                        this.updateState("containers", reply.Id + system.toString(), reply);
-                        if (reply.State == "running") {
-                            this.inspectContainerDetail(reply.Id, system);
-                        } else {
-                            this.setState(prevState => {
-                                const copyDetails = Object.assign({}, prevState.containersDetails);
-                                const copyStats = Object.assign({}, prevState.containersStats);
-                                delete copyDetails[reply.Id + system.toString()];
-                                delete copyStats[reply.Id + system.toString()];
-                                return { containersDetails: copyDetails, containersStats: copyStats };
-                            });
-                        }
-                    }
+        const new_wait = wait.then(() => client.inspectContainer(system, id))
+                .then(details => {
+                    details.isSystem = system;
+                    // HACK: during restart State never changes from "running"
+                    //       override it to reconnect console after restart
+                    if (event?.Action === "restart")
+                        details.State.Status = "restarting";
+                    this.updateState("containers", idx, details);
                 })
                 .catch(console.log);
+        this.pendingUpdateContainer[idx] = new_wait;
+        new_wait.finally(() => { delete this.pendingUpdateContainer[idx] });
+
+        return new_wait;
     }
 
-    updateImageAfterEvent(id, system) {
+    updateImage(id, system) {
         client.getImages(system, id)
                 .then(reply => {
                     const immage = reply[id];
@@ -331,8 +322,8 @@ class Application extends React.Component {
                 });
     }
 
-    updatePodAfterEvent(id, system) {
-        client.getPods(system, id)
+    updatePod(id, system) {
+        return client.getPods(system, id)
                 .then(reply => {
                     if (reply && reply.length > 0) {
                         reply = reply[0];
@@ -346,19 +337,21 @@ class Application extends React.Component {
                 });
     }
 
+    // see https://docs.podman.io/en/latest/markdown/podman-events.1.html
+
     handleImageEvent(event, system) {
         switch (event.Action) {
         case 'push':
         case 'save':
         case 'tag':
-            this.updateImageAfterEvent(event.Actor.ID, system);
+            this.updateImage(event.Actor.ID, system);
             break;
         case 'pull': // Pull event has not event.id
         case 'untag':
         case 'remove':
         case 'prune':
         case 'build':
-            this.updateImagesAfterEvent(system);
+            this.updateImages(system);
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
@@ -378,6 +371,8 @@ class Application extends React.Component {
     }
 
     handleContainerEvent(event, system) {
+        const id = event.Actor.ID;
+
         switch (event.Action) {
         /* The following events do not need to trigger any state updates */
         case 'attach':
@@ -385,8 +380,13 @@ class Application extends React.Component {
         case 'export':
         case 'import':
         case 'init':
+        case 'kill':
+        case 'mount':
+        case 'prune':
+        case 'restart':
+        case 'sync':
+        case 'unmount':
         case 'wait':
-        case 'restart': // We get separate died-init-start events after the restart event
             break;
         /* The following events need only to update the Container list
          * We do get the container affected in the event object but for
@@ -395,30 +395,50 @@ class Application extends React.Component {
         case 'start':
             // HACK: We don't get 'started' event for pods got started by the first container which was added to them
             // https://github.com/containers/podman/issues/7213
-            this.updatePodsAfterEvent(system);
-            this.updateContainerAfterEvent(event.Actor.ID, system);
+            (event.Actor.Attributes.podId
+                ? this.updatePod(event.Actor.Attributes.podId, system)
+                : this.updatePods(system)
+            ).then(() => this.updateContainer(id, system, event));
             break;
         case 'checkpoint':
+        case 'cleanup':
         case 'create':
         case 'died':
-        case 'kill':
-        case 'mount':
+        case 'exec_died': // HACK: pick up health check runs with older podman versions, see https://github.com/containers/podman/issues/19237
+        case 'health_status':
         case 'pause':
-        case 'prune':
         case 'restore':
         case 'stop':
-        case 'sync':
-        case 'unmount':
         case 'unpause':
-            this.updateContainerAfterEvent(event.Actor.ID, system);
+        case 'rename': // rename event is available starting podman v4.1; until then the container does not get refreshed after renaming
+            this.updateContainer(id, system, event);
             break;
+
         case 'remove':
-        case 'cleanup':
-            this.updateContainersAfterEvent(system);
+            this.setState(prevState => {
+                const containers = { ...prevState.containers };
+                delete containers[id + system.toString()];
+                let pods;
+
+                if (event.Actor.Attributes.podId) {
+                    const podIdx = event.Actor.Attributes.podId + system.toString();
+                    const newPod = { ...prevState.pods[podIdx] };
+                    newPod.Containers = newPod.Containers.filter(container => container.Id !== id);
+                    pods = { ...prevState.pods, [podIdx]: newPod };
+                } else {
+                    // HACK: with podman < 4.3.0 we don't get a pod event when a container in a pod is removed
+                    // https://github.com/containers/podman/issues/15408
+                    pods = prevState.pods;
+                    this.updatePods(system);
+                }
+
+                return { containers, pods };
+            });
             break;
-        /* The following events need only to update the Image list */
+
+        // only needs to update the Image list, this ought to be an image event
         case 'commit':
-            this.updateImagesAfterEvent(system);
+            this.updateImages(system);
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
@@ -433,10 +453,14 @@ class Application extends React.Component {
         case 'start':
         case 'stop':
         case 'unpause':
-            this.updatePodAfterEvent(event.Actor.ID, system);
+            this.updatePod(event.Actor.ID, system);
             break;
         case 'remove':
-            this.updatePodsAfterEvent(system);
+            this.setState(prevState => {
+                const pods = { ...prevState.pods };
+                delete pods[event.Actor.ID + system.toString()];
+                return { pods };
+            });
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
@@ -485,10 +509,10 @@ class Application extends React.Component {
                         registries: reply.registries,
                         cgroupVersion: reply.host.cgroupVersion,
                     });
-                    this.updateImagesAfterEvent(system);
                     this.updateVolumesAfterEvent(system);
-                    this.updateContainersAfterEvent(system, true);
-                    this.updatePodsAfterEvent(system);
+                    this.updateImages(system);
+                    this.initContainers(system);
+                    this.updatePods(system);
                     client.streamEvents(system,
                                         message => this.handleEvent(message, system))
                             .then(() => {
@@ -546,24 +570,56 @@ class Application extends React.Component {
                 .catch(() => this.setState({ selinuxAvailable: false }));
 
         cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
-                .then(out => {
-                    if (out.trim() === "loaded") {
-                        this.setState({ podmanRestartAvailable: true });
-                    } else {
-                        this.setState({ podmanRestartAvailable: false });
-                    }
-                });
+                .then(out => this.setState({ podmanRestartAvailable: out.trim() === "loaded" }));
 
         superuser.addEventListener("changed", () => this.setState({ privileged: !!superuser.allowed }));
         this.setState({ privileged: superuser.allowed });
 
         cockpit.user().then(user => {
             this.setState({ currentUser: user.name || _("User") });
+            // HACK: https://github.com/systemd/systemd/issues/22244#issuecomment-1210357701
+            cockpit.file(`/var/lib/systemd/linger/${user.name}`).watch((content, tag) => {
+                if (content == null && tag === '-') {
+                    this.setState({ userLingeringEnabled: false });
+                } else {
+                    this.setState({ userLingeringEnabled: true });
+                }
+            });
+        });
+
+        cockpit.addEventListener("locationchanged", this.onNavigate);
+        this.onNavigate();
+    }
+
+    componentWillUnmount() {
+        cockpit.removeEventListener("locationchanged", this.onNavigate);
+    }
+
+    onNavigate() {
+        // HACK: Use usePageLocation when this is rewritten into a functional component
+        const { options, path } = cockpit.location;
+        this.setState({ location: options }, () => {
+            // only use the root path
+            if (path.length === 0) {
+                if (options.name) {
+                    this.onFilterChanged(options.name);
+                }
+                if (options.container) {
+                    this.onContainerFilterChanged(options.container);
+                }
+                const owners = ["user", "system", "all"];
+                if (owners.indexOf(options.owner) !== -1) {
+                    this.onOwnerChanged(options.owner);
+                }
+            }
         });
     }
 
     checkUserService() {
         const argv = ["systemctl", "--user", "is-enabled", "podman.socket"];
+
+        cockpit.spawn(["systemctl", "--user", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
+                .then(out => this.setState({ userPodmanRestartAvailable: out.trim() === "loaded" }));
 
         cockpit.spawn(argv, { environ: ["LC_ALL=C"], err: "out" })
                 .then(() => this.setState({ userServiceExists: true }))
@@ -628,26 +684,29 @@ class Application extends React.Component {
 
         if (!this.state.systemServiceAvailable && !this.state.userServiceAvailable) {
             return (
-                <EmptyState variant={EmptyStateVariant.full}>
-                    <EmptyStateIcon icon={ExclamationCircleIcon} />
-                    <Title headingLevel="h2" size="lg">
-                        { _("Podman service is not active") }
-                    </Title>
-                    <Checkbox isChecked={this.state.enableService}
-                              id="enable"
-                              label={_("Automatically start podman on boot")}
-                              onChange={ checked => this.setState({ enableService: checked }) } />
-                    <Button onClick={this.startService}>
-                        {_("Start podman")}
-                    </Button>
-                    { cockpit.manifests.system &&
-                        <EmptyStateSecondaryActions>
-                            <Button variant="link" onClick={this.goToServicePage}>
-                                {_("Troubleshoot")}
-                            </Button>
-                        </EmptyStateSecondaryActions>
-                    }
-                </EmptyState>
+                <Page>
+                    <PageSection variant={PageSectionVariants.light}>
+                        <EmptyState variant={EmptyStateVariant.full}>
+                            <EmptyStateHeader titleText={_("Podman service is not active")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
+                            <EmptyStateFooter>
+                                <Checkbox isChecked={this.state.enableService}
+                                      id="enable"
+                                      label={_("Automatically start podman on boot")}
+                                      onChange={ (_event, checked) => this.setState({ enableService: checked }) } />
+                                <Button onClick={this.startService}>
+                                    {_("Start podman")}
+                                </Button>
+                                { cockpit.manifests.system &&
+                                <EmptyStateActions>
+                                    <Button variant="link" onClick={this.goToServicePage}>
+                                        {_("Troubleshoot")}
+                                    </Button>
+                                </EmptyStateActions>
+                                }
+                            </EmptyStateFooter>
+                        </EmptyState>
+                    </PageSection>
+                </Page>
             );
         }
 
@@ -655,15 +714,15 @@ class Application extends React.Component {
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
                 const container = this.state.containers[c];
-                const image = container.ImageID + container.isSystem.toString();
+                const image = container.Image + container.isSystem.toString();
                 if (imageContainerList[image]) {
                     imageContainerList[image].push({
-                        container: container,
+                        container,
                         stats: this.state.containersStats[container.Id + container.isSystem.toString()],
                     });
                 } else {
                     imageContainerList[image] = [{
-                        container: container,
+                        container,
                         stats: this.state.containersStats[container.Id + container.isSystem.toString()]
                     }];
                 }
@@ -689,22 +748,28 @@ class Application extends React.Component {
             volumeContainerList = null;
 
         let startService = "";
-        const action = (<>
-            <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
-            <AlertActionCloseButton onClose={() => this.setState({ showStartService: false })} />
-        </>);
+        const action = (
+            <>
+                <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
+                <AlertActionCloseButton onClose={() => this.setState({ showStartService: false })} />
+            </>
+        );
         if (!this.state.systemServiceAvailable && this.state.privileged) {
-            startService = <Alert variant='default'
+            startService = (
+                <Alert variant='default'
                 title={_("System Podman service is also available")}
-                actionClose={action} />;
+                actionClose={action} />
+            );
         }
         if (!this.state.userServiceAvailable && this.state.userServiceExists) {
-            startService = <Alert variant='default'
+            startService = (
+                <Alert variant='default'
                 title={_("User Podman service is also available")}
-                actionClose={action} />;
+                actionClose={action} />
+            );
         }
 
-        const imageList =
+        const imageList = (
             <Images
                 key="imageList"
                 images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
@@ -716,11 +781,9 @@ class Application extends React.Component {
                 user={this.state.currentUser}
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
-                registries={this.state.registries}
-                selinuxAvailable={this.state.selinuxAvailable}
-                podmanRestartAvailable={this.state.podmanRestartAvailable}
-            />;
-        const volumeList =
+            />
+        );
+        const volumeList = (
             <Volumes
                 key="volumeList"
                 volumes={this.state.systemVolumesLoaded && this.state.userVolumesLoaded ? this.state.volumes : null}
@@ -735,8 +798,9 @@ class Application extends React.Component {
                 registries={this.state.registries}
                 selinuxAvailable={this.state.selinuxAvailable}
                 podmanRestartAvailable={this.state.podmanRestartAvailable}
-            />;
-        const containerList =
+            />
+        );
+        const containerList = (
             <Containers
                 key="containerList"
                 version={this.state.version}
@@ -745,9 +809,8 @@ class Application extends React.Component {
                 containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
                 pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
                 containersStats={this.state.containersStats}
-                containersDetails={this.state.containersDetails}
                 filter={this.state.containersFilter}
-                handleFilterChange={ value => this.setState({ containersFilter: value }) }
+                handleFilterChange={this.onContainerFilterChanged}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
                 user={this.state.currentUser}
@@ -755,10 +818,9 @@ class Application extends React.Component {
                 userServiceAvailable={this.state.userServiceAvailable}
                 systemServiceAvailable={this.state.systemServiceAvailable}
                 cgroupVersion={this.state.cgroupVersion}
-                registries={this.state.registries}
-                selinuxAvailable={this.state.selinuxAvailable}
-                podmanRestartAvailable={this.state.podmanRestartAvailable}
-            />;
+                updateContainer={this.updateContainer}
+            />
+        );
 
         const notificationList = (
             <AlertGroup isToast>
@@ -774,27 +836,43 @@ class Application extends React.Component {
             </AlertGroup>
         );
 
+        const contextInfo = {
+            cgroupVersion: this.state.cgroupVersion,
+            registries: this.state.registries,
+            selinuxAvailable: this.state.selinuxAvailable,
+            podmanRestartAvailable: this.state.podmanRestartAvailable,
+            userPodmanRestartAvailable: this.state.userPodmanRestartAvailable,
+            userLingeringEnabled: this.state.userLingeringEnabled,
+            version: this.state.version,
+        };
+
         return (
-            <Page id="overview" key="overview">
-                {notificationList}
-                <PageSection className="content-filter" padding={{ default: 'noPadding' }}
-                             variant={PageSectionVariants.light}>
-                    <ContainerHeader
-                        onFilterChanged={this.onFilterChanged}
-                        onOwnerChanged={this.onOwnerChanged}
-                        twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
-                        user={this.state.currentUser}
-                    />
-                </PageSection>
-                <PageSection>
-                    <Stack hasGutter>
-                        { this.state.showStartService ? startService : null }
-                        {imageList}
-                        {volumeList}
-                        {containerList}
-                    </Stack>
-                </PageSection>
-            </Page>
+            <WithPodmanInfo value={contextInfo}>
+                <WithDialogs>
+                    <Page id="overview" key="overview">
+                        {notificationList}
+                        <PageSection className="content-filter" padding={{ default: 'noPadding' }}
+                          variant={PageSectionVariants.light}>
+                            <ContainerHeader
+                              handleFilterChanged={this.onFilterChanged}
+                              handleOwnerChanged={this.onOwnerChanged}
+                              ownerFilter={this.state.ownerFilter}
+                              textFilter={this.state.textFilter}
+                              twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
+                              user={this.state.currentUser}
+                            />
+                        </PageSection>
+                        <PageSection className='ct-pagesection-mobile'>
+                            <Stack hasGutter>
+                                { this.state.showStartService ? startService : null }
+                                {imageList}
+                                {volumeList}
+                                {containerList}
+                            </Stack>
+                        </PageSection>
+                    </Page>
+                </WithDialogs>
+            </WithPodmanInfo>
         );
     }
 }

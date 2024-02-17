@@ -19,23 +19,29 @@ After changing the code and running `make` again, reload the Cockpit page in
 your browser.
 
 You can also use
-[watch mode](https://webpack.js.org/guides/development/#using-watch-mode) to
-automatically update the webpack on every code change with
+[watch mode](https://esbuild.github.io/api/#watch) to
+automatically update the bundle on every code change with
 
     $ make watch
 
-When developing against a virtual machine, webpack can also automatically upload
+When developing against a virtual machine, watch mode can also automatically upload
 the code changes by setting the `RSYNC` environment variable to
 the remote hostname.
 
     $ RSYNC=c make watch
+
+When developing against a remote host as a normal user, `RSYNC_DEVEL` can be
+set to upload code changes to `~/.local/share/cockpit/` instead of
+`/usr/local`.
+
+    $ RSYNC_DEVEL=example.com make watch
 
 ## Running eslint
 
 Cockpit Podman uses [ESLint](https://eslint.org/) to automatically check
 JavaScript code style in `.jsx` and `.js` files.
 
-The linter is executed within every build as a webpack preloader.
+eslint is executed as part of `test/static-code`, aka. `make codecheck`.
 
 For developer convenience, the ESLint can be started explicitly by:
 
@@ -47,10 +53,27 @@ Violations of some rules can be fixed automatically by:
 
 Rules configuration can be found in the `.eslintrc.json` file.
 
+## Running stylelint
+
+Cockpit uses [Stylelint](https://stylelint.io/) to automatically check CSS code
+style in `.css` and `scss` files.
+
+styleint is executed as part of `test/static-code`, aka. `make codecheck`.
+
+For developer convenience, the Stylelint can be started explicitly by:
+
+    $ npm run stylelint
+
+Violations of some rules can be fixed automatically by:
+
+    $ npm run stylelint:fix
+
+Rules configuration can be found in the `.stylelintrc.json` file.
+
 # Running tests locally
 
 Run `make vm` to build an RPM and install it into a standard Cockpit test VM.
-This will be `fedora-35` by default. You can set `$TEST_OS` to use a different
+This will be `fedora-39` by default. You can set `$TEST_OS` to use a different
 image, for example
 
     TEST_OS=centos-8-stream make vm

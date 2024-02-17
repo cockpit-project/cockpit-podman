@@ -11,10 +11,6 @@ if grep -q ID.*debian /usr/lib/os-release; then
     if systemctl is-enabled docker.service; then
         systemctl disable docker.service
     fi
-
-    # tuned is installed for testing cockpit; but it causes funny bugs, and we are not testing this here
-    # https://launchpad.net/bugs/1774000 https://launchpad.net/bugs/1925765
-    systemctl disable tuned
 fi
 
 # don't force https:// (self-signed cert)
@@ -25,30 +21,18 @@ if type firewall-cmd >/dev/null 2>&1; then
 fi
 
 . /usr/lib/os-release
-# Remove extra images for containers tests
-if [ "$ID" = "fedora" ]; then
-    if [ "${VARIANT_ID:-}" = "coreos" ]; then
-        podman rmi quay.io/jitesoft/nginx:latest
-    else
-        podman rmi localhost/cockpit/base
-        podman rmi registry.fedoraproject.org/fedora:"$VERSION_ID"
-    fi
-fi
 
-# grab a few images to play with; tests run offline, so they cannot download images
-# FIXME: put these images onto fedora-coreos image, and enable image-customize --no-network
-if [ "${VARIANT_ID:-}" = "coreos" ]; then
-    for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
-        podman pull $img
-    done
-fi
+# Remove extra images, tests assume our specific set
+# Since 4.0 podman now ships the pause image
+podman images --format '{{.Repository}}:{{.Tag}}' | grep -Ev 'localhost/test-|pause|cockpit/ws' | xargs -r podman rmi -f
 
 # copy images for user podman tests; podman insists on user session
 loginctl enable-linger $(id -u admin)
-for img in quay.io/libpod/busybox quay.io/libpod/alpine quay.io/cockpit/registry:2; do
-    podman save  $img | sudo -i -u admin podman load
+images=$(podman images --format '{{.Repository}}:{{.Tag}}')
+for img in $images; do
+	podman save  $img | sudo -i -u admin podman load
 done
-loginctl disable-linger $(id -u admin)
+	loginctl disable-linger $(id -u admin)
 
 # 15minutes after boot tmp files are removed and podman stores some tmp lock files
 systemctl disable --now systemd-tmpfiles-clean.timer
