@@ -101,9 +101,11 @@ class TestApplication(testlib.MachineCase):
         m = self.machine
         m.execute("""
             systemctl stop podman.service; systemctl --now enable podman.socket
-            # Ensure podman is really stopped, as sometimes restore_dir flakes on Debian-testing
+            # Ensure podman is really stopped, otherwise it keeps the containers/ directory busy
             pkill -e -9 podman || true
             while pgrep podman; do sleep 0.1; done
+            pkill -e -9 conmon || true
+            while pgrep conmon; do sleep 0.1; done
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
             sync
             """)
@@ -118,6 +120,8 @@ class TestApplication(testlib.MachineCase):
             podman system reset --force
             pkill -e -9 podman || true
             while pgrep podman; do sleep 0.1; done
+            pkill -e -9 conmon || true
+            while pgrep conmon; do sleep 0.1; done
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
             sync
             """)
