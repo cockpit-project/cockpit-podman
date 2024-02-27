@@ -2322,9 +2322,10 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present(f"{groupSelector} .pf-v5-c-helper-text__item-text")
             b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn:not(:disabled)")
 
-        """ Test the validation errors"""
-        self.allow_browser_errors(
-            "error: Container failed to be started: Internal Server Error: rootlessport listen tcp 0.0.0.0:5000.*")
+        # Test the validation errors
+
+        # complaint about port conflict
+        self.allow_browser_errors("error: Container failed to be started:.*5000.*")
         b = self.browser
         self.login(False)
         container_name = 'portused'
