@@ -19,7 +19,6 @@ jobs:
   - job: copr_build
     trigger: pull_request
     targets:
-    - fedora-38
     - fedora-39
     - fedora-40
     - fedora-latest-aarch64
@@ -31,7 +30,6 @@ jobs:
   - job: tests
     trigger: pull_request
     targets:
-      - fedora-38
       - fedora-39
       - fedora-40
       - fedora-latest-aarch64
@@ -64,7 +62,6 @@ jobs:
     trigger: release
     dist_git_branches:
       - fedora-development
-      - fedora-38
       - fedora-39
       - fedora-40
 
@@ -72,7 +69,6 @@ jobs:
     trigger: commit
     dist_git_branches:
       - fedora-development
-      - fedora-38
       - fedora-39
       - fedora-40
 
@@ -80,6 +76,5 @@ jobs:
     trigger: commit
     dist_git_branches:
       # rawhide updates are created automatically
-      - fedora-38
       - fedora-39
       - fedora-40
