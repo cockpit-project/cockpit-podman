@@ -2364,7 +2364,8 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5000')
         b.set_input_text('#run-image-dialog-publish-0-container-port', '5000')
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
-        b.wait_in_text(".pf-v5-c-alert", "address already in use")
+        # Can be "[aA]ddress"
+        b.wait_in_text(".pf-v5-c-alert", "ddress already in use")
 
         # Changing the port should allow creation of container
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5001')
