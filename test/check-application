@@ -163,9 +163,6 @@ class TestApplication(testlib.MachineCase):
         self.has_selinux = "arch" not in m.image and "debian" not in m.image and "ubuntu" not in m.image
         self.has_cgroupsV2 = m.image not in ["centos-8-stream"] and not m.image.startswith('rhel-8')
 
-        # HACK: older c-ws versions always log an assertion, fixed in PR cockpit#16765
-        self.allow_journal_messages("json_object_get_string_member: assertion 'node != NULL' failed")
-
         self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())
 
