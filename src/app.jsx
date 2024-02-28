@@ -686,14 +686,14 @@ class Application extends React.Component {
         );
         if (!this.state.systemServiceAvailable && this.state.privileged) {
             startService = (
-                <Alert variant='default'
+                <Alert
                 title={_("System Podman service is also available")}
                 actionClose={action} />
             );
         }
         if (!this.state.userServiceAvailable && this.state.userServiceExists) {
             startService = (
-                <Alert variant='default'
+                <Alert
                 title={_("User Podman service is also available")}
                 actionClose={action} />
             );
