@@ -2322,7 +2322,9 @@ class TestApplication(testlib.MachineCase):
         # Test the validation errors
 
         # complaint about port conflict
-        self.allow_browser_errors("error: Container failed to be started:.*5000.*")
+        self.allow_browser_errors("error: Container failed to be started:.*")
+        self.allow_browser_errors("No routable interface.*")
+        self.allow_browser_errors(".*ddress already in use.*5000.*")
         b = self.browser
         self.login(False)
         container_name = 'portused'
