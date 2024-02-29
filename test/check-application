@@ -115,6 +115,12 @@ class TestApplication(testlib.MachineCase):
                     podman system reset --force
                   """
 
+        # HACK: TestApplication.testRunImageSystem leaks conmon processes when opening the Console of
+        # busybox-without-publish; TODO: reproduce on CLI (hard!) and file bug
+        CLEANUP += """pkill -u "$(id -u)" -e -9 conmon || true
+                      while pgrep -u "$(id -u)" conmon; do sleep 0.1; done
+                      """
+
         # assert that this worked properly
         CLEANUP_CHECK = """! pgrep -a -u "$(id -u)" podman
                            ! pgrep -a -u "$(id -u)" conmon
