@@ -38,5 +38,3 @@ systemctl disable --now systemd-tmpfiles-clean.timer
 systemctl --global disable systemd-tmpfiles-clean.timer
 
 systemctl disable --now fstrim.timer fwupd-refresh.timer logrotate.timer raid-check.timer || true
-
-echo "tmpfs /var/lib/containers tmpfs defaults 0 0" >> /etc/fstab
