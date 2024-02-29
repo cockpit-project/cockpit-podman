@@ -128,6 +128,7 @@ class TestApplication(testlib.MachineCase):
 
         self.addCleanup(m.execute, CLEANUP_CHECK, stdout=None)
         self.addCleanup(m.execute, CLEANUP.format(user=""), stdout=None)
+        self.addCleanup(m.stop_cockpit)
 
         # Create admin session
         m.execute("""
