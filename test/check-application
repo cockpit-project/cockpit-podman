@@ -113,15 +113,22 @@ class TestApplication(testlib.MachineCase):
         # backup/restore pristine podman state, so that tests can run on existing testbeds
         self.restore_dir("/var/lib/containers")
 
-        # HACK: sometimes podman leaks mounts
         self.addCleanup(m.execute, """
             systemctl stop podman.service podman.socket
+
+            # HACK: system reset has 10s timeout, make that faster with an extra `stop`
+            # https://github.com/containers/podman/issues/21874
+            podman stop --time 0 --all
+            podman pod stop --time 0 --all
+
             systemctl reset-failed podman.service podman.socket
             podman system reset --force
             pkill -e -9 podman || true
             while pgrep podman; do sleep 0.1; done
             pkill -e -9 conmon || true
             while pgrep conmon; do sleep 0.1; done
+
+            # HACK: sometimes podman leaks mounts
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
             sync
             """)
