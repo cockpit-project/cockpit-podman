@@ -74,12 +74,8 @@ for retry in $(seq 5); do
     sleep $((5 * retry * retry))
 done
 
-# copy images for user podman tests; podman insists on user session
-loginctl enable-linger $(id -u admin)
-for img in localhost/test-alpine localhost/test-busybox localhost/test-registry; do
-    podman save  $img | sudo -i -u admin podman load
-done
-loginctl disable-linger $(id -u admin)
+# image setup, shared with upstream tests
+$TESTS/../vm.install
 
 systemctl enable --now cockpit.socket podman.socket
 

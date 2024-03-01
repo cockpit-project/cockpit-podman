@@ -26,13 +26,12 @@ fi
 # Since 4.0 podman now ships the pause image
 podman images --format '{{.Repository}}:{{.Tag}}' | grep -Ev 'localhost/test-|pause|cockpit/ws' | xargs -r podman rmi -f
 
-# copy images for user podman tests; podman insists on user session
-loginctl enable-linger $(id -u admin)
-images=$(podman images --format '{{.Repository}}:{{.Tag}}')
-for img in $images; do
-	podman save  $img | sudo -i -u admin podman load
+# tests reset podman, save the images
+mkdir -p /var/lib/test-images
+for img in $(podman images --format '{{.Repository}}:{{.Tag}}'); do
+    fname="$(echo "$img" | tr -dc '[a-zA-Z-]')"
+    podman save -o "/var/lib/test-images/${fname}.tar" "$img"
 done
-	loginctl disable-linger $(id -u admin)
 
 # 15minutes after boot tmp files are removed and podman stores some tmp lock files
 systemctl disable --now systemd-tmpfiles-clean.timer
