@@ -147,11 +147,19 @@ class TestApplication(testlib.MachineCase):
                                                     ssh_port=m.ssh_port,
                                                     identity_file=m.identity_file)
 
-        # Enable user service as well
-        self.admin_s.execute("systemctl --user stop podman.service; systemctl --now --user enable podman.socket")
-        self.restore_dir("/home/admin/.local/share/containers")
-        self.addCleanup(self.admin_s.execute, "systemctl --user stop podman.service podman.socket || true")
-        # Ubuntu 22.04 has old podman that does not know about --time
+        # Enable user service as well; copy our images (except cockpit/ws) from system
+        self.admin_s.execute("""
+            systemctl --user stop podman.service
+            for img in $(ls /var/lib/test-images/*.tar | grep -v cockpitws); do podman load < "$img"; done
+            systemctl --now --user enable podman.socket
+            """)
+        self.addCleanup(self.admin_s.execute, """
+            systemctl --user stop podman.service podman.socket
+            podman system reset --force
+            """)
+        # HACK: system reset has 10s timeout, make that faster with an extra `stop`
+        # https://github.com/containers/podman/issues/21874
+        # Ubuntu 22.04 has old podman that does not know about rm --time
         if m.image == 'ubuntu-2204':
             self.addCleanup(self.admin_s.execute, "podman rm --force --all", timeout=300)
             self.addCleanup(self.admin_s.execute, "podman pod rm --force --all", timeout=300)
