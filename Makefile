@@ -159,7 +159,10 @@ VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y update --setopt=install_weak_deps=Fal
 endif
 
 ifeq ("$(TEST_SCENARIO)","podman-next")
-VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update --repo 'copr*' >&2'
+VM_CUSTOMIZE_FLAGS = --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update --repo "copr*" >&2'
+
+# HACK: https://github.com/containers/podman/issues/21896
+VM_CUSTOMIZE_FLAGS += --run-command 'nmcli con add type dummy con-name fake ifname fake0 ip4 1.2.3.4/24 gw4 1.2.3.1 >&2'
 endif
 
 # build a VM with locally built distro pkgs installed
