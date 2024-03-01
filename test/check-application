@@ -99,32 +99,30 @@ class TestApplication(testlib.MachineCase):
     def setUp(self):
         super().setUp()
         m = self.machine
-        m.execute("""
-            systemctl stop podman.service; systemctl --now enable podman.socket
+
+        CLEANUP = """
+            systemctl stop podman.service
             # Ensure podman is really stopped, otherwise it keeps the containers/ directory busy
             pkill -e -9 podman || true
             while pgrep podman; do sleep 0.1; done
             pkill -e -9 conmon || true
             while pgrep conmon; do sleep 0.1; done
+            # HACK: sometimes podman leaks mounts
             findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
-            sync
-            """)
+            sync"""
+
+        # We must have a clean slate right before `restore_dir()`, as that falls over with sub-mounts
+        # or running processes changing files
+        m.execute(CLEANUP, stdout=None)
 
         # backup/restore pristine podman state, so that tests can run on existing testbeds
         self.restore_dir("/var/lib/containers")
 
-        # HACK: sometimes podman leaks mounts
-        self.addCleanup(m.execute, """
-            systemctl stop podman.service podman.socket
-            systemctl reset-failed podman.service podman.socket
-            podman system reset --force
-            pkill -e -9 podman || true
-            while pgrep podman; do sleep 0.1; done
-            pkill -e -9 conmon || true
-            while pgrep conmon; do sleep 0.1; done
-            findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
-            sync
-            """)
+        # This looks redundant with the setup action, but we need both: we must clean up everything
+        # right before restore_dir() unmounts the overlay, otherwise it can be busy
+        self.addCleanup(m.execute, CLEANUP, stdout=None)
+
+        m.execute("systemctl enable --now podman.socket")
 
         # Create admin session
         m.execute("""
