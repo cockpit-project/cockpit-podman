@@ -214,11 +214,11 @@ class TestApplication(testlib.MachineCase):
 
     def performContainerAction(self, container, cmd):
         b = self.browser
-        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v5-c-dropdown__toggle")
-        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v5-c-dropdown__menu li:contains({cmd})")
+        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v5-c-menu-toggle")
+        b.click(f"#containers-containers tbody tr:contains('{container}') button.pf-v5-c-menu__item:contains({cmd})")
 
     def getContainerAction(self, container, cmd):
-        return f"#containers-containers tbody tr:contains('{container}') .pf-v5-c-dropdown__menu li:contains({cmd})"
+        return f"#containers-containers tbody tr:contains('{container}') button.pf-v5-c-menu__item:contains({cmd})"
 
     def toggleExpandedContainer(self, container):
         b = self.browser
@@ -291,8 +291,8 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
 
         b.click(f"#pod-{podName}-{podOwner}-action-toggle")
-        b.click(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle] li > button.pod-action-{action.lower()}")
-        b.wait_not_present(f"ul[aria-labelledby=pod-{podName}-{podOwner}-action-toggle]")
+        b.click(f"ul.pf-v5-c-menu__list li > button.pod-action-{action.lower()}")
+        b.wait_not_present("ul.pf-v5-c-menu__list")
 
     def getStartTime(self, container: str, *, auth: bool) -> str:
         # don't format the raw time strings from the API, force json format
@@ -629,7 +629,7 @@ class TestApplication(testlib.MachineCase):
         hello_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_HELLO_LATEST]}{auth}\"]".lower()
         b.wait_visible(hello_sel)
         b.click(hello_sel + " td.pf-v5-c-table__toggle button")
-        b.click(hello_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(hello_sel + " .pf-v5-c-menu-toggle")
         b.wait_visible(hello_sel + " button.btn-delete")
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details:first-child", "Command/run.sh")
         # Show history
@@ -799,7 +799,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:3")
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:4")
 
-        b.click(busybox_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(busybox_sel + " .pf-v5-c-menu-toggle")
         b.click(busybox_sel + " button.btn-delete")
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']"))
         b.set_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX}:1']", True)
@@ -811,7 +811,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:1")
         b.wait_not_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:3")
 
-        b.click(busybox_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(busybox_sel + " .pf-v5-c-menu-toggle")
         b.click(busybox_sel + " button.btn-delete")
         b.click("#delete-all")
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']"))
@@ -851,7 +851,7 @@ class TestApplication(testlib.MachineCase):
         alpine_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_ALPINE_LATEST]}{auth}\"]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-v5-c-table__toggle button")
-        b.click(alpine_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(alpine_sel + " .pf-v5-c-menu-toggle")
         b.click(alpine_sel + " button.btn-delete")
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
@@ -898,7 +898,7 @@ class TestApplication(testlib.MachineCase):
         # Delete intermediate images
         intermediate_image_sel = "#containers-images tbody:last-child:contains('<none>:<none>')"
         b.click(".listing-action button:contains('Show intermediate images')")
-        b.click(intermediate_image_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(intermediate_image_sel + " .pf-v5-c-menu-toggle")
         b.click(intermediate_image_sel + " button.btn-delete")
         self.confirm_modal("Delete")
         b.wait_not_present(intermediate_image_sel)
@@ -916,7 +916,7 @@ class TestApplication(testlib.MachineCase):
 
         # Delete intermediate image which is in use
         self.execute(auth, f"podman untag {IMG_INTERMEDIATE}")
-        b.click(intermediate_image_sel + " .pf-v5-c-dropdown__toggle")
+        b.click(intermediate_image_sel + " .pf-v5-c-menu-toggle")
         b.click(intermediate_image_sel + " button.btn-delete")
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
@@ -1144,7 +1144,7 @@ class TestApplication(testlib.MachineCase):
                 b.click(sel + " td.pf-v5-c-table__toggle button")
 
                 # Click the delete icon on the image row
-                b.click(sel + " .pf-v5-c-dropdown__toggle")
+                b.click(sel + " .pf-v5-c-menu-toggle")
                 b.click(sel + ' button.btn-delete')
 
                 if another:
@@ -1254,7 +1254,7 @@ class TestApplication(testlib.MachineCase):
         container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
         self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
                            state='Exited', owner="system" if auth else "admin")
-        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-dropdown__toggle")
+        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-menu-toggle")
 
         if not auth:
             # Checkpoint/restore is not supported on user containers yet - the related buttons should not be shown
@@ -1264,7 +1264,7 @@ class TestApplication(testlib.MachineCase):
         # Health check is not set up
         b.wait_not_present(self.getContainerAction('swamped-crate', 'Run health check'))
 
-        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-dropdown__toggle")
+        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-menu-toggle")
 
         # Start the container
         self.performContainerAction(IMG_BUSYBOX, "Start")
@@ -1313,10 +1313,10 @@ class TestApplication(testlib.MachineCase):
         self.waitContainerRow(IMG_BUSYBOX)
         if not auth:
             # Check that the checkpoint option is not present for rootless
-            b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-dropdown__toggle")
+            b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-menu-toggle")
             b.wait_visible(self.getContainerAction(IMG_BUSYBOX, 'Force stop'))
             b.wait_not_present(self.getContainerAction(IMG_BUSYBOX, 'Checkpoint'))
-            b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-dropdown__toggle")
+            b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-menu-toggle")
         # Stop the container
         self.performContainerAction(IMG_BUSYBOX, "Force stop")
 
@@ -1395,9 +1395,9 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
 
         # Check that the restore option is not present (i.e. start is a regular button)
-        b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-dropdown__toggle")
+        b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-menu-toggle")
         b.wait_not_present(self.getContainerAction(IMG_BUSYBOX, 'Restore'))
-        b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-dropdown__toggle")
+        b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v5-c-menu-toggle")
 
         # Start the container
         self.performContainerAction("swamped-crate", "Start")
@@ -2200,7 +2200,7 @@ class TestApplication(testlib.MachineCase):
         # By default we have 3 unused images, start one.
         self.execute(auth or root, f"podman run -d --name used_image --stop-timeout 0 {IMG_ALPINE} sh")
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Prune unused images)")
+        b.click("#prune-unused-images-button")
 
         if auth:
             b.wait_js_func("ph_count_check", ".pf-v5-c-modal-box__body .pf-v5-c-list li",
@@ -2226,7 +2226,7 @@ class TestApplication(testlib.MachineCase):
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
-        b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
+        b.wait_visible(".pf-m-disabled.pf-v5-c-menu__list-item:contains(Prune unused images)")
 
     def testPruneUnusedImagesSystemSelections(self):
         """ Test the prune unused images selection options"""
@@ -2266,7 +2266,7 @@ class TestApplication(testlib.MachineCase):
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
-        b.wait_visible("button:contains(Prune unused images).pf-m-disabled")
+        b.wait_visible(".pf-v5-c-menu__list-item.pf-m-disabled:contains(Prune unused images)")
 
     def testPruneUnusedContainersSystem(self):
         self._testPruneUnusedContainersSystem(True)
