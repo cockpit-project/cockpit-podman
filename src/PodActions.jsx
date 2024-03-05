@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Alert } from "@patternfly/react-core/dist/esm/components/Alert";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
-import { Dropdown, DropdownItem, DropdownPosition, DropdownSeparator, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
+import { Divider } from '@patternfly/react-core/dist/esm/components/Divider/index.js';
+import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
 
 import cockpit from 'cockpit';
 import { useDialogs } from "dialogs.jsx";
+import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 
 import * as client from './client.js';
 
@@ -69,7 +71,6 @@ const PodDeleteModal = ({ pod }) => {
 
 export const PodActions = ({ onAddNotification, pod }) => {
     const Dialogs = useDialogs();
-    const [isOpen, setOpen] = useState(false);
 
     const dropdownItems = [];
     // Possible Pod Statuses can be found here https://github.com/containers/podman/blob/main/libpod/define/podstate.go
@@ -168,7 +169,7 @@ export const PodActions = ({ onAddNotification, pod }) => {
     }
 
     if (dropdownItems.length > 1) {
-        dropdownItems.push(<DropdownSeparator key="separator-1" />);
+        dropdownItems.push(<Divider key="separator-1" />);
     }
     dropdownItems.push(
         <DropdownItem key="action-delete"
@@ -185,11 +186,10 @@ export const PodActions = ({ onAddNotification, pod }) => {
         return null;
 
     return (
-        <Dropdown onSelect={() => setOpen(!isOpen)}
-                         position={DropdownPosition.right}
-                         toggle={<KebabToggle onToggle={(_event, value, _) => setOpen(value)} id={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"} />}
-                         isOpen={isOpen}
-                         isPlain
-        dropdownItems={dropdownItems} />
+        <KebabDropdown
+            toggleButtonId={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"}
+            position="right"
+            dropdownItems={dropdownItems}
+        />
     );
 };

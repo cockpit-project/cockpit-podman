@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
-import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
+import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { ExpandableSection } from "@patternfly/react-core/dist/esm/components/ExpandableSection";
 import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
@@ -22,6 +22,8 @@ import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import './Images.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
+
+import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 
 const _ = cockpit.gettext;
 
@@ -328,44 +330,40 @@ class Images extends React.Component {
 }
 
 const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unusedImages }) => {
-    const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
+    const actions = [
+        <DropdownItem
+            key="download-new-image"
+            component="button"
+            onClick={() => handleDownloadNewImage()}
+        >
+            {_("Download new image")}
+        </DropdownItem>,
+        <DropdownItem
+            key="prune-unused-images"
+            id="prune-unused-images-button"
+            component="button"
+            className="pf-m-danger btn-delete"
+            onClick={() => handlePruneUsedImages()}
+            isDisabled={unusedImages.length === 0}
+            isAriaDisabled={unusedImages.length === 0}
+        >
+            {_("Prune unused images")}
+        </DropdownItem>
+    ];
 
     return (
-        <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} id="image-actions-dropdown" />}
-                  isOpen={isActionsKebabOpen}
-                  isPlain
-                  position="right"
-                  dropdownItems={[
-                      <DropdownItem key="download-new-image"
-                                    component="button"
-                                    onClick={() => {
-                                        setIsActionsKebabOpen(false);
-                                        handleDownloadNewImage();
-                                    }}>
-                          {_("Download new image")}
-                      </DropdownItem>,
-                      <DropdownItem key="prune-unused-images"
-                                    id="prune-unused-images-button"
-                                    component="button"
-                                    className="pf-m-danger btn-delete"
-                                    onClick={() => {
-                                        setIsActionsKebabOpen(false);
-                                        handlePruneUsedImages();
-                                    }}
-                                    isDisabled={unusedImages.length === 0}
-                                    isAriaDisabled={unusedImages.length === 0}>
-                          {_("Prune unused images")}
-                      </DropdownItem>,
-                  ]} />
+        <KebabDropdown
+              toggleButtonId="image-actions-dropdown"
+              position="right"
+              dropdownItems={actions}
+        />
     );
 };
 
 const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, userServiceAvailable }) => {
     const Dialogs = useDialogs();
-    const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
 
     const runImage = () => {
-        setIsActionsKebabOpen(false);
         Dialogs.show(
             <utils.PodmanInfoContext.Consumer>
                 {(podmanInfo) => (
@@ -387,7 +385,6 @@ const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, 
     };
 
     const removeImage = () => {
-        setIsActionsKebabOpen(false);
         Dialogs.show(<ImageDeleteModal imageWillDelete={image}
                                        onAddNotification={onAddNotification} />);
     };
@@ -406,31 +403,25 @@ const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, 
         </Button>
     );
 
-    const extraActions = (
-        <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} />}
-                  isOpen={isActionsKebabOpen}
-                  isPlain
-                  position="right"
-                  dropdownItems={[
-                      <DropdownItem key={image.Id + "create-menu"}
-                                    component="button"
-                                    className="show-only-when-narrow"
-                                    onClick={runImage}>
-                          {_("Create container")}
-                      </DropdownItem>,
-                      <DropdownItem key={image.Id + "delete"}
-                                    component="button"
-                                    className="pf-m-danger btn-delete"
-                                    onClick={removeImage}>
-                          {_("Delete")}
-                      </DropdownItem>
-                  ]} />
-    );
+    const dropdownActions = [
+        <DropdownItem key={image.Id + "create-menu"}
+                    component="button"
+                    className="show-only-when-narrow"
+                    onClick={runImage}>
+            {_("Create container")}
+        </DropdownItem>,
+        <DropdownItem key={image.Id + "delete"}
+                    component="button"
+                    className="pf-m-danger btn-delete"
+                    onClick={removeImage}>
+            {_("Delete")}
+        </DropdownItem>
+    ];
 
     return (
         <>
             {runImageAction}
-            {extraActions}
+            <KebabDropdown position="right" dropdownItems={dropdownActions} />
         </>
     );
 };

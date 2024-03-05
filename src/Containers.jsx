@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
 import { Divider } from "@patternfly/react-core/dist/esm/components/Divider";
-import { Dropdown, DropdownItem, DropdownSeparator, KebabToggle } from '@patternfly/react-core/dist/esm/deprecated/components/Dropdown/index.js';
+import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { LabelGroup } from "@patternfly/react-core/dist/esm/components/Label";
@@ -39,18 +39,17 @@ import { PodActions } from './PodActions.jsx';
 import { PodCreateModal } from './PodCreateModal.jsx';
 import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 
+import { KebabDropdown } from "cockpit-components-dropdown.jsx";
+
 const _ = cockpit.gettext;
 
 const ContainerActions = ({ container, healthcheck, onAddNotification, localImages, updateContainer }) => {
     const Dialogs = useDialogs();
     const { version } = utils.usePodmanInfo();
-    const [isActionsKebabOpen, setActionsKebabOpen] = useState(false);
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
 
     const deleteContainer = (event) => {
-        setActionsKebabOpen(false);
-
         if (container.State.Status == "running") {
             const handleForceRemoveContainer = () => {
                 const id = container ? container.Id : "";
@@ -78,8 +77,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     const stopContainer = (force) => {
         const args = {};
 
-        setActionsKebabOpen(false);
-
         if (force)
             args.t = 0;
         client.postContainer(container.isSystem, "stop", container.Id, args)
@@ -90,8 +87,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     };
 
     const startContainer = () => {
-        setActionsKebabOpen(false);
-
         client.postContainer(container.isSystem, "start", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to start container $0"), container.Name); // not-covered: OS error
@@ -100,8 +95,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     };
 
     const resumeContainer = () => {
-        setActionsKebabOpen(false);
-
         client.postContainer(container.isSystem, "unpause", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to resume container $0"), container.Name); // not-covered: OS error
@@ -110,8 +103,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     };
 
     const pauseContainer = () => {
-        setActionsKebabOpen(false);
-
         client.postContainer(container.isSystem, "pause", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to pause container $0"), container.Name); // not-covered: OS error
@@ -120,15 +111,11 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     };
 
     const commitContainer = () => {
-        setActionsKebabOpen(false);
-
         Dialogs.show(<ContainerCommitModal container={container}
                                            localImages={localImages} />);
     };
 
     const runHealthcheck = () => {
-        setActionsKebabOpen(false);
-
         client.runHealthcheck(container.isSystem, container.Id)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to run health check on container $0"), container.Name); // not-covered: OS error
@@ -138,8 +125,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
 
     const restartContainer = (force) => {
         const args = {};
-
-        setActionsKebabOpen(false);
 
         if (force)
             args.t = 0;
@@ -151,8 +136,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     };
 
     const renameContainer = () => {
-        setActionsKebabOpen(false);
-
         if (container.State.Status !== "running" ||
             version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
             Dialogs.show(<ContainerRenameModal container={container}
@@ -161,15 +144,11 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     };
 
     const checkpointContainer = () => {
-        setActionsKebabOpen(false);
-
         Dialogs.show(<ContainerCheckpointModal containerWillCheckpoint={container}
                                                onAddNotification={onAddNotification} />);
     };
 
     const restoreContainer = () => {
-        setActionsKebabOpen(false);
-
         Dialogs.show(<ContainerRestoreModal containerWillRestore={container}
                                             onAddNotification={onAddNotification} />);
     };
@@ -222,7 +201,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
 
         if (container.isSystem && !isPaused) {
             actions.push(
-                <DropdownSeparator key="separator-0" />,
+                <Divider key="separator-0" />,
                 <DropdownItem key="checkpoint"
                               onClick={() => checkpointContainer()}>
                     {_("Checkpoint")}
@@ -243,7 +222,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
         }
         if (container.isSystem && container.State?.CheckpointPath) {
             actions.push(
-                <DropdownSeparator key="separator-0" />,
+                <Divider key="separator-0" />,
                 <DropdownItem key="restore"
                               onClick={() => restoreContainer()}>
                     {_("Restore")}
@@ -256,7 +235,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
         }
     }
 
-    actions.push(<DropdownSeparator key="separator-1" />);
+    actions.push(<Divider key="separator-1" />);
     actions.push(
         <DropdownItem key="commit"
                       onClick={() => commitContainer()}>
@@ -265,7 +244,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     );
 
     if (isRunning && healthcheck !== "") {
-        actions.push(<DropdownSeparator key="separator-1-1" />);
+        actions.push(<Divider key="separator-1-1" />);
         actions.push(
             <DropdownItem key="healthcheck"
                           onClick={() => runHealthcheck()}>
@@ -274,7 +253,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
         );
     }
 
-    actions.push(<DropdownSeparator key="separator-2" />);
+    actions.push(<Divider key="separator-2" />);
     actions.push(
         <DropdownItem key="delete"
                       className="pf-m-danger"
@@ -283,15 +262,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
         </DropdownItem>
     );
 
-    const kebab = (
-        <Dropdown toggle={<KebabToggle onToggle={(_event, isOpen) => setActionsKebabOpen(isOpen)} />}
-                  isOpen={isActionsKebabOpen}
-                  isPlain
-                  position="right"
-                  dropdownItems={actions} />
-    );
-
-    return kebab;
+    return <KebabDropdown position="right" dropdownItems={actions} />;
 };
 
 export let onDownloadContainer = function funcOnDownloadContainer(container) {
@@ -319,27 +290,18 @@ const localize_health = (state) => {
 };
 
 const ContainerOverActions = ({ handlePruneUnusedContainers, unusedContainers }) => {
-    const [isActionsKebabOpen, setIsActionsKebabOpen] = useState(false);
+    const actions = [
+        <DropdownItem key="prune-unused-containers"
+                            id="prune-unused-containers-button"
+                            component="button"
+                            className="pf-m-danger btn-delete"
+                            onClick={() => handlePruneUnusedContainers()}
+                            isDisabled={unusedContainers.length === 0}>
+            {_("Prune unused containers")}
+        </DropdownItem>,
+    ];
 
-    return (
-        <Dropdown toggle={<KebabToggle onToggle={() => setIsActionsKebabOpen(!isActionsKebabOpen)} id="containers-actions-dropdown" />}
-                  isOpen={isActionsKebabOpen}
-                  isPlain
-                  position="right"
-                  dropdownItems={[
-                      <DropdownItem key="prune-unused-containers"
-                                    id="prune-unused-containers-button"
-                                    component="button"
-                                    className="pf-m-danger btn-delete"
-                                    onClick={() => {
-                                        setIsActionsKebabOpen(false);
-                                        handlePruneUnusedContainers();
-                                    }}
-                                    isDisabled={unusedContainers.length === 0}>
-                          {_("Prune unused containers")}
-                      </DropdownItem>,
-                  ]} />
-    );
+    return <KebabDropdown toggleButtonId="containers-actions-dropdown" position="right" dropdownItems={actions} />;
 };
 
 class Containers extends React.Component {
