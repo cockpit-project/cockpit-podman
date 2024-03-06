@@ -578,6 +578,10 @@ class TestApplication(testlib.MachineCase):
     def _testBasic(self, auth):
         b = self.browser
 
+        def clickDeleteImage(image_sel):
+            b.click(f'{image_sel} .pf-v5-c-menu-toggle')
+            b.click(image_sel + " button.btn-delete")
+
         if not auth:
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
@@ -799,8 +803,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:3")
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:4")
 
-        b.click(busybox_sel + " .pf-v5-c-menu-toggle")
-        b.click(busybox_sel + " button.btn-delete")
+        clickDeleteImage(busybox_sel)
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']"))
         b.set_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX}:1']", True)
         b.set_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX}:3']", True)
@@ -811,8 +814,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:1")
         b.wait_not_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:3")
 
-        b.click(busybox_sel + " .pf-v5-c-menu-toggle")
-        b.click(busybox_sel + " button.btn-delete")
+        clickDeleteImage(busybox_sel)
         b.click("#delete-all")
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']"))
         self.assertTrue(b.get_checked(f".pf-v5-c-check__input[aria-label='{IMG_BUSYBOX}:2']"))
@@ -851,8 +853,7 @@ class TestApplication(testlib.MachineCase):
         alpine_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_ALPINE_LATEST]}{auth}\"]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-v5-c-table__toggle button")
-        b.click(alpine_sel + " .pf-v5-c-menu-toggle")
-        b.click(alpine_sel + " button.btn-delete")
+        clickDeleteImage(alpine_sel)
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
         b.wait_not_present(alpine_sel)
@@ -898,8 +899,7 @@ class TestApplication(testlib.MachineCase):
         # Delete intermediate images
         intermediate_image_sel = "#containers-images tbody:last-child:contains('<none>:<none>')"
         b.click(".listing-action button:contains('Show intermediate images')")
-        b.click(intermediate_image_sel + " .pf-v5-c-menu-toggle")
-        b.click(intermediate_image_sel + " button.btn-delete")
+        clickDeleteImage(intermediate_image_sel)
         self.confirm_modal("Delete")
         b.wait_not_present(intermediate_image_sel)
 
@@ -916,8 +916,7 @@ class TestApplication(testlib.MachineCase):
 
         # Delete intermediate image which is in use
         self.execute(auth, f"podman untag {IMG_INTERMEDIATE}")
-        b.click(intermediate_image_sel + " .pf-v5-c-menu-toggle")
-        b.click(intermediate_image_sel + " button.btn-delete")
+        clickDeleteImage(intermediate_image_sel)
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
