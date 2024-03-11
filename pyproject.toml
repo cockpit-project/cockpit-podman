@@ -43,3 +43,8 @@ mark-parentheses = false
 
 [tool.ruff.lint.isort]
 known-first-party = ["cockpit"]
+
+[tool.vulture]
+ignore_names = [
+   "test[A-Z0-9]*",
+]
