@@ -106,12 +106,10 @@ class TestApplication(testlib.MachineCase):
             while pgrep podman; do sleep 0.1; done
             pkill -e -9 conmon || true
             while pgrep conmon; do sleep 0.1; done
-            findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
-            sync
             """)
 
-        # backup/restore pristine podman state, so that tests can run on existing testbeds
-        self.restore_dir("/var/lib/containers")
+        # install our test images
+        m.execute('for img in /var/lib/test-images/*.tar; do podman load < "$img"; done')
 
         self.addCleanup(m.execute, """
             systemctl stop podman.service podman.socket
@@ -127,10 +125,6 @@ class TestApplication(testlib.MachineCase):
             while pgrep podman; do sleep 0.1; done
             pkill -e -9 conmon || true
             while pgrep conmon; do sleep 0.1; done
-
-            # HACK: sometimes podman leaks mounts
-            findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
-            sync
             """)
 
         # Create admin session
@@ -147,7 +141,7 @@ class TestApplication(testlib.MachineCase):
                                                     ssh_port=m.ssh_port,
                                                     identity_file=m.identity_file)
 
-        # Enable user service as well; copy our images (except cockpit/ws) from system
+        # Enable user service as well; install our test images (except cockpit/ws)
         self.admin_s.execute("""
             systemctl --user stop podman.service
             for img in $(ls /var/lib/test-images/*.tar | grep -v cockpitws); do podman load < "$img"; done
