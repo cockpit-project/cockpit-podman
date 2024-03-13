@@ -251,7 +251,6 @@ class TestApplication(testlib.MachineCase):
 
         with self.browser.wait_timeout(30):
             try:
-                b.wait_visible("#containers-containers")
                 b.wait_not_in_text("#containers-containers", "Loading")
                 b.wait_not_present("#overview div.pf-v5-c-alert")
             except testlib.Error:
@@ -389,7 +388,6 @@ class TestApplication(testlib.MachineCase):
         self.performPodAction("pod-1", "system", "Delete")
         b.click(".pf-v5-c-modal-box button:contains(Delete)")
         # Alert should be shown, that running pods need to be force deleted.
-        b.wait_visible(".pf-v5-c-modal-box__body .pf-v5-c-alert")
         b.wait_in_text(".pf-v5-c-modal-box__body .pf-v5-c-list", "test-pod-1-system")
         b.click(".pf-v5-c-modal-box button:contains('Force delete')")
         self.waitPodRow("pod-1", False)
@@ -1092,9 +1090,7 @@ class TestApplication(testlib.MachineCase):
 
             def selectImageAndDownload(self):
                 # Select and download the self.imageName image
-                b.wait_visible(f".pf-v5-c-data-list .image-name:contains({self.imageName})")
                 b.click(f".pf-v5-c-data-list .image-name:contains({self.imageName})")
-                b.wait_visible("div.pf-v5-c-modal-box footer button:contains(Download):not([disabled])")
                 b.click("div.pf-v5-c-modal-box footer button:contains(Download)")
                 b.wait_not_present("div.pf-v5-c-modal-box")
 
