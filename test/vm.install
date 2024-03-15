@@ -14,9 +14,10 @@ if grep -q ID.*debian /usr/lib/os-release; then
 fi
 
 # don't force https:// (self-signed cert)
+mkdir -p /etc/cockpit
 printf "[WebService]\\nAllowUnencrypted=true\\n" > /etc/cockpit/cockpit.conf
 
-if type firewall-cmd >/dev/null 2>&1; then
+if systemctl is-active -q firewalld.service; then
     firewall-cmd --add-service=cockpit --permanent
 fi
 
