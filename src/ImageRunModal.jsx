@@ -626,7 +626,7 @@ export class ImageRunModal extends React.Component {
                 containerPort: validatePublishPort(a.containerPort, "containerPort"),
             };
         });
-        if (publishValidation.some(entry => Object.keys(entry).length > 0))
+        if (publishValidation.some(entry => entry && Object.keys(entry).length > 0))
             validationFailed.publish = publishValidation;
 
         const volumesValidation = volumes.map(a => {
@@ -638,7 +638,7 @@ export class ImageRunModal extends React.Component {
                 containerPath: validateVolume(a.containerPath, "containerPath"),
             };
         });
-        if (volumesValidation.some(entry => Object.keys(entry).length > 0))
+        if (volumesValidation.some(entry => entry && Object.keys(entry).length > 0))
             validationFailed.volumes = volumesValidation;
 
         const envValidation = env.map(a => {
@@ -650,7 +650,7 @@ export class ImageRunModal extends React.Component {
                 envValue: validateEnvVar(a.envValue, "envValue"),
             };
         });
-        if (envValidation.some(entry => Object.keys(entry).length > 0))
+        if (envValidation.some(entry => entry && Object.keys(entry).length > 0))
             validationFailed.env = envValidation;
 
         const containerNameValidation = await this.validateContainerName(containerName);

@@ -2385,6 +2385,33 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text('#run-image-dialog-publish-0-host-port', '5001')
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
         self.waitContainerRow(container_name)
+        container_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {container_name}").strip()
+        self.waitContainer(container_sha, False, name=container_name, image=IMG_BUSYBOX, state='Running')
+
+        # Test validation JavaScript errors when removing invalid environment entries
+        container_name = 'env-var-validation'
+        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+        b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
+
+        b.set_input_text("#run-image-dialog-name", container_name)
+        b.click("#pf-tab-1-create-image-dialog-tab-integration")
+
+        # Make sure our form validation does not crash when adding and removing invalid entries
+        b.click('.env-form .btn-add')
+        b.click('.env-form .btn-add')
+        b.click('.env-form .btn-add')
+        b.set_input_text("#run-image-dialog-env-1-key-group input", "something")
+        b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
+
+        b.wait_in_text("#run-image-dialog-env-0-key-group .pf-v5-c-helper-text__item-text", "must not be empty")
+        b.wait_in_text("#run-image-dialog-env-2-key-group .pf-v5-c-helper-text__item-text", "must not be empty")
+
+        # remove invalid entries
+        b.click('#run-image-dialog-env-0-btn-close')
+        b.click('#run-image-dialog-env-2-btn-close')
+
+        b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
+        self.waitContainerRow(container_name)
 
     def _testHealthcheck(self, auth):
         b = self.browser
