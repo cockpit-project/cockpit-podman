@@ -1,10 +1,10 @@
-#!/bin/sh
 set -eux
 
 PLAN="$1"
 
+cd "${SOURCE}"
+
 # tests need cockpit's bots/ libraries and test infrastructure
-cd $SOURCE
 rm -f bots  # common local case: existing bots symlink
 make bots test/common
 
@@ -17,12 +17,15 @@ else
     grep '"version"' node_modules/chrome-remote-interface/package.json
 fi
 
-. /etc/os-release
+. /run/host/usr/lib/os-release
 export TEST_OS="${ID}-${VERSION_ID/./-}"
 
 if [ "${TEST_OS#centos-}" != "$TEST_OS" ]; then
     TEST_OS="${TEST_OS}-stream"
 fi
+
+# Chromium sometimes gets OOM killed on testing farm
+export TEST_BROWSER=firefox
 
 # select subset of tests according to plan
 TESTS="$(test/common/run-tests -l)"
@@ -40,9 +43,12 @@ echo "TEST_ALLOW_JOURNAL_MESSAGES: ${TEST_ALLOW_JOURNAL_MESSAGES:-}"
 echo "TEST_AUDIT_NO_SELINUX: ${TEST_AUDIT_NO_SELINUX:-}"
 
 RC=0
-test/common/run-tests --nondestructive --machine 127.0.0.1:22 --browser 127.0.0.1:9090 $TESTS $EXCLUDES || RC=$?
-
-echo $RC > "$LOGS/exitcode"
+./test/common/run-tests \
+    --nondestructive \
+    --machine localhost:22 \
+    --browser localhost:9090 \
+    $TESTS \
+    $EXCLUDES \
+|| RC=$?
 cp --verbose Test* "$LOGS" || true
-# deliver test result via exitcode file
-exit 0
+exit $RC
