@@ -100,30 +100,30 @@ const ContainerHealthLogs = ({ container, onAddNotification, state }) => {
                     </FlexItem>}
             </Flex>
             <ListingTable aria-label={_("Logs")}
-                          className="health-logs"
-                          variant='compact'
-                          columns={[_("Last 5 runs"), _("Started at")]}
-                          rows={
-                              logs.map(log => {
-                                  const id = "hc" + log.Start + container.Id;
-                                  return {
-                                      expandedContent: log.Output ? <pre>{log.Output}</pre> : null,
-                                      columns: [
-                                          {
-                                              title: <Flex flexWrap={{ default: 'nowrap' }} spaceItems={{ default: 'spaceItemsSm' }} alignItems={{ default: 'alignItemsCenter' }}>
-                                                  {log.ExitCode === 0 ? <CheckCircleIcon className="green" /> : <ErrorCircleOIcon className="red" />}
-                                                  <span>{log.ExitCode === 0 ? _("Passed health run") : _("Failed health run")}</span>
-                                              </Flex>
-                                          },
-                                          utils.localize_time(Date.parse(log.Start) / 1000)
-                                      ],
-                                      props: {
-                                          key: id,
-                                          "data-row-id": id,
-                                      },
-                                  };
-                              })
-                          } />
+              className="health-logs"
+              variant='compact'
+              columns={[_("Last 5 runs"), _("Started at")]}
+              rows={
+                  logs.map(log => {
+                      const id = "hc" + log.Start + container.Id;
+                      return {
+                          expandedContent: log.Output ? <pre>{log.Output}</pre> : null,
+                          columns: [
+                              {
+                                  title: <Flex flexWrap={{ default: 'nowrap' }} spaceItems={{ default: 'spaceItemsSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                                      {log.ExitCode === 0 ? <CheckCircleIcon className="green" /> : <ErrorCircleOIcon className="red" />}
+                                      <span>{log.ExitCode === 0 ? _("Passed health run") : _("Failed health run")}</span>
+                                  </Flex>
+                              },
+                              utils.localize_time(Date.parse(log.Start) / 1000)
+                          ],
+                          props: {
+                              key: id,
+                              "data-row-id": id,
+                          },
+                      };
+                  })
+              } />
         </>
     );
 };

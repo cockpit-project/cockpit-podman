@@ -36,30 +36,30 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
 
     return (
         <Modal isOpen
-               showClose={false}
-               position="top" variant="medium"
-               title={cockpit.format(_("Checkpoint container $0"), containerWillCheckpoint.Name)}
-               footer={<>
-                   <Button variant="primary" isDisabled={inProgress}
-                           isLoading={inProgress}
-                           onClick={handleCheckpointContainer}>
-                       {_("Checkpoint")}
-                   </Button>
-                   <Button variant="link" isDisabled={inProgress}
-                           onClick={Dialogs.close}>
-                       {_("Cancel")}
-                   </Button>
-               </>}
+          showClose={false}
+          position="top" variant="medium"
+          title={cockpit.format(_("Checkpoint container $0"), containerWillCheckpoint.Name)}
+          footer={<>
+              <Button variant="primary" isDisabled={inProgress}
+                isLoading={inProgress}
+                onClick={handleCheckpointContainer}>
+                  {_("Checkpoint")}
+              </Button>
+              <Button variant="link" isDisabled={inProgress}
+                onClick={Dialogs.close}>
+                  {_("Cancel")}
+              </Button>
+          </>}
         >
             <Form isHorizontal>
                 <Checkbox label={_("Keep all temporary checkpoint files")} id="checkpoint-dialog-keep"
-                              name="keep" isChecked={keep} onChange={(_, val) => setKeep(val)} />
+                  name="keep" isChecked={keep} onChange={(_, val) => setKeep(val)} />
                 <Checkbox label={_("Leave running after writing checkpoint to disk")}
-                              id="checkpoint-dialog-leaveRunning" name="leaveRunning"
-                              isChecked={leaveRunning} onChange={(_, val) => setLeaveRunning(val)} />
+                  id="checkpoint-dialog-leaveRunning" name="leaveRunning"
+                  isChecked={leaveRunning} onChange={(_, val) => setLeaveRunning(val)} />
                 <Checkbox label={_("Support preserving established TCP connections")}
-                              id="checkpoint-dialog-tcpEstablished" name="tcpEstablished"
-                              isChecked={tcpEstablished} onChange={(_, val) => setTcpEstablished(val) } />
+                  id="checkpoint-dialog-tcpEstablished" name="tcpEstablished"
+                  isChecked={tcpEstablished} onChange={(_, val) => setTcpEstablished(val) } />
             </Form>
         </Modal>
     );

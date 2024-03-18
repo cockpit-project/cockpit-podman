@@ -11,19 +11,19 @@ const ForceRemoveModal = ({ name, reason, handleForceRemove }) => {
     const [inProgress, setInProgress] = useState(false);
     return (
         <Modal isOpen
-               showClose={false}
-               position="top" variant="medium"
-               titleIconVariant="warning"
-               onClose={Dialogs.close}
-               title={cockpit.format(_("Delete $0?"), name)}
-               footer={<>
-                   <Button variant="danger" isDisabled={inProgress} isLoading={inProgress}
-                           onClick={() => { setInProgress(true); handleForceRemove().catch(() => setInProgress(false)) }}
-                   >
-                       {_("Force delete")}
-                   </Button>
-                   <Button variant="link" isDisabled={inProgress} onClick={Dialogs.close}>{_("Cancel")}</Button>
-               </>}
+          showClose={false}
+          position="top" variant="medium"
+          titleIconVariant="warning"
+          onClose={Dialogs.close}
+          title={cockpit.format(_("Delete $0?"), name)}
+          footer={<>
+              <Button variant="danger" isDisabled={inProgress} isLoading={inProgress}
+                onClick={() => { setInProgress(true); handleForceRemove().catch(() => setInProgress(false)) }}
+              >
+                  {_("Force delete")}
+              </Button>
+              <Button variant="link" isDisabled={inProgress} onClick={Dialogs.close}>{_("Cancel")}</Button>
+          </>}
         >
             {reason}
         </Modal>

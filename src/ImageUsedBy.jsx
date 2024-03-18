@@ -22,14 +22,14 @@ const ImageUsedBy = ({ containers, showAll }) => {
                     <ListItem key={container.Id}>
                         <Flex>
                             <Button variant="link"
-                                    isInline
-                                    onClick={() => {
-                                        const loc = document.location.toString().split('#')[0];
-                                        document.location = loc + '#' + container.Id;
+                              isInline
+                              onClick={() => {
+                                  const loc = document.location.toString().split('#')[0];
+                                  document.location = loc + '#' + container.Id;
 
-                                        if (!isRunning)
-                                            showAll();
-                                    }}>
+                                  if (!isRunning)
+                                      showAll();
+                              }}>
                                 {container.Name}
                             </Button>
                             {isRunning && <Badge className="ct-badge-container-running">{_("Running")}</Badge>}

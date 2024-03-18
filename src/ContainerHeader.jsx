@@ -25,9 +25,9 @@ const ContainerHeader = ({ user, twoOwners, ownerFilter, handleOwnerChanged, tex
                 }
                 <ToolbarItem>
                     <TextInput id="containers-filter"
-                                   placeholder={_("Type to filter…")}
-                                   value={textFilter}
-                                   onChange={(_, value) => handleFilterChanged(value)} />
+                      placeholder={_("Type to filter…")}
+                      value={textFilter}
+                      onChange={(_, value) => handleFilterChanged(value)} />
                 </ToolbarItem>
             </ToolbarContent>
         </Toolbar>

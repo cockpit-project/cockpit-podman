@@ -36,22 +36,22 @@ const PodDeleteModal = ({ pod }) => {
 
     return (
         <Modal isOpen
-                  position="top" variant="medium"
-                  titleIconVariant="warning"
-                  title={force
-                      ? cockpit.format(_("Force delete pod $0?"), pod.Name)
-                      : cockpit.format(_("Delete pod $0?"), pod.Name)}
-                  onClose={Dialogs.close}
-                  footer={<>
-                      <Button variant="danger"
-                                      onClick={handlePodDelete}>
-                          {force ? _("Force delete") : _("Delete")}
-                      </Button>
-                      {' '}
-                      <Button variant="link" onClick={Dialogs.close}>
-                          {_("Cancel")}
-                      </Button>
-                  </>}
+          position="top" variant="medium"
+          titleIconVariant="warning"
+          title={force
+              ? cockpit.format(_("Force delete pod $0?"), pod.Name)
+              : cockpit.format(_("Delete pod $0?"), pod.Name)}
+          onClose={Dialogs.close}
+          footer={<>
+              <Button variant="danger"
+                onClick={handlePodDelete}>
+                  {force ? _("Force delete") : _("Delete")}
+              </Button>
+              {' '}
+              <Button variant="link" onClick={Dialogs.close}>
+                  {_("Cancel")}
+              </Button>
+          </>}
         >
             {deleteError &&
             <Alert variant="danger" isInline title={_("An error occurred")}>{deleteError}</Alert>}
@@ -77,47 +77,47 @@ export const PodActions = ({ onAddNotification, pod }) => {
     if (pod.Status == "Running" || pod.Status == "Paused") {
         dropdownItems.push(
             <DropdownItem key="action-stop"
-                              className="pod-action-stop"
-                              onClick={() =>
-                                  client.postPod(pod.isSystem, "stop", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to stop pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
-                              component="button">
+              className="pod-action-stop"
+              onClick={() =>
+                  client.postPod(pod.isSystem, "stop", pod.Id, {})
+                          .catch(ex => {
+                              const error = cockpit.format(_("Failed to stop pod $0"), pod.Name);
+                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                          })}
+              component="button">
                 {_("Stop")}
             </DropdownItem>,
             <DropdownItem key="action-force-stop"
-                              className="pod-action-force-stop"
-                              onClick={() =>
-                                  client.postPod(pod.isSystem, "stop", pod.Id, { t: 0 })
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to force stop pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
-                              component="button">
+              className="pod-action-force-stop"
+              onClick={() =>
+                  client.postPod(pod.isSystem, "stop", pod.Id, { t: 0 })
+                          .catch(ex => {
+                              const error = cockpit.format(_("Failed to force stop pod $0"), pod.Name);
+                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                          })}
+              component="button">
                 {_("Force stop")}
             </DropdownItem>,
             <DropdownItem key="action-restart"
-                              className="pod-action-restart"
-                              onClick={() =>
-                                  client.postPod(pod.isSystem, "restart", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to restart pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
-                              component="button">
+              className="pod-action-restart"
+              onClick={() =>
+                  client.postPod(pod.isSystem, "restart", pod.Id, {})
+                          .catch(ex => {
+                              const error = cockpit.format(_("Failed to restart pod $0"), pod.Name);
+                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                          })}
+              component="button">
                 {_("Restart")}
             </DropdownItem>,
             <DropdownItem key="action-force-restart"
-                              className="pod-action-force-restart"
-                              onClick={() =>
-                                  client.postPod(pod.isSystem, "restart", pod.Id, { t: 0 })
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to force restart pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
-                              component="button">
+              className="pod-action-force-restart"
+              onClick={() =>
+                  client.postPod(pod.isSystem, "restart", pod.Id, { t: 0 })
+                          .catch(ex => {
+                              const error = cockpit.format(_("Failed to force restart pod $0"), pod.Name);
+                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                          })}
+              component="button">
                 {_("Force restart")}
             </DropdownItem>,
         );
@@ -125,14 +125,14 @@ export const PodActions = ({ onAddNotification, pod }) => {
     if (pod.Status == "Created" || pod.Status == "Exited" || pod.Status == "Stopped") {
         dropdownItems.push(
             <DropdownItem key="action-start"
-                              className="pod-action-start"
-                              onClick={() =>
-                                  client.postPod(pod.isSystem, "start", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to start pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
-                              component="button">
+              className="pod-action-start"
+              onClick={() =>
+                  client.postPod(pod.isSystem, "start", pod.Id, {})
+                          .catch(ex => {
+                              const error = cockpit.format(_("Failed to start pod $0"), pod.Name);
+                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                          })}
+              component="button">
                 {_("Start")}
             </DropdownItem>,
         );
@@ -140,14 +140,14 @@ export const PodActions = ({ onAddNotification, pod }) => {
     if (pod.Status == "Paused") {
         dropdownItems.push(
             <DropdownItem key="action-unpause"
-                              className="pod-action-unpause"
-                              onClick={() =>
-                                  client.postPod(pod.isSystem, "unpause", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to resume pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
-                              component="button">
+              className="pod-action-unpause"
+              onClick={() =>
+                  client.postPod(pod.isSystem, "unpause", pod.Id, {})
+                          .catch(ex => {
+                              const error = cockpit.format(_("Failed to resume pod $0"), pod.Name);
+                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                          })}
+              component="button">
                 {_("Resume")}
             </DropdownItem>,
         );
@@ -155,14 +155,14 @@ export const PodActions = ({ onAddNotification, pod }) => {
     if (pod.Status == "Running") {
         dropdownItems.push(
             <DropdownItem key="action-pause"
-                              className="pod-action-pause"
-                              onClick={() =>
-                                  client.postPod(pod.isSystem, "pause", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to pause pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
-                              component="button">
+              className="pod-action-pause"
+              onClick={() =>
+                  client.postPod(pod.isSystem, "pause", pod.Id, {})
+                          .catch(ex => {
+                              const error = cockpit.format(_("Failed to pause pod $0"), pod.Name);
+                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                          })}
+              component="button">
                 {_("Pause")}
             </DropdownItem>,
         );
@@ -173,11 +173,11 @@ export const PodActions = ({ onAddNotification, pod }) => {
     }
     dropdownItems.push(
         <DropdownItem key="action-delete"
-                          className="pod-action-delete pf-m-danger"
-                          onClick={() => {
-                              Dialogs.show(<PodDeleteModal pod={pod} />);
-                          }}
-                          component="button">
+          className="pod-action-delete pf-m-danger"
+          onClick={() => {
+              Dialogs.show(<PodDeleteModal pod={pod} />);
+          }}
+          component="button">
             {_("Delete")}
         </DropdownItem>,
     );
@@ -187,9 +187,9 @@ export const PodActions = ({ onAddNotification, pod }) => {
 
     return (
         <KebabDropdown
-            toggleButtonId={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"}
-            position="right"
-            dropdownItems={dropdownItems}
+          toggleButtonId={"pod-" + pod.Name + (pod.isSystem ? "-system" : "-user") + "-action-toggle"}
+          position="right"
+          dropdownItems={dropdownItems}
         />
     );
 };

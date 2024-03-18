@@ -131,27 +131,27 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
 
     return (
         <Modal isOpen className="podman-search"
-               position="top" variant="large"
-               onClose={handleClose}
-               title={_("Search for an image")}
-               footer={<>
-                   <Form isHorizontal className="image-search-tag-form">
-                       <FormGroup fieldId="image-search-tag" label={_("Tag")}>
-                           <TextInput className="image-tag-entry"
-                                  id="image-search-tag"
-                                  type='text'
-                                  placeholder="latest"
-                                  value={imageTag || ''}
-                                  onChange={(_event, value) => setImageTag(value)} />
-                       </FormGroup>
-                   </Form>
-                   <Button variant='primary' isDisabled={selected === ""} onClick={onDownloadClicked}>
-                       {_("Download")}
-                   </Button>
-                   <Button variant='link' className='btn-cancel' onClick={handleClose}>
-                       {_("Cancel")}
-                   </Button>
-               </>}
+          position="top" variant="large"
+          onClose={handleClose}
+          title={_("Search for an image")}
+          footer={<>
+              <Form isHorizontal className="image-search-tag-form">
+                  <FormGroup fieldId="image-search-tag" label={_("Tag")}>
+                      <TextInput className="image-tag-entry"
+                        id="image-search-tag"
+                        type='text'
+                        placeholder="latest"
+                        value={imageTag || ''}
+                        onChange={(_event, value) => setImageTag(value)} />
+                  </FormGroup>
+              </Form>
+              <Button variant='primary' isDisabled={selected === ""} onClick={onDownloadClicked}>
+                  {_("Download")}
+              </Button>
+              <Button variant='link' className='btn-cancel' onClick={handleClose}>
+                  {_("Cancel")}
+              </Button>
+          </>}
         >
             <Form isHorizontal>
                 {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
@@ -163,16 +163,16 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
                 <Flex spaceItems={{ default: 'inlineFlex', modifier: 'spaceItemsXl' }}>
                     <FormGroup fieldId="search-image-dialog-name" label={_("Search for")}>
                         <TextInput id='search-image-dialog-name'
-                                   type='text'
-                                   placeholder={_("Search by name or description")}
-                                   value={imageIdentifier}
-                                   onKeyDown={onKeyDown}
-                                   onChange={(_event, value) => setImageIdentifier(value)} />
+                          type='text'
+                          placeholder={_("Search by name or description")}
+                          value={imageIdentifier}
+                          onKeyDown={onKeyDown}
+                          onChange={(_event, value) => setImageIdentifier(value)} />
                     </FormGroup>
                     <FormGroup fieldId="registry-select" label={_("in")}>
                         <FormSelect id='registry-select'
-                            value={selectedRegistry}
-                            onChange={(_ev, value) => { setSelectedRegistry(value); clearTimeout(typingTimeout); onSearchTriggered(value, false) }}>
+                          value={selectedRegistry}
+                          onChange={(_ev, value) => { setSelectedRegistry(value); clearTimeout(typingTimeout); onSearchTriggered(value, false) }}>
                             <FormSelectOption value="" key="all" label={_("All registries")} />
                             {(searchRegistries || []).map(r => <FormSelectOption value={r} key={r} label={r} />)}
                         </FormSelect>
@@ -186,26 +186,26 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
 
             {searchFinished && imageIdentifier !== '' && <>
                 {imageList.length == 0 && <EmptyStatePanel icon={ExclamationCircleIcon}
-                                                                      title={cockpit.format(_("No results for $0"), imageIdentifier)}
-                                                                      paragraph={_("Retry another term.")}
+                  title={cockpit.format(_("No results for $0"), imageIdentifier)}
+                  paragraph={_("Retry another term.")}
                 />}
                 {imageList.length > 0 &&
                 <DataList isCompact
-                          selectedDataListItemId={"image-list-item-" + selected}
-                          onSelectDataListItem={(_, key) => setSelected(key.split('-').slice(-1)[0])}>
+                  selectedDataListItemId={"image-list-item-" + selected}
+                  onSelectDataListItem={(_, key) => setSelected(key.split('-').slice(-1)[0])}>
                     {imageList.map((image, iter) => {
                         return (
                             <DataListItem id={"image-list-item-" + iter} key={iter}>
                                 <DataListItemRow>
                                     <DataListItemCells
-                                              dataListCells={[
-                                                  <DataListCell key="primary content">
-                                                      <span className='image-name'>{image.Name}</span>
-                                                  </DataListCell>,
-                                                  <DataListCell key="secondary content" wrapModifier="truncate">
-                                                      <span className='image-description'>{image.Description}</span>
-                                                  </DataListCell>
-                                              ]}
+                                      dataListCells={[
+                                          <DataListCell key="primary content">
+                                              <span className='image-name'>{image.Name}</span>
+                                          </DataListCell>,
+                                          <DataListCell key="secondary content" wrapModifier="truncate">
+                                              <span className='image-description'>{image.Description}</span>
+                                          </DataListCell>
+                                      ]}
                                     />
                                 </DataListItemRow>
                             </DataListItem>

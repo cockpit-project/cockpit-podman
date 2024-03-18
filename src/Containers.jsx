@@ -66,11 +66,11 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
             };
 
             Dialogs.show(<ForceRemoveModal name={container.Name}
-                                           handleForceRemove={handleForceRemoveContainer}
-                                           reason={_("Deleting a running container will erase all data in it.")} />);
+              handleForceRemove={handleForceRemoveContainer}
+              reason={_("Deleting a running container will erase all data in it.")} />);
         } else {
             Dialogs.show(<ContainerDeleteModal containerWillDelete={container}
-                                               onAddNotification={onAddNotification} />);
+              onAddNotification={onAddNotification} />);
         }
     };
 
@@ -112,7 +112,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
 
     const commitContainer = () => {
         Dialogs.show(<ContainerCommitModal container={container}
-                                           localImages={localImages} />);
+          localImages={localImages} />);
     };
 
     const runHealthcheck = () => {
@@ -139,24 +139,24 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
         if (container.State.Status !== "running" ||
             version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
             Dialogs.show(<ContainerRenameModal container={container}
-                                               updateContainer={updateContainer} />);
+              updateContainer={updateContainer} />);
         }
     };
 
     const checkpointContainer = () => {
         Dialogs.show(<ContainerCheckpointModal containerWillCheckpoint={container}
-                                               onAddNotification={onAddNotification} />);
+          onAddNotification={onAddNotification} />);
     };
 
     const restoreContainer = () => {
         Dialogs.show(<ContainerRestoreModal containerWillRestore={container}
-                                            onAddNotification={onAddNotification} />);
+          onAddNotification={onAddNotification} />);
     };
 
     const addRenameAction = () => {
         actions.push(
             <DropdownItem key="rename"
-                        onClick={() => renameContainer()}>
+              onClick={() => renameContainer()}>
                 {_("Rename")}
             </DropdownItem>
         );
@@ -166,19 +166,19 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     if (isRunning || isPaused) {
         actions.push(
             <DropdownItem key="stop"
-                          onClick={() => stopContainer()}>
+              onClick={() => stopContainer()}>
                 {_("Stop")}
             </DropdownItem>,
             <DropdownItem key="force-stop"
-                          onClick={() => stopContainer(true)}>
+              onClick={() => stopContainer(true)}>
                 {_("Force stop")}
             </DropdownItem>,
             <DropdownItem key="restart"
-                          onClick={() => restartContainer()}>
+              onClick={() => restartContainer()}>
                 {_("Restart")}
             </DropdownItem>,
             <DropdownItem key="force-restart"
-                          onClick={() => restartContainer(true)}>
+              onClick={() => restartContainer(true)}>
                 {_("Force restart")}
             </DropdownItem>
         );
@@ -186,14 +186,14 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
         if (!isPaused) {
             actions.push(
                 <DropdownItem key="pause"
-                          onClick={() => pauseContainer()}>
+                  onClick={() => pauseContainer()}>
                     {_("Pause")}
                 </DropdownItem>
             );
         } else {
             actions.push(
                 <DropdownItem key="resume"
-                          onClick={() => resumeContainer()}>
+                  onClick={() => resumeContainer()}>
                     {_("Resume")}
                 </DropdownItem>
             );
@@ -203,7 +203,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
             actions.push(
                 <Divider key="separator-0" />,
                 <DropdownItem key="checkpoint"
-                              onClick={() => checkpointContainer()}>
+                  onClick={() => checkpointContainer()}>
                     {_("Checkpoint")}
                 </DropdownItem>
             );
@@ -213,7 +213,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     if (!isRunning && !isPaused) {
         actions.push(
             <DropdownItem key="start"
-                          onClick={() => startContainer()}>
+              onClick={() => startContainer()}>
                 {_("Start")}
             </DropdownItem>
         );
@@ -224,7 +224,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
             actions.push(
                 <Divider key="separator-0" />,
                 <DropdownItem key="restore"
-                              onClick={() => restoreContainer()}>
+                  onClick={() => restoreContainer()}>
                     {_("Restore")}
                 </DropdownItem>
             );
@@ -238,7 +238,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     actions.push(<Divider key="separator-1" />);
     actions.push(
         <DropdownItem key="commit"
-                      onClick={() => commitContainer()}>
+          onClick={() => commitContainer()}>
             {_("Commit")}
         </DropdownItem>
     );
@@ -247,7 +247,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
         actions.push(<Divider key="separator-1-1" />);
         actions.push(
             <DropdownItem key="healthcheck"
-                          onClick={() => runHealthcheck()}>
+              onClick={() => runHealthcheck()}>
                 {_("Run health check")}
             </DropdownItem>
         );
@@ -256,8 +256,8 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     actions.push(<Divider key="separator-2" />);
     actions.push(
         <DropdownItem key="delete"
-                      className="pf-m-danger"
-                      onClick={deleteContainer}>
+          className="pf-m-danger"
+          onClick={deleteContainer}>
             {_("Delete")}
         </DropdownItem>
     );
@@ -292,11 +292,11 @@ const localize_health = (state) => {
 const ContainerOverActions = ({ handlePruneUnusedContainers, unusedContainers }) => {
     const actions = [
         <DropdownItem key="prune-unused-containers"
-                            id="prune-unused-containers-button"
-                            component="button"
-                            className="pf-m-danger btn-delete"
-                            onClick={() => handlePruneUnusedContainers()}
-                            isDisabled={unusedContainers.length === 0}>
+          id="prune-unused-containers-button"
+          component="button"
+          className="pf-m-danger btn-delete"
+          onClick={() => handlePruneUnusedContainers()}
+          isDisabled={unusedContainers.length === 0}>
             {_("Prune unused containers")}
         </DropdownItem>,
     ];
@@ -399,10 +399,10 @@ class Containers extends React.Component {
         if (!container.isDownloading) {
             columns.push({
                 title: <ContainerActions container={container}
-                                         healthcheck={healthcheck}
-                                         onAddNotification={this.props.onAddNotification}
-                                         localImages={localImages}
-                                         updateContainer={this.props.updateContainer} />,
+                  healthcheck={healthcheck}
+                  onAddNotification={this.props.onAddNotification}
+                  localImages={localImages}
+                  updateContainer={this.props.updateContainer} />,
                 props: { className: "pf-v5-c-table__action" }
             });
         }
@@ -526,7 +526,7 @@ class Containers extends React.Component {
                               bodyContent={renderContainerPublishedPorts(infraContainer.NetworkSettings.Ports)}
                             >
                                 <Button size="sm" variant="link" className="pod-details-button pod-details-ports-btn"
-                                        icon={<PortIcon className="pod-details-button-color" />}
+                                  icon={<PortIcon className="pod-details-button-color" />}
                                 >
                                     {numPorts}
                                     <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("ports")}</Text>
@@ -537,11 +537,11 @@ class Containers extends React.Component {
                     {infraContainer.Mounts && infraContainer.Mounts.length !== 0 &&
                     <Tooltip content={_("Click to see volumes")}>
                         <Popover
-                      enableFlip
-                      bodyContent={renderContainerVolumes(infraContainer.Mounts)}
+                          enableFlip
+                          bodyContent={renderContainerVolumes(infraContainer.Mounts)}
                         >
                             <Button size="sm" variant="link" className="pod-details-button pod-details-volumes-btn"
-                            icon={<VolumeIcon className="pod-details-button-color" />}
+                              icon={<VolumeIcon className="pod-details-button-color" />}
                             >
                                 {infraContainer.Mounts.length}
                                 <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("volumes")}</Text>
@@ -698,13 +698,13 @@ class Containers extends React.Component {
                             <DialogsContext.Consumer>
                                 {(Dialogs) => (
                                     <ImageRunModal user={this.props.user}
-                                                              localImages={localImages}
-                                                              pod={inPod}
-                                                              systemServiceAvailable={this.props.systemServiceAvailable}
-                                                              userServiceAvailable={this.props.userServiceAvailable}
-                                                              onAddNotification={this.props.onAddNotification}
-                                                              podmanInfo={podmanInfo}
-                                                              dialogs={Dialogs} />
+                                      localImages={localImages}
+                                      pod={inPod}
+                                      systemServiceAvailable={this.props.systemServiceAvailable}
+                                      userServiceAvailable={this.props.userServiceAvailable}
+                                      onAddNotification={this.props.onAddNotification}
+                                      podmanInfo={podmanInfo}
+                                      dialogs={Dialogs} />
                                 )}
                             </DialogsContext.Consumer>
                         )}
@@ -713,10 +713,10 @@ class Containers extends React.Component {
 
         const createPod = () => {
             Dialogs.show(<PodCreateModal
-                systemServiceAvailable={this.props.systemServiceAvailable}
-                userServiceAvailable={this.props.userServiceAvailable}
-                user={this.props.user}
-                onAddNotification={this.props.onAddNotification} />);
+              systemServiceAvailable={this.props.systemServiceAvailable}
+              userServiceAvailable={this.props.userServiceAvailable}
+              user={this.props.user}
+              onAddNotification={this.props.onAddNotification} />);
         };
 
         const filterRunning = (
@@ -734,16 +734,16 @@ class Containers extends React.Component {
                     <Divider orientation={{ default: "vertical" }} />
                     <ToolbarItem>
                         <Button variant="secondary" key="create-new-pod-action"
-                                id="containers-containers-create-pod-btn"
-                                onClick={() => createPod()}>
+                          id="containers-containers-create-pod-btn"
+                          onClick={() => createPod()}>
                             {_("Create pod")}
                         </Button>
                     </ToolbarItem>
                     <ToolbarItem>
                         <Button variant="primary" key="get-new-image-action"
-                                id="containers-containers-create-container-btn"
-                                isDisabled={localImages === null}
-                                onClick={() => createContainer(null)}>
+                          id="containers-containers-create-container-btn"
+                          isDisabled={localImages === null}
+                          onClick={() => createContainer(null)}>
                             {_("Create container")}
                         </Button>
                     </ToolbarItem>
@@ -787,12 +787,12 @@ class Containers extends React.Component {
                     <Flex direction={{ default: 'column' }}>
                         {(this.props.containers === null || this.props.pods === null)
                             ? <ListingTable variant='compact'
-                                            aria-label={_("Containers")}
-                                            emptyCaption={emptyCaption}
-                                            columns={columnTitles}
-                                            sortMethod={sortRows}
-                                            rows={[]}
-                                            sortBy={{ index: 0, direction: SortByDirection.asc }} />
+                                aria-label={_("Containers")}
+                                emptyCaption={emptyCaption}
+                                columns={columnTitles}
+                                sortMethod={sortRows}
+                                rows={[]}
+                                sortBy={{ index: 0, direction: SortByDirection.asc }} />
                             : Object.keys(partitionedContainers)
                                     .sort((a, b) => {
                                         if (a == "no-pod") return -1;
@@ -824,9 +824,9 @@ class Containers extends React.Component {
                                             <>
                                                 <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
                                                 <Button variant="secondary"
-                                                        className="create-container-in-pod"
-                                                        isDisabled={localImages === null}
-                                                        onClick={() => createContainer(this.props.pods[section])}>
+                                                  className="create-container-in-pod"
+                                                  isDisabled={localImages === null}
+                                                  onClick={() => createContainer(this.props.pods[section])}>
                                                     {_("Create container in pod")}
                                                 </Button>
                                                 <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
@@ -834,12 +834,12 @@ class Containers extends React.Component {
                                         );
                                         return (
                                             <Card key={'table-' + section}
-                                             id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
-                                             isPlain={section == "no-pod"}
-                                             isFlat={section != "no-pod"}
-                                             className="container-pod"
-                                             isClickable
-                                             isSelectable>
+                                              id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
+                                              isPlain={section == "no-pod"}
+                                              isFlat={section != "no-pod"}
+                                              className="container-pod"
+                                              isClickable
+                                              isSelectable>
                                                 {caption && <CardHeader actions={{ actions, className: "panel-actions" }}>
                                                     <CardTitle>
                                                         <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
@@ -850,11 +850,11 @@ class Containers extends React.Component {
                                                     </CardTitle>
                                                 </CardHeader>}
                                                 <ListingTable variant='compact'
-                                                          emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
-                                                          columns={columnTitles}
-                                                          sortMethod={sortRows}
-                                                          rows={rows}
-                                                          {...tableProps} />
+                                                  emptyCaption={section == "no-pod" ? emptyCaption : emptyCaptionPod}
+                                                  columns={columnTitles}
+                                                  sortMethod={sortRows}
+                                                  rows={rows}
+                                                  {...tableProps} />
                                             </Card>
                                         );
                                     })}

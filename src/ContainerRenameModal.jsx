@@ -67,11 +67,11 @@ const ContainerRenameModal = ({ container, updateContainer }) => {
         <Form isHorizontal>
             <FormGroup fieldId="rename-dialog-container-name" label={_("New container name")}>
                 <TextInput id="rename-dialog-container-name"
-                        value={name}
-                        validated={nameError ? "error" : "default"}
-                        type="text"
-                        aria-label={nameError}
-                        onChange={(_, value) => handleInputChange("name", value)} />
+                  value={name}
+                  validated={nameError ? "error" : "default"}
+                  type="text"
+                  aria-label={nameError}
+                  onChange={(_, value) => handleInputChange("name", value)} />
                 <FormHelper fieldId="commit-dialog-image-name" helperTextInvalid={nameError} />
             </FormGroup>
         </Form>
@@ -79,24 +79,24 @@ const ContainerRenameModal = ({ container, updateContainer }) => {
 
     return (
         <Modal isOpen
-            position="top" variant="medium"
-            onClose={Dialogs.close}
-            onKeyDown={handleKeyDown}
-            title={cockpit.format(_("Rename container $0"), container.Name)}
-            footer={<>
-                <Button variant="primary"
-                        className="btn-ctr-rename"
-                        id="btn-rename-dialog-container"
-                        isDisabled={nameError}
-                        onClick={handleRename}>
-                    {_("Rename")}
-                </Button>
-                <Button variant="link"
-                        className="btn-ctr-cancel-commit"
-                        onClick={Dialogs.close}>
-                    {_("Cancel")}
-                </Button>
-            </>}
+          position="top" variant="medium"
+          onClose={Dialogs.close}
+          onKeyDown={handleKeyDown}
+          title={cockpit.format(_("Rename container $0"), container.Name)}
+          footer={<>
+              <Button variant="primary"
+                className="btn-ctr-rename"
+                id="btn-rename-dialog-container"
+                isDisabled={nameError}
+                onClick={handleRename}>
+                  {_("Rename")}
+              </Button>
+              <Button variant="link"
+                className="btn-ctr-cancel-commit"
+                onClick={Dialogs.close}>
+                  {_("Cancel")}
+              </Button>
+          </>}
         >
             {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError(null)} />}
             {renameContent}
