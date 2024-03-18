@@ -637,9 +637,9 @@ class Application extends React.Component {
                             <EmptyStateHeader titleText={_("Podman service is not active")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
                             <EmptyStateFooter>
                                 <Checkbox isChecked={this.state.enableService}
-                                      id="enable"
-                                      label={_("Automatically start podman on boot")}
-                                      onChange={ (_event, checked) => this.setState({ enableService: checked }) } />
+                                  id="enable"
+                                  label={_("Automatically start podman on boot")}
+                                  onChange={ (_event, checked) => this.setState({ enableService: checked }) } />
                                 <Button onClick={this.startService}>
                                     {_("Start podman")}
                                 </Button>
@@ -687,50 +687,50 @@ class Application extends React.Component {
         if (!this.state.systemServiceAvailable && this.state.privileged) {
             startService = (
                 <Alert
-                title={_("System Podman service is also available")}
-                actionClose={action} />
+                  title={_("System Podman service is also available")}
+                  actionClose={action} />
             );
         }
         if (!this.state.userServiceAvailable && this.state.userServiceExists) {
             startService = (
                 <Alert
-                title={_("User Podman service is also available")}
-                actionClose={action} />
+                  title={_("User Podman service is also available")}
+                  actionClose={action} />
             );
         }
 
         const imageList = (
             <Images
-                key="imageList"
-                images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
-                imageContainerList={imageContainerList}
-                onAddNotification={this.onAddNotification}
-                textFilter={this.state.textFilter}
-                ownerFilter={this.state.ownerFilter}
-                showAll={ () => this.setState({ containersFilter: "all" }) }
-                user={this.state.currentUser}
-                userServiceAvailable={this.state.userServiceAvailable}
-                systemServiceAvailable={this.state.systemServiceAvailable}
+              key="imageList"
+              images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
+              imageContainerList={imageContainerList}
+              onAddNotification={this.onAddNotification}
+              textFilter={this.state.textFilter}
+              ownerFilter={this.state.ownerFilter}
+              showAll={ () => this.setState({ containersFilter: "all" }) }
+              user={this.state.currentUser}
+              userServiceAvailable={this.state.userServiceAvailable}
+              systemServiceAvailable={this.state.systemServiceAvailable}
             />
         );
         const containerList = (
             <Containers
-                key="containerList"
-                version={this.state.version}
-                images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
-                containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
-                pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
-                containersStats={this.state.containersStats}
-                filter={this.state.containersFilter}
-                handleFilterChange={this.onContainerFilterChanged}
-                textFilter={this.state.textFilter}
-                ownerFilter={this.state.ownerFilter}
-                user={this.state.currentUser}
-                onAddNotification={this.onAddNotification}
-                userServiceAvailable={this.state.userServiceAvailable}
-                systemServiceAvailable={this.state.systemServiceAvailable}
-                cgroupVersion={this.state.cgroupVersion}
-                updateContainer={this.updateContainer}
+              key="containerList"
+              version={this.state.version}
+              images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
+              containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
+              pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
+              containersStats={this.state.containersStats}
+              filter={this.state.containersFilter}
+              handleFilterChange={this.onContainerFilterChanged}
+              textFilter={this.state.textFilter}
+              ownerFilter={this.state.ownerFilter}
+              user={this.state.currentUser}
+              onAddNotification={this.onAddNotification}
+              userServiceAvailable={this.state.userServiceAvailable}
+              systemServiceAvailable={this.state.systemServiceAvailable}
+              cgroupVersion={this.state.cgroupVersion}
+              updateContainer={this.updateContainer}
             />
         );
 
@@ -739,8 +739,8 @@ class Application extends React.Component {
                 {this.state.notifications.map((notification, index) => {
                     return (
                         <Alert key={index} title={notification.error} variant={notification.type}
-                               isLiveRegion
-                               actionClose={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
+                          isLiveRegion
+                          actionClose={<AlertActionCloseButton onClose={() => this.onDismissNotification(notification.index)} />}>
                             {notification.errorDetail}
                         </Alert>
                     );

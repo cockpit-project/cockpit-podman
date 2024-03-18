@@ -69,9 +69,9 @@ class Images extends React.Component {
         const Dialogs = this.context;
         Dialogs.show(
             <ImageSearchModal downloadImage={this.downloadImage}
-                              user={this.props.user}
-                              userServiceAvailable={this.props.userServiceAvailable}
-                              systemServiceAvailable={this.props.systemServiceAvailable} />
+              user={this.props.user}
+              userServiceAvailable={this.props.userServiceAvailable}
+              systemServiceAvailable={this.props.systemServiceAvailable} />
         );
     };
 
@@ -138,9 +138,9 @@ class Images extends React.Component {
             { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" } },
             {
                 title: <ImageActions image={image} onAddNotification={this.props.onAddNotification}
-                                     user={this.props.user}
-                                     userServiceAvailable={this.props.userServiceAvailable}
-                                     systemServiceAvailable={this.props.systemServiceAvailable} />,
+                  user={this.props.user}
+                  userServiceAvailable={this.props.userServiceAvailable}
+                  systemServiceAvailable={this.props.systemServiceAvailable} />,
                 props: { className: 'pf-v5-c-table__action content-action' }
             },
         ];
@@ -163,8 +163,8 @@ class Images extends React.Component {
         });
         return {
             expandedContent: <ListingPanel
-                                colSpan='8'
-                                tabRenderers={tabs} />,
+              colSpan='8'
+              tabRenderers={tabs} />,
             columns,
             props: {
                 key: image.Id + image.isSystem.toString(),
@@ -256,10 +256,10 @@ class Images extends React.Component {
         const cardBody = (
             <>
                 <ListingTable aria-label={_("Images")}
-                              variant='compact'
-                              emptyCaption={emptyCaption}
-                              columns={columnTitles}
-                              rows={imageRows} />
+                  variant='compact'
+                  emptyCaption={emptyCaption}
+                  columns={columnTitles}
+                  rows={imageRows} />
                 {toggleIntermediate}
             </>
         );
@@ -292,16 +292,16 @@ class Images extends React.Component {
                         </FlexItem>
                         <FlexItem>
                             <ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog}
-                                              handlePruneUsedImages={this.onOpenPruneUnusedImagesDialog}
-                                              unusedImages={unusedImages} />
+                              handlePruneUsedImages={this.onOpenPruneUnusedImagesDialog}
+                              unusedImages={unusedImages} />
                         </FlexItem>
                     </Flex>
                 </CardHeader>
                 <CardBody>
                     {this.props.images && Object.keys(this.props.images).length
                         ? <ExpandableSection toggleText={this.state.isExpanded ? _("Hide images") : _("Show images")}
-                                             onToggle={() => this.setState(prevState => ({ isExpanded: !prevState.isExpanded }))}
-                                             isExpanded={this.state.isExpanded}>
+                            onToggle={() => this.setState(prevState => ({ isExpanded: !prevState.isExpanded }))}
+                            isExpanded={this.state.isExpanded}>
                             {cardBody}
                         </ExpandableSection>
                         : cardBody}
@@ -332,20 +332,20 @@ class Images extends React.Component {
 const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unusedImages }) => {
     const actions = [
         <DropdownItem
-            key="download-new-image"
-            component="button"
-            onClick={() => handleDownloadNewImage()}
+          key="download-new-image"
+          component="button"
+          onClick={() => handleDownloadNewImage()}
         >
             {_("Download new image")}
         </DropdownItem>,
         <DropdownItem
-            key="prune-unused-images"
-            id="prune-unused-images-button"
-            component="button"
-            className="pf-m-danger btn-delete"
-            onClick={() => handlePruneUsedImages()}
-            isDisabled={unusedImages.length === 0}
-            isAriaDisabled={unusedImages.length === 0}
+          key="prune-unused-images"
+          id="prune-unused-images-button"
+          component="button"
+          className="pf-m-danger btn-delete"
+          onClick={() => handlePruneUsedImages()}
+          isDisabled={unusedImages.length === 0}
+          isAriaDisabled={unusedImages.length === 0}
         >
             {_("Prune unused images")}
         </DropdownItem>
@@ -353,9 +353,9 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
 
     return (
         <KebabDropdown
-              toggleButtonId="image-actions-dropdown"
-              position="right"
-              dropdownItems={actions}
+          toggleButtonId="image-actions-dropdown"
+          position="right"
+          dropdownItems={actions}
         />
     );
 };
@@ -386,34 +386,34 @@ const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, 
 
     const removeImage = () => {
         Dialogs.show(<ImageDeleteModal imageWillDelete={image}
-                                       onAddNotification={onAddNotification} />);
+          onAddNotification={onAddNotification} />);
     };
 
     const runImageAction = (
         <Button key={image.Id + "create"}
-                className="ct-container-create show-only-when-wide"
-                variant='secondary'
-                onClick={ e => {
-                    e.stopPropagation();
-                    runImage();
-                }}
-                size="sm"
-                data-image={image.Id}>
+          className="ct-container-create show-only-when-wide"
+          variant='secondary'
+          onClick={ e => {
+              e.stopPropagation();
+              runImage();
+          }}
+          size="sm"
+          data-image={image.Id}>
             {_("Create container")}
         </Button>
     );
 
     const dropdownActions = [
         <DropdownItem key={image.Id + "create-menu"}
-                    component="button"
-                    className="show-only-when-narrow"
-                    onClick={runImage}>
+          component="button"
+          className="show-only-when-narrow"
+          onClick={runImage}>
             {_("Create container")}
         </DropdownItem>,
         <DropdownItem key={image.Id + "delete"}
-                    component="button"
-                    className="pf-m-danger btn-delete"
-                    onClick={removeImage}>
+          component="button"
+          className="pf-m-danger btn-delete"
+          onClick={removeImage}>
             {_("Delete")}
         </DropdownItem>
     ];

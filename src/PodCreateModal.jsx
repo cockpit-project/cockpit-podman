@@ -143,56 +143,56 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
             {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
             <FormGroup id="pod-name-group" fieldId='create-pod-dialog-name' label={_("Name")} className="ct-m-horizontal">
                 <TextInput id='create-pod-dialog-name'
-                           className="pod-name"
-                           placeholder={_("Pod name")}
-                           value={podName}
-                           validated={validationFailed.podName ? "error" : "default"}
-                           onChange={(_, value) => {
-                               utils.validationClear(validationFailed, "podName", (value) => setValidationFailed(value));
-                               utils.validationDebounce(() => {
-                                   const delta = validatePodName(value);
-                                   if (delta)
-                                       setValidationFailed(prevState => { return { ...prevState, podName: delta } });
-                               });
-                               setPodName(value);
-                           }} />
+                  className="pod-name"
+                  placeholder={_("Pod name")}
+                  value={podName}
+                  validated={validationFailed.podName ? "error" : "default"}
+                  onChange={(_, value) => {
+                      utils.validationClear(validationFailed, "podName", (value) => setValidationFailed(value));
+                      utils.validationDebounce(() => {
+                          const delta = validatePodName(value);
+                          if (delta)
+                              setValidationFailed(prevState => { return { ...prevState, podName: delta } });
+                      });
+                      setPodName(value);
+                  }} />
                 <FormHelper fieldId="create-pod-dialog-name" helperTextInvalid={validationFailed?.podName} />
             </FormGroup>
             { userServiceAvailable && systemServiceAvailable &&
                 <FormGroup isInline hasNoPaddingTop fieldId='create-pod-dialog-owner' label={_("Owner")} className="ct-m-horizontal">
                     <Radio value={systemOwner}
-                            label={_("System")}
-                            id="create-pod-dialog-owner-system"
-                            isChecked={owner === systemOwner}
-                            onChange={() => setOwner(systemOwner)} />
+                      label={_("System")}
+                      id="create-pod-dialog-owner-system"
+                      isChecked={owner === systemOwner}
+                      onChange={() => setOwner(systemOwner)} />
                     <Radio value={user}
-                            label={cockpit.format("$0 $1", _("User:"), user)}
-                            id="create-pod-dialog-owner-user"
-                            isChecked={owner === user}
-                            onChange={() => setOwner(user)} />
+                      label={cockpit.format("$0 $1", _("User:"), user)}
+                      id="create-pod-dialog-owner-user"
+                      isChecked={owner === user}
+                      onChange={() => setOwner(user)} />
                 </FormGroup>
             }
             <DynamicListForm id='create-pod-dialog-publish'
-                        emptyStateString={_("No ports exposed")}
-                        formclass='publish-port-form'
-                        label={_("Port mapping")}
-                        actionLabel={_("Add port mapping")}
-                        validationFailed={validationFailed.publish}
-                        onValidationChange={value => dynamicListOnValidationChange('publish', value)}
-                        onChange={value => setPublish(value)}
-                        default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
-                        itemcomponent={ <PublishPort />} />
+              emptyStateString={_("No ports exposed")}
+              formclass='publish-port-form'
+              label={_("Port mapping")}
+              actionLabel={_("Add port mapping")}
+              validationFailed={validationFailed.publish}
+              onValidationChange={value => dynamicListOnValidationChange('publish', value)}
+              onChange={value => setPublish(value)}
+              default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
+              itemcomponent={ <PublishPort />} />
 
             {version.localeCompare("4", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
                 <DynamicListForm id='create-pod-dialog-volume'
-                            emptyStateString={_("No volumes specified")}
-                            formclass='volume-form'
-                            label={_("Volumes")}
-                            actionLabel={_("Add volume")}
-                            onChange={value => setVolumes(value)}
-                            default={{ containerPath: null, hostPath: null, mode: 'rw' }}
-                            options={{ selinuxAvailable }}
-                            itemcomponent={ <Volume />} />
+                  emptyStateString={_("No volumes specified")}
+                  formclass='volume-form'
+                  label={_("Volumes")}
+                  actionLabel={_("Add volume")}
+                  onChange={value => setVolumes(value)}
+                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
+                  options={{ selinuxAvailable }}
+                  itemcomponent={ <Volume />} />
             }
 
         </Form>
@@ -200,19 +200,19 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
 
     return (
         <Modal isOpen
-                position="top" variant="medium"
-                onClose={Dialogs.close}
-                onEscapePress={Dialogs.close}
-                title={_("Create pod")}
-                footer={<>
-                    <Button variant='primary' id="create-pod-create-btn" onClick={() => onCreateClicked()}
-                            isDisabled={isFormInvalid(validationFailed)}>
-                        {_("Create")}
-                    </Button>
-                    <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
-                        {_("Cancel")}
-                    </Button>
-                </>}
+          position="top" variant="medium"
+          onClose={Dialogs.close}
+          onEscapePress={Dialogs.close}
+          title={_("Create pod")}
+          footer={<>
+              <Button variant='primary' id="create-pod-create-btn" onClick={() => onCreateClicked()}
+                isDisabled={isFormInvalid(validationFailed)}>
+                  {_("Create")}
+              </Button>
+              <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
+                  {_("Cancel")}
+              </Button>
+          </>}
         >
             {defaultBody}
         </Modal>

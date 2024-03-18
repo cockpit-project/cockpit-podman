@@ -54,11 +54,11 @@ const ImageDetails = ({ image }) => {
 
     return (
         <ListingTable
-            variant='compact'
-            isStickyHeader
-            emptyCaption={error ? _("Unable to load image history") : _("Loading details...")}
-            columns={columns}
-            rows={rows} />
+          variant='compact'
+          isStickyHeader
+          emptyCaption={error ? _("Unable to load image history") : _("Loading details...")}
+          columns={columns}
+          rows={rows} />
     );
 };
 

@@ -57,8 +57,8 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
             client.delImage(imageWillDelete.isSystem, imageWillDelete.Id, false)
                     .catch(ex => {
                         Dialogs.show(<ForceRemoveModal name={isIntermediateImage ? _("intermediate image") : repoTags[0]}
-                                                       handleForceRemove={handleForceRemoveImage}
-                                                       reason={ex.message} />);
+                          handleForceRemove={handleForceRemoveImage}
+                          reason={ex.message} />);
                     });
         else {
             // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
@@ -86,33 +86,33 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
 
     return (
         <Modal isOpen
-                 position="top" variant="medium"
-                 titleIconVariant="warning"
-                 onClose={Dialogs.close}
-                 title={cockpit.format(_("Delete $0 image?"), imageName)}
-                 footer={<>
-                     <Button id="btn-img-delete" variant="danger" isDisabled={!isIntermediateImage && checkedTags.length === 0}
-                             onClick={() => handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
-                         {isIntermediateImage ? _("Delete image") : _("Delete tagged images")}
-                     </Button>
-                     <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
-                 </>}
+          position="top" variant="medium"
+          titleIconVariant="warning"
+          onClose={Dialogs.close}
+          title={cockpit.format(_("Delete $0 image?"), imageName)}
+          footer={<>
+              <Button id="btn-img-delete" variant="danger" isDisabled={!isIntermediateImage && checkedTags.length === 0}
+                onClick={() => handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
+                  {isIntermediateImage ? _("Delete image") : _("Delete tagged images")}
+              </Button>
+              <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
+          </>}
         >
             <Stack hasGutter>
                 { repoTags.length > 1 && <StackItem>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</StackItem> }
                 <StackItem isFilled>
                     {repoTags.length > 1 && <Checkbox isChecked={isAllSelected} id='delete-all' label={_("All")} aria-label='All'
-                        onChange={(_event, checked) => repoTags.forEach(item => onValueChanged(item, checked))}
-                        body={
-                            repoTags.map(x => (
-                                <Checkbox isChecked={checkedTags.indexOf(x) > -1}
-                                            id={"delete-" + x}
-                                            aria-label={x}
-                                            key={x}
-                                            label={x}
-                                            onChange={(_event, checked) => onValueChanged(x, checked)} />
-                            ))
-                        } />}
+                      onChange={(_event, checked) => repoTags.forEach(item => onValueChanged(item, checked))}
+                      body={
+                          repoTags.map(x => (
+                              <Checkbox isChecked={checkedTags.indexOf(x) > -1}
+                                id={"delete-" + x}
+                                aria-label={x}
+                                key={x}
+                                label={x}
+                                onChange={(_event, checked) => onValueChanged(x, checked)} />
+                          ))
+                      } />}
                     {repoTags.length === 1 && <List><ListItem>{repoTags[0]}</ListItem></List>}
                 </StackItem>
             </Stack>

@@ -83,37 +83,37 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, userSe
 
     return (
         <Modal isOpen
-               onClose={close}
-               position="top" variant="medium"
-               title={cockpit.format(_("Prune unused images"))}
-               footer={<>
-                   <Button id="btn-img-delete" variant="danger"
-                           spinnerAriaValueText={isPruning ? _("Pruning images") : undefined}
-                           isLoading={isPruning}
-                           isDisabled={!deleteUserImages && !deleteSystemImages}
-                           onClick={handlePruneUnusedImages}>
-                       {isPruning ? _("Pruning images") : _("Prune")}
-                   </Button>
-                   <Button variant="link" onClick={() => close()}>{_("Cancel")}</Button>
-               </>}
+          onClose={close}
+          position="top" variant="medium"
+          title={cockpit.format(_("Prune unused images"))}
+          footer={<>
+              <Button id="btn-img-delete" variant="danger"
+                spinnerAriaValueText={isPruning ? _("Pruning images") : undefined}
+                isLoading={isPruning}
+                isDisabled={!deleteUserImages && !deleteSystemImages}
+                onClick={handlePruneUnusedImages}>
+                  {isPruning ? _("Pruning images") : _("Prune")}
+              </Button>
+              <Button variant="link" onClick={() => close()}>{_("Cancel")}</Button>
+          </>}
         >
             <Flex flex={{ default: 'column' }}>
                 {isSystem && <ImageOptions
-              images={systemImages}
-              name="deleteSystemImages"
-              checked={deleteSystemImages}
-              handleChange={setDeleteSystemImages}
-              showCheckbox={showCheckboxes}
-              isSystem
+                  images={systemImages}
+                  name="deleteSystemImages"
+                  checked={deleteSystemImages}
+                  handleChange={setDeleteSystemImages}
+                  showCheckbox={showCheckboxes}
+                  isSystem
                 />
                 }
                 <ImageOptions
-              images={userImages}
-              name="deleteUserImages"
-              checked={deleteUserImages}
-              handleChange={setDeleteUserImages}
-              showCheckbox={showCheckboxes}
-              isSystem={false}
+                  images={userImages}
+                  name="deleteUserImages"
+                  checked={deleteUserImages}
+                  handleChange={setDeleteUserImages}
+                  showCheckbox={showCheckboxes}
+                  isSystem={false}
                 />
             </Flex>
         </Modal>

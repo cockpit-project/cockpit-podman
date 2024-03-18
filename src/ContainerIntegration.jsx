@@ -78,7 +78,7 @@ const ContainerEnv = ({ containerEnv, imageEnv }) => {
     result.push(
         <ListItem key='show-more-env-button'>
             <Button variant='link' isInline
-                onClick={() => setShowMore(!showMore)}>
+              onClick={() => setShowMore(!showMore)}>
                 {showMore ? _("Show less") : _("Show more")}
             </Button>
         </ListItem>

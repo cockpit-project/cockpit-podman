@@ -38,7 +38,7 @@ export const ErrorNotification = ({ errorMessage, errorDetail, onDismiss }) => {
     log_error_if_changed(errorMessage + (errorDetail ? ": " + errorDetail : ""));
     return (
         <Alert isInline variant='danger' title={errorMessage}
-            actionClose={onDismiss ? <AlertActionCloseButton onClose={onDismiss} /> : null}>
+          actionClose={onDismiss ? <AlertActionCloseButton onClose={onDismiss} /> : null}>
             { errorDetail && <p> {_("Error message")}: <samp>{errorDetail}</samp> </p> }
         </Alert>
     );

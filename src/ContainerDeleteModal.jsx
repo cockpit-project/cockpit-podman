@@ -25,14 +25,14 @@ const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
 
     return (
         <Modal isOpen
-               position="top" variant="medium"
-               titleIconVariant="warning"
-               onClose={Dialogs.close}
-               title={cockpit.format(_("Delete $0?"), containerWillDelete.Name)}
-               footer={<>
-                   <Button variant="danger" className="btn-ctr-delete" onClick={handleRemoveContainer}>{_("Delete")}</Button>{' '}
-                   <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
-               </>}
+          position="top" variant="medium"
+          titleIconVariant="warning"
+          onClose={Dialogs.close}
+          title={cockpit.format(_("Delete $0?"), containerWillDelete.Name)}
+          footer={<>
+              <Button variant="danger" className="btn-ctr-delete" onClick={handleRemoveContainer}>{_("Delete")}</Button>{' '}
+              <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
+          </>}
         >
             {_("Deleting a container will erase all data in it.")}
         </Modal>

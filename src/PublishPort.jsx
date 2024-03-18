@@ -51,92 +51,92 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount, va
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-6-col-on-md"
-                id={id + "-ip-address-group"}
-                label={_("IP address")}
-                fieldId={id + "-ip-address"}
-                labelIcon={
-                    <Popover aria-label={_("IP address help")}
-                        enableFlip
-                        bodyContent={_("If host IP is set to 0.0.0.0 or not set at all, the port will be bound on all IPs on the host.")}>
-                        <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
-                            <OutlinedQuestionCircleIcon />
-                        </button>
-                    </Popover>
-                }>
+              id={id + "-ip-address-group"}
+              label={_("IP address")}
+              fieldId={id + "-ip-address"}
+              labelIcon={
+                  <Popover aria-label={_("IP address help")}
+                    enableFlip
+                    bodyContent={_("If host IP is set to 0.0.0.0 or not set at all, the port will be bound on all IPs on the host.")}>
+                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                          <OutlinedQuestionCircleIcon />
+                      </button>
+                  </Popover>
+              }>
                 <TextInput id={id + "-ip-address"}
-                        value={item.IP || ''}
-                        validated={validationFailed?.IP ? "error" : "default"}
-                        onChange={(_event, value) => {
-                            utils.validationClear(validationFailed, "IP", onValidationChange);
-                            utils.validationDebounce(() => onValidationChange({ ...validationFailed, IP: validatePublishPort(value, "IP") }));
-                            onChange(idx, 'IP', value);
-                        }} />
+                  value={item.IP || ''}
+                  validated={validationFailed?.IP ? "error" : "default"}
+                  onChange={(_event, value) => {
+                      utils.validationClear(validationFailed, "IP", onValidationChange);
+                      utils.validationDebounce(() => onValidationChange({ ...validationFailed, IP: validatePublishPort(value, "IP") }));
+                      onChange(idx, 'IP', value);
+                  }} />
                 <FormHelper helperTextInvalid={validationFailed?.IP} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
-                    id={id + "-host-port-group"}
-                    label={_("Host port")}
-                    fieldId={id + "-host-port"}
-                    labelIcon={
-                        <Popover aria-label={_("Host port help")}
-                            enableFlip
-                            bodyContent={_("If the host port is not set the container port will be randomly assigned a port on the host.")}>
-                            <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
-                                <OutlinedQuestionCircleIcon />
-                            </button>
-                        </Popover>
-                    }>
+              id={id + "-host-port-group"}
+              label={_("Host port")}
+              fieldId={id + "-host-port"}
+              labelIcon={
+                  <Popover aria-label={_("Host port help")}
+                    enableFlip
+                    bodyContent={_("If the host port is not set the container port will be randomly assigned a port on the host.")}>
+                      <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
+                          <OutlinedQuestionCircleIcon />
+                      </button>
+                  </Popover>
+              }>
                 <TextInput id={id + "-host-port"}
-                            type='number'
-                            step={1}
-                            min={1}
-                            max={MAX_PORT}
-                            value={item.hostPort || ''}
-                            validated={validationFailed?.hostPort ? "error" : "default"}
-                            onChange={(_event, value) => {
-                                utils.validationClear(validationFailed, "hostPort", onValidationChange);
-                                utils.validationDebounce(() => onValidationChange({ ...validationFailed, hostPort: validatePublishPort(value, "hostPort") }));
-                                onChange(idx, 'hostPort', value);
-                            }} />
+                  type='number'
+                  step={1}
+                  min={1}
+                  max={MAX_PORT}
+                  value={item.hostPort || ''}
+                  validated={validationFailed?.hostPort ? "error" : "default"}
+                  onChange={(_event, value) => {
+                      utils.validationClear(validationFailed, "hostPort", onValidationChange);
+                      utils.validationDebounce(() => onValidationChange({ ...validationFailed, hostPort: validatePublishPort(value, "hostPort") }));
+                      onChange(idx, 'hostPort', value);
+                  }} />
                 <FormHelper helperTextInvalid={validationFailed?.hostPort} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
-                        id={id + "-container-port-group"}
-                        label={_("Container port")}
-                        fieldId={id + "-container-port"} isRequired>
+              id={id + "-container-port-group"}
+              label={_("Container port")}
+              fieldId={id + "-container-port"} isRequired>
                 <TextInput id={id + "-container-port"}
-                            type='number'
-                            step={1}
-                            min={1}
-                            max={MAX_PORT}
-                            validated={validationFailed?.containerPort ? "error" : "default"}
-                            value={item.containerPort || ''}
-                            onChange={(_event, value) => {
-                                utils.validationClear(validationFailed, "containerPort", onValidationChange);
-                                utils.validationDebounce(() => onValidationChange({ ...validationFailed, containerPort: validatePublishPort(value, "containerPort") }));
-                                onChange(idx, 'containerPort', value);
-                            }} />
+                  type='number'
+                  step={1}
+                  min={1}
+                  max={MAX_PORT}
+                  validated={validationFailed?.containerPort ? "error" : "default"}
+                  value={item.containerPort || ''}
+                  onChange={(_event, value) => {
+                      utils.validationClear(validationFailed, "containerPort", onValidationChange);
+                      utils.validationDebounce(() => onValidationChange({ ...validationFailed, containerPort: validatePublishPort(value, "containerPort") }));
+                      onChange(idx, 'containerPort', value);
+                  }} />
                 <FormHelper helperTextInvalid={validationFailed?.containerPort} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
-                        label={_("Protocol")}
-                        fieldId={id + "-protocol"}>
+              label={_("Protocol")}
+              fieldId={id + "-protocol"}>
                 <FormSelect className='pf-v5-c-form-control container-port-protocol'
-                            id={id + "-protocol"}
-                            value={item.protocol}
-                            onChange={(_event, value) => onChange(idx, 'protocol', value)}>
+                  id={id + "-protocol"}
+                  value={item.protocol}
+                  onChange={(_event, value) => onChange(idx, 'protocol', value)}>
                     <FormSelectOption value='tcp' key='tcp' label={_("TCP")} />
                     <FormSelectOption value='udp' key='udp' label={_("UDP")} />
                 </FormSelect>
             </FormGroup>
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='plain'
-                            className="btn-close"
-                            id={id + "-btn-close"}
-                            size="sm"
-                            aria-label={_("Remove item")}
-                            icon={<TrashIcon />}
-                            onClick={() => removeitem(idx)} />
+                  className="btn-close"
+                  id={id + "-btn-close"}
+                  size="sm"
+                  aria-label={_("Remove item")}
+                  icon={<TrashIcon />}
+                  onClick={() => removeitem(idx)} />
             </FormGroup>
         </Grid>
     );
