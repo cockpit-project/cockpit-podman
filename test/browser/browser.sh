@@ -17,6 +17,11 @@ fi
 # Show critical package versions
 rpm -q runc crun podman criu passt kernel-core selinux-policy cockpit-podman cockpit-bridge || true
 
+# Show network information, for pasta debugging
+ip address show
+ip -4 route show
+ip -6 route show
+
 # allow test to set up things on the machine
 mkdir -p /root/.ssh
 curl https://raw.githubusercontent.com/cockpit-project/bots/main/machine/identity.pub >> /root/.ssh/authorized_keys
