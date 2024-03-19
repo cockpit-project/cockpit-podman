@@ -1,7 +1,7 @@
 import rest from './rest.js';
 
 const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
-export const VERSION = "/v1.12/";
+export const VERSION = "/v4.0/";
 
 export function getAddress(system) {
     if (system)
@@ -179,5 +179,56 @@ export const pruneUnusedImages = system => podmanJson("libpod/images/prune?all=t
 export const imageHistory = (system, id) => podmanJson(`libpod/images/${id}/history`, "GET", {}, system);
 
 export const imageExists = (system, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
+
+export function inspectVolume(system, name) {
+    return new Promise((resolve, reject) => {
+        const options = {};
+        podmanCall("libpod/volumes/" + name + "/json", "GET", options, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
+export function getVolumes(system, name) {
+    return new Promise((resolve, reject) => {
+        const options = {};
+        if (name)
+            options.filters = JSON.stringify({ name: [name] });
+        podmanCall("libpod/volumes/json", "GET", options, system)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
+export function delVolume(system, name, force) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            force: force,
+        };
+        podmanCall("libpod/volumes/" + name, "DELETE", options, system)
+                .then(reply => reply)
+                .catch(reject);
+    });
+}
+
+export function pruneUnusedVolumes(system) {
+    return new Promise((resolve, reject) => {
+        podmanCall("libpod/volumes/prune?all=true", "POST", {}, system).then(resolve)
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
+
+export function volumeExists(system, name) {
+    return podmanCall("libpod/volumes/" + name + "/exists", "GET", {}, system);
+}
+
+export function createVolume(system, config) {
+    return new Promise((resolve, reject) => {
+        podmanCall("libpod/volumes/create", "POST", {}, system, JSON.stringify(config))
+                .then(reply => resolve(JSON.parse(reply)))
+                .catch(reject);
+    });
+}
 
 export const containerExists = (system, id) => podmanCall("libpod/containers/" + id + "/exists", "GET", {}, system);

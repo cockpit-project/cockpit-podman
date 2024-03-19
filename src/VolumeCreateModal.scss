@@ -1,0 +1,79 @@
+@import "global-variables";
+
+.dynamic-form-group {
+    .pf-c-empty-state {
+        padding: 0;
+    }
+
+    .pf-c-form__label {
+        // Don't allow labels to wrap
+        white-space: nowrap
+    }
+
+    .remove-button-group {
+        // Move 'Remove' button the the end of the row
+        grid-column: -1;
+        // Move 'Remove' button to the bottom of the line so as to align with the other form fields
+        display: flex;
+        align-items: flex-end;
+    }
+
+    // Set check to the same height as input widgets and vertically align
+    .pf-c-form__group-control > .pf-c-check {
+        // Set height to the same as inputs
+        // Font height is font size * line height (1rem * 1.5)
+        // Widgets have 5px padding, 1px border (top & bottom): (5 + 1) * 2 = 12
+        // This all equals to 36px
+        height: calc(var(--pf-global--FontSize--md) * var(--pf-global--LineHeight--md) + 12px);
+        align-content: center;
+    }
+}
+
+// Ensure the width fits within the screen boundaries (with padding on the sides)
+.pf-c-select__menu {
+    // 3xl is the left+right padding for an iPhone SE;
+    // this works on other screen sizes as well
+    max-width: calc(100vw - var(--pf-global--spacer--3xl));
+}
+
+// Make sure the footer is visible with more then 5 results.
+.pf-c-select__menu-list {
+    // 35% viewport height is for 1280x720;
+    // since it picks the min of the two, it works everywhere
+    max-height: min(20rem, 35vh);
+    overflow: hidden scroll;
+}
+
+// Fix the dot next to spinner: https://github.com/patternfly/patternfly-react/issues/6383
+.pf-c-select__list-item.pf-m-loading {
+    list-style-type: none
+}
+
+.image-search-footer {
+    flex-wrap: wrap;
+    .pf-c-toggle-group__text {
+        word-wrap: break-word;
+    }
+}
+
+ // PF4 does not yet support multiple form fields for the same label
+.ct-input-group-spacer-sm.pf-l-flex {
+    // Limit width for select entries and inputs in the input groups otherwise they take up the whole space
+    > .pf-c-select, .pf-c-form-control:not(.pf-c-select__toggle-typeahead) {
+      max-width: 8ch;
+    }
+}
+
+.run-image-dialog-restart-retries {
+    max-width: 5ch;
+}
+
+// HACK: A local copy of pf-m-horizontal (as ct-m-horizontal),
+// but applied at the FormGroup level instead of Form
+@media (min-width: $pf-global--breakpoint--md) {
+    .pf-c-form__group.ct-m-horizontal {
+        display: grid;
+        grid-column-gap: var(--pf-c-form--m-horizontal__group-label--md--GridColumnGap);
+        grid-template-columns: var(--pf-c-form--m-horizontal__group-label--md--GridColumnWidth) var(--pf-c-form--m-horizontal__group-control--md--GridColumnWidth);
+    }
+}

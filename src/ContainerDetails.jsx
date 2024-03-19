@@ -58,6 +58,22 @@ const ContainerDetails = ({ container }) => {
                 </DescriptionList>}
             </FlexItem>
             <FlexItem>
+                <DescriptionList className='container-details-mounts'>
+                    {mounts && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Mounts")}</DescriptionListTerm>
+                        <DescriptionListDescription>{mounts}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                </DescriptionList>
+            </FlexItem>
+            <FlexItem>
+                <DescriptionList className='container-details-env'>
+                    {env && <DescriptionListGroup>
+                        <DescriptionListTerm>{_("ENV")}</DescriptionListTerm>
+                        <DescriptionListDescription>{env}</DescriptionListDescription>
+                    </DescriptionListGroup>}
+                </DescriptionList>
+            </FlexItem>
+            <FlexItem>
                 <DescriptionList className='container-details-state'>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
