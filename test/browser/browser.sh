@@ -14,6 +14,14 @@ if [ -n "$main_builds_repo" ]; then
     dnf distro-sync -y --repo 'copr*' cockpit-podman
 fi
 
+. /etc/os-release
+
+if [ "$VERSION_ID" = "41" ]; then
+    dnf install -y https://kojipkgs.fedoraproject.org//packages/passt/0%5E20240320.g71dd405/1.fc41/x86_64/passt-0%5E20240320.g71dd405-1.fc41.x86_64.rpm https://kojipkgs.fedoraproject.org//packages/passt/0%5E20240320.g71dd405/1.fc41/noarch/passt-selinux-0%5E20240320.g71dd405-1.fc41.noarch.rpm https://kojipkgs.fedoraproject.org//packages/podman/5.0.0~rc7/1.fc41/x86_64/podman-5.0.0~rc7-1.fc41.x86_64.rpm
+elif [ "$VERSION_ID" = "40" ]; then
+    dnf install -y https://kojipkgs.fedoraproject.org//packages/passt/0%5E20240320.g71dd405/1.fc40/x86_64/passt-0%5E20240320.g71dd405-1.fc40.x86_64.rpm  https://kojipkgs.fedoraproject.org//packages/passt/0%5E20240320.g71dd405/1.fc40/noarch/passt-selinux-0%5E20240320.g71dd405-1.fc40.noarch.rpm https://kojipkgs.fedoraproject.org//packages/podman/5.0.0~rc7/1.fc40/x86_64/podman-5.0.0~rc7-1.fc40.x86_64.rpm
+fi
+
 # Show critical package versions
 rpm -q runc crun podman criu passt kernel-core selinux-policy cockpit-podman cockpit-bridge || true
 
