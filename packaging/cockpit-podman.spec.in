@@ -24,7 +24,12 @@ URL:            https://github.com/cockpit-project/cockpit-podman
 
 Source0:        https://github.com/cockpit-project/%{name}/releases/download/%{version}/%{name}-%{version}.tar.xz
 BuildArch:      noarch
+%if 0%{?suse_version}
+# Suse's package has a different name
+BuildRequires:  appstream-glib
+%else
 BuildRequires:  libappstream-glib
+%endif
 BuildRequires:  make
 BuildRequires: gettext
 %if 0%{?rhel} && 0%{?rhel} <= 8
