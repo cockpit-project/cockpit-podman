@@ -498,7 +498,7 @@ class Application extends React.Component {
     componentDidMount() {
         this.init(true);
         cockpit.script("[ `id -u` -eq 0 ] || echo $XDG_RUNTIME_DIR")
-                .done(xrd => {
+                .then(xrd => {
                     const isRoot = !xrd || xrd.split("/").pop() == "root";
                     if (!isRoot) {
                         sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
@@ -513,7 +513,7 @@ class Application extends React.Component {
                         });
                     }
                 })
-                .fail(e => console.log("Could not read $XDG_RUNTIME_DIR: ", e.message));
+                .catch(e => console.log("Could not read $XDG_RUNTIME_DIR: ", e.message));
         cockpit.spawn("selinuxenabled", { error: "ignore" })
                 .then(() => this.setState({ selinuxAvailable: true }))
                 .catch(() => this.setState({ selinuxAvailable: false }));
