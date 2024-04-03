@@ -861,6 +861,10 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present("div.pf-v5-c-modal-box")
         self.waitContainerRow(IMG_INTERMEDIATE)
 
+        # Integration tab should not crash with an intermediate image
+        self.toggleExpandedContainer(IMG_INTERMEDIATE)
+        b.click(".pf-m-expanded button:contains('Integration')")
+
         # Delete intermediate image which is in use
         self.execute(auth, f"podman untag {IMG_INTERMEDIATE}")
         clickDeleteImage(intermediate_image_sel)

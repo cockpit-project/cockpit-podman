@@ -677,28 +677,27 @@ class Containers extends React.Component {
 
         // Convert to the search result output
         let localImages = null;
+        let nonIntermediateImages = null;
         if (this.props.images) {
-            localImages = Object.keys(this.props.images).reduce((images, id) => {
+            localImages = Object.keys(this.props.images).map(id => {
                 const img = this.props.images[id];
-                if (img.RepoTags) {
-                    img.Index = img.RepoTags[0].split('/')[0];
-                    img.Name = img.RepoTags[0];
-                    img.toString = function imgToString() { return this.Name };
-                    images.push(img);
-                }
-                return images;
+                img.Index = img.RepoTags?.[0] ? img.RepoTags[0].split('/')[0] : "";
+                img.Name = utils.image_name(img);
+                img.toString = function imgToString() { return this.Name };
+                return img;
             }, []);
+            nonIntermediateImages = localImages.filter(img => img.Index !== "");
         }
 
         const createContainer = (inPod) => {
-            if (localImages)
+            if (nonIntermediateImages)
                 Dialogs.show(
                     <utils.PodmanInfoContext.Consumer>
                         {(podmanInfo) => (
                             <DialogsContext.Consumer>
                                 {(Dialogs) => (
                                     <ImageRunModal user={this.props.user}
-                                                              localImages={localImages}
+                                                              localImages={nonIntermediateImages}
                                                               pod={inPod}
                                                               systemServiceAvailable={this.props.systemServiceAvailable}
                                                               userServiceAvailable={this.props.userServiceAvailable}
@@ -742,7 +741,7 @@ class Containers extends React.Component {
                     <ToolbarItem>
                         <Button variant="primary" key="get-new-image-action"
                                 id="containers-containers-create-container-btn"
-                                isDisabled={localImages === null}
+                                isDisabled={nonIntermediateImages === null}
                                 onClick={() => createContainer(null)}>
                             {_("Create container")}
                         </Button>
@@ -825,7 +824,7 @@ class Containers extends React.Component {
                                                 <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
                                                 <Button variant="secondary"
                                                         className="create-container-in-pod"
-                                                        isDisabled={localImages === null}
+                                                        isDisabled={nonIntermediateImages === null}
                                                         onClick={() => createContainer(this.props.pods[section])}>
                                                     {_("Create container in pod")}
                                                 </Button>
