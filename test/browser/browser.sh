@@ -75,6 +75,7 @@ SYSTEMD_SECCOMP=0 systemd-nspawn \
     -D /var/tmp/tasks/ \
     --ephemeral \
     --user user \
+    --setenv=TEST_AUDIT_NO_SELINUX="${TEST_AUDIT_NO_SELINUX:-}" \
     --bind="${TMT_TEST_DATA}":/logs --setenv=LOGS=/logs \
     --bind="$(pwd)":/source --setenv=SOURCE=/source \
     --bind-ro=/usr/lib/os-release:/run/host/usr/lib/os-release \
