@@ -2411,8 +2411,9 @@ class TestApplication(testlib.MachineCase):
         if podman_version(self) >= (4, 3, 0):
             b.wait_in_text('#container-details-healthcheck dt:contains("When unhealthy") + dd', 'No action')
 
-        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' healthy").strip(),
-                         "{[true] 5s 5m25s 35s 2}")
+        # format changed in podman 5.1, adds StartInterval (https://github.com/containers/podman/pull/22334)
+        self.assertIn(self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' healthy").strip(),
+                      ["{[true] 5s 5m25s 35s 2}", "{[true] 5s 0s 5m25s 35s 2}"])
 
         # single successful health check
         b.wait_in_text(".ct-listing-panel-body tbody tr", "Passed health run")
