@@ -2538,7 +2538,8 @@ class TestApplication(testlib.MachineCase):
 
         container_name = 'none'
         create_container(container_name)
-        self.assertEqual(self.getRestartPolicy(auth, container_name), '{ 0}')
+        # format changed in podman 5.1 (https://github.com/containers/podman/pull/22322)
+        self.assertIn(self.getRestartPolicy(auth, container_name), ['{ 0}', '{no 0}'])
 
         container_name = 'restart'
         create_container(container_name, 'always')
