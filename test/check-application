@@ -1841,7 +1841,8 @@ class TestApplication(testlib.MachineCase):
             self.assertEqual(restartPolicy, '{on-failure 3}')
         else:
             # No restart policy
-            self.assertEqual(restartPolicy, '{ 0}')
+            # format changed in podman 5.1 (https://github.com/containers/podman/pull/22322)
+            self.assertIn(restartPolicy, ['{ 0}', '{no 0}'])
 
         b.wait(lambda: "3" in self.execute(auth, "podman logs busybox-with-tty"))
 
