@@ -44,30 +44,6 @@ export function localize_time(unix_timestamp) {
     return formatRelative(unix_timestamp * 1000, Date.now(), { locale });
 }
 
-export function format_memory_and_limit(usage, limit) {
-    if (usage === undefined || isNaN(usage))
-        return "";
-
-    let mtext = "";
-    let unit;
-    let parts;
-    if (limit) {
-        parts = cockpit.format_bytes(limit, undefined, { separate: true });
-        mtext = " / " + parts.join(" ");
-        unit = parts[1];
-    }
-
-    if (usage) {
-        parts = cockpit.format_bytes(usage, unit, { separate: true });
-        if (mtext)
-            return _(parts[0] + mtext);
-        else
-            return _(parts.join(" "));
-    } else {
-        return "";
-    }
-}
-
 /*
  * The functions quote_cmdline and unquote_cmdline implement
  * a simple shell-like quoting syntax.  They are used when letting the
