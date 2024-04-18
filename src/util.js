@@ -49,16 +49,16 @@ export function format_memory_and_limit(usage, limit) {
         return "";
 
     let mtext = "";
-    let units = 1000;
+    let unit;
     let parts;
     if (limit) {
-        parts = cockpit.format_bytes(limit, units, true);
+        parts = cockpit.format_bytes(limit, undefined, { separate: true });
         mtext = " / " + parts.join(" ");
-        units = parts[1];
+        unit = parts[1];
     }
 
     if (usage) {
-        parts = cockpit.format_bytes(usage, units, true);
+        parts = cockpit.format_bytes(usage, unit, { separate: true });
         if (mtext)
             return _(parts[0] + mtext);
         else
