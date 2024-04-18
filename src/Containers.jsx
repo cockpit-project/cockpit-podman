@@ -513,7 +513,7 @@ class Containers extends React.Component {
                                 <MemoryIcon />
                             </Tooltip>
                             <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("Memory")}</Text>
-                            <Text component={TextVariants.p} className="pod-memory">{utils.format_memory_and_limit(podStats.mem) || "0 KB"}</Text>
+                            <Text component={TextVariants.p} className="pod-memory">{cockpit.format_bytes(podStats.mem)}</Text>
                         </Flex>
                     </>
                 }
