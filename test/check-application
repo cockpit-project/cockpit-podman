@@ -289,9 +289,14 @@ class TestApplication(testlib.MachineCase):
 
         def get_pod_memory(pod_name):
             memory = self.browser.text(f"#table-{pod_name}-title .pod-memory")
-            memory, unit = memory.split(' ')
-            self.assertIn(unit, ["GB", "MB", "KB"])
-            return float(memory)
+            try:
+                value, unit = memory.split(' ')
+                self.assertIn(unit, ["GB", "MB", "KB"])
+                return float(value)
+            except ValueError:
+                # no unit → only for 0 or not initialized yet
+                self.assertIn(memory, ["0", ""])
+                return 0
 
         run_cmd = f"podman run -d --pod pod-1 --name test-pod-1-system --stop-timeout 0 {IMG_ALPINE} sleep 100"
         containerId = self.machine.execute(run_cmd).strip()
