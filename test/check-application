@@ -4,6 +4,7 @@
 # "class Browser" and "class MachineCase" for the available API.
 
 import os
+import re
 import sys
 import time
 
@@ -1225,6 +1226,14 @@ class TestApplication(testlib.MachineCase):
         self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
                            state='Running', owner="system" if auth else "admin")
 
+        # run another container with explicit memory 400 MiB limit, with a process that uses 300 MB memory
+        self.execute(
+            auth,
+            f"podman run -d --name picket-fence --memory 400m --stop-timeout 0 {IMG_ALPINE} "
+            """awk 'BEGIN { y = sprintf("%300000000s",""); system("sleep infinity") }'""")
+        picket_fence_sha = self.execute(auth, "podman inspect --format '{{.Id}}' picket-fence").strip()
+        self.waitContainer(picket_fence_sha, auth, name="picket-fence", state="Running")
+
         def get_cpu_usage(sel):
             cpu = self.getContainerAttr(sel, "CPU")
             self.assertIn('%', cpu)
@@ -1238,17 +1247,40 @@ class TestApplication(testlib.MachineCase):
         if auth or self.has_cgroupsV2:
             cpu = get_cpu_usage(IMG_BUSYBOX)
 
-            self.assertIn('/', memory)
-            numbers = memory.split('/')
-            self.assertTrue(numbers[0].strip().replace('.', '', 1).isdigit())
-            full = numbers[1].strip().split()
-            self.assertTrue(full[0].replace('.', '', 1).isdigit())
-            self.assertIn(full[1], ["GB", "MB"])
+            # swamped-crate has no explicit --memory limit
+            # FIXME: current format_bytes() does "KB"; fixed in https://github.com/cockpit-project/cockpit/pull/20356
+            m = re.match(r'([0-9]+)%([0-9.]+) [kK]B$', memory)
+            self.assertTrue(m, memory)
+            mem_pct = int(m.group(1))
+            mem_abs = float(m.group(2))
+            self.assertGreaterEqual(mem_pct, 0)
+            self.assertGreaterEqual(mem_abs, 1.0)
+            # this container doesn't do anything, should have small memory usage
+            self.assertLessEqual(mem_pct, 5)
+            self.assertLessEqual(mem_abs, 300.0)
 
-            # Test that the value is updated dynamically
+            # Test that the CPU value is updated dynamically
             self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null &'")
             b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) > cpu)
             self.execute(auth, "podman exec swamped-crate sh -c 'pkill dd'")
+
+            # picket-fence has a memory limit
+            memory = self.getContainerAttr(IMG_ALPINE, "Memory")
+            m = re.match(r'([0-9]+)%([0-9.]+) MB([0-9]+)% of ([0-9.]+) MB limit$', memory)
+            self.assertTrue(m, memory)
+            # wide range here, to work on custom testbeds
+            host_mem_pct = int(m.group(1))
+            self.assertGreater(host_mem_pct, 2)
+            self.assertLess(host_mem_pct, 90)
+            # this is fairly well predictable
+            mem_abs = float(m.group(2))
+            self.assertGreaterEqual(mem_abs, 300.0)
+            self.assertLess(mem_abs, 305.0)
+            limit_mem_pct = int(m.group(3))
+            self.assertGreaterEqual(limit_mem_pct, 70)
+            self.assertLessEqual(limit_mem_pct, 75)
+            # 400 MiB limit
+            self.assertEqual(m.group(4), "419")
         else:
             # No support for CGroupsV2
             self.assertEqual(self.getContainerAttr(IMG_BUSYBOX, "CPU"), "n/a")
@@ -2104,9 +2136,9 @@ class TestApplication(testlib.MachineCase):
         if name:
             b.wait_text(sel + " .container-name", name)
         if image:
-            b.wait_in_text(sel + " .container-block small:nth-child(2)", image)
+            b.wait_in_text(sel + " td[data-label=Container] small:nth-child(2)", image)
         if cmd:
-            b.wait_text(sel + " .container-block small:last-child", cmd)
+            b.wait_text(sel + " td[data-label=Container] small:last-child", cmd)
         if owner:
             if owner == "system":
                 b.wait_text(sel + " td[data-label=Owner]", owner)

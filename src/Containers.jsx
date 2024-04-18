@@ -31,6 +31,7 @@ import * as client from './client.js';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
 import ContainerRenameModal from './ContainerRenameModal.jsx';
 import { useDialogs, DialogsContext } from "dialogs.jsx";
+import * as machine_info from 'machine-info.js';
 
 import './Containers.scss';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
@@ -311,6 +312,7 @@ class Containers extends React.Component {
         super(props);
         this.state = {
             width: 0,
+            memTotal: 0,
             downloadingContainers: [],
             showPruneUnusedContainersModal: false,
         };
@@ -322,6 +324,9 @@ class Containers extends React.Component {
 
         onDownloadContainer = onDownloadContainer.bind(this);
         onDownloadContainerFinished = onDownloadContainerFinished.bind(this);
+
+        machine_info.cpu_ram_info()
+                .then(info => this.setState({ memTotal: info.memory }));
 
         window.addEventListener('resize', this.onWindowResize);
     }
@@ -354,10 +359,32 @@ class Containers extends React.Component {
             mem = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
         }
         if (containerStats && status === "running") {
+            // container.HostConfig.Memory (0 by default), containerStats.MemUsage
             if (containerStats.CPU != undefined)
                 proc = containerStats.CPU.toFixed(2) + "%";
-            if (containerStats.MemUsage != undefined && containerStats.MemLimit != undefined)
-                mem = utils.format_memory_and_limit(containerStats.MemUsage, containerStats.MemLimit);
+            if (Number.isInteger(containerStats.MemUsage) && this.state.memTotal) {
+                // the primary view is how much of the host's memory a container uses, for comparability
+                const mem_pct = Math.round(containerStats.MemUsage / this.state.memTotal * 100);
+                const mem_items = [
+                    <span key="pct">{cockpit.format("$0%", mem_pct)}</span>,
+                    <small key="abs">{cockpit.format_bytes(containerStats.MemUsage)}</small>
+                ];
+
+                // is there a configured limit?
+                if (container.HostConfig?.Memory) {
+                    const limit_pct = Math.round(containerStats.MemUsage / container.HostConfig.Memory * 100);
+                    mem_items.push(
+                        <small key="limit">
+                            { cockpit.format(
+                                _("$0% of $1 limit"),
+                                limit_pct,
+                                cockpit.format_bytes(container.HostConfig.Memory)) }
+                        </small>
+                    );
+                }
+
+                mem = <div className="container-block">{mem_items}</div>;
+            }
         }
         const info_block = (
             <div className="container-block">
