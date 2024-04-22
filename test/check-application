@@ -150,7 +150,7 @@ class TestApplication(testlib.MachineCase):
         if self.getError():
             # dump container logs for debugging
             for auth in [False, True]:
-                print(f"----- {auth and 'system' or 'user'} containers -----", file=sys.stderr)
+                print(f"----- {'system' if auth else 'user'} containers -----", file=sys.stderr)
                 self.execute(auth, "podman ps -a >&2")
                 self.execute(auth, 'for c in $(podman ps -aq); do echo "---- $c ----" >&2; podman logs $c >&2; done')
 
