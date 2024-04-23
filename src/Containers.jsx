@@ -361,7 +361,7 @@ class Containers extends React.Component {
         if (containerStats && status === "running") {
             // container.HostConfig.Memory (0 by default), containerStats.MemUsage
             if (containerStats.CPU != undefined)
-                proc = containerStats.CPU.toFixed(2) + "%";
+                proc = <div className="ct-numeric-column">{containerStats.CPU.toFixed(2) + "%"}</div>;
             if (Number.isInteger(containerStats.MemUsage) && this.state.memTotal) {
                 // the primary view is how much of the host's memory a container uses, for comparability
                 const mem_pct = Math.round(containerStats.MemUsage / this.state.memTotal * 100);
@@ -383,7 +383,7 @@ class Containers extends React.Component {
                     );
                 }
 
-                mem = <div className="container-block">{mem_items}</div>;
+                mem = <div className="container-block ct-numeric-column">{mem_items}</div>;
             }
         }
         const info_block = (
@@ -591,8 +591,8 @@ class Containers extends React.Component {
         const columnTitles = [
             { title: _("Container"), transforms: [cellWidth(20)], sortable: true },
             { title: _("Owner"), sortable: true },
-            { title: _("CPU"), sortable: true },
-            { title: _("Memory"), sortable: true },
+            { title: _("CPU"), sortable: true, props: { className: 'ct-numeric-column' } },
+            { title: _("Memory"), sortable: true, props: { className: 'ct-numeric-column' } },
             { title: _("State"), sortable: true },
             ''
         ];
