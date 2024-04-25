@@ -8,7 +8,7 @@ import sys
 import time
 
 import testlib
-from machine_core import ssh_connection
+from machine.machine_core import ssh_connection
 
 REGISTRIES_CONF = """
 [registries.search]
@@ -291,7 +291,7 @@ class TestApplication(testlib.MachineCase):
             memory = self.browser.text(f"#table-{pod_name}-title .pod-memory")
             try:
                 value, unit = memory.split(' ')
-                self.assertIn(unit, ["GB", "MB", "KB"])
+                self.assertIn(unit, ["GB", "MB", "kB", "B"])
                 return float(value)
             except ValueError:
                 # no unit → only for 0 or not initialized yet
