@@ -19,6 +19,11 @@
     .pf-v5-c-table.pf-m-compact .pf-v5-c-table__toggle {
         padding-inline-start: 0;
     }
+
+    // don't make the columns too narrow
+    th .pf-v5-c-table__text {
+        min-inline-size: fit-content;
+    }
 }
 
 @media screen and (max-width: 768px) {
