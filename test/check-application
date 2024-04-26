@@ -1248,8 +1248,7 @@ class TestApplication(testlib.MachineCase):
             cpu = get_cpu_usage(IMG_BUSYBOX)
 
             # swamped-crate has no explicit --memory limit
-            # FIXME: current format_bytes() does "KB"; fixed in https://github.com/cockpit-project/cockpit/pull/20356
-            m = re.match(r'([0-9]+)%([0-9.]+) [kK]B$', memory)
+            m = re.match(r'([0-9]+)%([0-9.]+) kB$', memory)
             self.assertTrue(m, memory)
             mem_pct = int(m.group(1))
             mem_abs = float(m.group(2))
