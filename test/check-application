@@ -136,7 +136,7 @@ class TestApplication(testlib.MachineCase):
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1008249
         self.has_criu = "debian" not in m.image and "ubuntu" not in m.image
         self.has_selinux = "arch" not in m.image and "debian" not in m.image and "ubuntu" not in m.image
-        self.has_cgroupsV2 = m.image not in ["centos-8-stream"] and not m.image.startswith('rhel-8')
+        self.has_cgroupsV2 = not m.image.startswith('rhel-8')
 
         self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())

@@ -25,7 +25,6 @@ jobs:
     - fedora-development
     - centos-stream-9-x86_64
     - centos-stream-9-aarch64
-    - centos-stream-8-x86_64
 
   - job: tests
     trigger: pull_request
@@ -36,7 +35,6 @@ jobs:
       - fedora-development
       - centos-stream-9-x86_64
       - centos-stream-9-aarch64
-      - centos-stream-8-x86_64
 
   - job: copr_build
     trigger: release
