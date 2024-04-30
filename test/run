@@ -12,6 +12,11 @@ if [ "$TEST_SCENARIO" == "devel" ]; then
     export TEST_COVERAGE=yes
 fi
 
+# Workaround broken podman pasta on Fedora-CoreOS https://bugzilla.redhat.com/show_bug.cgi?id=2277954
+if [ "$TEST_OS" == "fedora-coreos" ]; then
+    export RUN_TESTS_OPTIONS="${RUN_TESTS_OPTIONS} --enable-network"
+fi
+
 make codecheck
 make check
 make po/podman.pot
