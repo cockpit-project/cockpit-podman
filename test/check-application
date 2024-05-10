@@ -2553,7 +2553,7 @@ class TestApplication(testlib.MachineCase):
         if auth:
             self.addCleanup(self.machine.execute, "systemctl disable podman-restart.service")
         else:
-            self.addCleanup(self.machine.execute, "systemctl --user disable podman-restart.service")
+            self.restore_dir("/home/admin/.config")
             self.machine.execute("loginctl enable-linger $(id -u admin)")
             # HACK: verify that the file we watch exists
             self.assertTrue(self.machine.execute("""
