@@ -35,6 +35,8 @@ class Images extends React.Component {
         this.state = {
             intermediateOpened: false,
             isExpanded: false,
+            // List of container image names which are being downloaded
+            imageDownloadInProgress: [],
         };
 
         this.downloadImage = this.downloadImage.bind(this);
@@ -46,10 +48,10 @@ class Images extends React.Component {
         if (imageTag)
             pullImageId += ":" + imageTag;
 
-        this.setState({ imageDownloadInProgress: imageName });
+        this.setState(previous => ({ imageDownloadInProgress: [...previous.imageDownloadInProgress, imageName] }));
         client.pullImage(system, pullImageId)
                 .then(() => {
-                    this.setState({ imageDownloadInProgress: undefined });
+                    this.setState(previous => ({ imageDownloadInProgress: previous.imageDownloadInProgress.filter((image) => image != imageName) }));
                 })
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to download image $0:$1"), imageName, imageTag || "latest");
@@ -58,7 +60,7 @@ class Images extends React.Component {
                             <samp>{cockpit.format("$0 $1", ex.message, ex.reason)}</samp>
                         </p>
                     );
-                    this.setState({ imageDownloadInProgress: undefined });
+                    this.setState(previous => ({ imageDownloadInProgress: previous.imageDownloadInProgress.filter((image) => image != imageName) }));
                     this.props.onAddNotification({ type: 'danger', error, errorDetail });
                 });
     }
@@ -71,6 +73,10 @@ class Images extends React.Component {
                               userServiceAvailable={this.props.userServiceAvailable}
                               systemServiceAvailable={this.props.systemServiceAvailable} />
         );
+    };
+
+    onPullAllImages = () => {
+        Object.values(this.props.images).forEach((image) => this.downloadImage(utils.image_name(image), null, image.isSystem));
     };
 
     onOpenPruneUnusedImagesDialog = () => {
@@ -138,7 +144,8 @@ class Images extends React.Component {
                 title: <ImageActions image={image} onAddNotification={this.props.onAddNotification}
                                      user={this.props.user}
                                      userServiceAvailable={this.props.userServiceAvailable}
-                                     systemServiceAvailable={this.props.systemServiceAvailable} />,
+                                     systemServiceAvailable={this.props.systemServiceAvailable}
+                                     downloadImage={this.downloadImage} />,
                 props: { className: 'pf-v5-c-table__action content-action' }
             },
         ];
@@ -290,6 +297,7 @@ class Images extends React.Component {
                         </FlexItem>
                         <FlexItem>
                             <ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog}
+                                              handlePullAllImages={this.onPullAllImages}
                                               handlePruneUsedImages={this.onOpenPruneUnusedImagesDialog}
                                               unusedImages={unusedImages} />
                         </FlexItem>
@@ -319,15 +327,15 @@ class Images extends React.Component {
                   onAddNotification={this.props.onAddNotification}
                   userServiceAvailable={this.props.userServiceAvailable}
                   systemServiceAvailable={this.props.systemServiceAvailable} /> }
-                {this.state.imageDownloadInProgress && <CardFooter>
-                    <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress}... </div>
+                {this.state.imageDownloadInProgress.length > 0 && <CardFooter>
+                    <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress.join(', ')}... </div>
                 </CardFooter>}
             </Card>
         );
     }
 }
 
-const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unusedImages }) => {
+const ImageOverActions = ({ handleDownloadNewImage, handlePullAllImages, handlePruneUsedImages, unusedImages }) => {
     const actions = [
         <DropdownItem
             key="download-new-image"
@@ -335,6 +343,13 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
             onClick={() => handleDownloadNewImage()}
         >
             {_("Download new image")}
+        </DropdownItem>,
+        <DropdownItem
+            key="pull-all-images"
+            component="button"
+            onClick={() => handlePullAllImages()}
+        >
+            {_("Pull all images")}
         </DropdownItem>,
         <DropdownItem
             key="prune-unused-images"
@@ -358,7 +373,7 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePruneUsedImages, unuse
     );
 };
 
-const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, userServiceAvailable }) => {
+const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, userServiceAvailable, downloadImage }) => {
     const Dialogs = useDialogs();
 
     const runImage = () => {
@@ -380,6 +395,10 @@ const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, 
                     </DialogsContext.Consumer>
                 )}
             </utils.PodmanInfoContext.Consumer>);
+    };
+
+    const pullImage = () => {
+        downloadImage(utils.image_name(image), null, image.isSystem);
     };
 
     const removeImage = () => {
@@ -407,6 +426,11 @@ const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, 
                     className="show-only-when-narrow"
                     onClick={runImage}>
             {_("Create container")}
+        </DropdownItem>,
+        <DropdownItem key={image.Id + "pull"}
+            component="button"
+            onClick={pullImage}>
+            {_("Pull")}
         </DropdownItem>,
         <DropdownItem key={image.Id + "delete"}
                     component="button"
