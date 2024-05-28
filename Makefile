@@ -23,7 +23,7 @@ TAR_ARGS = --sort=name --mtime "@$(shell git show --no-patch --format='%at')" --
 
 VM_CUSTOMIZE_FLAGS =
 
-# HACK: https://github.com/containers/podman/issues/21896
+# HACK: https://github.com/containers/podman/issues/21896 and https://bugzilla.redhat.com/show_bug.cgi?id=2277954
 VM_CUSTOMIZE_FLAGS += --run-command 'nmcli con add type dummy con-name fake ifname fake0 ip4 1.2.3.4/24 gw4 1.2.3.1 >&2'
 
 # the following scenarios need network access
@@ -171,7 +171,8 @@ rpm: $(TARFILE)
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	# HACK for ostree images: skip the rpm build/install
 	if [ "$${TEST_OS%coreos}" != "$$TEST_OS" ] || [ "$${TEST_OS%bootc}" != "$$TEST_OS" ] || [ "$$TEST_OS" = "rhel4edge" ]; then \
-	    bots/image-customize --verbose --fresh --no-network --run-command 'mkdir -p /usr/local/share/cockpit' \
+	    bots/image-customize --verbose --fresh --no-network $(VM_CUSTOMIZE_FLAGS) \
+	                         --run-command 'mkdir -p /usr/local/share/cockpit' \
 	                         --upload dist/:/usr/local/share/cockpit/podman \
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
 	else \
