@@ -13,6 +13,16 @@ if grep -q ID.*debian /usr/lib/os-release; then
     fi
 fi
 
+if grep -q ID.*suse /usr/lib/os-release; then
+    # HACK: cgroups are not setup to let users use memory or cpu controllers
+    #       https://bugzilla.suse.com/show_bug.cgi?id=1222450
+    mkdir -p /etc/systemd/system/user@.service.d
+    cat <<EOF > /etc/systemd/system/user@.service.d/delegate.conf
+[Service]
+Delegate=cpu cpuset io memory pids
+EOF
+fi
+
 # don't force https:// (self-signed cert)
 mkdir -p /etc/cockpit
 printf "[WebService]\\nAllowUnencrypted=true\\n" > /etc/cockpit/cockpit.conf
