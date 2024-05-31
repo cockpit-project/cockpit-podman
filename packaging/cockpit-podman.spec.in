@@ -41,6 +41,8 @@ Requires:       podman >= 2.0.4
 # HACK https://github.com/containers/crun/issues/1091
 %if 0%{?centos} == 9
 Requires:       criu-libs
+%elif 0%{?suse_version}
+Requires:       libcriu2
 %endif
 
 %{NPM_PROVIDES}
