@@ -17,28 +17,39 @@ function manage_error(reject, error, content) {
 // calls are async, so keep track of a call counter to associate a result with a call
 let call_id = 0;
 
+const NL = '\n'.charCodeAt(0); // always 10, but avoid magic constant
+
 function connect(address, system) {
     /* This doesn't create a channel until a request */
-    const http = cockpit.http(address, { superuser: system ? "require" : null });
+    /* HACK: use binary channel to work around https://github.com/cockpit-project/cockpit/issues/19235 */
+    const http = cockpit.http(address, { superuser: system ? "require" : null, binary: true });
     const connection = {};
+    const decoder = new TextDecoder();
 
     connection.monitor = function(options, callback, system, return_raw) {
         return new Promise((resolve, reject) => {
-            let buffer = "";
+            let buffer = new Uint8Array();
 
             http.request(options)
                     .stream(data => {
                         if (return_raw)
                             callback(data);
                         else {
-                            buffer += data;
-                            const chunks = buffer.split("\n");
-                            buffer = chunks.pop();
+                            buffer = new Uint8Array([...buffer, ...data]);
 
-                            chunks.forEach(chunk => {
-                                debug(system, "monitor", chunk);
-                                callback(JSON.parse(chunk));
-                            });
+                            // split the buffer into lines on NL (this is safe with UTF-8)
+                            for (;;) {
+                                const idx = buffer.indexOf(NL);
+                                if (idx < 0)
+                                    break;
+
+                                const line = buffer.slice(0, idx);
+                                buffer = buffer.slice(idx + 1);
+
+                                const line_str = decoder.decode(line);
+                                debug(system, "monitor", line_str);
+                                callback(JSON.parse(line_str));
+                            }
                         }
                     })
                     .catch((error, content) => {
@@ -55,12 +66,14 @@ function connect(address, system) {
             options = options || {};
             http.request(options)
                     .then(result => {
-                        debug(system, `call ${id} result:`, JSON.stringify(result));
-                        resolve(result);
+                        const text = decoder.decode(result);
+                        debug(system, `call ${id} result:`, text);
+                        resolve(text);
                     })
                     .catch((error, content) => {
-                        debug(system, `call ${id} error:`, JSON.stringify(error), "content", JSON.stringify(content));
-                        manage_error(reject, error, content);
+                        const text = decoder.decode(content);
+                        debug(system, `call ${id} error:`, JSON.stringify(error), "content", text);
+                        manage_error(reject, error, text);
                     });
         });
     };
