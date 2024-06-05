@@ -30,8 +30,8 @@ import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 import "./ContainerTerminal.css";
 
 const _ = cockpit.gettext;
-const decoder = cockpit.utf8_decoder();
-const encoder = cockpit.utf8_encoder();
+const decoder = new TextDecoder();
+const encoder = new TextEncoder();
 
 function sequence_find(seq, find) {
     let f;
