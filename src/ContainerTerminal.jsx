@@ -136,17 +136,14 @@ class ContainerTerminal extends React.Component {
         buffer.callback = (data) => {
             let ret = 0;
             let pos = 0;
-            let headers = "";
 
             // Double line break separates header from body
             pos = sequence_find(data, [13, 10, 13, 10]);
             if (pos == -1)
                 return ret;
 
-            if (data.subarray)
-                headers = cockpit.utf8_decoder().decode(data.subarray(0, pos));
-            else
-                headers = cockpit.utf8_decoder().decode(data.slice(0, pos));
+            const headers = new TextDecoder().decode(
+                data.subarray ? data.subarray(0, pos) : data.slice(0, pos));
 
             const parts = headers.split("\r\n", 1)[0].split(" ");
             // Check if we got `101` as we expect `HTTP/1.1 101 UPGRADED`
