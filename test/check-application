@@ -1751,7 +1751,7 @@ class TestApplication(testlib.MachineCase):
 
         # Now that we have downloaded an image, verify that selecting download latest image
         # downloads the latest image we now push to the registry. Note this image has a /latest file
-        # to differnatiate it from the other local image.
+        # to differentiate it from the other local image.
         self.execute(True, f"podman push {new_image_sha} localhost:5000/my-busybox")
         self.execute(True, f"podman push {new_image_sha} localhost:6000/my-busybox")
         self.execute(True, f"podman rmi {new_image_sha}")
