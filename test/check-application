@@ -268,6 +268,18 @@ class TestApplication(testlib.MachineCase):
             self.fail("Timed out waiting for StartedAt change")
             return ''  # quiesce mypy, not reached
 
+    def setupRegistry(self):
+        m = self.machine
+
+        self.execute(True, f"""
+            podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}
+            podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 {IMG_REGISTRY}
+        """)
+
+        # Add local insecure registry into registries conf
+        m.write("/etc/containers/registries.conf", REGISTRIES_CONF)
+        self.execute(True, "systemctl stop podman.service")
+
     def testPods(self):
         b = self.browser
 
@@ -1184,6 +1196,105 @@ class TestApplication(testlib.MachineCase):
               .selectImageAndDownload() \
               .expectDownloadErrorForNonExistingTag()
 
+    def testPullImage(self):
+        b = self.browser
+        m = self.machine
+
+        self.setupRegistry()
+
+        def buildImage(auth, size, image_name):
+            temp_dir = self.machine.execute(f"""
+                set -eu
+                D=$(mktemp -d -p {self.vm_tmpdir})
+                # Allow admin to read the created directory, mktemp by default creates it unreadable for other users
+                chmod 755 $D
+                truncate -s {size}M $D/test.img
+                printf 'FROM scratch\\nCOPY test.img /\\n' > $D/Containerfile
+                echo $D
+            """).strip()
+            self.execute(auth, f"podman build -t {image_name} {temp_dir}")
+
+        def getImageSize(image_name):
+            return float(b.text(f"tr:contains('{image_name}') td[data-label='Disk space']").replace(' MB', ''))
+
+        image1 = "localhost:5000/test-image:1"
+
+        # build update and push it
+        buildImage(True, 50, image1)
+        self.execute(True, f"podman push {image1}; podman rmi {image1}")
+
+        # build image which we try to pull
+        buildImage(True, 1, image1)
+        image1_sha = self.execute(True, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
+
+        self.login()
+
+        image1_sel = f"#containers-images tbody tr[data-row-id=\"{image1_sha}true\"]".lower()
+
+        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        b.click(f'{image1_sel} .pf-v5-c-menu-toggle')
+        b.click(image1_sel + " button.pf-v5-c-menu__item:contains('Pull')")
+        b.wait_in_text("div.download-in-progress", "Pulling")
+        b.wait_not_present(image1_sel)
+
+        # assert that the new image is bigger, the initial image as 1MB, the
+        # new one 50MB.
+        b.wait(lambda: getImageSize(image1) > 40)
+
+        image1_update_sha = self.execute(True, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
+        self.assertNotEqual(image1_sha, image1_update_sha)
+        b.wait_visible(f"#containers-images tbody tr[data-row-id=\"{image1_update_sha}true\"]".lower())
+
+        # Try to pull multiple images, drop to superuser as its easier to
+        # remove all images and pulling all images will show an error if the
+        # registry is not available.
+        b.drop_superuser()
+
+        image1 = "localhost:5000/test-image:1"
+
+        # build update and push it
+        buildImage(False, 25, image1)
+        self.execute(False, f"podman push {image1}; podman rmi {image1}")
+
+        # build image which we try to pull
+        buildImage(False, 1, image1)
+        image1_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
+
+        image2 = "localhost:5000/test-image:2"
+
+        # build update and push it
+        buildImage(False, 50, image2)
+        self.execute(False, f"podman push {image2}; podman rmi {image2}")
+
+        # build image which we try to pull
+        buildImage(False, 10, image2)
+        image2_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {image2}").strip()
+
+        self.execute(False, """
+            podman rmi localhost/test-busybox:latest
+            podman rmi localhost/test-alpine:latest
+
+            # Remove registry container
+            podman rmi localhost/test-registry:latest
+        """)
+
+        # Ubuntu has an old podman which ships with a k8s image
+        if m.image == "ubuntu-2204":
+            self.execute(False, "podman rmi k8s.gcr.io/pause:3.5")
+
+        b.wait_in_text("#containers-images", "2 images")
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Pull all images)")
+        b.wait_in_text("div.download-in-progress", "Pulling")
+        b.wait_not_present('h4.pf-v5-c-alert__title:contains("Failed to download image")')
+        b.wait_not_present("div.download-in-progress")
+        b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"{image1_sha}false\"]".lower())
+        b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"{image2_sha}false\"]".lower())
+
+        # assert the image size changed
+        b.wait(lambda: getImageSize(image1) > 20)
+        b.wait(lambda: getImageSize(image2) > 40)
+
     def testLifecycleOperationsUser(self):
         self._testLifecycleOperations(False)
 
@@ -1585,11 +1696,8 @@ class TestApplication(testlib.MachineCase):
         self.execute(True, f"podman commit {new_container} newimage")
         new_image_sha = self.execute(True, "podman inspect --format '{{.Id}}' newimage").strip()
 
-        self.execute(True, f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}")
-        self.execute(True, f"podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 {IMG_REGISTRY}")
-        # Add local insecure registry into registries conf
-        self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
-        self.execute(True, "systemctl stop podman.service")
+        self.setupRegistry()
+
         # Push busybox image to the local registries
         self.execute(True,
                      f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
