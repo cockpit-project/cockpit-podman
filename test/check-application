@@ -537,6 +537,7 @@ class TestApplication(testlib.MachineCase):
         b.click("#containers-containers-create-container-btn")
         b.set_input_text("#create-image-image-select-typeahead", "registry")
         b.wait_visible('button.pf-v5-c-select__menu-item:contains("registry")')
+        self.confirm_modal("Cancel")
 
     def testBasicUser(self):
         self._testBasic(False)
