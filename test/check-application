@@ -1320,10 +1320,12 @@ class TestApplication(testlib.MachineCase):
         self.performContainerAction("swamped-crate", "Start")
         b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
         b.focus(".pf-m-expanded .xterm-helper-textarea")
-        b.key_press('clear\r')
+        b.input_text("clear")
+        b.key("Enter")
         b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree", "clear")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.key_press('echo hello\r')
+        b.input_text('echo hello')
+        b.key("Enter")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
         self.performContainerAction("swamped-crate", "Stop")
@@ -1832,10 +1834,10 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present('#run-image-dialog-volume-0-selinux')
 
         b.set_file_autocomplete_val("#run-image-dialog-volume-0 .pf-v5-c-select", rodir)
-        b.key_press(["\r"])
+        b.key("Enter")
         b.set_input_text('#run-image-dialog-volume-0-container-path', '/tmp/ro')
         ro_label = m.execute(f"ls -dZ {rodir}").split(" ")[0]
-        b.key_press(["\r"])
+        b.key("Enter")
         b.click('.volume-form .btn-add')
         b.wait_visible('#run-image-dialog-volume-1')
         b.click('#run-image-dialog-volume-1-btn-close')
@@ -1853,7 +1855,7 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present('#run-image-dialog-volume-2-selinux')
 
         b.set_file_autocomplete_val("#run-image-dialog-volume-2 .pf-v5-c-select", rwdir)
-        b.key_press(["\r"])
+        b.key("Enter")
         b.set_input_text('#run-image-dialog-volume-2-container-path', '/tmp/rw')
         rw_label = m.execute(f"ls -dZ {rwdir}").split(" ")[0]
 
@@ -2024,10 +2026,12 @@ class TestApplication(testlib.MachineCase):
         b.click(".pf-m-expanded button:contains('Console')")
         b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
         b.focus(".pf-m-expanded .xterm-helper-textarea")
-        b.key_press('clear\r')
+        b.input_text("clear")
+        b.key("Enter")
         b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree", "clear")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.key_press('echo hello\r')
+        b.input_text("echo hello")
+        b.key("Enter")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
@@ -2708,11 +2712,11 @@ class TestApplication(testlib.MachineCase):
         container_name_new = "rename-new-enter"
         b.set_input_text("#rename-dialog-container-name", "")
         b.focus("#rename-dialog-container-name")
-        b.key_press("\r")  # Simulate enter key
+        b.key("Enter")
         b.wait_in_text("#commit-dialog-image-name-helper", "Container name is required")
         b.set_input_text("#rename-dialog-container-name", container_name_new)
         b.focus("#rename-dialog-container-name")
-        b.key_press("\r")  # Simulate enter key
+        b.key("Enter")
         b.wait_not_present("#rename-dialog-container-name")
 
         self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
