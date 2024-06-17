@@ -258,7 +258,7 @@ class TestApplication(testlib.MachineCase):
         out = self.execute(auth, "podman inspect --format '{{json .State.StartedAt}}' " + container)
         return out.strip().replace('"', '')
 
-    def waitRestart(self, container: str, old_start: str, *, auth: bool) -> int:
+    def waitRestart(self, container: str, old_start: str, *, auth: bool) -> str:
         for _ in range(10):
             new_start = self.getStartTime(container, auth=auth)
             if new_start > old_start:
@@ -266,6 +266,7 @@ class TestApplication(testlib.MachineCase):
             time.sleep(1)
         else:
             self.fail("Timed out waiting for StartedAt change")
+            return ''  # quiesce mypy, not reached
 
     def testPods(self):
         b = self.browser
