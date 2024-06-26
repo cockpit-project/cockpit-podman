@@ -23,9 +23,6 @@ TAR_ARGS = --sort=name --mtime "@$(shell git show --no-patch --format='%at')" --
 
 VM_CUSTOMIZE_FLAGS =
 
-# HACK: https://github.com/containers/podman/issues/21896 and https://bugzilla.redhat.com/show_bug.cgi?id=2277954
-VM_CUSTOMIZE_FLAGS += --run-command 'nmcli con add type dummy con-name fake ifname fake0 ip4 1.2.3.4/24 gw4 1.2.3.1 >&2'
-
 # the following scenarios need network access
 ifeq ("$(TEST_SCENARIO)","updates-testing")
 VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y update --setopt=install_weak_deps=False --enablerepo=updates-testing >&2'
