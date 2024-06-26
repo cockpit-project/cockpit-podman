@@ -112,7 +112,7 @@ function parseImageInfo(info) {
         image.Entrypoint = info.Config.Entrypoint;
         image.Command = info.Config.Cmd;
         image.Ports = Object.keys(info.Config.ExposedPorts || {});
-        image.Env = info.Config.Env;
+        image.Env = info.Config.Env || [];
     }
     image.Author = info.Author;
 
