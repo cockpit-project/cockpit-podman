@@ -3,7 +3,6 @@
 # See https://github.com/cockpit-project/cockpit/blob/main/test/common/testlib.py
 # "class Browser" and "class MachineCase" for the available API.
 
-import os
 import re
 import sys
 import time
@@ -2996,11 +2995,11 @@ class TestApplication(testlib.MachineCase):
         self.login_and_go(None)
         b.wait_in_text("#host-apps .pf-m-current", "Overview")
 
-        # HACK: is_pybridge should also check TEST_SCENARIO
-        if self.is_pybridge() or os.getenv('TEST_SCENARIO') == 'pybridge':
-            self.assertNotIn("Podman", b.text("#host-apps"))
-        else:
+        if m.image.startswith("rhel-8") or m.image.startswith("centos-8") or \
+           m.image == "debian-stable" or m.image == "ubuntu-2204":
             self.assertIn("Podman", b.text("#host-apps"))
+        else:
+            self.assertNotIn("Podman", b.text("#host-apps"))
 
 
 if __name__ == '__main__':
