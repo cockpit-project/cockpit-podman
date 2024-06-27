@@ -48,7 +48,6 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
                     .catch(ex => {
                         const error = cockpit.format(_("Failed to force remove image $0"), imageWillDelete.RepoTags[0]);
                         onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                        throw ex;
                     });
         };
 
