@@ -59,7 +59,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
                         .catch(ex => {
                             const error = cockpit.format(_("Failed to force remove container $0"), container.Name); // not-covered: OS error
                             onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                            throw ex;
                         })
                         .finally(() => {
                             Dialogs.close();
