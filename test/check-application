@@ -1379,6 +1379,10 @@ class TestApplication(testlib.MachineCase):
             self.execute(auth, "podman exec swamped-crate sh -c 'pkill dd'")
 
             # picket-fence has a memory limit
+
+            # Wait for CPU usage to settle before checking the memory usage, on
+            # a busy host the awk script takes longer to run.
+            b.wait(lambda: get_cpu_usage(IMG_ALPINE) < 10)
             memory = self.getContainerAttr(IMG_ALPINE, "Memory")
             m = re.match(r'([0-9]+)%([0-9.]+) MB([0-9]+)% of ([0-9.]+) MB limit$', memory)
             self.assertTrue(m, memory)
