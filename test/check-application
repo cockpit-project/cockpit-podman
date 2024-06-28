@@ -285,6 +285,12 @@ class TestApplication(testlib.MachineCase):
 
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-menu-toggle")
 
+        # Start the container
+        self.performContainerAction(IMG_BUSYBOX, "Start")
+
+        self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
+                           state='Running', owner="system" if auth else "admin")
+
         # run another container with explicit memory 400 MiB limit, with a process that uses 300 MB memory
         self.execute(
             auth,
@@ -292,12 +298,6 @@ class TestApplication(testlib.MachineCase):
             """awk 'BEGIN { y = sprintf("%300000000s",""); system("sleep infinity") }'""")
         picket_fence_sha = self.execute(auth, "podman inspect --format '{{.Id}}' picket-fence").strip()
         self.waitContainer(picket_fence_sha, auth, name="picket-fence", state="Running")
-
-        # Start the container
-        self.performContainerAction(IMG_BUSYBOX, "Start")
-
-        self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
-                           state='Running', owner="system" if auth else "admin")
 
         def get_cpu_usage(sel):
             cpu = self.getContainerAttr(sel, "CPU")
@@ -308,10 +308,15 @@ class TestApplication(testlib.MachineCase):
         # Check we show usage
         b.wait(lambda: self.getContainerAttr(IMG_BUSYBOX, "CPU") != "")
         b.wait(lambda: self.getContainerAttr(IMG_BUSYBOX, "Memory") != "")
+
+        # wait for CPU usage to settle for both containers
+        b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) < 25)
+        b.wait(lambda: get_cpu_usage(IMG_ALPINE) < 25)
+
         memory = self.getContainerAttr(IMG_BUSYBOX, "Memory")
         if auth or self.has_cgroupsV2:
+            # Wait for CPU to settle
             cpu = get_cpu_usage(IMG_BUSYBOX)
-            testlib.sit()
 
             # swamped-crate has no explicit --memory limit
             m = re.match(r'([0-9]+)%([0-9.]+) kB$', memory)
