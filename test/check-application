@@ -1358,6 +1358,8 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: self.getContainerAttr(IMG_BUSYBOX, "Memory") != "")
         memory = self.getContainerAttr(IMG_BUSYBOX, "Memory")
         if auth or self.has_cgroupsV2:
+            # Wait for CPU usage to settle before saving CPU usage for comparison later
+            b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) < 25)
             cpu = get_cpu_usage(IMG_BUSYBOX)
 
             # swamped-crate has no explicit --memory limit
