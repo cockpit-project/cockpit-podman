@@ -309,13 +309,10 @@ class TestApplication(testlib.MachineCase):
         b.wait(lambda: self.getContainerAttr(IMG_BUSYBOX, "CPU") != "")
         b.wait(lambda: self.getContainerAttr(IMG_BUSYBOX, "Memory") != "")
 
-        # wait for CPU usage to settle for both containers
-        b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) < 25)
-        b.wait(lambda: get_cpu_usage(IMG_ALPINE) < 25)
-
         memory = self.getContainerAttr(IMG_BUSYBOX, "Memory")
         if auth or self.has_cgroupsV2:
-            # Wait for CPU to settle
+            # Wait for CPU usage to settle before saving CPU usage for comparison later
+            b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) < 25)
             cpu = get_cpu_usage(IMG_BUSYBOX)
 
             # swamped-crate has no explicit --memory limit
@@ -336,6 +333,18 @@ class TestApplication(testlib.MachineCase):
             self.execute(auth, "podman exec swamped-crate sh -c 'pkill dd'")
 
             # picket-fence has a memory limit
+
+            # Wait for CPU usage to settle before saving memory usage
+            b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) < 25)
+
+            def get_mem_usage(sel):
+                memory = self.getContainerAttr(sel, "Memory")
+                m = re.match(r'([0-9]+)%([0-9.]+) MB([0-9]+)% of ([0-9.]+) MB limit$', memory)
+                return float(m.group(2))
+
+            # Wait for memory to settle
+            # b.wait(lambda: get_mem_usage(IMG_ALPINE) > 295)
+
             memory = self.getContainerAttr(IMG_ALPINE, "Memory")
             m = re.match(r'([0-9]+)%([0-9.]+) MB([0-9]+)% of ([0-9.]+) MB limit$', memory)
             self.assertTrue(m, memory)
