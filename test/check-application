@@ -285,12 +285,6 @@ class TestApplication(testlib.MachineCase):
 
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-menu-toggle")
 
-        # Start the container
-        self.performContainerAction(IMG_BUSYBOX, "Start")
-
-        self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
-                           state='Running', owner="system" if auth else "admin")
-
         # run another container with explicit memory 400 MiB limit, with a process that uses 300 MB memory
         self.execute(
             auth,
@@ -298,6 +292,12 @@ class TestApplication(testlib.MachineCase):
             """awk 'BEGIN { y = sprintf("%300000000s",""); system("sleep infinity") }'""")
         picket_fence_sha = self.execute(auth, "podman inspect --format '{{.Id}}' picket-fence").strip()
         self.waitContainer(picket_fence_sha, auth, name="picket-fence", state="Running")
+
+        # Start the container
+        self.performContainerAction(IMG_BUSYBOX, "Start")
+
+        self.waitContainer(container_sha, auth, name='swamped-crate', image=IMG_BUSYBOX,
+                           state='Running', owner="system" if auth else "admin")
 
         def get_cpu_usage(sel):
             cpu = self.getContainerAttr(sel, "CPU")
@@ -311,6 +311,7 @@ class TestApplication(testlib.MachineCase):
         memory = self.getContainerAttr(IMG_BUSYBOX, "Memory")
         if auth or self.has_cgroupsV2:
             cpu = get_cpu_usage(IMG_BUSYBOX)
+            testlib.sit()
 
             # swamped-crate has no explicit --memory limit
             m = re.match(r'([0-9]+)%([0-9.]+) kB$', memory)
@@ -325,7 +326,8 @@ class TestApplication(testlib.MachineCase):
 
             # Test that the CPU value is updated dynamically
             self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null &'")
-            b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) > cpu)
+            with b.wait_timeout(30):
+                b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) > cpu)
             self.execute(auth, "podman exec swamped-crate sh -c 'pkill dd'")
 
             # picket-fence has a memory limit
