@@ -36,7 +36,7 @@ const ImageDetails = ({ image }) => {
         const row = {
             columns: [
                 { title: IdColumn(layer.Id), props: { className: "ignore-pixels" } },
-                { title: utils.localize_time(layer.Created), props: { className: "ignore-pixels" } },
+                { title: <utils.RelativeTime time={layer.Created * 1000} />, props: { className: "ignore-pixels" } },
                 { title: layer.CreatedBy, props: { className: "ignore-pixels" } },
                 { title: cockpit.format_bytes(layer.Size), props: { className: "ignore-pixels" } },
                 { title: layer.Comment, props: { className: "ignore-pixels" } },

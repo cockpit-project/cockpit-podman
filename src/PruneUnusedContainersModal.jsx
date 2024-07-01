@@ -6,7 +6,7 @@ import cockpit from 'cockpit';
 import { ListingTable } from 'cockpit-components-table.jsx';
 
 import * as client from './client.js';
-import * as utils from './util.js';
+import { RelativeTime } from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -18,7 +18,7 @@ const getContainerRow = (container, userSystemServiceAvailable, user, selected) 
             props: { width: 25, },
         },
         {
-            title: utils.localize_time(Date.parse(container.created) / 1000),
+            title: <RelativeTime time={container.created} />,
             props: { width: 20, },
         },
     ];
