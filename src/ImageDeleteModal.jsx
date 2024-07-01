@@ -52,14 +52,14 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
         };
 
         Dialogs.close();
-        if (all)
+        if (all) {
             client.delImage(imageWillDelete.isSystem, imageWillDelete.Id, false)
                     .catch(ex => {
                         Dialogs.show(<ForceRemoveModal name={isIntermediateImage ? _("intermediate image") : repoTags[0]}
                                                        handleForceRemove={handleForceRemoveImage}
                                                        reason={ex.message} />);
                     });
-        else {
+        } else {
             // Call another untag once previous one resolved. Calling all at once can result in undefined behavior
             const tag = tags.shift();
             const i = tag.lastIndexOf(":");
