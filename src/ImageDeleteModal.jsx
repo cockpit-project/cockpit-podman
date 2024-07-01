@@ -41,7 +41,7 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
         }));
     };
 
-    const handleRemoveImage = (tags, all) => {
+    const handleRemoveImage = (tags, all, close_dialog = true) => {
         const handleForceRemoveImage = () => {
             Dialogs.close();
             return client.delImage(imageWillDelete.isSystem, imageWillDelete.Id, true)
@@ -51,7 +51,10 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
                     });
         };
 
-        Dialogs.close();
+        if (close_dialog) {
+            Dialogs.close();
+        }
+
         if (all) {
             client.delImage(imageWillDelete.isSystem, imageWillDelete.Id, false)
                     .catch(ex => {
@@ -66,7 +69,7 @@ export const ImageDeleteModal = ({ imageWillDelete, onAddNotification }) => {
             client.untagImage(imageWillDelete.isSystem, imageWillDelete.Id, tag.substring(0, i), tag.substring(i + 1, tag.length))
                     .then(() => {
                         if (tags.length > 0)
-                            handleRemoveImage(tags, all);
+                            handleRemoveImage(tags, all, false);
                     })
                     .catch(ex => {
                         const error = cockpit.format(_("Failed to remove image $0"), tag);
