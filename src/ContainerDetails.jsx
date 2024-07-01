@@ -9,7 +9,7 @@ const _ = cockpit.gettext;
 
 const render_container_state = (container) => {
     if (container.State.Status === "running") {
-        return cockpit.format(_("Up since $0"), utils.localize_time(Date.parse(container.State.StartedAt) / 1000));
+        return <><span>{ _("Up since:") } </span><utils.RelativeTime time={container.State.StartedAt} /></>;
     }
     return cockpit.format(_("Exited"));
 };
@@ -61,7 +61,7 @@ const ContainerDetails = ({ container }) => {
                 <DescriptionList className='container-details-state'>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
-                        <DescriptionListDescription>{utils.localize_time(Date.parse(container.Created) / 1000)}</DescriptionListDescription>
+                        <DescriptionListDescription><utils.RelativeTime time={container.Created} /></DescriptionListDescription>
                     </DescriptionListGroup>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("State")}</DescriptionListTerm>
@@ -69,7 +69,7 @@ const ContainerDetails = ({ container }) => {
                     </DescriptionListGroup>
                     {container.State?.Checkpointed && <DescriptionListGroup>
                         <DescriptionListTerm>{_("Latest checkpoint")}</DescriptionListTerm>
-                        <DescriptionListDescription>{utils.localize_time(Date.parse(container.State.CheckpointedAt) / 1000)}</DescriptionListDescription>
+                        <DescriptionListDescription><utils.RelativeTime time={container.State.CheckpointedAt} /></DescriptionListDescription>
                     </DescriptionListGroup>}
                 </DescriptionList>
             </FlexItem>

@@ -115,7 +115,9 @@ const ContainerHealthLogs = ({ container, onAddNotification, state }) => {
                                                   <span>{log.ExitCode === 0 ? _("Passed health run") : _("Failed health run")}</span>
                                               </Flex>
                                           },
-                                          utils.localize_time(Date.parse(log.Start) / 1000)
+                                          {
+                                              title: <utils.RelativeTime time={log.Start} />
+                                          }
                                       ],
                                       props: {
                                           key: id,

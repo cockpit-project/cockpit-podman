@@ -608,7 +608,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_in_text(f"{first_row_sel} td[data-label=\"ID\"]",
                        images[IMG_HELLO_LATEST][:12])
         created_sel = f"{first_row_sel} td[data-label=\"Created\"]"
-        b.wait_in_text(f"{created_sel}", "today at")
+        b.wait_text(f"{created_sel}", "less than a minute ago")
         # topmost (last) layer
         created_sel = f"{first_row_sel} td[data-label=\"Created by\"]"
         b.wait_in_text(f"{created_sel}", "COPY")
@@ -848,7 +848,7 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
         b.wait_in_text("#containers-images", "<none>:<none>")
-        b.wait_in_text("#containers-images tbody:last-child td[data-label=Created]", "today at")
+        b.wait_text("#containers-images tbody:last-child td[data-label=Created]", "less than a minute ago")
 
         b.click(".listing-action button:contains('Hide intermediate images')")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
@@ -1522,9 +1522,9 @@ class TestApplication(testlib.MachineCase):
 
         if self.has_criu:
             b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
-            b.wait_in_text(
+            b.wait_text(
                 f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint") + dd',
-                'today at'
+                'less than a minute ago'
             )
         else:
             # expect proper error message
@@ -2005,7 +2005,8 @@ class TestApplication(testlib.MachineCase):
 
         self.toggleExpandedContainer(IMG_BUSYBOX)
 
-        b.wait_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Created") + dd', 'today at')
+        b.wait_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Created") + dd',
+                    'less than a minute ago')
 
         b.click(".pf-m-expanded button:contains('Integration')")
 

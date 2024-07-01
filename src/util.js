@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
 
-import cockpit from 'cockpit';
-
 import { debounce } from 'throttle-debounce';
-import * as dfnlocales from 'date-fns/locale';
-import { formatRelative } from 'date-fns';
+import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
+
+import cockpit from 'cockpit';
+import * as timeformat from 'timeformat';
+
 const _ = cockpit.gettext;
 
 export const PodmanInfoContext = React.createContext();
@@ -39,10 +40,15 @@ export function truncate_id(id) {
     return id.substr(0, 12);
 }
 
-export function localize_time(unix_timestamp) {
-    const locale = (cockpit.language == "en") ? dfnlocales.enUS : dfnlocales[cockpit.language.replace('_', '')];
-    return formatRelative(unix_timestamp * 1000, Date.now(), { locale });
-}
+// this supports formatted strings (via Date.parse) or raw timestamps
+export const RelativeTime = ({ time }) => {
+    if (!time)
+        return null;
+    const timestamp = typeof time === "string" ? Date.parse(time) : time;
+    const dateRel = timeformat.distanceToNow(timestamp, true);
+    const dateAbs = timeformat.dateTimeSeconds(timestamp);
+    return <Tooltip content={dateAbs}><span>{dateRel}</span></Tooltip>;
+};
 
 /*
  * The functions quote_cmdline and unquote_cmdline implement
