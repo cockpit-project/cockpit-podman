@@ -45,7 +45,7 @@ export const RelativeTime = ({ time }) => {
     if (!time)
         return null;
     const timestamp = typeof time === "string" ? Date.parse(time) : time;
-    const dateRel = timeformat.distanceToNow(timestamp, true);
+    const dateRel = timeformat.distanceToNow(timestamp);
     const dateAbs = timeformat.dateTimeSeconds(timestamp);
     return <Tooltip content={dateAbs}><span>{dateRel}</span></Tooltip>;
 };
