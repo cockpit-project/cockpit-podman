@@ -18,15 +18,17 @@
  */
 
 import React from 'react';
+
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import PropTypes from 'prop-types';
 import { Terminal } from "xterm";
 import { CanvasAddon } from 'xterm-addon-canvas';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import cockpit from 'cockpit';
-import rest from './rest.js';
-import * as client from './client.js';
 import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
+
+import * as client from './client.js';
+import rest from './rest.js';
 
 import "./ContainerTerminal.css";
 

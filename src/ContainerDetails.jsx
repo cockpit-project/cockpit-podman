@@ -1,9 +1,11 @@
 import React from 'react';
-import cockpit from 'cockpit';
-import * as utils from './util.js';
 
 import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
+
+import cockpit from 'cockpit';
+
+import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 

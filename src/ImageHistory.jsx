@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import cockpit from 'cockpit';
-import * as utils from './util.js';
-import * as client from './client.js';
 
+import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table.jsx";
+
+import * as client from './client.js';
+import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 

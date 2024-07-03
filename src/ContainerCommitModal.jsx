@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { FormHelper } from 'cockpit-components-form-helper.jsx';
+import { useDialogs } from "dialogs.jsx";
+import { fmt_to_fragments } from 'utils.jsx';
+
 import cockpit from 'cockpit';
 
-import { FormHelper } from 'cockpit-components-form-helper.jsx';
-import * as utils from './util.js';
-import * as client from './client.js';
 import { ErrorNotification } from './Notification.jsx';
-import { fmt_to_fragments } from 'utils.jsx';
-import { useDialogs } from "dialogs.jsx";
+import * as client from './client.js';
+import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 

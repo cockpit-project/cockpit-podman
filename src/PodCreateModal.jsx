@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { FormHelper } from 'cockpit-components-form-helper.jsx';
+import { useDialogs } from "dialogs.jsx";
 import * as dockerNames from 'docker-names';
 
-import { FormHelper } from 'cockpit-components-form-helper.jsx';
+import cockpit from 'cockpit';
 import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
+
 import { ErrorNotification } from './Notification.jsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { Volume } from './Volume.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
-import cockpit from 'cockpit';
-import { useDialogs } from "dialogs.jsx";
 
 const _ = cockpit.gettext;
 

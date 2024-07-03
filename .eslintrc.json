@@ -17,6 +17,16 @@
                 "MemberExpression": 2,
                 "ignoredNodes": [ "JSXAttribute" ]
             }],
+        "import/order": ["error",
+            {
+                "alphabetize": { "order": "asc" },
+                "groups": ["builtin", "external", "internal", "parent", "sibling"],
+                "newlines-between": "always",
+                "pathGroupsExcludedImportTypes": ["react"],
+                "pathGroups": [
+                    { "pattern": "react", "group": "builtin", "position": "before" }
+                ]
+            }],
         "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 2 }],
         "no-var": "error",
         "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
@@ -51,5 +61,10 @@
     "globals": {
         "require": "readonly",
         "module": "readonly"
+    },
+    "settings": {
+        "import/resolver": {
+            "node": { "moduleDirectory": [ "pkg/lib" ], "extensions": [ ".js", ".jsx", ".ts", ".tsx" ] }
+        }
     }
 }

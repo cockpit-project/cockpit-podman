@@ -1,14 +1,16 @@
 import React from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
-import { FormHelper } from "cockpit-components-form-helper.jsx";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
-import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { TrashIcon } from '@patternfly/react-icons';
-import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
+import { FormHelper } from "cockpit-components-form-helper.jsx";
+
 import cockpit from 'cockpit';
+import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 
 import * as utils from './util.js';
 

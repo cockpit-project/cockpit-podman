@@ -1,29 +1,30 @@
 import React from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
-import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { ExpandableSection } from "@patternfly/react-core/dist/esm/components/ExpandableSection";
 import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
+import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { cellWidth } from '@patternfly/react-table';
+import { KebabDropdown } from "cockpit-components-dropdown.jsx";
+import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
-import { ListingTable } from "cockpit-components-table.jsx";
 import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
+import { ListingTable } from "cockpit-components-table.jsx";
+
+import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import ImageDetails from './ImageDetails.jsx';
 import ImageHistory from './ImageHistory.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
-import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import PruneUnusedImagesModal from './PruneUnusedImagesModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
-import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import './Images.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
-
-import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 
 const _ = cockpit.gettext;
 

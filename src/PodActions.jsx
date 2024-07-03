@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 
-import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Alert } from "@patternfly/react-core/dist/esm/components/Alert";
-import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Divider } from '@patternfly/react-core/dist/esm/components/Divider/index.js';
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
+import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
+import { KebabDropdown } from "cockpit-components-dropdown.jsx";
+import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
-import { useDialogs } from "dialogs.jsx";
-import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 
 import * as client from './client.js';
 

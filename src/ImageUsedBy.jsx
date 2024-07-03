@@ -1,9 +1,11 @@
 import React from 'react';
-import cockpit from 'cockpit';
-import { Button } from "@patternfly/react-core/dist/esm/components/Button";
+
 import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
-import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
+
+import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
 

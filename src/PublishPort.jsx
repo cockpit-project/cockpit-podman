@@ -3,14 +3,15 @@ import React from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
-import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
-import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { OutlinedQuestionCircleIcon, TrashIcon } from '@patternfly/react-icons';
-import cockpit from 'cockpit';
+import { FormHelper } from "cockpit-components-form-helper.jsx";
 import ipaddr from "ipaddr.js";
 
-import { FormHelper } from "cockpit-components-form-helper.jsx";
+import cockpit from 'cockpit';
+
 import * as utils from './util.js';
 
 const _ = cockpit.gettext;

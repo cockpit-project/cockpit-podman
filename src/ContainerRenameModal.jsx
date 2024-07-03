@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { FormHelper } from 'cockpit-components-form-helper.jsx';
+import { useDialogs } from "dialogs.jsx";
+
 import cockpit from 'cockpit';
 
+import { ErrorNotification } from './Notification.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
-import { ErrorNotification } from './Notification.jsx';
-import { useDialogs } from "dialogs.jsx";
-import { FormHelper } from 'cockpit-components-form-helper.jsx';
 
 const _ = cockpit.gettext;
 
