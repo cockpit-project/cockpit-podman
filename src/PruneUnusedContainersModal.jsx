@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { SortByDirection } from "@patternfly/react-table";
+
 import cockpit from 'cockpit';
 import { ListingTable } from 'cockpit-components-table.jsx';
 

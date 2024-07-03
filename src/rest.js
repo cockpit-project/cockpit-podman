@@ -1,4 +1,5 @@
 import cockpit from "cockpit";
+
 import { debug } from "./util.js";
 
 function manage_error(reject, error, content) {

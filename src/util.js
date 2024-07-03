@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 
-import { debounce } from 'throttle-debounce';
 import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
+import { debounce } from 'throttle-debounce';
 
 import cockpit from 'cockpit';
 import * as timeformat from 'timeformat';

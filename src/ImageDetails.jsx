@@ -1,10 +1,12 @@
 import React from 'react';
-import cockpit from 'cockpit';
-import * as utils from './util.js';
 
 import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
 
+import cockpit from 'cockpit';
+
 import ImageUsedBy from './ImageUsedBy.jsx';
+import * as utils from './util.js';
+
 const _ = cockpit.gettext;
 
 const ImageDetails = ({ containers, image, showAll }) => {

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import cockpit from 'cockpit';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
 import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
 
+import cockpit from 'cockpit';
 import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
 
 const _ = cockpit.gettext;

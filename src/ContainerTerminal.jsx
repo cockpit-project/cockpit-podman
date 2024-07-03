@@ -18,14 +18,16 @@
  */
 
 import React from 'react';
+
 import PropTypes from 'prop-types';
-import cockpit from 'cockpit';
 import { Terminal } from "xterm";
 import { CanvasAddon } from 'xterm-addon-canvas';
-import { ErrorNotification } from './Notification.jsx';
 
-import * as client from './client.js';
+import cockpit from 'cockpit';
 import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
+
+import { ErrorNotification } from './Notification.jsx';
+import * as client from './client.js';
 
 import "./ContainerTerminal.css";
 

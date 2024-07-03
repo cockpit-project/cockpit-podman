@@ -18,15 +18,17 @@
  */
 
 import React from 'react';
-import cockpit from 'cockpit';
-import * as utils from './util.js';
-import * as client from './client.js';
 
-import { ListingTable } from "cockpit-components-table.jsx";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { CheckCircleIcon, ErrorCircleOIcon } from "@patternfly/react-icons";
+
+import cockpit from 'cockpit';
+import { ListingTable } from "cockpit-components-table.jsx";
+
+import * as client from './client.js';
+import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 

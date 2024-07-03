@@ -1,46 +1,47 @@
 import React from 'react';
+
 import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
 import { Divider } from "@patternfly/react-core/dist/esm/components/Divider";
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
-import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
-import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
-import { LabelGroup } from "@patternfly/react-core/dist/esm/components/Label";
-import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
-import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
+import { LabelGroup } from "@patternfly/react-core/dist/esm/components/Label";
+import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
+import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
-import { cellWidth, SortByDirection } from '@patternfly/react-table';
+import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
+import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { MicrochipIcon, MemoryIcon, PortIcon, VolumeIcon, } from '@patternfly/react-icons';
+import { cellWidth, SortByDirection } from '@patternfly/react-table';
+import { KebabDropdown } from "cockpit-components-dropdown.jsx";
+import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
-import { ListingTable } from "cockpit-components-table.jsx";
 import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
-import ContainerDetails from './ContainerDetails.jsx';
-import ContainerIntegration, { renderContainerPublishedPorts, renderContainerVolumes } from './ContainerIntegration.jsx';
-import ContainerTerminal from './ContainerTerminal.jsx';
-import ContainerLogs from './ContainerLogs.jsx';
-import ContainerHealthLogs from './ContainerHealthLogs.jsx';
-import ContainerDeleteModal from './ContainerDeleteModal.jsx';
-import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
-import ContainerRestoreModal from './ContainerRestoreModal.jsx';
-import ForceRemoveModal from './ForceRemoveModal.jsx';
-import * as utils from './util.js';
-import * as client from './client.js';
-import ContainerCommitModal from './ContainerCommitModal.jsx';
-import ContainerRenameModal from './ContainerRenameModal.jsx';
-import { useDialogs, DialogsContext } from "dialogs.jsx";
+import { ListingTable } from "cockpit-components-table.jsx";
 import * as machine_info from 'machine-info.js';
 
-import './Containers.scss';
-import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
+import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
+import ContainerCommitModal from './ContainerCommitModal.jsx';
+import ContainerDeleteModal from './ContainerDeleteModal.jsx';
+import ContainerDetails from './ContainerDetails.jsx';
+import ContainerHealthLogs from './ContainerHealthLogs.jsx';
+import ContainerIntegration, { renderContainerPublishedPorts, renderContainerVolumes } from './ContainerIntegration.jsx';
+import ContainerLogs from './ContainerLogs.jsx';
+import ContainerRenameModal from './ContainerRenameModal.jsx';
+import ContainerRestoreModal from './ContainerRestoreModal.jsx';
+import ContainerTerminal from './ContainerTerminal.jsx';
+import ForceRemoveModal from './ForceRemoveModal.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
 import { PodActions } from './PodActions.jsx';
 import { PodCreateModal } from './PodCreateModal.jsx';
 import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
+import * as client from './client.js';
+import * as utils from './util.js';
 
-import { KebabDropdown } from "cockpit-components-dropdown.jsx";
+import './Containers.scss';
+import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 
 const _ = cockpit.gettext;
 

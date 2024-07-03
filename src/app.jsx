@@ -18,17 +18,19 @@
  */
 
 import React from 'react';
-import { Page, PageSection, PageSectionVariants } from "@patternfly/react-core/dist/esm/components/Page";
+
 import { Alert, AlertActionCloseButton, AlertActionLink, AlertGroup } from "@patternfly/react-core/dist/esm/components/Alert";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { EmptyState, EmptyStateHeader, EmptyStateFooter, EmptyStateIcon, EmptyStateActions, EmptyStateVariant } from "@patternfly/react-core/dist/esm/components/EmptyState";
+import { Page, PageSection, PageSectionVariants } from "@patternfly/react-core/dist/esm/components/Page";
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { WithDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
 import { superuser } from "superuser";
+
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { useDialogs } from "dialogs.jsx";
+
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;

@@ -1,10 +1,12 @@
 import React from 'react';
+
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
-import { FormHelper } from "cockpit-components-form-helper.jsx";
-import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { TrashIcon } from '@patternfly/react-icons';
+import { FormHelper } from "cockpit-components-form-helper.jsx";
+
 import cockpit from 'cockpit';
 
 import * as utils from './util.js';
