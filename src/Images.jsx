@@ -38,6 +38,7 @@ class Images extends React.Component {
             isExpanded: false,
             // List of container image names which are being downloaded
             imageDownloadInProgress: [],
+            showPruneUnusedImagesModal: false,
         };
 
         this.downloadImage = this.downloadImage.bind(this);
