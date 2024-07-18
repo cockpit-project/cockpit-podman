@@ -67,6 +67,11 @@ sh -x test/vm.install
 
 systemctl enable --now cockpit.socket podman.socket
 
+# HACK: https://issues.redhat.com/browse/RHEL-49567
+if [ "$(rpm -q selinux-policy)" = "selinux-policy-40.13.5-1.el10.noarch" ]; then
+    setenforce 0
+fi
+
 # Run tests in the cockpit tasks container, as unprivileged user
 # Use nspawn to avoid the tests killing the tasks container itself
 chown -R 1111:1111 "${TMT_TEST_DATA}" .
