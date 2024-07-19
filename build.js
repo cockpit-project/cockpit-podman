@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import os from 'node:os';
+import process from 'node:process';
 
 import copy from 'esbuild-plugin-copy';
 
