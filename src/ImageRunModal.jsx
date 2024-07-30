@@ -516,7 +516,7 @@ export class ImageRunModal extends React.Component {
         }
 
         // Strip out all non-allowed container image characters when filtering.
-        let regexString = searchText.replace(/[^\w_.:-]/g, "");
+        let regexString = searchText.replace(/[^/\w_.:-]/g, "");
         // Strip image registry option if set for comparing results for docker.io searching for docker.io/fedora
         // returns docker.io/$username/fedora for example.
         if (regexString.includes('/')) {
