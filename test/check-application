@@ -1767,7 +1767,10 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#run-image-dialog-name", container_name)
 
         # Local registry
-        b.set_input_text("#create-image-image-select-typeahead", "my-busybox")
+        b.set_input_text("#create-image-image-select-typeahead", "no-container")
+        b.wait_text("button.pf-v5-c-select__menu-item.pf-m-disabled", "No images found")
+        # Search with full url
+        b.set_input_text("#create-image-image-select-typeahead", "localhost:5000/my-busybox")
         b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
 
         # Select image
