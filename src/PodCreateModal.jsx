@@ -73,7 +73,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     * Arguments
     *   - key: [publish/volumes/env] - Specifies the validation of which dynamic form of the Image run dialog is being updated
     *   - value: An array of validation errors of the form. Each item of the array represents a row of the dynamic list.
-    *            Index needs to corellate with a row number
+    *            Index needs to correlate with a row number
     */
     const dynamicListOnValidationChange = (key, value) => {
         setValidationFailed(prevState => {
