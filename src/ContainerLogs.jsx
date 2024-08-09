@@ -20,9 +20,9 @@
 import React from 'react';
 
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { CanvasAddon } from '@xterm/addon-canvas';
+import { Terminal } from "@xterm/xterm";
 import PropTypes from 'prop-types';
-import { Terminal } from "xterm";
-import { CanvasAddon } from 'xterm-addon-canvas';
 
 import cockpit from 'cockpit';
 import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
