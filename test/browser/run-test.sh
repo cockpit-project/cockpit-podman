@@ -14,7 +14,7 @@ if [ -e .git ]; then
     mv .git dot-git
 else
     # upstream tarballs ship test dependencies; print version for debugging
-    grep '"version"' node_modules/chrome-remote-interface/package.json
+    grep '"version"' node_modules/sizzle/package.json
 fi
 
 . /run/host/usr/lib/os-release

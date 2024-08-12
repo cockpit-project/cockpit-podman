@@ -51,7 +51,7 @@ COCKPIT_REPO_FILES = \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = b5a98be3e0601b45cd8a557cde1c80b896a903fb # 322 + 19 commits
+COCKPIT_REPO_COMMIT = 8ede522e5066e680850dd2ae049e2e24f99c4230 # 322 + 30 commits
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
@@ -136,12 +136,9 @@ devel-uninstall:
 print-version:
 	@echo "$(VERSION)"
 
-# required for running integration tests; commander and ws are deps of chrome-remote-interface
+# required for running integration tests
 TEST_NPMS = \
-       node_modules/chrome-remote-interface \
-       node_modules/commander \
        node_modules/sizzle \
-       node_modules/ws \
        $(NULL)
 
 dist: $(TARFILE)
