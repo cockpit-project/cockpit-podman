@@ -15,7 +15,7 @@ REGISTRIES_CONF = """
 registries = ['localhost:5000', 'localhost:6000']
 
 [registries.insecure]
-registries = ['localhost:5000', 'localhost:6000']
+registries = ['localhost:80', 'localhost:5000', 'localhost:6000']
 """
 
 NOT_RUNNING = ["Exited", "Stopped"]
@@ -27,6 +27,24 @@ IMG_BUSYBOX = "localhost/test-busybox"
 IMG_BUSYBOX_LATEST = IMG_BUSYBOX + ":latest"
 IMG_REGISTRY = "localhost/test-registry"
 IMG_REGISTRY_LATEST = IMG_REGISTRY + ":latest"
+
+# nginx configuration to simulate a registry without search API (like ghcr.io)
+NGINX_DEFAULT_CONF = """
+server {
+  listen 80;
+  listen [::]:80;
+  server_name localhost;
+
+  location / {
+    proxy_pass http://localhost:5000/;
+  }
+
+  # Simulate a registry without search API, like ghcr.io
+  location ^~ /v2/_catalog {
+    return 403;
+  }
+}
+"""
 
 
 def podman_version(cls):
@@ -3048,6 +3066,92 @@ class TestApplication(testlib.MachineCase):
             self.assertIn("Podman", b.text("#host-apps"))
         else:
             self.assertNotIn("Podman", b.text("#host-apps"))
+
+    @testlib.skipImage("nginx not installed", "centos-*", "rhel-*", "debian-*", "ubuntu-*", "arch")
+    @testlib.skipOstree("nginx not installed")
+    def testNonSearchableRegistry(self):
+        b = self.browser
+        m = self.machine
+
+        self.setupRegistry()
+
+        # Nginx config simulates behavior of ghcr.io in terms of `podman search` and `podman manifest inspect`
+        self.write_file("/etc/nginx/conf.d/default.conf", NGINX_DEFAULT_CONF,
+            post_restore_action="systemctl stop nginx.service; setsebool -P httpd_can_network_connect 0")
+        self.execute(True, """
+            setsebool -P httpd_can_network_connect 1
+            systemctl start nginx.service
+        """)
+
+        container_name = "localhost:80/my-busybox"
+        m.execute(f"""
+            podman manifest create my-busybox
+            podman manifest add my-busybox {IMG_BUSYBOX}
+            podman manifest push my-busybox {container_name}
+            podman manifest push my-busybox {container_name + ":nosearch-tag"}
+            podman manifest push my-busybox "localhost:5000/my-busybox:search-tag"
+        """)
+        # Untag busybox image which duplicates the image we are about to download
+        m.execute(f"""
+            podman manifest rm localhost/my-busybox
+            podman rmi -f {IMG_BUSYBOX}
+        """)
+
+        self.login()
+
+        b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
+        b.set_input_text("#run-image-dialog-name", "new-busybox")
+        # Searching for container by prefix fails
+        b.set_input_text("#create-image-image-select-typeahead", "localhost:80/my-busy")
+        b.wait_text("button.pf-v5-c-select__menu-item.pf-m-disabled", "No images found")
+        b.wait_in_text(".pf-v5-c-alert.pf-m-danger", "couldn't search registry")
+
+        # Giving full image name finds valid manifest therefore image is pullable
+        b.set_input_text("#create-image-image-select-typeahead", container_name)
+        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", container_name)
+        # Select image and create a container
+        b.click(f"button.pf-v5-c-select__menu-item:contains({container_name})")
+        b.click("#create-image-create-btn")
+
+        # Wait for download to finish
+        sel = "span:not(.downloading)"
+        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in "Created")
+
+        checkImage(b, f"{container_name}:latest", "system")
+
+        b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
+        # "couldn't search registry" error is hidden when some local image is found
+        b.set_input_text("#create-image-image-select-typeahead", "")
+        b.set_input_text("#create-image-image-select-typeahead", "localhost:80/my-busy")
+        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", f"{container_name}:latest")
+        b.wait_not_present(".pf-v5-c-alert.pf-m-danger")
+        b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
+
+        # Error is shown again when no image was found locally
+        b.set_input_text("#create-image-image-select-typeahead", "localhost:80/their-busy")
+        b.wait_text("button.pf-v5-c-select__menu-item.pf-m-disabled", "No images found")
+        b.wait_in_text(".pf-v5-c-alert.pf-m-danger", "couldn't search registry")
+
+        # Searching for full container name with tag finds the image
+        b.set_input_text("#run-image-dialog-name", "tagged-busybox")
+        # Search should still work with spaces around image name
+        b.set_input_text("#create-image-image-select-typeahead", " localhost:80/my-busybox:nosearch-tag ")
+        b.click('button.pf-v5-c-toggle-group__button:contains("All")')
+        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", container_name + ":nosearch-tag")
+        b.wait_js_cond("document.getElementsByClassName('pf-v5-c-select__menu-item').length === 1")
+        b.click(f"button.pf-v5-c-select__menu-item:contains({container_name + ":nosearch-tag"})")
+        b.click("#create-image-create-btn")
+
+        # Wait for download to finish
+        sel = "span:not(.downloading)"
+        b.wait(lambda: self.getContainerAttr("tagged-busybox", "State", sel) in "Created")
+        checkImage(b, f"{container_name}:nosearch-tag", "system")
+
+        # Check that manifest search with tag also works on searchable repository
+        b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
+        b.set_input_text("#create-image-image-select-typeahead", "localhost:5000/my-busybox:search-tag")
+        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", "localhost:5000/my-busybox:search-tag")
+        b.wait_js_cond("document.getElementsByClassName('pf-v5-c-select__menu-item').length === 1")
 
 
 if __name__ == '__main__':

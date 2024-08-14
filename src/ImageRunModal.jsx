@@ -62,6 +62,8 @@ const HealthCheckOnFailureActionOrder = [
     { value: 2, label: _("Force stop") },
 ];
 
+const RE_CONTAINER_TAG = /:[\w\-\d]+$/;
+
 export class ImageRunModal extends React.Component {
     constructor(props) {
         super(props);
@@ -351,68 +353,119 @@ export class ImageRunModal extends React.Component {
         });
     };
 
+    buildFilterRegex(searchText, includeRegistry) {
+        // Strip out all non-allowed container image characters when filtering.
+        let regexString = searchText.replace(/[^/\w_.:-]/g, "");
+        // drop registry from regex to allow filtering only by container names
+        if (!includeRegistry && regexString.includes('/')) {
+            regexString = '/' + searchText.split('/')
+                    .slice(1)
+                    .join('/');
+        }
+
+        return new RegExp(regexString, 'i');
+    }
+
     onSearchTriggered = value => {
+        let dialogError = "";
+        let dialogErrorDetail = "";
+
+        const changeDialogError = (reason) => {
+            // Only report first encountered error
+            if (dialogError === "" && dialogErrorDetail === "") {
+                dialogError = _("Failed to search for new images");
+                // TODO: add registry context, podman does not include it in the reply.
+                dialogErrorDetail = reason ? cockpit.format(_("Failed to search for images: $0"), reason.message) : _("Failed to search for images.");
+            }
+        };
+
+        const imageExistsLocally = (searchText, localImages) => {
+            const regex = this.buildFilterRegex(searchText, true);
+            return localImages.some(localImage => localImage.Name.search(regex) !== -1);
+        };
+
+        const handleManifestsQuery = (result) => {
+            if (result.status === "fulfilled") {
+                return JSON.parse(result.value);
+            } else if (result.reason.status !== 404) {
+                changeDialogError(result.reason);
+            }
+
+            return null;
+        };
+
         // Do not call the SearchImage API if the input string  is not at least 2 chars,
         // The comparison was done considering the fact that we miss always one letter due to delayed setState
         if (value.length < 2)
             return;
-
-        // Don't search for a value with a tag specified
-        const patt = /:[\w|\d]+$/;
-        if (patt.test(value)) {
-            return;
-        }
 
         if (this.activeConnection)
             this.activeConnection.close();
 
         this.setState({ searchFinished: false, searchInProgress: true });
         this.activeConnection = rest.connect(client.getAddress(this.isSystem()), this.isSystem());
-        let searches = [];
+        const searches = [];
 
-        // If there are registries configured search in them, or if a user searches for `docker.io/cockpit` let
-        // podman search in the user specified registry.
-        if (Object.keys(this.props.podmanInfo.registries).length !== 0 || value.includes('/')) {
-            searches.push(this.activeConnection.call({
-                method: "GET",
-                path: client.VERSION + "libpod/images/search",
-                body: "",
-                params: {
-                    term: value,
-                }
-            }));
-        } else {
-            searches = searches.concat(utils.fallbackRegistries.map(registry =>
-                this.activeConnection.call({
+        // Try to get specified image manifest
+        searches.push(this.activeConnection.call({
+            method: "GET",
+            path: client.VERSION + "libpod/manifests/" + value + "/json",
+            body: "",
+        }));
+
+        // Don't start search queries when tag is specified as search API doesn't support
+        // searching for specific image tags
+        // instead only rely on manifests query (requires image:tag name)
+        if (!RE_CONTAINER_TAG.test(value)) {
+            // If there are registries configured search in them, or if a user searches for `docker.io/cockpit` let
+            // podman search in the user specified registry.
+            if (Object.keys(this.props.podmanInfo.registries).length !== 0 || value.includes('/')) {
+                searches.push(this.activeConnection.call({
                     method: "GET",
                     path: client.VERSION + "libpod/images/search",
                     body: "",
                     params: {
-                        term: registry + "/" + value
+                        term: value,
                     }
-                })));
+                }));
+            } else {
+                searches.push(...utils.fallbackRegistries.map(registry =>
+                    this.activeConnection.call({
+                        method: "GET",
+                        path: client.VERSION + "libpod/images/search",
+                        body: "",
+                        params: {
+                            term: registry + "/" + value
+                        }
+                    })));
+            }
         }
 
         Promise.allSettled(searches)
                 .then(reply => {
                     if (reply && this._isMounted) {
                         let imageResults = [];
-                        let dialogError = "";
-                        let dialogErrorDetail = "";
+                        const manifestResult = handleManifestsQuery(reply[0]);
 
-                        for (const result of reply) {
+                        for (let i = 1; i < reply.length; i++) {
+                            const result = reply[i];
                             if (result.status === "fulfilled") {
                                 imageResults = imageResults.concat(JSON.parse(result.value));
-                            } else {
-                                dialogError = _("Failed to search for new images");
-                                // TODO: add registry context, podman does not include it in the reply.
-                                dialogErrorDetail = result.reason ? cockpit.format(_("Failed to search for images: $0"), result.reason.message) : _("Failed to search for images.");
+                            } else if (!manifestResult && !imageExistsLocally(value, this.props.localImages)) {
+                                changeDialogError(result.reason);
                             }
                         }
+
+                        // Add manifest query result if search query did not find the same image
+                        if (manifestResult && !imageResults.find(image => image.Name === value)) {
+                            manifestResult.Name = value;
+                            imageResults.push(manifestResult);
+                        }
+
                         // Group images on registry
                         const images = {};
                         imageResults.forEach(image => {
-                            // Add Tag is it's there
+                            // Add Tag if it's there
                             image.toString = function imageToString() {
                                 if (this.Tag) {
                                     return this.Name + ':' + this.Tag;
@@ -434,6 +487,7 @@ export class ImageRunModal extends React.Component {
                                 images[index] = [image];
                             }
                         });
+
                         this.setState({
                             imageResults: images || {},
                             searchFinished: true,
@@ -484,17 +538,20 @@ export class ImageRunModal extends React.Component {
             isImageSelectOpen: false,
             command,
             entrypoint,
+            dialogError: "",
+            dialogErrorDetail: "",
         });
     };
 
     handleImageSelectInput = value => {
+        const trimmedValue = value.trim();
         this.setState({
-            searchText: value,
+            searchText: trimmedValue,
             // Reset searchFinished status when text input changes
             searchFinished: false,
             selectedImage: "",
         });
-        this.onSearchTriggered(value);
+        this.onSearchTriggered(trimmedValue);
     };
 
     debouncedInputChanged = debounce(300, this.handleImageSelectInput);
@@ -524,14 +581,7 @@ export class ImageRunModal extends React.Component {
             imageRegistries.push(this.state.searchByRegistry);
         }
 
-        // Strip out all non-allowed container image characters when filtering.
-        let regexString = searchText.replace(/[^/\w_.:-]/g, "");
-        // Strip image registry option if set for comparing results for docker.io searching for docker.io/fedora
-        // returns docker.io/$username/fedora for example.
-        if (regexString.includes('/')) {
-            regexString = searchText.replace(searchText.split('/')[0], '');
-        }
-        const input = new RegExp(regexString, 'i');
+        const input = this.buildFilterRegex(searchText, false);
 
         const results = imageRegistries
                 .map((reg, index) => {
