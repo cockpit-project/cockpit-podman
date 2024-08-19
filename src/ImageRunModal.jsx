@@ -88,6 +88,7 @@ export class ImageRunModal extends React.Component {
             entrypoint,
             env: [],
             hasTTY: true,
+            privileged: false,
             publish: [],
             image: props.image,
             memory: 512,
@@ -167,6 +168,7 @@ export class ImageRunModal extends React.Component {
             createConfig.resource_limits = resourceLimit;
         }
         createConfig.terminal = this.state.hasTTY;
+        createConfig.privileged = this.state.privileged;
         if (this.state.publish.some(port => port !== undefined))
             createConfig.portmappings = this.state.publish
                     .filter(port => port?.containerPort)
@@ -875,11 +877,15 @@ export class ImageRunModal extends React.Component {
                            onChange={(_, value) => this.onValueChanged('command', value)} />
                         </FormGroup>
 
-                        <FormGroup fieldId="run=image-dialog-tty">
+                        <FormGroup fieldId="run=image-dialog-tty" isInline>
                             <Checkbox id="run-image-dialog-tty"
                               isChecked={this.state.hasTTY}
                               label={_("With terminal")}
                               onChange={(_event, checked) => this.onValueChanged('hasTTY', checked)} />
+                            <Checkbox id="run-image-dialog-privileged"
+                              isChecked={this.state.privileged}
+                              label={_("Privileged")}
+                              onChange={(_event, checked) => this.onValueChanged('privileged', checked)} />
                         </FormGroup>
 
                         <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
