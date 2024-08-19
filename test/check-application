@@ -2433,10 +2433,10 @@ class TestApplication(testlib.MachineCase):
 
     def testCreateContainerValidation(self):
         def validateField(groupSelector, value, errorMessage, resetValue=""):
-            b.set_input_text(f"{groupSelector} input", value)
             b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn:not(:disabled)")
+            b.set_input_text(f"{groupSelector} input", value)
             b.wait_in_text(f"{groupSelector} .pf-v5-c-helper-text__item-text", errorMessage)
-            b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn[aria-disabled=true]")
+            b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn:disabled")
             # Reset to acceptable value and verify the validation message is not present
             b.set_input_text(f"{groupSelector} input", resetValue)
             b.wait_not_present(f"{groupSelector} .pf-v5-c-helper-text__item-text")
