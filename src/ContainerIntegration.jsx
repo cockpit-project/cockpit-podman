@@ -15,15 +15,56 @@ export const renderContainerPublishedPorts = ports => {
     if (!ports)
         return null;
 
+    const ranges = [];
     const items = [];
+
+    // create port ranges
     Object.entries(ports).forEach(([containerPort, hostBindings]) => {
-        (hostBindings ?? []).forEach(binding => { // not-covered: null was observed in the wild, but unknown how to reproduce
-            items.push(
-                <ListItem key={ containerPort + binding.HostIp + binding.HostPort }>
-                    { binding.HostIp || "0.0.0.0" }:{ binding.HostPort } &rarr; { containerPort }
-                </ListItem>
-            );
+        const [port, proto] = containerPort.split('/');
+        const portNumber = Number(port);
+        // not-covered: null was observed in the wild, but unknown how to reproduce
+        (hostBindings ?? []).forEach(binding => {
+            const lastRange = ranges[ranges.length - 1];
+            const hostIP = binding.HostIp || "0.0.0.0";
+            const hostPort = Number(binding.HostPort);
+
+            let isPortConsecutive = false;
+            let isHostPortConsecutive = false;
+            let isSameHostIP = false;
+            let isSameProtocol = false;
+
+            if (lastRange) {
+                isPortConsecutive = portNumber === lastRange.endPort + 1;
+                isHostPortConsecutive = hostPort === lastRange.hostEndPort + 1;
+                isSameHostIP = hostIP === lastRange.hostIp;
+                isSameProtocol = proto === lastRange.protocol;
+            }
+
+            if (isPortConsecutive && isHostPortConsecutive && isSameHostIP && isSameProtocol) {
+                // ports are consecutive, so extend the range
+                lastRange.endPort = portNumber;
+                lastRange.hostEndPort = hostPort;
+            } else {
+                // ports are not consecutive, so start a new range
+                ranges.push({
+                    startPort: portNumber,
+                    endPort: portNumber,
+                    protocol: proto,
+                    hostIp: hostIP,
+                    hostStartPort: hostPort,
+                    hostEndPort: hostPort
+                });
+            }
         });
+    });
+
+    // create list items based on the ranges
+    ranges.forEach(({ startPort, endPort, protocol, hostIp, hostStartPort, hostEndPort }) => {
+        items.push(
+            <ListItem key={ startPort + hostIp + hostStartPort }>
+                {hostIp}:{hostStartPort}{hostStartPort !== hostEndPort ? `-${hostEndPort}` : ''} &rarr; {startPort}{startPort !== endPort ? `-${endPort}` : ''}/{protocol}
+            </ListItem>
+        );
     });
 
     return <List isPlain>{items}</List>;
