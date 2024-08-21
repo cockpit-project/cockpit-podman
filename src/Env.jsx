@@ -81,7 +81,7 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
                        onChange={(_event, value) => {
                            utils.validationClear(validationFailed, "envValue", onValidationChange);
                            utils.validationDebounce(() => onValidationChange({ ...validationFailed, envValue: validateEnvVar(value, "envValue") }));
-                           handleEnvValue('envValue', value, idx, onChange, additem, itemCount, item.envValue);
+                           handleEnvValue('envValue', value, idx, onChange, additem, itemCount, item.envKey);
                        }} />
                 <FormHelper helperTextInvalid={validationFailed?.envValue} />
             </FormGroup>
