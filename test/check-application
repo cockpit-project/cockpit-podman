@@ -1956,10 +1956,8 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present('#run-image-dialog-volume-0-selinux')
 
         b.set_file_autocomplete_val("#run-image-dialog-volume-0 .pf-v5-c-select", rodir)
-        b.key("Enter")
         b.set_input_text('#run-image-dialog-volume-0-container-path', '/tmp/ro')
         ro_label = m.execute(f"ls -dZ {rodir}").split(" ")[0]
-        b.key("Enter")
         b.click('.volume-form .btn-add')
         b.wait_visible('#run-image-dialog-volume-1')
         b.click('#run-image-dialog-volume-1-btn-close')
@@ -1977,7 +1975,6 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present('#run-image-dialog-volume-2-selinux')
 
         b.set_file_autocomplete_val("#run-image-dialog-volume-2 .pf-v5-c-select", rwdir)
-        b.key("Enter")
         b.set_input_text('#run-image-dialog-volume-2-container-path', '/tmp/rw')
         rw_label = m.execute(f"ls -dZ {rwdir}").split(" ")[0]
 
