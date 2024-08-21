@@ -1869,7 +1869,7 @@ class TestApplication(testlib.MachineCase):
         if auth:
             # Check that the checkbox is enabled when clicked on the field
             b.wait_visible("#run-image-dialog-cpu-priority-checkbox:not(:checked)")
-            b.click('#run-image-cpu-priority')
+            b.mouse('#run-image-cpu-priority button[aria-label="Decrease CPU shares"]', "click")
             b.wait_visible("#run-image-dialog-cpu-priority-checkbox:checked")
             b.set_checked("#run-image-dialog-cpu-priority-checkbox", False)
 
