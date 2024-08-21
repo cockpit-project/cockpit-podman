@@ -1732,10 +1732,9 @@ class TestApplication(testlib.MachineCase):
 
         # Local results found
         b.set_input_text("#create-image-image-select-typeahead", "registry")
+        b.wait_text("button.pf-v5-c-select__menu-item", IMG_REGISTRY_LATEST)
         if auth:
             b.assert_pixels(".pf-v5-c-modal-box", "image-select", skip_layouts=["rtl"])
-        b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
-        b.wait_text("button.pf-v5-c-select__menu-item", IMG_REGISTRY_LATEST)
 
         # Local registry
         b.set_input_text("#create-image-image-select-typeahead", "my-busybox")
