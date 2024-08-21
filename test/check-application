@@ -1737,8 +1737,8 @@ class TestApplication(testlib.MachineCase):
             b.assert_pixels(".pf-v5-c-modal-box", "image-select", skip_layouts=["rtl"])
 
         # Local registry
-        b.set_input_text("#create-image-image-select-typeahead", "my-busybox")
         b.click('button.pf-v5-c-toggle-group__button:contains("localhost:5000")')
+        b.set_input_text("#create-image-image-select-typeahead", "my-busybox")
         b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", "localhost:5000/my-busybox")
 
         # Select image
@@ -1798,6 +1798,11 @@ class TestApplication(testlib.MachineCase):
             b.set_input_text("#run-image-dialog-name", container_name)
 
             b.set_input_text("#create-image-image-select-typeahead", IMG_BUSYBOX)
+            # we want to switch to "Local", but to make waiting for IMG_BUSYBOX race-free, we first need to
+            # switch to another view; different images have different registries, so don't assume their name, just
+            # that at least one more exists
+            b.click('.image-search-footer .pf-v5-c-toggle-group__item:nth-of-type(3) button')
+            b.wait_in_text(".pf-v5-c-select__menu-list", "No images found")
             b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
             b.click(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX}")')
 
@@ -2733,6 +2738,11 @@ class TestApplication(testlib.MachineCase):
 
         b.set_input_text("#run-image-dialog-name", container_name)
         b.set_input_text("#create-image-image-select-typeahead", IMG_BUSYBOX_LATEST)
+        # we want to switch to "Local", but to make waiting for IMG_BUSYBOX race-free, we first need to
+        # switch to another view; different images have different registries, so don't assume their name, just
+        # that at least one more exists
+        b.click('.image-search-footer .pf-v5-c-toggle-group__item:nth-of-type(3) button')
+        b.wait_in_text(".pf-v5-c-select__menu-list", "No images found")
         b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
         b.click(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX_LATEST}")')
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
