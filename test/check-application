@@ -2908,9 +2908,13 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible(container_1_sel + " .ct-badge-toolbox:contains('toolbox')")
         b.wait_visible(container_2_sel + " .ct-badge-distrobox:contains('distrobox')")
 
+    # this isn't *really* a Firefox bug, but the different timing just triggers this a lot
+    # https://github.com/cockpit-project/cockpit-podman/issues/1836
+    @testlib.skipBrowser("pod dialog state management is broken", "firefox")
     def testCreatePodSystem(self):
         self._createPod(True)
 
+    @testlib.skipBrowser("pod dialog state management is broken", "firefox")
     def testCreatePodUser(self):
         self._createPod(False)
 
