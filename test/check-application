@@ -458,6 +458,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible("#containers-containers .container-name:contains('a')")
         b.wait_visible("#containers-containers .container-name:contains('b')")
 
+        print("silly change")
+
         # Owner select should appear
         b.wait_visible("#containers-containers-owner")
 
