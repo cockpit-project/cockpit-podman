@@ -12,6 +12,11 @@ if grep -q 'platform:f41' /etc/os-release; then
     dnf update -y shadow-utils
 fi
 
+# Missing iptables-nft dependency https://issues.redhat.com/browse/RHEL-58240
+if grep -q 'platform:el10' /etc/os-release; then
+    dnf install -y iptables-nft
+fi
+
 # if we run during cross-project testing against our main-builds COPR, then let that win
 # even if Fedora has a newer revision
 main_builds_repo="$(ls /etc/yum.repos.d/*cockpit*main-builds* 2>/dev/null || true)"
