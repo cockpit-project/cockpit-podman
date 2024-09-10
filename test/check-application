@@ -148,6 +148,7 @@ class TestApplication(testlib.MachineCase):
         m.execute("""
         podman run -d --tty --name testing localhost/test-busybox sh
         podman --log-level=debug container checkpoint --keep --tcp-established testing || true;
+        ls -lh  /var/lib/containers/storage/overlay-containers/*/userdata;
         cat /var/lib/containers/storage/overlay-containers/*/userdata/dump.log || true;
         exit 1
         """)
