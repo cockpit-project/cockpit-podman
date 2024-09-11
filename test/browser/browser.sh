@@ -6,12 +6,6 @@ cd "${0%/*}/../.."
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
 dnf update -y podman crun conmon criu
 
-# HACK: broken shadow-utils
-if grep -q 'platform:f41' /etc/os-release; then
-    rpm -q shadow-utils
-    dnf update -y shadow-utils
-fi
-
 # Missing iptables-nft dependency https://issues.redhat.com/browse/RHEL-58240
 if grep -q 'platform:el10' /etc/os-release; then
     dnf install -y iptables-nft
