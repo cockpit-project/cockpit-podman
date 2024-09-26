@@ -1738,8 +1738,15 @@ class TestApplication(testlib.MachineCase):
 
         # Local registry
         b.click('button.pf-v5-c-toggle-group__button:contains("localhost:5000")')
-        b.set_input_text("#create-image-image-select-typeahead", "my-busybox")
+        b.set_input_text("#create-image-image-select-typeahead", "my-busybox", blur=False)
         b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", "localhost:5000/my-busybox")
+
+        # pressing Enter does not disturb the dialog or open popup help
+        b.wait_val("#create-image-image-select-typeahead", "my-busybox")
+        b.key("Enter")
+        time.sleep(0.3)
+        self.assertFalse(b.is_present(".pf-v5-c-popover"))
+        b.wait_val("#create-image-image-select-typeahead", "my-busybox")
 
         # Select image
         b.click('button.pf-v5-c-select__menu-item:contains("localhost:5000/my-busybox")')
