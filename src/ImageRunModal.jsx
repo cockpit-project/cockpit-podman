@@ -743,8 +743,10 @@ export class ImageRunModal extends React.Component {
             </ToggleGroup>
         );
 
+        /* ignore Enter key, it otherwise opens the first popover help; this clears
+         * the search input and is still irritating from other elements like check boxes */
         const defaultBody = (
-            <Form>
+            <Form onKeyDown={e => e.key === 'Enter' && e.preventDefault()}>
                 {this.state.dialogError && <ErrorNotification errorMessage={this.state.dialogError} errorDetail={this.state.dialogErrorDetail} />}
                 <FormGroup id="image-name-group" fieldId='run-image-dialog-name' label={_("Name")} className="ct-m-horizontal">
                     <TextInput id='run-image-dialog-name'
