@@ -2535,7 +2535,8 @@ class TestApplication(testlib.MachineCase):
 
         # Test validation of environment variables
         b.click('.env-form .btn-add')
-        b.set_input_text("#run-image-dialog-env-0-key-group input", "sometext")
+        validateField("#run-image-dialog-env-0-key-group", "[]]]", "invalid characters")
+        validateField("#run-image-dialog-env-0-key-group", "1a", "not begin with a digit")
         validateField("#run-image-dialog-env-0-key-group", "", "must not be empty", resetValue="sometext")
 
         b.set_input_text("#run-image-dialog-name", container_name)
