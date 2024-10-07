@@ -14,10 +14,15 @@ import * as utils from './util.js';
 const _ = cockpit.gettext;
 
 export function validateEnvVar(env, key) {
+    const re = /^[a-zA-Z_]{1,}[a-zA-Z0-9_]*$/;
     switch (key) {
     case "envKey":
         if (!env)
             return _("Key must not be empty");
+        if (/^\d/.test(env))
+            return _("Key must not begin with a digit");
+        if (!re.test(env))
+            return _("Key contains invalid characters");
         break;
     case "envValue":
         break;
@@ -73,7 +78,6 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
                 id={id + "-value-group"}
                 label={_("Value")}
                 fieldId={id + "-value-address"}
-                isRequired
             >
                 <TextInput id={id + "-value"}
                        value={item.envValue || ''}
