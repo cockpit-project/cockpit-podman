@@ -10,7 +10,7 @@ TARFILE=$(RPM_NAME)-$(VERSION).tar.xz
 NODE_CACHE=$(RPM_NAME)-node-$(VERSION).tar.xz
 SPEC=$(RPM_NAME).spec
 PREFIX ?= /usr/local
-APPSTREAMFILE=org.cockpit-project.$(PACKAGE_NAME).metainfo.xml
+APPSTREAMFILE=org.cockpit_project.$(PACKAGE_NAME).metainfo.xml
 VM_IMAGE=$(CURDIR)/test/images/$(TEST_OS)
 # stamp file to check for node_modules/
 NODE_MODULES_TEST=package-lock.json
