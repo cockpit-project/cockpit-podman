@@ -1539,11 +1539,19 @@ class TestApplication(testlib.MachineCase):
             b.wait_not_present(".pf-v5-c-modal-box")
 
         if self.has_criu:
-            b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
-            b.wait_text(
-                f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint") + dd',
-                'less than a minute ago'
-            )
+            try:
+                b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
+                b.wait_text(
+                    f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint") + dd',
+                    'less than a minute ago'
+                )
+            except testlib.Error:
+                # dump.log may help with debugging criu failures
+                attachment = self.label() + "-dump.log"
+                dump_log = m.execute("find /var/lib/containers -name dump.log").strip()
+                m.download(dump_log, attachment, ".")
+                testlib.attach(attachment, move=True)
+                raise
         else:
             # expect proper error message
             b.wait_in_text(".pf-v5-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
