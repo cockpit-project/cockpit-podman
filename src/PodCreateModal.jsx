@@ -129,7 +129,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
             };
         });
         if (publishValidation.some(entry => entry && Object.keys(entry).length > 0))
-            newValidationFailed.publish = publishValidation.filter(entry => entry !== undefined);
+            newValidationFailed.publish = publishValidation;
 
         const podNameValidation = validatePodName(podName);
 
