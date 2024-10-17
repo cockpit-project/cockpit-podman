@@ -6,8 +6,9 @@ cd "${0%/*}/../.."
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
 dnf update -y podman crun conmon criu
 
-# Missing iptables-nft dependency https://issues.redhat.com/browse/RHEL-58240
-if grep -q 'platform:el10' /etc/os-release; then
+# Missing iptables-nft dependency https://issues.redhat.com/browse/RHEL-58240 and
+# https://bugzilla.redhat.com/show_bug.cgi?id=2319310
+if grep -Eq 'platform:(el10|f41)' /etc/os-release; then
     dnf install -y iptables-nft
 fi
 
