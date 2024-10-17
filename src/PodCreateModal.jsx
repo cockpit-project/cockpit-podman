@@ -77,10 +77,10 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     */
     const dynamicListOnValidationChange = (key, value) => {
         setValidationFailed(prevState => {
-            prevState[key] = value;
-            if (prevState[key].every(a => a === undefined))
-                delete prevState[key];
-            return prevState;
+            const newState = Object.assign({}, prevState, { [key]: value });
+            if (newState[key].every(a => a === undefined))
+                delete newState[key];
+            return newState;
         });
     };
 
@@ -101,12 +101,20 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     };
 
     const isFormInvalid = validationFailed => {
-        const groupHasError = row => row && Object.values(row)
-                .filter(val => val) // Filter out empty/undefined properties
-                .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+        function publishGroupHasError(row, idx) {
+            // We always ignore errors for empty slots in
+            // publish. Errors for these slots might show up when the
+            // debounced validation runs after a row has been removed.
+            if (!row || !publish[idx])
+                return false;
+
+            return Object.values(row)
+                    .filter(val => val) // Filter out empty/undefined properties
+                    .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+        }
 
         // If at least one group is invalid, then the whole form is invalid
-        return validationFailed.publish?.some(groupHasError) ||
+        return validationFailed.publish?.some(publishGroupHasError) ||
             !!validationFailed.podName;
     };
 
@@ -129,7 +137,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
             };
         });
         if (publishValidation.some(entry => entry && Object.keys(entry).length > 0))
-            newValidationFailed.publish = publishValidation.filter(entry => entry !== undefined);
+            newValidationFailed.publish = publishValidation;
 
         const podNameValidation = validatePodName(podName);
 
