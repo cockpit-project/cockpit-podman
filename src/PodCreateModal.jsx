@@ -101,12 +101,20 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     };
 
     const isFormInvalid = validationFailed => {
-        const groupHasError = row => row && Object.values(row)
-                .filter(val => val) // Filter out empty/undefined properties
-                .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+        function publishGroupHasError(row, idx) {
+            // We always ignore errors for empty slots in
+            // publish. Errors for these slots might show up when the
+            // debounced validation runs after a row has been removed.
+            if (!row || !publish[idx])
+                return false;
+
+            return Object.values(row)
+                    .filter(val => val) // Filter out empty/undefined properties
+                    .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+        }
 
         // If at least one group is invalid, then the whole form is invalid
-        return validationFailed.publish?.some(groupHasError) ||
+        return validationFailed.publish?.some(publishGroupHasError) ||
             !!validationFailed.podName;
     };
 
