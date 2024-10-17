@@ -77,10 +77,10 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     */
     const dynamicListOnValidationChange = (key, value) => {
         setValidationFailed(prevState => {
-            prevState[key] = value;
-            if (prevState[key].every(a => a === undefined))
-                delete prevState[key];
-            return prevState;
+            const newState = Object.assign({}, prevState, { [key]: value });
+            if (newState[key].every(a => a === undefined))
+                delete newState[key];
+            return newState;
         });
     };
 
