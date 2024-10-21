@@ -495,7 +495,7 @@ class Containers extends React.Component {
         }
 
         // As podman does not provide per pod memory/cpu statistics we do the following:
-        // - don't add up CPU usage, instead display the highest found CPU usage of the containers in a pod
+        // - add up CPU usage to display total CPU use of all containers in the pod
         // - add up memory usage so it displays the total memory of the pod.
         let cpu = 0;
         let mem = 0;
@@ -505,16 +505,15 @@ class Containers extends React.Component {
                 continue;
 
             if (containerStats.CPU != undefined) {
-                const val = containerStats.CPU === 0 ? containerStats.CPU : containerStats.CPU.toFixed(2);
-                if (val > cpu)
-                    cpu = val;
+                cpu += containerStats.CPU;
             }
-            if (containerStats.MemUsage != undefined)
+            if (containerStats.MemUsage != undefined) {
                 mem += containerStats.MemUsage;
+            }
         }
 
         return {
-            cpu,
+            cpu: cpu.toFixed(2),
             mem,
         };
     }
