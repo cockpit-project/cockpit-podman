@@ -652,14 +652,25 @@ export class ImageRunModal extends React.Component {
     };
 
     isFormInvalid = validationFailed => {
-        const groupHasError = row => row && Object.values(row)
-                .filter(val => val) // Filter out empty/undefined properties
-                .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+        function checkGroup(validation, values) {
+            function rowHasError(row, idx) {
+                // We always ignore errors for empty slots in
+                // "values". Errors for these slots might show up when
+                // the debounced validation runs after a row has been
+                // removed.
+                if (!row || !values[idx])
+                    return false;
 
+                return Object.values(row)
+                        .filter(val => val) // Filter out empty/undefined properties
+                        .length > 0; // If one field has error, the whole group (dynamicList) is invalid
+            }
+            return validation && validation.some(rowHasError);
+        }
         // If at least one group is invalid, then the whole form is invalid
-        return validationFailed.publish?.some(groupHasError) ||
-            validationFailed.volumes?.some(groupHasError) ||
-            validationFailed.env?.some(groupHasError) ||
+        return checkGroup(validationFailed.publish, this.state.publish) ||
+            checkGroup(validationFailed.volumes, this.state.volumes) ||
+            checkGroup(validationFailed.env, this.state.env) ||
             !!validationFailed.containerName;
     };
 
