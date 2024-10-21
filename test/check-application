@@ -2661,6 +2661,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(2)")
 
         # Trigger run manually, adds one more healthy run
+        if self.machine.image == "ubuntu-2204":
+            time.sleep(5)  # wait a bit, otherwise the request might be ignored
         self.performContainerAction("healthy", "Run health check")
         b.wait_visible(".ct-listing-panel-body tbody:nth-of-type(2) svg.green")
         b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(3)")
