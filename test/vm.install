@@ -37,6 +37,9 @@ fi
 # Since 4.0 podman now ships the pause image
 podman images --format '{{.Repository}}:{{.Tag}}' | grep -Ev 'localhost/test-|pause|cockpit/ws' | xargs -r podman rmi -f
 
+# clean up cockpit/ws on Fedora images, as it "breaks" pixel tests; it's only relevant for OSTree images
+[ -n "${OSTREE_VERSION:-}" ] || podman rmi -f quay.io/cockpit/ws || true
+
 # tests reset podman, save the images
 mkdir -p /var/lib/test-images
 for img in $(podman images --format '{{.Repository}}:{{.Tag}}'); do
