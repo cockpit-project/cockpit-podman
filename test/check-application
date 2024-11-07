@@ -2025,7 +2025,7 @@ class TestApplication(testlib.MachineCase):
         else:
             b.wait_not_present('#run-image-dialog-volume-0-selinux')
 
-        b.set_file_autocomplete_val("#run-image-dialog-volume-0 .pf-v5-c-select", rodir)
+        b.set_file_autocomplete_val("#run-image-dialog-volume-0", rodir)
         b.set_input_text('#run-image-dialog-volume-0-container-path', '/tmp/ro')
         ro_label = m.execute(f"ls -dZ {rodir}").split(" ")[0]
         b.click('.volume-form .btn-add')
@@ -2036,7 +2036,7 @@ class TestApplication(testlib.MachineCase):
 
         if auth:
             b.assert_pixels(".pf-v5-c-modal-box", "integration",
-                            ignore=["#run-image-dialog-volume-0 .pf-v5-c-select__toggle-typeahead"],
+                            ignore=["#run-image-dialog-volume-0 .pf-v5-c-text-input-group__text-input"],
                             skip_layouts=["rtl"])
 
         if self.has_selinux:
@@ -2044,7 +2044,7 @@ class TestApplication(testlib.MachineCase):
         else:
             b.wait_not_present('#run-image-dialog-volume-2-selinux')
 
-        b.set_file_autocomplete_val("#run-image-dialog-volume-2 .pf-v5-c-select", rwdir)
+        b.set_file_autocomplete_val("#run-image-dialog-volume-2", rwdir)
         b.set_input_text('#run-image-dialog-volume-2-container-path', '/tmp/rw')
         rw_label = m.execute(f"ls -dZ {rwdir}").split(" ")[0]
 
@@ -3022,11 +3022,11 @@ class TestApplication(testlib.MachineCase):
             else:
                 b.wait_not_present('#create-pod-dialog-volume-0-selinux')
 
-            b.set_file_autocomplete_val("#create-pod-dialog-volume-0 .pf-v5-c-select", rodir)
+            b.set_file_autocomplete_val("#create-pod-dialog-volume-0", rodir)
             b.set_input_text('#create-pod-dialog-volume-0-container-path', '/tmp/ro')
             b.click('.volume-form .btn-add')
 
-            b.set_file_autocomplete_val("#create-pod-dialog-volume-1 .pf-v5-c-select", rwdir)
+            b.set_file_autocomplete_val("#create-pod-dialog-volume-1", rwdir)
             b.set_input_text('#create-pod-dialog-volume-1-container-path', '/tmp/rw')
 
         b.click("#create-pod-create-btn")
