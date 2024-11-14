@@ -12,7 +12,7 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
-import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
+import { EmptyStatePanel } from "cockpit-components-empty-state.tsx";
 
 import { ErrorNotification } from './Notification.jsx';
 import * as client from './client.js';

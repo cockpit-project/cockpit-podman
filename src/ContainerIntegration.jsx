@@ -6,7 +6,7 @@ import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List"
 import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
 
 import cockpit from 'cockpit';
-import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
+import { EmptyStatePanel } from "cockpit-components-empty-state.tsx";
 
 const _ = cockpit.gettext;
 
