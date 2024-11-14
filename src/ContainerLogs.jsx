@@ -25,7 +25,7 @@ import { Terminal } from "@xterm/xterm";
 import PropTypes from 'prop-types';
 
 import cockpit from 'cockpit';
-import { EmptyStatePanel } from "cockpit-components-empty-state.jsx";
+import { EmptyStatePanel } from "cockpit-components-empty-state.tsx";
 
 import * as client from './client.js';
 import rest from './rest.js';
