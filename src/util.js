@@ -37,7 +37,7 @@ export function truncate_id(id) {
     if (!id) {
         return "";
     }
-    return id.substr(0, 12);
+    return id.substring(0, 12);
 }
 
 // this supports formatted strings (via Date.parse) or raw timestamps

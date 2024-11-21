@@ -474,7 +474,7 @@ class Containers extends React.Component {
         return {
             expandedContent: <ListingPanel colSpan='4' tabRenderers={tabs} />,
             columns,
-            initiallyExpanded: document.location.hash.substr(1) === container.Id,
+            initiallyExpanded: document.location.hash.substring(1) === container.Id,
             props: {
                 key: container.Id + container.isSystem.toString(),
                 "data-row-id": container.Id + container.isSystem.toString(),
