@@ -46,12 +46,11 @@ all: $(DIST_TEST)
 COCKPIT_REPO_FILES = \
 	pkg/lib \
 	test/common \
-	test/static-code \
 	tools/node-modules \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = cb7eab38b2ab09c56fedcddbfecb2b417f416a25 # 330 + 4 commits
+COCKPIT_REPO_COMMIT = da6175624075fbc0bf20100011f1e0908de60808 # 330 + 8 commits
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
@@ -186,8 +185,8 @@ print-vm:
 # run static code checks for python code
 PYEXEFILES=$(shell git grep -lI '^#!.*python')
 
-codecheck: test/static-code $(NODE_MODULES_TEST)
-	test/static-code
+codecheck: test/common $(NODE_MODULES_TEST)
+	test/common/static-code
 
 # convenience target to setup all the bits needed for the integration tests
 # without actually running them
