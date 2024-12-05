@@ -3,21 +3,40 @@
 set -eux
 cd "${0%/*}/../.."
 
-# HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
-dnf update -y podman crun conmon criu
+# install dependencies programmatically due to https://issues.redhat.com/browse/TFT-3020
+TEST_DEPS="systemd-container cockpit-podman cockpit-ws cockpit-system criu nginx"
 
-# Missing iptables-nft dependency https://issues.redhat.com/browse/RHEL-58240 and
-# https://bugzilla.redhat.com/show_bug.cgi?id=2319310
-if grep -Eq 'platform:(el10|f41)' /etc/os-release; then
-    dnf install -y iptables-nft
-fi
+if [ "${TMT_REBOOT_COUNT:-0}" -eq 0 ]; then
+    if bootc status | grep -q version; then
+        # redeploy ourselves with required test dependencies
+        # TODO: get correct c-podman version; https://packit.dev/docs/configuration/upstream/tests#optional-parameters
+        cat > Containerfile <<EOF
+FROM $(bootc status --json | jq -r .status.booted.image.image.image)
+RUN dnf install -y $TEST_DEPS && dnf clean all
+EOF
+        podman build -t localhost/test .
+        bootc switch --transport containers-storage localhost/test
+        podman rmi --all
+        tmt-reboot
 
-# if we run during cross-project testing against our main-builds COPR, then let that win
-# even if Fedora has a newer revision
-main_builds_repo="$(ls /etc/yum.repos.d/*cockpit*main-builds* 2>/dev/null || true)"
-if [ -n "$main_builds_repo" ]; then
-    echo 'priority=0' >> "$main_builds_repo"
-    dnf distro-sync -y --repo 'copr*' cockpit-podman
+    else
+        # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
+        dnf install --best -y $TEST_DEPS
+
+        # Missing iptables-nft dependency https://issues.redhat.com/browse/RHEL-58354 and
+        # https://bugzilla.redhat.com/show_bug.cgi?id=2319310
+        if grep -Eq 'platform:(el10|f41)' /etc/os-release; then
+            dnf install -y iptables-nft
+        fi
+
+        # if we run during cross-project testing against our main-builds COPR, then let that win
+        # even if Fedora has a newer revision
+        main_builds_repo="$(ls /etc/yum.repos.d/*cockpit*main-builds* 2>/dev/null || true)"
+        if [ -n "$main_builds_repo" ]; then
+            echo 'priority=0' >> "$main_builds_repo"
+            dnf distro-sync -y --repo 'copr*' cockpit-podman
+        fi
+    fi
 fi
 
 # Show critical package versions
