@@ -12,7 +12,7 @@ if [ "${TMT_REBOOT_COUNT:-0}" -eq 0 ]; then
         # TODO: get correct c-podman version; https://packit.dev/docs/configuration/upstream/tests#optional-parameters
         cat > Containerfile <<EOF
 FROM $(bootc status --json | jq -r .status.booted.image.image.image)
-RUN dnf install -y $TEST_DEPS && dnf clean all
+RUN dnf install -y $TEST_DEPS && dnf install --best -y --enablerepo=updates-testing cockpit-system cockpit-ws && dnf clean all
 EOF
         podman build -t localhost/test .
         bootc switch --transport containers-storage localhost/test
