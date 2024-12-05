@@ -10,6 +10,12 @@ adjust:
     script: |
       rm --force --verbose /etc/yum.repos.d/fedora.repo
     when: distro == centos-10
+  # Disable artifact installation in case of bootc
+  - how: install
+    exclude:
+        - .*
+    # TODO: enable later
+    # when: bootc is defined
 
 # Let's handle them upstream only, don't break Fedora/RHEL reverse dependency gating
 environment:
