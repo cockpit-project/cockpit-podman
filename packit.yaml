@@ -26,10 +26,6 @@ jobs:
     targets:
       centos-stream-9-x86_64:
         distros: ["centos-stream-9", "CentOS-Stream-9-image-mode"]
-    tf_extra_params:
-      environments:
-        - artifacts:
-            - install: false
 
   - job: copr_build
     trigger: release
