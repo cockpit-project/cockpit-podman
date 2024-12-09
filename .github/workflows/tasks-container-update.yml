@@ -31,6 +31,12 @@ jobs:
       - name: Pacify git's permission check
         run: git config --global --add safe.directory /__w/cockpit-podman/cockpit-podman
 
+      - run: dnf install -y tmate curl
+
+      - uses: mxschmitt/action-tmate@v3
+        with:
+          install-dependencies: false
+
       - name: Run tasks-container-update
         run: |
           make bots
