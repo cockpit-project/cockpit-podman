@@ -21,7 +21,7 @@ if [ -n "$main_builds_repo" ]; then
 fi
 
 # Show critical package versions
-rpm -q runc crun podman criu passt kernel-core selinux-policy cockpit-podman cockpit-bridge || true
+rpm -q runc crun podman criu passt catatonit kernel-core selinux-policy cockpit-podman cockpit-bridge || true
 
 # Show network information, for pasta debugging
 ip address show
