@@ -77,16 +77,7 @@ class TestApplication(testlib.MachineCase):
     def setUp(self):
         super().setUp()
         m = self.machine
-        m.execute("""
-            systemctl stop podman.service; systemctl --now enable podman.socket
-            # Ensure podman is really stopped, otherwise it keeps the containers/ directory busy
-            pkill -e -9 podman || true
-            while pgrep podman; do sleep 0.1; done
-            pkill -e -9 conmon || true
-            while pgrep conmon; do sleep 0.1; done
-            findmnt --list -otarget | grep /var/lib/containers/. | xargs -r umount
-            sync
-            """)
+        m.execute("systemctl stop podman.service; systemctl --now enable podman.socket")
 
         # backup/restore pristine podman state, so that tests can run on existing testbeds
         self.restore_dir("/var/lib/containers")
