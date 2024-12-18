@@ -181,3 +181,5 @@ export const imageHistory = (system, id) => podmanJson(`libpod/images/${id}/hist
 export const imageExists = (system, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
 
 export const containerExists = (system, id) => podmanCall("libpod/containers/" + id + "/exists", "GET", {}, system);
+
+export const getVolumes = system => podmanJson("libpod/volumes/json", "GET", {}, system);
