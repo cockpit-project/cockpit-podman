@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import cockpit from 'cockpit';
-import { ListingTable } from "cockpit-components-table.jsx";
+import { ListingTable } from "cockpit-components-table";
 
 import * as client from './client.js';
 import * as utils from './util.js';

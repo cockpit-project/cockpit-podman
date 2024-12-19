@@ -25,7 +25,7 @@ import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { CheckCircleIcon, ErrorCircleOIcon } from "@patternfly/react-icons";
 
 import cockpit from 'cockpit';
-import { ListingTable } from "cockpit-components-table.jsx";
+import { ListingTable } from "cockpit-components-table";
 
 import * as client from './client.js';
 import * as utils from './util.js';

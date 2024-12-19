@@ -18,9 +18,9 @@ import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
-import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
-import { ListingTable } from "cockpit-components-table.jsx";
-import * as machine_info from 'machine-info.js';
+import { ListingPanel } from 'cockpit-components-listing-panel';
+import { ListingTable } from "cockpit-components-table";
+import * as machine_info from 'machine-info';
 
 import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
 import ContainerCommitModal from './ContainerCommitModal.jsx';

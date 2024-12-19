@@ -11,8 +11,8 @@ import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
-import { ListingPanel } from 'cockpit-components-listing-panel.jsx';
-import { ListingTable } from "cockpit-components-table.jsx";
+import { ListingPanel } from 'cockpit-components-listing-panel';
+import { ListingTable } from "cockpit-components-table";
 
 import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import ImageDetails from './ImageDetails.jsx';
