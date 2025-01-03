@@ -9,11 +9,12 @@ import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { NumberInput } from "@patternfly/react-core/dist/esm/components/NumberInput";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
+import { Spinner } from "@patternfly/react-core/dist/esm/components/Spinner/index.js";
 import { Tab, TabTitleText, Tabs } from "@patternfly/react-core/dist/esm/components/Tabs";
 import { Text, TextContent, TextList, TextListItem, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
-import { Select, SelectGroup, SelectOption, SelectVariant } from "@patternfly/react-core/dist/esm/deprecated/components/Select";
+import { Bullseye } from "@patternfly/react-core/dist/esm/layouts/Bullseye/index.js";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
@@ -23,6 +24,7 @@ import { debounce } from 'throttle-debounce';
 
 import cockpit from 'cockpit';
 import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
+import { TypeaheadSelect } from 'cockpit-components-typeahead-select';
 
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
 import { EnvVar, validateEnvVar } from './Env.jsx';
@@ -583,44 +585,33 @@ export class ImageRunModal extends React.Component {
 
         const input = this.buildFilterRegex(searchText, false);
 
-        const results = imageRegistries
-                .map((reg, index) => {
-                    const filtered = (reg in images ? images[reg] : [])
-                            .filter(image => {
-                                if (image.isSystem && !isSystem) {
-                                    return false;
-                                }
-                                if ('isSystem' in image && !image.isSystem && isSystem) {
-                                    return false;
-                                }
-                                return image.Name.search(input) !== -1;
-                            })
-                            .map((image, index) => {
-                                return (
-                                    <SelectOption
-                                        key={index}
-                                        value={image}
-                                        {...(image.Description && { description: image.Description })}
-                                    />
-                                );
-                            });
+        const results = [];
+        imageRegistries.forEach(reg => {
+            let need_header = this.state.searchByRegistry == 'all';
+            (reg in images ? images[reg] : [])
+                    .filter(image => {
+                        if (image.isSystem && !isSystem) {
+                            return false;
+                        }
+                        if ('isSystem' in image && !image.isSystem && isSystem) {
+                            return false;
+                        }
+                        return image.Name.search(input) !== -1;
+                    })
+                    .forEach(image => {
+                        if (need_header) {
+                            results.push({ key: results.length, decorator: "header", content: reg });
+                            need_header = false;
+                        }
 
-                    if (filtered.length === 0) {
-                        return [];
-                    } else {
-                        return (
-                            <SelectGroup label={reg} key={index} value={reg}>
-                                {filtered}
-                            </SelectGroup>
-                        );
-                    }
-                })
-                .filter(group => group.length !== 0); // filter out empty groups
-
-        // Remove <SelectGroup> when there is a filter selected.
-        if (this.state.searchByRegistry !== 'all' && imageRegistries.length === 1 && results.length === 1) {
-            return results[0].props.children;
-        }
+                        results.push({
+                            key: results.length,
+                            value: image,
+                            content: image.toString(),
+                            description: image.Description
+                        });
+                    });
+        });
 
         return results;
     };
@@ -804,6 +795,12 @@ export class ImageRunModal extends React.Component {
             </ToggleGroup>
         );
 
+        const spinnerOptions = (
+            this.state.searchInProgress
+                ? [{ value: "_searching", content: <Bullseye><Spinner size="lg" /></Bullseye>, isDisabled: true }]
+                : []
+        );
+
         /* ignore Enter key, it otherwise opens the first popover help; this clears
          * the search input and is still irritating from other elements like check boxes */
         const defaultBody = (
@@ -901,30 +898,22 @@ export class ImageRunModal extends React.Component {
                               </Popover>
                           }
                         >
-                            <Select
-                                // We are unable to set id of the input directly, the select component appends
-                                // '-select-typeahead' to toggleId.
-                                toggleId='create-image-image'
-                                isGrouped
-                                {...(this.state.searchInProgress && { loadingVariant: 'spinner' })}
-                                menuAppendTo={() => document.body}
-                                variant={SelectVariant.typeahead}
-                                noResultsFoundText={_("No images found")}
-                                onToggle={this.onImageSelectToggle}
-                                isOpen={this.state.isImageSelectOpen}
-                                selections={selectedImage}
-                                isInputValuePersisted
-                                placeholderText={_("Search string or container location")}
+                            <TypeaheadSelect
+                                toggleProps={{ id: 'create-image-image' }}
+                                isScrollable
+                                noOptionsFoundMessage={_("No images found")}
+                                noOptionsAvailableMessage={_("No images found")}
+                                selected={selectedImage}
+                                selectedIsTrusted
+                                placeholder={_("Search string or container location")}
                                 onSelect={this.onImageSelect}
-                                onClear={this.clearImageSelection}
-                                // onFilter must be set or the spinner crashes https://github.com/patternfly/patternfly-react/issues/6384
-                                onFilter={() => {}}
-                                onTypeaheadInputChanged={this.debouncedInputChanged}
-                                footer={footer}
+                                onClearSelection={this.clearImageSelection}
+                                onInputChange={this.debouncedInputChanged}
                                 isDisabled={!!this.props.image}
-                            >
-                                {imageListOptions}
-                            </Select>
+                                // We do our own filtering when producing imageListOptions
+                                filterFunction={(filterValue, options) => options}
+                                selectOptions={imageListOptions.concat(spinnerOptions)}
+                                footer={footer} />
                         </FormGroup>
 
                         {(image || localImage) &&
