@@ -504,28 +504,29 @@ class TestApplication(testlib.MachineCase):
 
         # Check showing of entrypoint
         b.click("#containers-containers-create-container-btn")
-        b.click("#create-image-image-select-typeahead")
-        b.click(f'button.pf-v5-c-select__menu-item:contains("{IMG_REGISTRY}")')
+        b.click("#create-image-image input")
+        b.click(f'button.pf-v5-c-menu__item:contains("{IMG_REGISTRY}")')
         b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yml')
         b.wait_text("#run-image-dialog-entrypoint", '/entrypoint.sh')
 
         # Deleting image will cleanup both command and entrypoint
-        b.click("button.pf-v5-c-select__toggle-clear")
+        b.click("button[aria-label='Clear input value']")
         b.wait_val("#run-image-dialog-command", '')
         b.wait_not_present("#run-image-dialog-entrypoint")
 
         # Edited command will not be cleared
-        b.click("#create-image-image-select-typeahead")
-        b.click(f'button.pf-v5-c-select__menu-item:contains("{IMG_REGISTRY}")')
+        b.click("#create-image-image input")
+        time.sleep(1)  # wait for TypeaheadSelect focus shenanigans
+        b.click(f'button.pf-v5-c-menu__item:contains("{IMG_REGISTRY}")')
         b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yml')
         b.set_input_text("#run-image-dialog-command", '/etc/docker/registry/config.yaml')
-        b.click("button.pf-v5-c-select__toggle-clear")
+        b.click("button[aria-label='Clear input value']")
         b.wait_not_present("#run-image-dialog-entrypoint")
         b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yaml')
 
         # Setting a new image will still keep the old command and not prefill it
-        b.click("#create-image-image-select-typeahead")
-        b.click(f'button.pf-v5-c-select__menu-item:contains({IMG_ALPINE})')
+        b.click("#create-image-image input")
+        b.click(f'button.pf-v5-c-menu__item:contains({IMG_ALPINE})')
         b.wait_visible("#run-image-dialog-pull-latest-image")
         b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yaml')
 
@@ -553,8 +554,8 @@ class TestApplication(testlib.MachineCase):
         # Test the isSystem boolean for searching
         # https://github.com/cockpit-project/cockpit-podman/pull/891
         b.click("#containers-containers-create-container-btn")
-        b.set_input_text("#create-image-image-select-typeahead", "registry")
-        b.wait_visible('button.pf-v5-c-select__menu-item:contains("registry")')
+        b.set_input_text("#create-image-image input", "registry")
+        b.wait_visible('button.pf-v5-c-menu__item:contains("registry")')
         self.confirm_modal("Cancel")
 
     def testBasicUser(self):
@@ -875,9 +876,9 @@ class TestApplication(testlib.MachineCase):
         # Intermediate images are not shown in create container dialog
         b.click("#containers-containers-create-container-btn")
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
-        b.click("#create-image-image-select-typeahead")
-        b.wait_visible(f".pf-v5-c-select__menu-item:contains('{IMG_REGISTRY}')")
-        b.wait_not_present(".pf-v5-c-select__menu-item:contains('none')")
+        b.click("#create-image-image input")
+        b.wait_visible(f".pf-v5-c-menu__item:contains('{IMG_REGISTRY}')")
+        b.wait_not_present(".pf-v5-c-menu__item:contains('none')")
         b.click(".pf-v5-c-modal-box .btn-cancel")
         b.wait_not_present(".pf-v5-c-modal-box")
 
@@ -1750,40 +1751,40 @@ class TestApplication(testlib.MachineCase):
 
         # Test special characters.
         # Initially both the registry image and Alpine are shown
-        b.click("#create-image-image")
-        b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_ALPINE_LATEST}")')
-        b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_REGISTRY_LATEST}")')
+        b.click("#create-image-image input")
+        b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_ALPINE_LATEST}")')
+        b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_REGISTRY_LATEST}")')
         # Filter it down to just Alpine
-        b.set_input_text("#create-image-image-select-typeahead", "|alpi*ne?\\")
-        b.wait_not_present(f'button.pf-v5-c-select__menu-item:contains("{IMG_REGISTRY_LATEST}")')
-        b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_ALPINE_LATEST}")')
+        b.set_input_text("#create-image-image input", "|alpi*ne?\\")
+        b.wait_not_present(f'button.pf-v5-c-menu__item:contains("{IMG_REGISTRY_LATEST}")')
+        b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_ALPINE_LATEST}")')
 
         # No local results found
-        b.set_input_text("#create-image-image-select-typeahead", "notfound")
+        b.set_input_text("#create-image-image input", "notfound")
 
         b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
-        b.wait_text("button.pf-v5-c-select__menu-item.pf-m-disabled", "No images found")
+        b.wait_text("button.pf-v5-c-menu__item[disabled]", "No images found")
 
         # Local results found
-        b.set_input_text("#create-image-image-select-typeahead", "registry")
-        b.wait_text("button.pf-v5-c-select__menu-item", IMG_REGISTRY_LATEST)
+        b.set_input_text("#create-image-image input", "registry")
+        b.wait_text("button.pf-v5-c-menu__item:not([disabled])", IMG_REGISTRY_LATEST)
         if auth:
             b.assert_pixels(".pf-v5-c-modal-box", "image-select", skip_layouts=["rtl"])
 
         # Local registry
         b.click('button.pf-v5-c-toggle-group__button:contains("localhost:5000")')
-        b.set_input_text("#create-image-image-select-typeahead", "my-busybox", blur=False)
-        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", "localhost:5000/my-busybox")
+        b.set_input_text("#create-image-image input", "my-busybox", blur=False)
+        b.wait_text("button.pf-v5-c-menu__item:not([disabled])", "localhost:5000/my-busybox")
 
         # pressing Enter does not disturb the dialog or open popup help
-        b.wait_val("#create-image-image-select-typeahead", "my-busybox")
+        b.wait_val("#create-image-image input", "my-busybox")
         b.key("Enter")
         time.sleep(0.3)
         self.assertFalse(b.is_present(".pf-v5-c-popover"))
-        b.wait_val("#create-image-image-select-typeahead", "my-busybox")
+        b.wait_val("#create-image-image input", "my-busybox")
 
         # Select image
-        b.click('button.pf-v5-c-select__menu-item:contains("localhost:5000/my-busybox")')
+        b.click('button.pf-v5-c-menu__item:contains("localhost:5000/my-busybox")')
 
         # Remote image, no pull latest image option
         b.wait_not_present("#run-image-dialog-pull-latest-image")
@@ -1807,14 +1808,14 @@ class TestApplication(testlib.MachineCase):
         b.set_input_text("#run-image-dialog-name", container_name)
 
         # Local registry
-        b.set_input_text("#create-image-image-select-typeahead", "no-container")
-        b.wait_text("button.pf-v5-c-select__menu-item.pf-m-disabled", "No images found")
+        b.set_input_text("#create-image-image input", "no-container")
+        b.wait_text("button.pf-v5-c-menu__item[disabled]", "No images found")
         # Search with full url
-        b.set_input_text("#create-image-image-select-typeahead", "localhost:5000/my-busybox")
+        b.set_input_text("#create-image-image input", "localhost:5000/my-busybox")
         b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
 
         # Select image
-        b.click('button.pf-v5-c-select__menu-item:contains("localhost:5000/my-busybox")')
+        b.click('button.pf-v5-c-menu__item:contains("localhost:5000/my-busybox")')
 
         # Pull the latest image
         b.set_checked("#run-image-dialog-pull-latest-image", True)
@@ -1839,20 +1840,20 @@ class TestApplication(testlib.MachineCase):
             b.set_input_text("#run-image-dialog-name", container_name)
 
             # Open image dropdown, it should list both Alpine and Busybox from the local repository
-            b.click("#create-image-image")
-            b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_ALPINE_LATEST}")')
-            b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX_LATEST}")')
+            b.click("#create-image-image input")
+            b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_ALPINE_LATEST}")')
+            b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_BUSYBOX_LATEST}")')
             # Filter it down to just Busybox
-            b.set_input_text("#create-image-image-select-typeahead", IMG_BUSYBOX_LATEST)
-            b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX_LATEST}")')
-            b.wait_not_present(f'button.pf-v5-c-select__menu-item:contains("{IMG_ALPINE_LATEST}")')
+            b.set_input_text("#create-image-image input", IMG_BUSYBOX_LATEST)
+            b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_BUSYBOX_LATEST}")')
+            b.wait_not_present(f'button.pf-v5-c-menu__item:contains("{IMG_ALPINE_LATEST}")')
             # Switch to another view; different images have different registries, so don't assume their name, just
             # that at least one more exists
             b.click('.image-search-footer .pf-v5-c-toggle-group__item:nth-of-type(3) button')
-            b.wait_in_text(".pf-v5-c-select__menu-list", "No images found")
+            b.wait_in_text(".pf-v5-c-menu", "No images found")
             # Back to local and let's select Busybox and create the container
             b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
-            b.click(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX_LATEST}")')
+            b.click(f'button.pf-v5-c-menu__item:contains("{IMG_BUSYBOX_LATEST}")')
 
             b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
             b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
@@ -1896,7 +1897,8 @@ class TestApplication(testlib.MachineCase):
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
 
         # Inspect and fill modal dialog
-        b.wait_val("#create-image-image-select-typeahead", IMG_BUSYBOX_LATEST)
+        b.wait_val("#create-image-image input", IMG_BUSYBOX_LATEST)
+        time.sleep(1)  # wait for TypeaheadSelect focus shenanigans
 
         # Check that there is autogenerated name and then overwrite it
         b.wait_not_val("#run-image-dialog-name", "")
@@ -2189,7 +2191,7 @@ class TestApplication(testlib.MachineCase):
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
 
-        b.wait_val("#create-image-image-select-typeahead", IMG_BUSYBOX_LATEST)
+        b.wait_val("#create-image-image input", IMG_BUSYBOX_LATEST)
         b.set_input_text("#run-image-dialog-name", "busybox-without-publish")
 
         # Set up command line
@@ -2272,7 +2274,7 @@ class TestApplication(testlib.MachineCase):
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Create container")')
 
-        b.wait_val("#create-image-image-select-typeahead", IMG_BUSYBOX_LATEST)
+        b.wait_val("#create-image-image input", IMG_BUSYBOX_LATEST)
         b.set_input_text("#run-image-dialog-name", container_name)
         b.set_input_text("#run-image-dialog-command", "sh -c sleep infinity")
 
@@ -2813,20 +2815,20 @@ class TestApplication(testlib.MachineCase):
 
         b.set_input_text("#run-image-dialog-name", container_name)
         # Open image dropdown, it should list both Alpine and Busybox from the local repository
-        b.click("#create-image-image")
-        b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_ALPINE_LATEST}")')
-        b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX_LATEST}")')
+        b.click("#create-image-image input")
+        b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_ALPINE_LATEST}")')
+        b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_BUSYBOX_LATEST}")')
         # Filter it down to just Busybox
-        b.set_input_text("#create-image-image-select-typeahead", IMG_BUSYBOX_LATEST)
-        b.wait_visible(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX_LATEST}")')
-        b.wait_not_present(f'button.pf-v5-c-select__menu-item:contains("{IMG_ALPINE_LATEST}")')
+        b.set_input_text("#create-image-image input", IMG_BUSYBOX_LATEST)
+        b.wait_visible(f'button.pf-v5-c-menu__item:contains("{IMG_BUSYBOX_LATEST}")')
+        b.wait_not_present(f'button.pf-v5-c-menu__item:contains("{IMG_ALPINE_LATEST}")')
         # Switch to another view; different images have different registries, so don't assume their name, just
         # that at least one more exists
         b.click('.image-search-footer .pf-v5-c-toggle-group__item:nth-of-type(3) button')
-        b.wait_in_text(".pf-v5-c-select__menu-list", "No images found")
+        b.wait_in_text(".pf-v5-c-menu", "No images found")
         # Back to local and let's select Busybox and create the container
         b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
-        b.click(f'button.pf-v5-c-select__menu-item:contains("{IMG_BUSYBOX_LATEST}")')
+        b.click(f'button.pf-v5-c-menu__item:contains("{IMG_BUSYBOX_LATEST}")')
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("#run-image-dialog-name")
 
@@ -3131,15 +3133,15 @@ class TestApplication(testlib.MachineCase):
         b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
         b.set_input_text("#run-image-dialog-name", "new-busybox")
         # Searching for container by prefix fails
-        b.set_input_text("#create-image-image-select-typeahead", "localhost:80/my-busy")
-        b.wait_text("button.pf-v5-c-select__menu-item.pf-m-disabled", "No images found")
+        b.set_input_text("#create-image-image input", "localhost:80/my-busy")
+        b.wait_text("button.pf-v5-c-menu__item[disabled]", "No images found")
         b.wait_in_text(".pf-v5-c-alert.pf-m-danger", "couldn't search registry")
 
         # Giving full image name finds valid manifest therefore image is pullable
-        b.set_input_text("#create-image-image-select-typeahead", container_name)
-        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", container_name)
+        b.set_input_text("#create-image-image input", container_name)
+        b.wait_text("button.pf-v5-c-menu__item:not([disabled])", container_name)
         # Select image and create a container
-        b.click(f"button.pf-v5-c-select__menu-item:contains({container_name})")
+        b.click(f"button.pf-v5-c-menu__item:contains({container_name})")
         b.click("#create-image-create-btn")
 
         # Wait for download to finish
@@ -3150,25 +3152,25 @@ class TestApplication(testlib.MachineCase):
 
         b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
         # "couldn't search registry" error is hidden when some local image is found
-        b.set_input_text("#create-image-image-select-typeahead", "")
-        b.set_input_text("#create-image-image-select-typeahead", "localhost:80/my-busy")
-        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", f"{container_name}:latest")
+        b.set_input_text("#create-image-image input", "")
+        b.set_input_text("#create-image-image input", "localhost:80/my-busy")
+        b.wait_text("button.pf-v5-c-menu__item:not([disabled])", f"{container_name}:latest")
         b.wait_not_present(".pf-v5-c-alert.pf-m-danger")
         b.click('button.pf-v5-c-toggle-group__button:contains("Local")')
 
         # Error is shown again when no image was found locally
-        b.set_input_text("#create-image-image-select-typeahead", "localhost:80/their-busy")
-        b.wait_text("button.pf-v5-c-select__menu-item.pf-m-disabled", "No images found")
+        b.set_input_text("#create-image-image input", "localhost:80/their-busy")
+        b.wait_text("button.pf-v5-c-menu__item[disabled]", "No images found")
         b.wait_in_text(".pf-v5-c-alert.pf-m-danger", "couldn't search registry")
 
         # Searching for full container name with tag finds the image
         b.set_input_text("#run-image-dialog-name", "tagged-busybox")
         # Search should still work with spaces around image name
-        b.set_input_text("#create-image-image-select-typeahead", " localhost:80/my-busybox:nosearch-tag ")
+        b.set_input_text("#create-image-image input", " localhost:80/my-busybox:nosearch-tag ")
         b.click('button.pf-v5-c-toggle-group__button:contains("All")')
-        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", container_name + ":nosearch-tag")
-        b.wait_js_cond("document.getElementsByClassName('pf-v5-c-select__menu-item').length === 1")
-        b.click(f"button.pf-v5-c-select__menu-item:contains({container_name + ":nosearch-tag"})")
+        b.wait_text("button.pf-v5-c-menu__item:not([disabled])", container_name + ":nosearch-tag")
+        b.wait_js_cond("document.querySelectorAll('.pf-v5-c-menu__item:not([disabled])').length === 1")
+        b.click(f"button.pf-v5-c-menu__item:contains({container_name + ":nosearch-tag"})")
         b.click("#create-image-create-btn")
 
         # Wait for download to finish
@@ -3178,9 +3180,9 @@ class TestApplication(testlib.MachineCase):
 
         # Check that manifest search with tag also works on searchable repository
         b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
-        b.set_input_text("#create-image-image-select-typeahead", "localhost:5000/my-busybox:search-tag")
-        b.wait_text("button.pf-v5-c-select__menu-item:not(.pf-m-disabled)", "localhost:5000/my-busybox:search-tag")
-        b.wait_js_cond("document.getElementsByClassName('pf-v5-c-select__menu-item').length === 1")
+        b.set_input_text("#create-image-image input", "localhost:5000/my-busybox:search-tag")
+        b.wait_text("button.pf-v5-c-menu__item:not([disabled])", "localhost:5000/my-busybox:search-tag")
+        b.wait_js_cond("document.querySelectorAll('.pf-v5-c-menu__item:not([disabled])').length === 1")
 
 
 if __name__ == '__main__':
