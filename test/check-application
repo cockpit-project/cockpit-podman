@@ -1036,12 +1036,7 @@ class TestApplication(testlib.MachineCase):
         execute = self.execute
 
         def prepare():
-            # Create and start registry containers
-            self.execute(True, f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}")
-            self.execute(True, f"podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 {IMG_REGISTRY}")
-            # Add local insecure registry into registries conf
-            self.machine.write("/etc/containers/registries.conf", REGISTRIES_CONF)
-            self.execute(True, "systemctl stop podman.service")
+            self.setupRegistry()
             # Push busybox image to the local registries
             self.execute(True,
                          f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
