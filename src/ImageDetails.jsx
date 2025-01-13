@@ -12,7 +12,7 @@ const _ = cockpit.gettext;
 const ImageDetails = ({ containers, image, showAll }) => {
     return (
         <DescriptionList className='image-details' isAutoFit>
-            {image.Command !== "" &&
+            {image.Command &&
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
                 <DescriptionListDescription>{utils.quote_cmdline(image.Command)}</DescriptionListDescription>
