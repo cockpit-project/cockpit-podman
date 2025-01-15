@@ -155,6 +155,7 @@ class TestApplication(testlib.MachineCase):
         self.has_criu = "debian" not in m.image and "ubuntu" not in m.image
         self.has_selinux = not any(img in m.image for img in ["arch", "debian", "ubuntu", "suse"])
         self.has_cgroupsV2 = not m.image.startswith('rhel-8')
+        self.supports_quadlet = m.image not in ["debian-stable", "ubuntu-2204"]
 
         self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())
@@ -297,6 +298,32 @@ class TestApplication(testlib.MachineCase):
         # Add local insecure registry into registries conf
         m.write("/etc/containers/registries.conf", REGISTRIES_CONF)
         self.execute(True, "systemctl stop podman.service")
+
+    def createQuadlet(self, name: str, *, auth: bool = False) -> None:
+        quadlet = f"""
+[Unit]
+Description=Podman - {name}
+After=local-fs.target
+
+[Container]
+Image={IMG_BUSYBOX}
+Exec=sleep infinity
+ContainerName={name}
+
+[Install]
+WantedBy=multi-user.target default.target
+"""
+
+        service_file = f"/etc/containers/systemd/{name}.container"
+        if not auth:  # user session
+            service_file = f"/home/admin/.config/containers/systemd/{name}.container"
+
+        systemctl_cmd = "systemctl" if auth else "systemctl --user"
+        self.addCleanup(self.execute, auth, f"{systemctl_cmd} daemon-reload")
+        self.write_file(service_file, quadlet)
+        self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}.service")
+        self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service")
+        self.execute(auth, f"until {systemctl_cmd} is-active {name}.service; do sleep 1; done")
 
     def testPods(self):
         b = self.browser
@@ -2993,6 +3020,13 @@ class TestApplication(testlib.MachineCase):
 
         b.wait_visible(container_1_sel + " .ct-badge-toolbox:contains('toolbox')")
         b.wait_visible(container_2_sel + " .ct-badge-distrobox:contains('distrobox')")
+
+        if self.supports_quadlet:
+            self.createQuadlet("container_3", auth=True)
+            container_3_id = m.execute("podman container inspect --format '{{.Id}}' container_3").strip()
+            self.waitContainerRow('container_3')
+            container_3_sel = f"#containers-containers tbody tr[data-row-id=\"{container_3_id}{'true'}\"]"
+            b.wait_visible(container_3_sel + " .ct-badge-service:contains('service')")
 
     def testCreatePodSystem(self):
         self._createPod(True)
