@@ -344,6 +344,7 @@ class Containers extends React.Component {
         const image = container.ImageName;
         const isToolboxContainer = container.Config?.Labels?.["com.github.containers.toolbox"] === "true";
         const isDistroboxContainer = container.Config?.Labels?.manager === "distrobox";
+        const isSystemdService = Boolean(container.Config?.Labels?.PODMAN_SYSTEMD_UNIT);
         let localized_health = null;
 
         // this needs to get along with stub containers from image run dialog, where most properties don't exist yet
@@ -392,6 +393,7 @@ class Containers extends React.Component {
                     <span className="container-name">{container.Name}</span>
                     {isToolboxContainer && <Badge className='ct-badge-toolbox'>toolbox</Badge>}
                     {isDistroboxContainer && <Badge className='ct-badge-distrobox'>distrobox</Badge>}
+                    {isSystemdService && <Badge className='ct-badge-service'>service</Badge>}
                 </Flex>
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
