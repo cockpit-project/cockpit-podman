@@ -45,7 +45,7 @@ import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, healthcheck, onAddNotification, localImages, updateContainer, isSystemdService }) => {
+const ContainerActions = ({ container, onAddNotification, localImages, updateContainer, isSystemdService }) => {
     const Dialogs = useDialogs();
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
@@ -113,14 +113,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     const commitContainer = () => {
         Dialogs.show(<ContainerCommitModal container={container}
                                            localImages={localImages} />);
-    };
-
-    const runHealthcheck = () => {
-        client.runHealthcheck(container.isSystem, container.Id)
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to run health check on container $0"), container.Name); // not-covered: OS error
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                });
     };
 
     const restartContainer = (force) => {
@@ -241,16 +233,6 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
             {_("Commit")}
         </DropdownItem>
     );
-
-    if (isRunning && healthcheck !== "") {
-        actions.push(<Divider key="separator-1-1" />);
-        actions.push(
-            <DropdownItem key="healthcheck"
-                          onClick={() => runHealthcheck()}>
-                {_("Run health check")}
-            </DropdownItem>
-        );
-    }
 
     actions.push(<Divider key="separator-2" />);
     actions.push(
@@ -426,7 +408,6 @@ class Containers extends React.Component {
         if (!container.isDownloading) {
             columns.push({
                 title: <ContainerActions container={container}
-                                         healthcheck={healthcheck}
                                          onAddNotification={this.props.onAddNotification}
                                          localImages={localImages}
                                          updateContainer={this.props.updateContainer}

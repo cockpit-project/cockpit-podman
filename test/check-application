@@ -1401,9 +1401,6 @@ WantedBy=multi-user.target default.target
             # Check that the restore option is not present
             b.wait_not_present(self.getContainerAction('swamped-crate', 'Restore'))
 
-        # Health check is not set up
-        b.wait_not_present(self.getContainerAction('swamped-crate', 'Run health check'))
-
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v5-c-menu-toggle")
 
         # Start the container
@@ -2720,7 +2717,7 @@ WantedBy=multi-user.target default.target
         # Trigger run manually, adds one more healthy run
         if self.machine.image == "ubuntu-2204":
             time.sleep(5)  # wait a bit, otherwise the request might be ignored
-        self.performContainerAction("healthy", "Run health check")
+        b.click(".ct-listing-panel-body button:contains('Run health check')")
         b.wait_visible(".ct-listing-panel-body tbody:nth-of-type(2) svg.green")
         b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(3)")
 
