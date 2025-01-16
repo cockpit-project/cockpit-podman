@@ -2987,6 +2987,16 @@ WantedBy=multi-user.target default.target
         self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
         self.waitContainerRow(container_name_new)
 
+        # service containers cannot be renamed
+        if self.supports_quadlet:
+            # HACK https://issues.redhat.com/browse/RHEL-5870
+            if self.machine.image == "rhel-8-10" and not auth:
+                return
+            service_name = "quadlet"
+            self.createQuadlet(service_name, auth=auth)
+            self.waitContainerRow(service_name)
+            b.wait_not_present(self.getContainerAction(service_name, 'Rename'))
+
     def testMultipleContainers(self):
         self.login()
 
