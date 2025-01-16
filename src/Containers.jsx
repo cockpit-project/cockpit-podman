@@ -45,7 +45,7 @@ import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, healthcheck, onAddNotification, localImages, updateContainer }) => {
+const ContainerActions = ({ container, healthcheck, onAddNotification, localImages, updateContainer, isSystemdService }) => {
     const Dialogs = useDialogs();
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
@@ -216,9 +216,9 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
                 {_("Start")}
             </DropdownItem>
         );
-
-        addRenameAction();
-
+        if (!isSystemdService) {
+            addRenameAction();
+        }
         if (container.isSystem && container.State?.CheckpointPath) {
             actions.push(
                 <Divider key="separator-0" />,
@@ -229,7 +229,9 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
             );
         }
     } else { // running or paused
-        addRenameAction();
+        if (!isSystemdService) {
+            addRenameAction();
+        }
     }
 
     actions.push(<Divider key="separator-1" />);
@@ -427,7 +429,8 @@ class Containers extends React.Component {
                                          healthcheck={healthcheck}
                                          onAddNotification={this.props.onAddNotification}
                                          localImages={localImages}
-                                         updateContainer={this.props.updateContainer} />,
+                                         updateContainer={this.props.updateContainer}
+                                         isSystemdService={isSystemdService} />,
                 props: { className: "pf-v5-c-table__action" }
             });
         }
