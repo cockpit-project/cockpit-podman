@@ -47,7 +47,6 @@ const _ = cockpit.gettext;
 
 const ContainerActions = ({ container, healthcheck, onAddNotification, localImages, updateContainer }) => {
     const Dialogs = useDialogs();
-    const { version } = utils.usePodmanInfo();
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
 
@@ -137,8 +136,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
     };
 
     const renameContainer = () => {
-        if (container.State.Status !== "running" ||
-            version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
+        if (container.State.Status !== "running") {
             Dialogs.show(<ContainerRenameModal container={container}
                                                updateContainer={updateContainer} />);
         }
@@ -218,9 +216,9 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
                 {_("Start")}
             </DropdownItem>
         );
-        if (version.localeCompare("3", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
-            addRenameAction();
-        }
+
+        addRenameAction();
+
         if (container.isSystem && container.State?.CheckpointPath) {
             actions.push(
                 <Divider key="separator-0" />,
@@ -231,9 +229,7 @@ const ContainerActions = ({ container, healthcheck, onAddNotification, localImag
             );
         }
     } else { // running or paused
-        if (version.localeCompare("3.0.1", undefined, { numeric: true, sensitivity: 'base' }) >= 0) {
-            addRenameAction();
-        }
+        addRenameAction();
     }
 
     actions.push(<Divider key="separator-1" />);
