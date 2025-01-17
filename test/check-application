@@ -375,10 +375,10 @@ WantedBy=multi-user.target default.target
         self.waitPodRow("pod-1", False)
 
         self.filter_containers("all")
-        b.set_input_text('#containers-filter', 'pod-1')
+        b.set_input_text('#containers-filter input', 'pod-1')
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
-        b.set_input_text('#containers-filter', 'test-pod-1-system')
+        b.set_input_text('#containers-filter input', 'test-pod-1-system')
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
         # TODO add pixel test when this is again reachable - https://github.com/cockpit-project/bots/issues/2463
@@ -417,11 +417,11 @@ WantedBy=multi-user.target default.target
 
         # HACK: there is some race here which steals the focus from the filter input and selects the page text instead
         for _ in range(3):
-            b.focus('#containers-filter')
+            b.focus('#containers-filter input')
             time.sleep(1)
-            if b.eval_js('document.activeElement == document.querySelector("#containers-filter")'):
+            if b.eval_js('document.activeElement == document.querySelector("#containers-filter input")'):
                 break
-        b.set_input_text('#containers-filter', '')
+        b.click('#containers-filter button[aria-label="Reset"]')
         self.machine.execute("podman pod create --infra=false --name pod-2")
         self.waitPodContainer("pod-2", [])
         run_cmd = f"podman run -d --pod pod-2 --name test-pod-2-system --stop-timeout 0 {IMG_ALPINE} sleep 100"
@@ -2288,18 +2288,18 @@ WantedBy=multi-user.target default.target
         b.go("#/?name=busy")
         self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
 
-        b.set_input_text('#containers-filter', 'tty')
+        b.set_input_text('#containers-filter input', 'tty')
         self.check_containers(["busybox-with-tty"], ["busybox-without-publish"])
         self.check_images([], [IMG_ALPINE, IMG_BUSYBOX, IMG_REGISTRY])
-        b.set_input_text('#containers-filter', 'busy')
+        b.set_input_text('#containers-filter input', 'busy')
         b.wait_js_cond('window.location.hash === "#/?name=busy"')
         self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
         self.check_images([IMG_BUSYBOX], [IMG_ALPINE, IMG_REGISTRY])
-        b.set_input_text('#containers-filter', 'alpine')
+        b.set_input_text('#containers-filter input', 'alpine')
         b.wait_js_cond('window.location.hash === "#/?name=alpine"')
         self.check_containers([], ["busybox-with-tty", "busybox-without-publish"])
         self.check_images([IMG_ALPINE], [IMG_BUSYBOX, IMG_REGISTRY])
-        b.set_input_text('#containers-filter', '')
+        b.click('#containers-filter button[aria-label="Reset"]')
         self.check_containers(["busybox-with-tty", "busybox-without-publish"], [])
         self.check_images([IMG_ALPINE, IMG_BUSYBOX, IMG_REGISTRY], [])
         b.wait_js_cond('window.location.hash === "#/"')
@@ -2347,10 +2347,10 @@ WantedBy=multi-user.target default.target
         b.click(f'#containers-images tbody tr:contains("{IMG_ALPINE}") td.pf-v5-c-table__toggle button')
         b.wait_in_text(f"#containers-images tbody tr:contains('{IMG_ALPINE}') td[data-label='Used by']", 'unused')
 
-        b.set_input_text('#containers-filter', 'foobar')
+        b.set_input_text('#containers-filter input', 'foobar')
         b.wait_in_text('#containers-containers .pf-v5-c-empty-state', 'No containers that match the current filter')
         b.wait_in_text('#containers-images .pf-v5-c-empty-state', 'No images that match the current filter')
-        b.set_input_text('#containers-filter', '')
+        b.click('#containers-filter button[aria-label="Reset"]')
 
         if not auth or not self.machine.ostree_image:  # don't kill ws container
             # Ubuntu 22.04 has old podman that does not know about --time
