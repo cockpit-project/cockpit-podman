@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
-import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { SearchInput } from "@patternfly/react-core/dist/esm/components/SearchInput";
 import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
 
 import cockpit from 'cockpit';
@@ -26,10 +26,12 @@ const ContainerHeader = ({ user, twoOwners, ownerFilter, handleOwnerChanged, tex
                     </>
                 }
                 <ToolbarItem>
-                    <TextInput id="containers-filter"
-                                   placeholder={_("Type to filter…")}
-                                   value={textFilter}
-                                   onChange={(_, value) => handleFilterChanged(value)} />
+                    <SearchInput id="containers-filter"
+                                 placeholder={_("Type to filter…")}
+                                 value={textFilter}
+                                 onChange={(_, value) => handleFilterChanged(value)}
+                                 onClear={() => handleFilterChanged('')}
+                    />
                 </ToolbarItem>
             </ToolbarContent>
         </Toolbar>
