@@ -415,12 +415,6 @@ WantedBy=multi-user.target default.target
         b.click(".pf-v5-c-modal-box button:contains('Force delete')")
         self.waitPodRow("pod-1", False)
 
-        # HACK: there is some race here which steals the focus from the filter input and selects the page text instead
-        for _ in range(3):
-            b.focus('#containers-filter input')
-            time.sleep(1)
-            if b.eval_js('document.activeElement == document.querySelector("#containers-filter input")'):
-                break
         b.click('#containers-filter button[aria-label="Reset"]')
         self.machine.execute("podman pod create --infra=false --name pod-2")
         self.waitPodContainer("pod-2", [])
