@@ -7,6 +7,7 @@ set -eu
 export RUN_TESTS_OPTIONS=--track-naughties
 
 TEST_SCENARIO=${TEST_SCENARIO:-}
+[ "${TEST_SCENARIO}" = "${TEST_SCENARIO##firefox}" ] || export TEST_BROWSER=firefox
 
 if [ "$TEST_SCENARIO" == "devel" ]; then
     export TEST_COVERAGE=yes
