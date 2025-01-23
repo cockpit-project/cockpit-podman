@@ -78,7 +78,7 @@ class TestApplication(testlib.MachineCase):
         super().setUp()
         m = self.machine
         m.execute("""
-            systemctl stop podman.service; systemctl --now enable podman.socket
+            systemctl stop podman.service
             # Ensure podman is really stopped, otherwise it keeps the containers/ directory busy
             pkill -e -9 podman || true
             while pgrep podman; do sleep 0.1; done
@@ -99,7 +99,7 @@ class TestApplication(testlib.MachineCase):
             podman stop --time 0 --all
             podman pod stop --time 0 --all
 
-            systemctl reset-failed podman.service podman.socket
+            systemctl reset-failed podman.service podman.socket || true
             podman system reset --force
             pkill -e -9 podman || true
             while pgrep podman; do sleep 0.1; done
@@ -129,7 +129,6 @@ class TestApplication(testlib.MachineCase):
         self.admin_s.execute("""
             systemctl --user stop podman.service
             for img in $(ls /var/lib/test-images/*.tar | grep -v cockpitws); do podman load < "$img"; done
-            systemctl --now --user enable podman.socket
             """)
         self.addCleanup(self.admin_s.execute, """
             systemctl --user stop podman.service podman.socket
@@ -144,9 +143,6 @@ class TestApplication(testlib.MachineCase):
         else:
             self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
             self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
-
-        # But disable it globally so that "systemctl --user disable" does what we expect
-        m.execute("systemctl --global disable podman.socket")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
@@ -485,11 +481,6 @@ WantedBy=multi-user.target default.target
 
         # Gain privileges
         b.become_superuser(passwordless=self.machine.image == "rhel4edge")
-
-        # We are notified that we can also start the system one
-        b.wait_in_text("#overview div.pf-v5-c-alert .pf-v5-c-alert__title", "System Podman service is also available")
-        b.click("#overview div.pf-v5-c-alert .pf-v5-c-alert__action > button:contains(Start)")
-        b.wait_not_present("#overview div.pf-v5-c-alert .pf-v5-c-alert__title")
 
         checkImage(b, IMG_REGISTRY, "system")
         checkImage(b, IMG_REGISTRY, "admin")
@@ -1641,127 +1632,22 @@ WantedBy=multi-user.target default.target
         b.click('.pf-v5-c-modal-box button:contains(Restore)')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
-    def testNotRunning(self):
+    def testFailingPodmanService(self):
         b = self.browser
 
-        def disable_system():
-            self.execute(True, "systemctl disable --now podman.socket; systemctl stop podman.service")
-
-        def enable_system():
-            self.execute(True, "systemctl enable --now podman.socket")
-
-        def enable_user():
-            self.execute(False, "systemctl --user enable --now podman.socket")
-
-        def disable_user():
-            self.execute(False, "systemctl --user disable --now podman.socket")
-
-        def is_active_system(string):
-            b.wait(lambda: self.execute(True, "systemctl is-active podman.socket || true").strip() == string)
-
-        def is_enabled_system(string):
-            b.wait(lambda: self.execute(True, "systemctl is-enabled podman.socket || true").strip() == string)
-
-        def is_active_user(string):
-            b.wait(lambda: self.execute(False, "systemctl --user is-active podman.socket || true").strip() == string)
-
-        def is_enabled_user(string):
-            b.wait(lambda: self.execute(False, "systemctl --user is-enabled podman.socket || true").strip() == string)
-
-        disable_system()
-        disable_user()
+        self.execute(True, "systemctl mask podman.service")
+        self.addCleanup(self.execute, True, "systemctl unmask podman.service")
+        self.execute(False, "systemctl --user mask podman.service")
+        self.addCleanup(self.execute, False, "systemctl --user unmask podman.service")
         self.login_and_go("/podman")
 
         # Troubleshoot action
-        b.click("#app .pf-v5-c-empty-state button.pf-m-link")
+        b.wait_text("#app .pf-v5-c-empty-state__title", "Podman service failed")
+        b.click("#app .pf-v5-c-empty-state button")
         b.enter_page("/system/services")
         # services page is too slow
         with b.wait_timeout(60):
             b.wait_in_text("#service-details", "podman.socket")
-
-        # Start action, with enabling (by default)
-        b.go("/podman")
-        b.enter_page("/podman")
-        b.click("#app .pf-v5-c-empty-state button.pf-m-primary")
-
-        b.wait_visible("#containers-containers")
-        b.wait_not_present("#overview div.pf-v5-c-alert.pf-m-info")
-
-        is_active_system("active")
-        is_active_user("active")
-        is_enabled_system("enabled")
-        is_enabled_user("enabled")
-
-        # Start action, without enabling
-        disable_system()
-        disable_user()
-        b.click("#app .pf-v5-c-empty-state input[type=checkbox]")
-        b.assert_pixels("#app .pf-v5-c-empty-state", "podman-service-disabled", skip_layouts=["medium", "mobile"])
-        b.click("#app .pf-v5-c-empty-state button.pf-m-primary")
-
-        b.wait_visible("#containers-containers")
-        is_enabled_system("disabled")
-        is_enabled_user("disabled")
-        is_active_system("active")
-        is_active_user("active")
-
-        b.logout()
-        disable_system()
-        # HACK: Due to https://github.com/containers/podman/issues/7180, avoid
-        # user podman.service to time out; make sure to start it afresh
-        disable_user()
-        enable_user()
-        self.login_and_go("/podman")
-        b.wait_in_text("#overview div.pf-v5-c-alert .pf-v5-c-alert__title", "System Podman service is also available")
-        b.click("#overview div.pf-v5-c-alert .pf-v5-c-alert__action > button:contains(Start)")
-        b.wait_not_present("#overview div.pf-v5-c-alert")
-        is_active_system("active")
-        is_active_user("active")
-        is_enabled_user("enabled")
-        is_enabled_system("enabled")
-
-        b.logout()
-        disable_user()
-        enable_system()
-        self.login_and_go("/podman")
-        b.wait_in_text("#overview div.pf-v5-c-alert .pf-v5-c-alert__title", "User Podman service is also available")
-        b.click("#overview div.pf-v5-c-alert .pf-v5-c-alert__action > button:contains(Start)")
-        b.wait_not_present("#overview div.pf-v5-c-alert")
-        is_active_system("active")
-        is_active_user("active")
-        is_enabled_user("enabled")
-        is_enabled_system("enabled")
-
-        b.logout()
-        disable_user()
-        disable_system()
-        self.login_and_go("/podman", superuser=False)
-        b.click("#app .pf-v5-c-empty-state button.pf-m-primary")
-        b.wait_visible("#containers-containers")
-        b.wait_not_present("#overview div.pf-v5-c-alert")
-
-        is_active_system("inactive")
-        is_active_user("active")
-        is_enabled_user("enabled")
-        is_enabled_system("disabled")
-        b.logout()
-
-        # no Troubleshoot action without cockpit-system package
-        disable_system()
-        disable_user()
-        self.restore_dir("/usr/share/cockpit/systemd")
-        self.machine.execute("rm /usr/share/cockpit/systemd/manifest.json")
-        self.login_and_go("/podman")
-        b.wait_visible("#app .pf-v5-c-empty-state button.pf-m-primary")
-        self.assertFalse(b.is_present("#app .pf-v5-c-empty-state button.pf-m-link"))
-        # starting still works
-        b.click("#app .pf-v5-c-empty-state button.pf-m-primary")
-        b.wait_visible("#containers-containers")
-
-        self.allow_restart_journal_messages()
-        self.allow_journal_messages(".*podman/podman.sock/.*: couldn't connect:.*")
-        self.allow_journal_messages(".*podman/podman.sock: .*Connection.*Error.*")
-        self.allow_journal_messages(".*podman/podman.sock/.*/events.*: received truncated HTTP response.*")
 
     def testCreateContainerSystem(self):
         self._testCreateContainer(True)
