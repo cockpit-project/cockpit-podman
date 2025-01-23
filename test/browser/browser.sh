@@ -71,7 +71,7 @@ podman rmi $CONTAINER
 # image setup, shared with upstream tests
 sh -x test/vm.install
 
-systemctl enable --now cockpit.socket podman.socket
+systemctl enable --now cockpit.socket
 
 # HACK: https://issues.redhat.com/browse/RHEL-49567
 if rpm -q selinux-policy | grep -q el10; then

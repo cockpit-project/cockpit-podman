@@ -19,9 +19,8 @@
 
 import React from 'react';
 
-import { Alert, AlertActionCloseButton, AlertActionLink, AlertGroup } from "@patternfly/react-core/dist/esm/components/Alert";
+import { Alert, AlertActionCloseButton, AlertGroup } from "@patternfly/react-core/dist/esm/components/Alert";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
-import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { EmptyState, EmptyStateHeader, EmptyStateFooter, EmptyStateIcon, EmptyStateActions, EmptyStateVariant } from "@patternfly/react-core/dist/esm/components/EmptyState";
 import { Page, PageSection, PageSectionVariants } from "@patternfly/react-core/dist/esm/components/Page";
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
@@ -61,14 +60,12 @@ class Application extends React.Component {
             ownerFilter: "all",
             dropDownValue: 'Everything',
             notifications: [],
-            showStartService: true,
             version: '1.3.0',
             selinuxAvailable: false,
             podmanRestartAvailable: false,
             userPodmanRestartAvailable: false,
             currentUser: _("User"),
             userLingeringEnabled: null,
-            privileged: false,
             location: {},
         };
         this.onAddNotification = this.onAddNotification.bind(this);
@@ -77,9 +74,7 @@ class Application extends React.Component {
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
         this.onContainerFilterChanged = this.onContainerFilterChanged.bind(this);
         this.updateContainer = this.updateContainer.bind(this);
-        this.startService = this.startService.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
-        this.checkUserService = this.checkUserService.bind(this);
         this.onNavigate = this.onNavigate.bind(this);
 
         this.pendingUpdateContainer = {}; // id+system → promise
@@ -458,6 +453,8 @@ class Application extends React.Component {
 
     async init(system) {
         try {
+            await cockpit.spawn(["systemctl", ...(system ? [] : ["--user"]), "start", "podman.socket"],
+                                { superuser: system ? "require" : null, err: "message" });
             const reply = await client.getInfo(system);
             this.setState({
                 [system ? "systemServiceAvailable" : "userServiceAvailable"]: true,
@@ -502,14 +499,15 @@ class Application extends React.Component {
     }
 
     componentDidMount() {
-        this.init(true);
+        superuser.addEventListener("changed", () => this.init(true));
+
         cockpit.script("[ `id -u` -eq 0 ] || echo $XDG_RUNTIME_DIR")
                 .then(xrd => {
                     const isRoot = !xrd || xrd.split("/").pop() == "root";
                     if (!isRoot) {
                         sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
                         this.init(false);
-                        this.checkUserService();
+                        this.checkUserRestartService();
                     } else {
                         this.setState({
                             userImagesLoaded: true,
@@ -526,9 +524,6 @@ class Application extends React.Component {
 
         cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
                 .then(out => this.setState({ podmanRestartAvailable: out.trim() === "loaded" }));
-
-        superuser.addEventListener("changed", () => this.setState({ privileged: !!superuser.allowed }));
-        this.setState({ privileged: superuser.allowed });
 
         cockpit.user().then(user => {
             this.setState({ currentUser: user.name || _("User") });
@@ -570,59 +565,11 @@ class Application extends React.Component {
         });
     }
 
-    checkUserService() {
-        const argv = ["systemctl", "--user", "is-enabled", "podman.socket"];
-
-        cockpit.spawn(["systemctl", "--user", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
-                .then(out => this.setState({ userPodmanRestartAvailable: out.trim() === "loaded" }));
-
-        cockpit.spawn(argv, { environ: ["LC_ALL=C"], err: "out" })
-                .then(() => this.setState({ userServiceExists: true }))
-                .catch((_, response) => {
-                    if (response.trim() !== "disabled")
-                        this.setState({ userServiceExists: false });
-                    else
-                        this.setState({ userServiceExists: true });
-                });
-    }
-
-    startService(e) {
-        if (!e || e.button !== 0)
-            return;
-
-        let argv;
-        if (this.state.enableService)
-            argv = ["systemctl", "enable", "--now", "podman.socket"];
-        else
-            argv = ["systemctl", "start", "podman.socket"];
-
-        cockpit.spawn(argv, { superuser: "require", err: "message" })
-                .then(() => this.init(true))
-                .catch(err => {
-                    this.setState({
-                        systemServiceAvailable: false,
-                        systemContainersLoaded: true,
-                        systemImagesLoaded: true
-                    });
-                    console.warn("Failed to start system podman.socket:", JSON.stringify(err));
-                });
-
-        if (this.state.enableService)
-            argv = ["systemctl", "--user", "enable", "--now", "podman.socket"];
-        else
-            argv = ["systemctl", "--user", "start", "podman.socket"];
-
-        cockpit.spawn(argv, { err: "message" })
-                .then(() => this.init(false))
-                .catch(err => {
-                    this.setState({
-                        userServiceAvailable: false,
-                        userContainersLoaded: true,
-                        userPodsLoaded: true,
-                        userImagesLoaded: true
-                    });
-                    console.warn("Failed to start user podman.socket:", JSON.stringify(err));
-                });
+    async checkUserRestartService() {
+        const out = await cockpit.spawn(
+            ["systemctl", "--user", "show", "--value", "-p", "LoadState", "podman-restart"],
+            { environ: ["LC_ALL=C"], error: "ignore" });
+        this.setState({ userPodmanRestartAvailable: out.trim() === "loaded" });
     }
 
     goToServicePage(e) {
@@ -640,22 +587,13 @@ class Application extends React.Component {
                 <Page>
                     <PageSection variant={PageSectionVariants.light}>
                         <EmptyState variant={EmptyStateVariant.full}>
-                            <EmptyStateHeader titleText={_("Podman service is not active")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
+                            <EmptyStateHeader titleText={_("Podman service failed")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
                             <EmptyStateFooter>
-                                <Checkbox isChecked={this.state.enableService}
-                                      id="enable"
-                                      label={_("Automatically start podman on boot")}
-                                      onChange={ (_event, checked) => this.setState({ enableService: checked }) } />
-                                <Button onClick={this.startService}>
-                                    {_("Start podman")}
-                                </Button>
-                                { cockpit.manifests.system &&
                                 <EmptyStateActions>
-                                    <Button variant="link" onClick={this.goToServicePage}>
+                                    <Button variant="primary" onClick={this.goToServicePage}>
                                         {_("Troubleshoot")}
                                     </Button>
                                 </EmptyStateActions>
-                                }
                             </EmptyStateFooter>
                         </EmptyState>
                     </PageSection>
@@ -682,28 +620,6 @@ class Application extends React.Component {
             });
         } else
             imageContainerList = null;
-
-        let startService = "";
-        const action = (
-            <>
-                <AlertActionLink variant='secondary' onClick={this.startService}>{_("Start")}</AlertActionLink>
-                <AlertActionCloseButton onClose={() => this.setState({ showStartService: false })} />
-            </>
-        );
-        if (!this.state.systemServiceAvailable && this.state.privileged) {
-            startService = (
-                <Alert
-                title={_("System Podman service is also available")}
-                actionClose={action} />
-            );
-        }
-        if (!this.state.userServiceAvailable && this.state.userServiceExists) {
-            startService = (
-                <Alert
-                title={_("User Podman service is also available")}
-                actionClose={action} />
-            );
-        }
 
         const imageList = (
             <Images
@@ -782,7 +698,6 @@ class Application extends React.Component {
                         </PageSection>
                         <PageSection className='ct-pagesection-mobile'>
                             <Stack hasGutter>
-                                { this.state.showStartService ? startService : null }
                                 {imageList}
                                 {containerList}
                             </Stack>
