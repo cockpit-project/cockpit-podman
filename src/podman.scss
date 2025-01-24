@@ -6,7 +6,7 @@
 // For pf-u-disabled-color-100
 @import "@patternfly/patternfly/utilities/Text/text.css";
 
-#app .pf-v5-c-card.containers-containers, #app .pf-v5-c-card.containers-images {
+#app .pf-v5-c-card.containers-containers, #app .pf-v5-c-card.containers-images, #app .pf-v5-c-card.containers-volumes {
     @extend .ct-card;
 }
 
@@ -14,7 +14,7 @@
     white-space: break-spaces;
 }
 
-#containers-images, #containers-containers {
+#containers-images, #containers-containers, #containers-volumes {
     // Decrease padding for the image/container toggle button list
     .pf-v5-c-table.pf-m-compact .pf-v5-c-table__toggle {
         padding-inline-start: 0;

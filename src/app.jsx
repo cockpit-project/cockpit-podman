@@ -34,6 +34,8 @@ import { superuser } from "superuser";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
+import { Volume } from './Volume.jsx';
+import Volumes from './Volumes.jsx';
 import * as client from './client.js';
 import { WithPodmanInfo } from './util.js';
 
@@ -52,10 +54,13 @@ class Application extends React.Component {
             containers: null,
             containersFilter: "all",
             containersStats: {},
+            volumes: null,
             userContainersLoaded: null,
             systemContainersLoaded: null,
             userPodsLoaded: null,
             systemPodsLoaded: null,
+            userVolumesLoaded: null,
+            systemVolumesLoaded: null,
             userServiceExists: false,
             textFilter: "",
             ownerFilter: "all",
@@ -199,6 +204,31 @@ class Application extends React.Component {
                         };
                     });
                     this.updateContainerStats(system);
+                })
+                .catch(console.log);
+    }
+
+    initVolumes(system) {
+        return client.getVolumes(system)
+                .then(volumesList => {
+                    this.setState(prevState => {
+                        const copyVolumes = {};
+                        Object.entries(prevState.volumes || {}).forEach(([id, volume]) => {
+                            if (volume.isSystem !== system) {
+                                copyVolumes[id] = volume;
+                            }
+                        });
+
+                        for (const volume of volumesList) {
+                            volume.isSystem = system;
+                            copyVolumes[volume.Name + system.toString()] = volume;
+                        }
+
+                        return {
+                            volumes: copyVolumes,
+                            [system ? "systemVolumesLoaded" : "userVolumesLoaded"]: true,
+                        };
+                    });
                 })
                 .catch(console.log);
     }
@@ -424,6 +454,23 @@ class Application extends React.Component {
         }
     }
 
+    handleVolumeEvent(event, system) {
+        switch (event.Action) {
+        case 'create':
+            this.initVolumes(system);
+            break;
+        case 'remove':
+            this.setState(prevState => {
+                const volumes = { ...prevState.volumes };
+                delete volumes[event.Actor.Attributes.name + system.toString()];
+                return { volumes };
+            });
+            break;
+        default:
+            console.warn('Unhandled event type ', event.Type, event.Action);
+        }
+    }
+
     handleEvent(event, system) {
         switch (event.Type) {
         case 'container':
@@ -434,6 +481,9 @@ class Application extends React.Component {
             break;
         case 'pod':
             this.handlePodEvent(event, system);
+            break;
+        case 'volume':
+            this.handleVolumeEvent(event, system);
             break;
         default:
             console.warn('Unhandled event type ', event.Type);
@@ -465,6 +515,7 @@ class Application extends React.Component {
                     });
                     this.updateImages(system);
                     this.initContainers(system);
+                    this.initVolumes(system);
                     this.updatePods(system);
                     client.streamEvents(system,
                                         message => this.handleEvent(message, system))
@@ -736,6 +787,15 @@ class Application extends React.Component {
             />
         );
 
+        const volumeList = (
+            <Volumes
+                key="volumeList"
+                user={this.state.currentUser}
+                volumes={this.state.systemVolumesLoaded && this.state.userVolumesLoaded ? this.state.volumes : null}
+                containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
+            />
+        );
+
         const notificationList = (
             <AlertGroup isToast>
                 {this.state.notifications.map((notification, index) => {
@@ -780,6 +840,7 @@ class Application extends React.Component {
                             <Stack hasGutter>
                                 { this.state.showStartService ? startService : null }
                                 {imageList}
+                                {volumeList}
                                 {containerList}
                             </Stack>
                         </PageSection>
