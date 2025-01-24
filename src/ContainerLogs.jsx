@@ -80,11 +80,14 @@ class ContainerLogs extends React.Component {
     }
 
     resize(width) {
+        if (!this.term?._core?._renderService?.dimensions)
+            return;
         // 24 PF padding * 4
         // 3 line border
         // 21 inner padding of xterm.js
         // xterm.js scrollbar 20
         const padding = 24 * 4 + 3 + 21 + 20;
+        // missing API: https://github.com/xtermjs/xterm.js/issues/702
         const realWidth = this.view._core._renderService.dimensions.css.cell.width;
         const cols = Math.floor((width - padding) / realWidth);
         this.view.resize(cols, 24);
