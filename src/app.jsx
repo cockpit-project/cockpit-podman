@@ -456,51 +456,49 @@ class Application extends React.Component {
         });
     }
 
-    init(system) {
-        client.getInfo(system)
-                .then(reply => {
-                    this.setState({
-                        [system ? "systemServiceAvailable" : "userServiceAvailable"]: true,
-                        version: reply.version.Version,
-                        registries: reply.registries,
-                        cgroupVersion: reply.host.cgroupVersion,
-                    });
-                    this.updateImages(system);
-                    this.initContainers(system);
-                    this.updatePods(system);
-                    client.streamEvents(system,
-                                        message => this.handleEvent(message, system))
-                            .then(() => {
-                                this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-                                this.cleanupAfterService(system);
-                            })
-                            .catch(e => {
-                                console.error("init", system ? "system" : "user", "streamEvents failed:", e.toString());
-                                this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-                                this.cleanupAfterService(system);
-                            });
+    async init(system) {
+        try {
+            const reply = await client.getInfo(system);
+            this.setState({
+                [system ? "systemServiceAvailable" : "userServiceAvailable"]: true,
+                version: reply.version.Version,
+                registries: reply.registries,
+                cgroupVersion: reply.host.cgroupVersion,
+            });
+        } catch (err) {
+            if (!system || err.problem != 'access-denied')
+                console.warn("init", system ? "system" : "user", "getInfo failed:", err.toString());
 
-                    // Listen if podman is still running
-                    const ch = cockpit.channel({ superuser: system ? "require" : null, payload: "stream", unix: client.getAddress(system) });
-                    ch.addEventListener("close", () => {
-                        console.log("init", system ? "system" : "user", "podman service closed");
-                        this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-                        this.cleanupAfterService(system);
-                    });
+            this.setState({
+                [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
+                [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
+                [system ? "systemImagesLoaded" : "userImagesLoaded"]: true,
+                [system ? "systemPodsLoaded" : "userPodsLoaded"]: true
+            });
 
-                    ch.send("GET " + client.VERSION + "libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
-                })
-                .catch(err => {
-                    if (!system || err.problem != 'access-denied')
-                        console.warn("init", system ? "system" : "user", "getInfo failed:", err.toString());
+            return;
+        }
 
-                    this.setState({
-                        [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
-                        [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
-                        [system ? "systemImagesLoaded" : "userImagesLoaded"]: true,
-                        [system ? "systemPodsLoaded" : "userPodsLoaded"]: true
-                    });
+        this.updateImages(system);
+        this.initContainers(system);
+        this.updatePods(system);
+
+        client.streamEvents(system, message => this.handleEvent(message, system))
+                .catch(e => console.error("init", system ? "system" : "user", "streamEvents failed:", e.toString()))
+                .finally(() => {
+                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                    this.cleanupAfterService(system);
                 });
+
+        // Listen for podman socket/service going away
+        const ch = cockpit.channel({ superuser: system ? "require" : null, payload: "stream", unix: client.getAddress(system) });
+        ch.addEventListener("close", () => {
+            console.log("init", system ? "system" : "user", "podman service closed");
+            this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+            this.cleanupAfterService(system);
+        });
+
+        ch.send("GET " + client.VERSION + "libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
     }
 
     componentDidMount() {
