@@ -575,7 +575,7 @@ class Containers extends React.Component {
             { title: _("CPU"), sortable: true, props: { className: 'ct-numeric-column' } },
             { title: _("Memory"), sortable: true, props: { className: 'ct-numeric-column' } },
             { title: _("State"), sortable: true },
-            ''
+            { title: "", sortable: false, props: { screenReaderText: _("Actions") } },
         ];
         const partitionedContainers = { 'no-pod': [] };
         let filtered = [];
