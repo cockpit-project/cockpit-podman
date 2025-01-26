@@ -200,7 +200,8 @@ class Application extends React.Component {
                     });
                     this.updateContainerStats(system);
                 })
-                .catch(console.log);
+                .catch(e => console.warn("initContainers", system ? "system" : "user",
+                                         "getContainers failed:", e.toString()));
     }
 
     updateImages(system) {
@@ -272,7 +273,8 @@ class Application extends React.Component {
                         details.State.Status = "restarting";
                     this.updateState("containers", idx, details);
                 })
-                .catch(console.log);
+                .catch(e => console.warn("updateContainer", system ? "system" : "user",
+                                         "inspectContainer failed:", e.toString()));
         this.pendingUpdateContainer[idx] = new_wait;
         new_wait.finally(() => { delete this.pendingUpdateContainer[idx] });
 
@@ -473,7 +475,7 @@ class Application extends React.Component {
                                 this.cleanupAfterService(system);
                             })
                             .catch(e => {
-                                console.log(e);
+                                console.error("init", system ? "system" : "user", "streamEvents failed:", e.toString());
                                 this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
                                 this.cleanupAfterService(system);
                             });
@@ -481,13 +483,17 @@ class Application extends React.Component {
                     // Listen if podman is still running
                     const ch = cockpit.channel({ superuser: system ? "require" : null, payload: "stream", unix: client.getAddress(system) });
                     ch.addEventListener("close", () => {
+                        console.log("init", system ? "system" : "user", "podman service closed");
                         this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
                         this.cleanupAfterService(system);
                     });
 
                     ch.send("GET " + client.VERSION + "libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
                 })
-                .catch(() => {
+                .catch(err => {
+                    if (!system || err.problem != 'access-denied')
+                        console.warn("init", system ? "system" : "user", "getInfo failed:", err.toString());
+
                     this.setState({
                         [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
                         [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
