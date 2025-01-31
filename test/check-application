@@ -1542,7 +1542,12 @@ WantedBy=multi-user.target default.target
 
             def criu_alert():
                 text = b.text(".pf-v5-c-alert.pf-m-danger > .pf-v5-c-alert__description").lower()
-                return "checkpoint/restore requires at least criu" in text or "failed to check for criu" in text
+                errors = [
+                    "configured runtime does not support checkpoint/restore",
+                    "checkpoint/restore requires at least criu",
+                    "failed to check for criu",
+                ]
+                return any(error in text for error in errors)
             b.wait(criu_alert)
             return
 
