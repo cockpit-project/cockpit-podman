@@ -1059,7 +1059,7 @@ export class ImageRunModal extends React.Component {
                                  onValidationChange={value => this.dynamicListOnValidationChange('publish', value)}
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
-                                 itemcomponent={ <PublishPort />} />
+                                 itemcomponent={PublishPort} />
                         <DynamicListForm id='run-image-dialog-volume'
                                  emptyStateString={_("No volumes specified")}
                                  formclass='volume-form'
@@ -1070,7 +1070,7 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('volumes', value)}
                                  default={{ containerPath: null, hostPath: null, mode: 'rw' }}
                                  options={{ selinuxAvailable }}
-                                 itemcomponent={ <Volume />} />
+                                 itemcomponent={Volume} />
 
                         <DynamicListForm id='run-image-dialog-env'
                                  emptyStateString={_("No environment variables specified")}
@@ -1082,7 +1082,7 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
-                                 itemcomponent={ <EnvVar />} />
+                                 itemcomponent={EnvVar} />
                     </Tab>
                     <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck" className="pf-v5-c-form pf-m-horizontal">
                         <FormGroup fieldId='run-image-dialog-healthcheck-command' label={_("Command")}>
