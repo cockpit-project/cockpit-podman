@@ -191,7 +191,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
                         onValidationChange={value => dynamicListOnValidationChange('publish', value)}
                         onChange={value => setPublish(value)}
                         default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
-                        itemcomponent={ <PublishPort />} />
+                        itemcomponent={PublishPort} />
 
             {version.localeCompare("4", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
                 <DynamicListForm id='create-pod-dialog-volume'
@@ -202,7 +202,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
                             onChange={value => setVolumes(value)}
                             default={{ containerPath: null, hostPath: null, mode: 'rw' }}
                             options={{ selinuxAvailable }}
-                            itemcomponent={ <Volume />} />
+                            itemcomponent={Volume} />
             }
 
         </Form>
