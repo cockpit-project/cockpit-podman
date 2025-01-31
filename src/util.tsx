@@ -8,10 +8,27 @@ import * as timeformat from 'timeformat';
 
 const _ = cockpit.gettext;
 
-export const PodmanInfoContext = React.createContext();
+// not documented in https://docs.podman.io/en/stable/_static/api.html#tag/system/operation/SystemInfoLibpod
+// only the fields that we actually use
+type Registries = {
+    search: string[],
+}
+
+type PodmanInfoContextType = {
+    cgroupVersion: string,
+    registries: Registries,
+    selinuxAvailable: boolean,
+    podmanRestartAvailable: boolean,
+    userPodmanRestartAvailable: boolean,
+    userLingeringEnabled: boolean,
+    version: string,
+}
+
+export const PodmanInfoContext = React.createContext<PodmanInfoContextType | null>(null);
+
 export const usePodmanInfo = () => useContext(PodmanInfoContext);
 
-export const WithPodmanInfo = ({ value, children }) => {
+export const WithPodmanInfo = ({ value, children }: { value: PodmanInfoContextType, children: React.ReactNode }) => {
     return (
         <PodmanInfoContext.Provider value={value}>
             {children}
@@ -28,16 +45,16 @@ export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"),
 
 export const fallbackRegistries = ["docker.io", "quay.io"];
 
-export function debug(...args) {
+export function debug(...args: unknown[]): void {
     if (window.debugging === "all" || window.debugging?.includes("podman"))
         console.debug("podman", ...args);
 }
 
 // containers, pods, images states are indexed by these keys, to make the container IDs
 // globally unique across users
-export const makeKey = (uid, id) => `${uid ?? "user"}-${id}`;
+export const makeKey = (uid: number | null, id: string) => `${uid ?? "user"}-${id}`;
 
-export function truncate_id(id) {
+export function truncate_id(id: string): string {
     if (!id) {
         return "";
     }
@@ -45,7 +62,7 @@ export function truncate_id(id) {
 }
 
 // this supports formatted strings (via Date.parse) or raw timestamps
-export const RelativeTime = ({ time }) => {
+export const RelativeTime = ({ time }: { time: Date | string }) => {
     if (!time)
         return null;
     const timestamp = typeof time === "string" ? Date.parse(time) : time;
@@ -53,6 +70,8 @@ export const RelativeTime = ({ time }) => {
     const dateAbs = timeformat.dateTimeSeconds(timestamp);
     return <Tooltip content={dateAbs}><span>{dateRel}</span></Tooltip>;
 };
+
+const is_whitespace = (c: string) => c === ' ';
 
 /*
  * The functions quote_cmdline and unquote_cmdline implement
@@ -66,14 +85,10 @@ export const RelativeTime = ({ time }) => {
  * of a word.
  */
 
-export function quote_cmdline(words) {
+export function quote_cmdline(words: string[] | undefined): string {
     words = words || [];
 
-    function is_whitespace(c) {
-        return c == ' ';
-    }
-
-    function quote(word) {
+    function quote(word: string): string {
         let text = "";
         let quote_char = "";
         let i;
@@ -95,13 +110,9 @@ export function quote_cmdline(words) {
     return words.map(quote).join(' ');
 }
 
-export function unquote_cmdline(text) {
+export function unquote_cmdline(text: string): string[] {
     const words = [];
-    let next;
-
-    function is_whitespace(c) {
-        return c == ' ';
-    }
+    let next = 0;
 
     function skip_whitespace() {
         while (next < text.length && is_whitespace(text[next]))
@@ -133,7 +144,6 @@ export function unquote_cmdline(text) {
         return word;
     }
 
-    next = 0;
     skip_whitespace();
     while (next < text.length) {
         words.push(parse_word());
@@ -143,13 +153,17 @@ export function unquote_cmdline(text) {
     return words;
 }
 
-export function image_name(image) {
+// FIXME: Create a proper Image type, and either move types out into a separate file, or move this function
+export function image_name(image: { RepoTags?: string[] }): string {
     return image.RepoTags ? image.RepoTags[0] : "<none>:<none>";
 }
 
-export function is_valid_container_name(name) {
+export function is_valid_container_name(name: string): boolean {
     return /^[a-zA-Z0-9][a-zA-Z0-9_\\.-]*$/.test(name);
 }
+
+type ValidationState = Record<string, unknown>;
+type ValidationHandler = (state: ValidationState) => void;
 
 /* Clears a single field in validationFailed object.
  *
@@ -158,7 +172,7 @@ export function is_valid_container_name(name) {
  *   - key (string): Specified which field from validationFailed object is clear
  *   - onValidationChange (func)
  */
-export const validationClear = (validationFailed, key, onValidationChange) => {
+export const validationClear = (validationFailed: ValidationState | undefined, key: string, onValidationChange: ValidationHandler) => {
     if (!validationFailed)
         return;
 
@@ -172,4 +186,6 @@ export const validationDebounce = debounce(500, (validationHandler) => validatio
 
 // Ignore podman-compose containers which like quadlets set PODMAN_SYSTEMD_UNIT.
 // https://github.com/containers/podman-compose/blob/0dcc864fdda280b410ad49ae4fa99740a4770cbb/podman_compose.py#L2263
-export const is_systemd_service = (container_config) => container_config?.Labels?.PODMAN_SYSTEMD_UNIT && !container_config.Labels.PODMAN_SYSTEMD_UNIT.startsWith('podman-compose@');
+// FIXME: yes yes, the container config type should be fully spelled out
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const is_systemd_service = (container_config: { [key: string]: any }) => container_config?.Labels?.PODMAN_SYSTEMD_UNIT && !container_config.Labels.PODMAN_SYSTEMD_UNIT.startsWith('podman-compose@');
