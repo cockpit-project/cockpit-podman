@@ -577,6 +577,7 @@ class Containers extends React.Component {
             { title: _("State"), sortable: true },
             { title: "", sortable: false, props: { screenReaderText: _("Actions") } },
         ];
+        /** @type Record<string, string[]> */
         const partitionedContainers = { 'no-pod': [] };
         let filtered = [];
         const unusedContainers = [];
