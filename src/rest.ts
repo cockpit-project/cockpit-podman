@@ -1,18 +1,23 @@
 import cockpit from "cockpit";
 
-import { debug } from "./util.js";
+import { debug } from "./util.tsx";
 
-function manage_error(reject, error, content) {
-    let content_o = {};
-    if (content) {
+type JsonObject = cockpit.JsonObject;
+
+// make this `unknown` to conveniently call it on raw error objects
+function format_error(error: object, content: unknown): object {
+    let content_o: JsonObject = {};
+    if (typeof content === 'string') {
         try {
             content_o = JSON.parse(content);
         } catch {
             content_o.message = content;
         }
+        return { ...error, ...content_o };
+    } else {
+        console.warn("format_error(): content is not a string:", content);
+        return error;
     }
-    const c = { ...error, ...content_o };
-    reject(c);
 }
 
 // calls are async, so keep track of a call counter to associate a result with a call
@@ -20,20 +25,35 @@ let call_id = 0;
 
 const NL = '\n'.charCodeAt(0); // always 10, but avoid magic constant
 
-function connect(address, system) {
+export type MonitorCallbackJson = (data: JsonObject) => void;
+export type MonitorCallbackRaw = (data: Uint8Array) => void;
+export type MonitorCallback = MonitorCallbackJson | MonitorCallbackRaw;
+
+// type predicate helper for narrowing which monitor callback is being used
+function isReturnRaw(return_raw: boolean, callback: MonitorCallback): callback is MonitorCallbackRaw {
+    return return_raw;
+}
+
+export type Connection = {
+    monitor: (options: JsonObject, callback: MonitorCallback, system: boolean, return_raw?: boolean) => Promise<void>;
+    call: (options: JsonObject) => Promise<string>;
+    close: () => void;
+};
+
+function connect(address: string, system: boolean): Connection {
     /* This doesn't create a channel until a request */
     /* HACK: use binary channel to work around https://github.com/cockpit-project/cockpit/issues/19235 */
+    /* @ts-expect-error: cockpit.http not typed yet */
     const http = cockpit.http(address, { superuser: system ? "require" : null, binary: true });
-    const connection = {};
     const decoder = new TextDecoder();
 
-    connection.monitor = function(options, callback, system, return_raw) {
+    const monitor = function(options: JsonObject, callback: MonitorCallback, system: boolean, return_raw: boolean = false): Promise<void> {
         return new Promise((resolve, reject) => {
             let buffer = new Uint8Array();
 
             http.request(options)
-                    .stream(data => {
-                        if (return_raw)
+                    .stream((data: Uint8Array) => {
+                        if (isReturnRaw(return_raw, callback))
                             callback(data);
                         else {
                             buffer = new Uint8Array([...buffer, ...data]);
@@ -53,44 +73,40 @@ function connect(address, system) {
                             }
                         }
                     })
-                    .catch((error, content) => {
-                        manage_error(reject, error, content);
-                    })
+                    .catch((error: object, content: unknown) => reject(format_error(error, content)))
                     .then(resolve);
         });
     };
 
-    connection.call = function (options) {
+    const call = function (options: JsonObject): Promise<string> {
         const id = call_id++;
         debug(system, `call ${id}:`, JSON.stringify(options));
         return new Promise((resolve, reject) => {
             options = options || {};
             http.request(options)
-                    .then(result => {
+                    .then((result: Uint8Array) => {
                         const text = decoder.decode(result);
                         debug(system, `call ${id} result:`, text);
                         resolve(text);
                     })
-                    .catch((error, content) => {
-                        const text = decoder.decode(content);
+                    .catch((error: object, content?: Uint8Array) => {
+                        const text = content ? decoder.decode(content) : "";
                         debug(system, `call ${id} error:`, JSON.stringify(error), "content", text);
-                        manage_error(reject, error, text);
+                        reject(format_error(error, text));
                     });
         });
     };
 
-    connection.close = function () {
-        http.close();
-    };
+    const close = () => http.close();
 
-    return connection;
+    return { monitor, call, close };
 }
 
 /*
  * Connects to the podman service, performs a single call, and closes the
  * connection.
  */
-async function call (address, system, parameters) {
+async function call (address: string, system: boolean, parameters: JsonObject): Promise<string> {
     const connection = connect(address, system);
     const result = await connection.call(parameters);
     connection.close();
