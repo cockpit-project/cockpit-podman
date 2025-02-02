@@ -23,13 +23,6 @@ Delegate=cpu cpuset io memory pids
 EOF
 fi
 
-if grep -q platform:el10 /usr/lib/os-release && [ -e /etc/firewalld/firewalld.conf ]; then
-    # HACK: unbreak container port forwarding to localhost
-    # https://firewalld.org/2024/11/strict-forward-ports and https://github.com/firewalld/firewalld/issues/1380
-    # TF runs have no firewalld
-    sed -i 's/StrictForwardPorts=yes/StrictForwardPorts=no/' /etc/firewalld/firewalld.conf
-fi
-
 # don't force https:// (self-signed cert)
 mkdir -p /etc/cockpit
 printf "[WebService]\\nAllowUnencrypted=true\\n" > /etc/cockpit/cockpit.conf
