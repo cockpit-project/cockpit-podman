@@ -146,7 +146,7 @@ export function unquote_cmdline(text: string): string[] {
 }
 
 export function image_name(image: { RepoTags?: string[] }): string {
-    return image.RepoTags ? image.RepoTags[0] : "<none>:<none>";
+    return image.RepoTags?.[0] ?? "<none>:<none>";
 }
 
 export function is_valid_container_name(name: string): boolean {
