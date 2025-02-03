@@ -292,10 +292,10 @@ class Application extends React.Component {
         return client.getPods(system, id)
                 .then(reply => {
                     if (reply && reply.length > 0) {
-                        reply = reply[0];
+                        const pod = reply[0];
 
-                        reply.isSystem = system;
-                        this.updateState("pods", reply.Id + system.toString(), reply);
+                        pod.isSystem = system;
+                        this.updateState("pods", pod.Id + system.toString(), pod);
                     }
                 })
                 .catch(ex => {
