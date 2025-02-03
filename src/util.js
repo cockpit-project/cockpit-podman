@@ -33,6 +33,10 @@ export function debug(...args) {
         console.debug("podman", ...args);
 }
 
+// containers, pods, images states are indexed by these keys, to make the container IDs
+// globally unique across users
+export const makeKey = (uid, id) => `${uid ?? "user"}-${id}`;
+
 export function truncate_id(id) {
     if (!id) {
         return "";

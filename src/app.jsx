@@ -35,7 +35,7 @@ import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
 import rest from './rest.js';
-import { WithPodmanInfo } from './util.js';
+import { makeKey, WithPodmanInfo } from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -76,7 +76,7 @@ class Application extends React.Component {
         this.goToServicePage = this.goToServicePage.bind(this);
         this.onNavigate = this.onNavigate.bind(this);
 
-        this.pendingUpdateContainer = {}; // id+system → promise
+        this.pendingUpdateContainer = {}; // key (uid-id) → promise
     }
 
     onAddNotification(notification) {
@@ -146,20 +146,20 @@ class Application extends React.Component {
         }
     }
 
-    updateState(state, id, newValue) {
+    updateState(state, key, newValue) {
         this.setState(prevState => {
             return {
-                [state]: { ...prevState[state], [id]: newValue }
+                [state]: { ...prevState[state], [key]: newValue }
             };
         });
     }
 
-    updateContainerStats(system) {
-        client.streamContainerStats(system, reply => {
+    updateContainerStats(uid) {
+        client.streamContainerStats(uid, reply => {
             if (reply.Error != null) // executed when container stop
                 console.warn("Failed to update container stats:", JSON.stringify(reply.message));
             else {
-                reply.Stats.forEach(stat => this.updateState("containersStats", stat.ContainerID + system.toString(), stat));
+                reply.Stats.forEach(stat => this.updateState("containersStats", makeKey(uid, stat.ContainerID), stat));
             }
         }).catch(ex => {
             if (ex.cause == "no support for CGroups V1 in rootless environments" || ex.cause == "Container stats resource only available for cgroup v2") {
@@ -169,161 +169,165 @@ class Application extends React.Component {
         });
     }
 
-    initContainers(system) {
-        return client.getContainers(system)
+    initContainers(uid) {
+        return client.getContainers(uid)
                 .then(containerList => Promise.all(
-                    containerList.map(container => client.inspectContainer(system, container.Id))
+                    containerList.map(container => client.inspectContainer(uid, container.Id))
                 ))
                 .then(containerDetails => {
                     this.setState(prevState => {
-                        // keep/copy the containers for !system
+                        // keep/copy the containers of other users
                         const copyContainers = {};
                         Object.entries(prevState.containers || {}).forEach(([id, container]) => {
-                            if (container.isSystem !== system)
+                            if (container.uid !== uid)
                                 copyContainers[id] = container;
                         });
                         for (const detail of containerDetails) {
-                            detail.isSystem = system;
-                            copyContainers[detail.Id + system.toString()] = detail;
+                            detail.uid = uid;
+                            detail.key = makeKey(uid, detail.Id);
+                            copyContainers[detail.key] = detail;
                         }
 
                         return {
                             containers: copyContainers,
-                            [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
+                            [uid === 0 ? "systemContainersLoaded" : "userContainersLoaded"]: true,
                         };
                     });
-                    this.updateContainerStats(system);
+                    this.updateContainerStats(uid);
                 })
-                .catch(e => console.warn("initContainers", system ? "system" : "user",
-                                         "getContainers failed:", e.toString()));
+                .catch(e => console.warn("initContainers uid", uid, "getContainers failed:", e.toString()));
     }
 
-    updateImages(system) {
-        client.getImages(system)
+    updateImages(uid) {
+        client.getImages(uid)
                 .then(reply => {
                     this.setState(prevState => {
                         // Copy only images that could not be deleted with this event
-                        // So when event from system come, only copy user images and vice versa
+                        // So when event from one uid comes, only copy the other images
                         const copyImages = {};
                         Object.entries(prevState.images || {}).forEach(([Id, image]) => {
-                            if (image.isSystem !== system)
+                            if (image.uid !== uid)
                                 copyImages[Id] = image;
                         });
                         Object.entries(reply).forEach(([Id, image]) => {
-                            image.isSystem = system;
-                            copyImages[Id + system.toString()] = image;
+                            image.uid = uid;
+                            image.key = makeKey(uid, Id);
+                            copyImages[image.key] = image;
                         });
 
                         return {
                             images: copyImages,
-                            [system ? "systemImagesLoaded" : "userImagesLoaded"]: true
+                            [uid == 0 ? "systemImagesLoaded" : "userImagesLoaded"]: true
                         };
                     });
                 })
                 .catch(ex => {
-                    console.warn("Failed to do Update Images:", JSON.stringify(ex));
+                    console.warn("Failed to do updateImages for uid", uid, ":", JSON.stringify(ex));
                 });
     }
 
-    updatePods(system) {
-        return client.getPods(system)
+    updatePods(uid) {
+        return client.getPods(uid)
                 .then(reply => {
                     this.setState(prevState => {
                         // Copy only pods that could not be deleted with this event
-                        // So when event from system come, only copy user pods and vice versa
+                        // So when event from one uid comes, only copy the other pods
                         const copyPods = {};
                         Object.entries(prevState.pods || {}).forEach(([id, pod]) => {
-                            if (pod.isSystem !== system)
+                            if (pod.uid !== uid)
                                 copyPods[id] = pod;
                         });
                         for (const pod of reply || []) {
-                            pod.isSystem = system;
-                            copyPods[pod.Id + system.toString()] = pod;
+                            pod.uid = uid;
+                            pod.key = makeKey(uid, pod.Id);
+                            copyPods[pod.key] = pod;
                         }
 
                         return {
                             pods: copyPods,
-                            [system ? "systemPodsLoaded" : "userPodsLoaded"]: true,
+                            [uid == 0 ? "systemPodsLoaded" : "userPodsLoaded"]: true,
                         };
                     });
                 })
                 .catch(ex => {
-                    console.warn("Failed to do Update Pods:", JSON.stringify(ex));
+                    console.warn("Failed to do updatePods for uid", uid, ":", JSON.stringify(ex));
                 });
     }
 
-    updateContainer(id, system, event) {
+    updateContainer(id, uid, event) {
         /* when firing off multiple calls in parallel, podman can return them in a random order.
          * This messes up the state. So we need to serialize them for a particular container. */
-        const idx = id + system.toString();
-        const wait = this.pendingUpdateContainer[idx] ?? Promise.resolve();
+        const key = makeKey(uid, id);
+        const wait = this.pendingUpdateContainer[key] ?? Promise.resolve();
 
-        const new_wait = wait.then(() => client.inspectContainer(system, id))
+        const new_wait = wait.then(() => client.inspectContainer(uid, id))
                 .then(details => {
-                    details.isSystem = system;
+                    details.uid = uid;
+                    details.key = key;
                     // HACK: during restart State never changes from "running"
                     //       override it to reconnect console after restart
                     if (event?.Action === "restart")
                         details.State.Status = "restarting";
-                    this.updateState("containers", idx, details);
+                    this.updateState("containers", key, details);
                 })
-                .catch(e => console.warn("updateContainer", system ? "system" : "user",
-                                         "inspectContainer failed:", e.toString()));
-        this.pendingUpdateContainer[idx] = new_wait;
-        new_wait.finally(() => { delete this.pendingUpdateContainer[idx] });
+                .catch(e => console.warn("updateContainer uid", uid, "inspectContainer failed:", e.toString()));
+        this.pendingUpdateContainer[key] = new_wait;
+        new_wait.finally(() => { delete this.pendingUpdateContainer[key] });
 
         return new_wait;
     }
 
-    updateImage(id, system) {
-        client.getImages(system, id)
+    updateImage(id, uid) {
+        client.getImages(uid, id)
                 .then(reply => {
-                    const immage = reply[id];
-                    immage.isSystem = system;
-                    this.updateState("images", id + system.toString(), immage);
+                    const image = reply[id];
+                    image.uid = uid;
+                    image.key = makeKey(uid, id);
+                    this.updateState("images", image.key, image);
                 })
                 .catch(ex => {
-                    console.warn("Failed to do Update Image:", JSON.stringify(ex));
+                    console.warn("Failed to do updateImage for uid", uid, ":", JSON.stringify(ex));
                 });
     }
 
-    updatePod(id, system) {
-        return client.getPods(system, id)
+    updatePod(id, uid) {
+        return client.getPods(uid, id)
                 .then(reply => {
                     if (reply && reply.length > 0) {
                         const pod = reply[0];
 
-                        pod.isSystem = system;
-                        this.updateState("pods", pod.Id + system.toString(), pod);
+                        pod.uid = uid;
+                        pod.key = makeKey(uid, id);
+                        this.updateState("pods", pod.key, pod);
                     }
                 })
                 .catch(ex => {
-                    console.warn("Failed to do Update Pod:", JSON.stringify(ex));
+                    console.warn("Failed to do updatePod for uid", uid, ":", JSON.stringify(ex));
                 });
     }
 
     // see https://docs.podman.io/en/latest/markdown/podman-events.1.html
 
-    handleImageEvent(event, system) {
+    handleImageEvent(event, uid) {
         switch (event.Action) {
         case 'push':
         case 'save':
         case 'tag':
-            this.updateImage(event.Actor.ID, system);
+            this.updateImage(event.Actor.ID, uid);
             break;
         case 'pull': // Pull event has not event.id
         case 'untag':
         case 'remove':
         case 'prune':
         case 'build':
-            this.updateImages(system);
+            this.updateImages(uid);
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
         }
     }
 
-    handleContainerEvent(event, system) {
+    handleContainerEvent(event, uid) {
         const id = event.Actor.ID;
 
         switch (event.Action) {
@@ -349,9 +353,9 @@ class Application extends React.Component {
             // HACK: We don't get 'started' event for pods got started by the first container which was added to them
             // https://github.com/containers/podman/issues/7213
             (event.Actor.Attributes.podId
-                ? this.updatePod(event.Actor.Attributes.podId, system)
-                : this.updatePods(system)
-            ).then(() => this.updateContainer(id, system, event));
+                ? this.updatePod(event.Actor.Attributes.podId, uid)
+                : this.updatePods(uid)
+            ).then(() => this.updateContainer(id, uid, event));
             break;
         case 'checkpoint':
         case 'cleanup':
@@ -364,25 +368,25 @@ class Application extends React.Component {
         case 'stop':
         case 'unpause':
         case 'rename': // rename event is available starting podman v4.1; until then the container does not get refreshed after renaming
-            this.updateContainer(id, system, event);
+            this.updateContainer(id, uid, event);
             break;
 
         case 'remove':
             this.setState(prevState => {
                 const containers = { ...prevState.containers };
-                delete containers[id + system.toString()];
+                delete containers[makeKey(uid, id)];
                 let pods;
 
                 if (event.Actor.Attributes.podId) {
-                    const podIdx = event.Actor.Attributes.podId + system.toString();
-                    const newPod = { ...prevState.pods[podIdx] };
+                    const podKey = makeKey(uid, event.Actor.Attributes.podId);
+                    const newPod = { ...prevState.pods[podKey] };
                     newPod.Containers = newPod.Containers.filter(container => container.Id !== id);
-                    pods = { ...prevState.pods, [podIdx]: newPod };
+                    pods = { ...prevState.pods, [podKey]: newPod };
                 } else {
                     // HACK: with podman < 4.3.0 we don't get a pod event when a container in a pod is removed
                     // https://github.com/containers/podman/issues/15408
                     pods = prevState.pods;
-                    this.updatePods(system);
+                    this.updatePods(uid);
                 }
 
                 return { containers, pods };
@@ -391,14 +395,14 @@ class Application extends React.Component {
 
         // only needs to update the Image list, this ought to be an image event
         case 'commit':
-            this.updateImages(system);
+            this.updateImages(uid);
             break;
         default:
             console.warn('Unhandled event type ', event.Type, event.Action);
         }
     }
 
-    handlePodEvent(event, system) {
+    handlePodEvent(event, uid) {
         switch (event.Action) {
         case 'create':
         case 'kill':
@@ -406,12 +410,12 @@ class Application extends React.Component {
         case 'start':
         case 'stop':
         case 'unpause':
-            this.updatePod(event.Actor.ID, system);
+            this.updatePod(event.Actor.ID, uid);
             break;
         case 'remove':
             this.setState(prevState => {
                 const pods = { ...prevState.pods };
-                delete pods[event.Actor.ID + system.toString()];
+                delete pods[makeKey(uid, event.Actor.ID)];
                 return { pods };
             });
             break;
@@ -420,29 +424,29 @@ class Application extends React.Component {
         }
     }
 
-    handleEvent(event, system) {
+    handleEvent(event, uid) {
         switch (event.Type) {
         case 'container':
-            this.handleContainerEvent(event, system);
+            this.handleContainerEvent(event, uid);
             break;
         case 'image':
-            this.handleImageEvent(event, system);
+            this.handleImageEvent(event, uid);
             break;
         case 'pod':
-            this.handlePodEvent(event, system);
+            this.handlePodEvent(event, uid);
             break;
         default:
             console.warn('Unhandled event type ', event.Type);
         }
     }
 
-    cleanupAfterService(system, key) {
+    cleanupAfterService(uid, key) {
         ["images", "containers", "pods"].forEach(t => {
             if (this.state[t])
                 this.setState(prevState => {
                     const copy = {};
                     Object.entries(prevState[t] || {}).forEach(([id, v]) => {
-                        if (v.isSystem !== system)
+                        if (v.uid !== uid)
                             copy[id] = v;
                     });
                     return { [t]: copy };
@@ -450,11 +454,13 @@ class Application extends React.Component {
         });
     }
 
-    async init(system) {
+    async init(uid) {
+        const system = uid === 0;
+
         try {
             await cockpit.spawn(["systemctl", ...(system ? [] : ["--user"]), "start", "podman.socket"],
                                 { superuser: system ? "require" : null, err: "message" });
-            const reply = await client.getInfo(system);
+            const reply = await client.getInfo(uid);
             this.setState({
                 [system ? "systemServiceAvailable" : "userServiceAvailable"]: true,
                 version: reply.version.Version,
@@ -463,7 +469,7 @@ class Application extends React.Component {
             });
         } catch (err) {
             if (!system || err.problem != 'access-denied')
-                console.warn("init", system ? "system" : "user", "getInfo failed:", err.toString());
+                console.warn("init uid", uid, "getInfo failed:", err.toString());
 
             this.setState({
                 [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
@@ -475,32 +481,32 @@ class Application extends React.Component {
             return;
         }
 
-        this.updateImages(system);
-        this.initContainers(system);
-        this.updatePods(system);
+        this.updateImages(uid);
+        this.initContainers(uid);
+        this.updatePods(uid);
 
-        client.streamEvents(system, message => this.handleEvent(message, system))
-                .catch(e => console.error("init", system ? "system" : "user", "streamEvents failed:", e.toString()))
+        client.streamEvents(uid, message => this.handleEvent(message, uid))
+                .catch(e => console.error("init uid", uid, "streamEvents failed:", e.toString()))
                 .finally(() => {
                     this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-                    this.cleanupAfterService(system);
+                    this.cleanupAfterService(uid);
                 });
 
         // HACK: Listen for podman socket/service going away; this is only necessary with the C bridge
         // (Debian 12, RHEL 8). With the Python bridge, the above streamEvents() resolves when the service goes away.
-        const address = rest.getAddress(system ? 0 : null);
+        const address = rest.getAddress(uid);
         const ch = cockpit.channel({ unix: address.path, superuser: address.superuser, payload: "stream" });
         ch.addEventListener("close", () => {
-            console.log("init", system ? "system" : "user", "podman service closed");
+            console.log("init uid", uid, "podman service closed");
             this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-            this.cleanupAfterService(system);
+            this.cleanupAfterService(uid);
         });
 
         ch.send("GET " + client.VERSION + "libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
     }
 
     componentDidMount() {
-        superuser.addEventListener("changed", () => this.init(true));
+        superuser.addEventListener("changed", () => this.init(0));
 
         cockpit.user().then(user => {
             // there is no "user service" for root, ignore that
@@ -516,7 +522,7 @@ class Application extends React.Component {
             cockpit.script("echo $XDG_RUNTIME_DIR")
                     .then(xrd => {
                         sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
-                        this.init(false);
+                        this.init(null);
                         this.checkUserRestartService();
                     })
                     .catch(e => console.log("Could not read $XDG_RUNTIME_DIR:", e.message));
@@ -607,18 +613,13 @@ class Application extends React.Component {
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
                 const container = this.state.containers[c];
-                const image = container.Image + container.isSystem.toString();
-                if (imageContainerList[image]) {
-                    imageContainerList[image].push({
-                        container,
-                        stats: this.state.containersStats[container.Id + container.isSystem.toString()],
-                    });
-                } else {
-                    imageContainerList[image] = [{
-                        container,
-                        stats: this.state.containersStats[container.Id + container.isSystem.toString()]
-                    }];
-                }
+                const imageKey = makeKey(container.uid, container.Image);
+                if (!imageContainerList[imageKey])
+                    imageContainerList[imageKey] = [];
+                imageContainerList[imageKey].push({
+                    container,
+                    stats: this.state.containersStats[makeKey(container.uid, container.Id)],
+                });
             });
         } else
             imageContainerList = null;

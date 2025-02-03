@@ -55,7 +55,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
             const handleForceRemoveContainer = () => {
                 const id = container ? container.Id : "";
 
-                return client.delContainer(container.isSystem, id, true)
+                return client.delContainer(container.uid, id, true)
                         .catch(ex => {
                             const error = cockpit.format(_("Failed to force remove container $0"), container.Name); // not-covered: OS error
                             onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -79,7 +79,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
 
         if (force)
             args.t = 0;
-        client.postContainer(container.isSystem, "stop", container.Id, args)
+        client.postContainer(container.uid, "stop", container.Id, args)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to stop container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -87,7 +87,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
     };
 
     const startContainer = () => {
-        client.postContainer(container.isSystem, "start", container.Id, {})
+        client.postContainer(container.uid, "start", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to start container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -95,7 +95,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
     };
 
     const resumeContainer = () => {
-        client.postContainer(container.isSystem, "unpause", container.Id, {})
+        client.postContainer(container.uid, "unpause", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to resume container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -103,7 +103,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
     };
 
     const pauseContainer = () => {
-        client.postContainer(container.isSystem, "pause", container.Id, {})
+        client.postContainer(container.uid, "pause", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to pause container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -120,7 +120,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
 
         if (force)
             args.t = 0;
-        client.postContainer(container.isSystem, "restart", container.Id, args)
+        client.postContainer(container.uid, "restart", container.Id, args)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to restart container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -190,7 +190,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
             );
         }
 
-        if (container.isSystem && !isPaused) {
+        if (container.uid == 0 && !isPaused) {
             actions.push(
                 <Divider key="separator-0" />,
                 <DropdownItem key="checkpoint"
@@ -211,7 +211,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
         if (!isSystemdService) {
             addRenameAction();
         }
-        if (container.isSystem && container.State?.CheckpointPath) {
+        if (container.uid == 0 && container.State?.CheckpointPath) {
             actions.push(
                 <Divider key="separator-0" />,
                 <DropdownItem key="restore"
@@ -320,7 +320,7 @@ class Containers extends React.Component {
     }
 
     renderRow(containersStats, container, localImages) {
-        const containerStats = containersStats[container.Id + container.isSystem.toString()];
+        const containerStats = containersStats[container.key];
         const image = container.ImageName;
         const isToolboxContainer = container.Config?.Labels?.["com.github.containers.toolbox"] === "true";
         const isDistroboxContainer = container.Config?.Labels?.manager === "distrobox";
@@ -335,7 +335,7 @@ class Containers extends React.Component {
 
         let proc = "";
         let mem = "";
-        if (this.props.cgroupVersion == 'v1' && !container.isSystem && status == 'running') { // not-covered: only on old version
+        if (this.props.cgroupVersion == 'v1' && container.uid !== 0 && status == 'running') { // not-covered: only on old version
             proc = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
             mem = <div><abbr title={_("not available")}>{_("n/a")}</abbr></div>;
         }
@@ -396,9 +396,9 @@ class Containers extends React.Component {
         const columns = [
             { title: info_block, sortKey: container.Name ?? container.Id },
             {
-                title: container.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>,
+                title: (container.uid === 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>,
                 props: { modifier: "nowrap" },
-                sortKey: container.isSystem.toString()
+                sortKey: container.key,
             },
             { title: proc, props: { modifier: "nowrap" }, sortKey: containerState === "Running" ? containerStats?.CPU ?? -1 : -1 },
             { title: mem, props: { modifier: "nowrap" }, sortKey: containerStats?.MemUsage ?? -1 },
@@ -434,12 +434,12 @@ class Containers extends React.Component {
                 tabs.push({
                     name: _("Logs"),
                     renderer: ContainerLogs,
-                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem }
+                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid }
                 });
                 tabs.push({
                     name: _("Console"),
                     renderer: ContainerTerminal,
-                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, system: container.isSystem, tty }
+                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid, tty }
                 });
             }
         }
@@ -457,8 +457,8 @@ class Containers extends React.Component {
             columns,
             initiallyExpanded: document.location.hash.substring(1) === container.Id,
             props: {
-                key: container.Id + container.isSystem.toString(),
-                "data-row-id": container.Id + container.isSystem.toString(),
+                key: container.key,
+                "data-row-id": container.key,
                 "data-started-at": container.State?.StartedAt,
             },
         };
@@ -481,7 +481,7 @@ class Containers extends React.Component {
         let cpu = 0;
         let mem = 0;
         for (const container of pod.Containers) {
-            const containerStats = containersStats[container.Id + pod.isSystem.toString()];
+            const containerStats = containersStats[utils.makeKey(pod.uid, container.Id)];
             if (!containerStats)
                 continue;
 
@@ -501,7 +501,7 @@ class Containers extends React.Component {
 
     renderPodDetails(pod, podStatus) {
         const podStats = this.podStats(pod);
-        const infraContainer = this.props.containers[pod.InfraId + pod.isSystem.toString()];
+        const infraContainer = this.props.containers[utils.makeKey(pod.uid, pod.InfraId)];
         const numPorts = Object.keys(infraContainer?.NetworkSettings?.Ports ?? {}).length;
 
         return (
@@ -594,9 +594,9 @@ class Containers extends React.Component {
 
             if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
                 filtered = filtered.filter(id => {
-                    if (this.props.ownerFilter === "system" && !this.props.containers[id].isSystem)
+                    if (this.props.ownerFilter === "system" && this.props.containers[id].uid !== 0)
                         return false;
-                    if (this.props.ownerFilter !== "system" && this.props.containers[id].isSystem)
+                    if (this.props.ownerFilter !== "system" && this.props.containers[id].uid === 0)
                         return false;
                     return true;
                 });
@@ -606,7 +606,7 @@ class Containers extends React.Component {
                 const lcf = this.props.textFilter.toLowerCase();
                 filtered = filtered.filter(id => this.props.containers[id].Name.toLowerCase().indexOf(lcf) >= 0 ||
                     (this.props.containers[id].Pod &&
-                     this.props.pods[this.props.containers[id].Pod + this.props.containers[id].isSystem.toString()].Name.toLowerCase().indexOf(lcf) >= 0) ||
+                     this.props.pods[utils.makeKey(this.props.containers[id].uid, this.props.containers[id].Pod)].Name.toLowerCase().indexOf(lcf) >= 0) ||
                     this.props.containers[id].ImageName.toLowerCase().indexOf(lcf) >= 0
                 );
             }
@@ -630,8 +630,8 @@ class Containers extends React.Component {
                         return 1;
                 }
                 // User containers are in front of system ones
-                if (this.props.containers[a].isSystem !== this.props.containers[b].isSystem)
-                    return this.props.containers[a].isSystem ? 1 : -1;
+                if (this.props.containers[a].uid !== this.props.containers[b].uid)
+                    return (this.props.containers[a].uid === 0) ? 1 : -1;
                 return this.props.containers[a].Name > this.props.containers[b].Name ? 1 : -1;
             });
 
@@ -640,7 +640,7 @@ class Containers extends React.Component {
             filtered.forEach(id => {
                 const container = this.props.containers[id];
                 if (container)
-                    (partitionedContainers[container.Pod ? (container.Pod + container.isSystem.toString()) : 'no-pod'] || []).push(container);
+                    (partitionedContainers[container.Pod ? utils.makeKey(container.uid, container.Pod) : 'no-pod'] || []).push(container);
             });
 
             // Append downloading containers
@@ -657,8 +657,8 @@ class Containers extends React.Component {
                         // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
                         (!partitionedContainers[section].length && pod.Name.toLowerCase().indexOf(lcf) < 0) ||
                         ((this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") &&
-                         ((this.props.ownerFilter === "system" && !pod.isSystem) ||
-                            (this.props.ownerFilter !== "system" && pod.isSystem))))
+                         ((this.props.ownerFilter === "system" && pod.uid !== 0) ||
+                            (this.props.ownerFilter !== "system" && pod.uid === 0))))
                         delete partitionedContainers[section];
                 }
             });
@@ -674,10 +674,11 @@ class Containers extends React.Component {
                     continue;
 
                 unusedContainers.push({
-                    id: container.Id + container.isSystem.toString(),
+                    id: container.Id,
                     name: container.Name,
+                    key: container.key,
                     created: container.Created,
-                    system: container.isSystem,
+                    uid: container.uid,
                 });
             }
         }
@@ -805,8 +806,8 @@ class Containers extends React.Component {
                                         else if (b == "no-pod") return 1;
 
                                         // User pods are in front of system ones
-                                        if (this.props.pods[a].isSystem !== this.props.pods[b].isSystem)
-                                            return this.props.pods[a].isSystem ? 1 : -1;
+                                        if (this.props.pods[a].uid !== this.props.pods[b].uid)
+                                            return this.props.pods[a].uid === 0 ? 1 : -1;
                                         return this.props.pods[a].Name > this.props.pods[b].Name ? 1 : -1;
                                     })
                                     .map(section => {

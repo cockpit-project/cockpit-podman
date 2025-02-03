@@ -21,7 +21,7 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
 
     const handleCheckpointContainer = () => {
         setProgress(true);
-        client.postContainer(containerWillCheckpoint.isSystem, "checkpoint", containerWillCheckpoint.Id, {
+        client.postContainer(containerWillCheckpoint.uid, "checkpoint", containerWillCheckpoint.Id, {
             keep,
             leaveRunning,
             tcpEstablished,

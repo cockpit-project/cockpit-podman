@@ -2,7 +2,7 @@ import rest from './rest.js';
 
 export const VERSION = "/v1.12/";
 
-function podmanCall(name, method, args, system, body) {
+function podmanCall(name, method, args, uid, body) {
     const options = {
         method,
         path: VERSION + name,
@@ -10,13 +10,13 @@ function podmanCall(name, method, args, system, body) {
         params: args,
     };
 
-    return rest.call(system ? 0 : null, options);
+    return rest.call(uid, options);
 }
 
-const podmanJson = (name, method, args, system, body) => podmanCall(name, method, args, system, body)
+const podmanJson = (name, method, args, uid, body) => podmanCall(name, method, args, uid, body)
         .then(reply => JSON.parse(reply));
 
-function podmanMonitor(name, method, args, callback, system) {
+function podmanMonitor(name, method, args, callback, uid) {
     const options = {
         method,
         path: VERSION + name,
@@ -24,52 +24,52 @@ function podmanMonitor(name, method, args, callback, system) {
         params: args,
     };
 
-    const connection = rest.connect(system ? 0 : null);
+    const connection = rest.connect(uid);
     return connection.monitor(options, callback);
 }
 
-export const streamEvents = (system, callback) => podmanMonitor("libpod/events", "GET", {}, callback, system);
+export const streamEvents = (uid, callback) => podmanMonitor("libpod/events", "GET", {}, callback, uid);
 
-export function getInfo(system) {
+export function getInfo(uid) {
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("timeout")), 5000);
-        podmanJson("libpod/info", "GET", {}, system)
+        podmanJson("libpod/info", "GET", {}, uid)
                 .then(reply => resolve(reply))
                 .catch(reject)
                 .finally(() => clearTimeout(timeout));
     });
 }
 
-export const getContainers = system => podmanJson("libpod/containers/json", "GET", { all: true }, system);
+export const getContainers = uid => podmanJson("libpod/containers/json", "GET", { all: true }, uid);
 
-export const streamContainerStats = (system, callback) => podmanMonitor("libpod/containers/stats", "GET", { stream: true }, callback, system);
+export const streamContainerStats = (uid, callback) => podmanMonitor("libpod/containers/stats", "GET", { stream: true }, callback, uid);
 
-export function inspectContainer(system, id) {
+export function inspectContainer(uid, id) {
     const options = {
         size: false // set true to display filesystem usage
     };
-    return podmanJson("libpod/containers/" + id + "/json", "GET", options, system);
+    return podmanJson("libpod/containers/" + id + "/json", "GET", options, uid);
 }
 
-export const delContainer = (system, id, force) => podmanCall("libpod/containers/" + id, "DELETE", { force }, system);
+export const delContainer = (uid, id, force) => podmanCall("libpod/containers/" + id, "DELETE", { force }, uid);
 
-export const renameContainer = (system, id, config) => podmanCall("libpod/containers/" + id + "/rename", "POST", config, system);
+export const renameContainer = (uid, id, config) => podmanCall("libpod/containers/" + id + "/rename", "POST", config, uid);
 
-export const createContainer = (system, config) => podmanJson("libpod/containers/create", "POST", {}, system, JSON.stringify(config));
+export const createContainer = (uid, config) => podmanJson("libpod/containers/create", "POST", {}, uid, JSON.stringify(config));
 
-export const commitContainer = (system, commitData) => podmanCall("libpod/commit", "POST", commitData, system);
+export const commitContainer = (uid, commitData) => podmanCall("libpod/commit", "POST", commitData, uid);
 
-export const postContainer = (system, action, id, args) => podmanCall("libpod/containers/" + id + "/" + action, "POST", args, system);
+export const postContainer = (uid, action, id, args) => podmanCall("libpod/containers/" + id + "/" + action, "POST", args, uid);
 
-export const runHealthcheck = (system, id) => podmanCall("libpod/containers/" + id + "/healthcheck", "GET", {}, system);
+export const runHealthcheck = (uid, id) => podmanCall("libpod/containers/" + id + "/healthcheck", "GET", {}, uid);
 
-export const postPod = (system, action, id, args) => podmanCall("libpod/pods/" + id + "/" + action, "POST", args, system);
+export const postPod = (uid, action, id, args) => podmanCall("libpod/pods/" + id + "/" + action, "POST", args, uid);
 
-export const delPod = (system, id, force) => podmanCall("libpod/pods/" + id, "DELETE", { force }, system);
+export const delPod = (uid, id, force) => podmanCall("libpod/pods/" + id, "DELETE", { force }, uid);
 
-export const createPod = (system, config) => podmanCall("libpod/pods/create", "POST", {}, system, JSON.stringify(config));
+export const createPod = (uid, config) => podmanCall("libpod/pods/create", "POST", {}, uid, JSON.stringify(config));
 
-export function execContainer(system, id) {
+export function execContainer(uid, id) {
     const args = {
         AttachStderr: true,
         AttachStdout: true,
@@ -78,10 +78,10 @@ export function execContainer(system, id) {
         Cmd: ["/bin/sh"],
     };
 
-    return podmanJson("libpod/containers/" + id + "/exec", "POST", {}, system, JSON.stringify(args));
+    return podmanJson("libpod/containers/" + id + "/exec", "POST", {}, uid, JSON.stringify(args));
 }
 
-export function resizeContainersTTY(system, id, exec, width, height) {
+export function resizeContainersTTY(uid, id, exec, width, height) {
     const args = {
         h: height,
         w: width,
@@ -91,7 +91,7 @@ export function resizeContainersTTY(system, id, exec, width, height) {
     if (!exec)
         point = "exec/";
 
-    return podmanCall("libpod/" + point + id + "/resize", "POST", args, system);
+    return podmanCall("libpod/" + point + id + "/resize", "POST", args, uid);
 }
 
 function parseImageInfo(info) {
@@ -108,45 +108,43 @@ function parseImageInfo(info) {
     return image;
 }
 
-export function getImages(system, id) {
+export function getImages(uid, id) {
     const options = {};
     if (id)
         options.filters = JSON.stringify({ id: [id] });
-    return podmanJson("libpod/images/json", "GET", options, system)
+    return podmanJson("libpod/images/json", "GET", options, uid)
             .then(reply => {
                 const images = {};
                 const promises = [];
 
                 for (const image of reply) {
                     images[image.Id] = image;
-                    promises.push(podmanJson("libpod/images/" + image.Id + "/json", "GET", {}, system));
+                    promises.push(podmanJson("libpod/images/" + image.Id + "/json", "GET", {}, uid));
                 }
 
                 return Promise.all(promises)
                         .then(replies => {
-                            for (const info of replies) {
-                                images[info.Id] = Object.assign(images[info.Id], parseImageInfo(info));
-                                images[info.Id].isSystem = system;
-                            }
+                            for (const info of replies)
+                                images[info.Id] = { uid, ...images[info.Id], ...parseImageInfo(info) };
                             return images;
                         });
             });
 }
 
-export function getPods(system, id) {
+export function getPods(uid, id) {
     const options = {};
     if (id)
         options.filters = JSON.stringify({ id: [id] });
-    return podmanJson("libpod/pods/json", "GET", options, system);
+    return podmanJson("libpod/pods/json", "GET", options, uid);
 }
 
-export const delImage = (system, id, force) => podmanJson("libpod/images/" + id, "DELETE", { force }, system);
+export const delImage = (uid, id, force) => podmanJson("libpod/images/" + id, "DELETE", { force }, uid);
 
-export const untagImage = (system, id, repo, tag) => podmanCall("libpod/images/" + id + "/untag", "POST", { repo, tag }, system);
+export const untagImage = (uid, id, repo, tag) => podmanCall("libpod/images/" + id + "/untag", "POST", { repo, tag }, uid);
 
-export function pullImage(system, reference) {
+export function pullImage(uid, reference) {
     return new Promise((resolve, reject) => {
-        podmanCall("libpod/images/pull", "POST", { reference }, system)
+        podmanCall("libpod/images/pull", "POST", { reference }, uid)
                 .then(r => {
                     // Need to check the last response if it contains error
                     const responses = r.trim().split("\n");
@@ -163,10 +161,10 @@ export function pullImage(system, reference) {
     });
 }
 
-export const pruneUnusedImages = system => podmanJson("libpod/images/prune?all=true", "POST", {}, system);
+export const pruneUnusedImages = uid => podmanJson("libpod/images/prune?all=true", "POST", {}, uid);
 
-export const imageHistory = (system, id) => podmanJson(`libpod/images/${id}/history`, "GET", {}, system);
+export const imageHistory = (uid, id) => podmanJson(`libpod/images/${id}/history`, "GET", {}, uid);
 
-export const imageExists = (system, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, system);
+export const imageExists = (uid, id) => podmanCall("libpod/images/" + id + "/exists", "GET", {}, uid);
 
-export const containerExists = (system, id) => podmanCall("libpod/containers/" + id + "/exists", "GET", {}, system);
+export const containerExists = (uid, id) => podmanCall("libpod/containers/" + id + "/exists", "GET", {}, uid);
