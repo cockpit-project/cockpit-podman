@@ -629,7 +629,8 @@ WantedBy=multi-user.target default.target
             images[f"{items[0]}:{items[1]}"] = items[2].split(":")[-1]
 
         # show image listing toggle
-        hello_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_HELLO_LATEST]}{auth}\"]".lower()
+        uid = '0' if auth else 'user'
+        hello_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_HELLO_LATEST]}\"]".lower()
         b.wait_visible(hello_sel)
         b.click(hello_sel + " td.pf-v5-c-table__toggle button")
         b.click(hello_sel + " .pf-v5-c-menu-toggle")
@@ -794,7 +795,7 @@ WantedBy=multi-user.target default.target
         self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:3")
         self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:4")
 
-        busybox_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_BUSYBOX_LATEST]}{auth}\"]".lower()
+        busybox_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_BUSYBOX_LATEST]}\"]".lower()
         b.click(busybox_sel + " td.pf-v5-c-table__toggle button")
 
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:1")
@@ -849,7 +850,7 @@ WantedBy=multi-user.target default.target
         self.waitContainer(sha, auth, name="test-sh4", state='Exited')
         if auth:
             b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl", "mobile"])
-        alpine_sel = f"#containers-images tbody tr[data-row-id=\"{images[IMG_ALPINE_LATEST]}{auth}\"]".lower()
+        alpine_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_ALPINE_LATEST]}\"]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-v5-c-table__toggle button")
         clickDeleteImage(alpine_sel)
@@ -950,7 +951,7 @@ WantedBy=multi-user.target default.target
         b.wait_not_in_text("#containers-containers tbody tr:contains('no-cmd')", "Command")
 
         sha = self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {IMG_ENTRYPOINT}").strip()
-        entrypoint_sel = f"#containers-images tbody tr[data-row-id=\"{sha}{auth}\"]".lower()
+        entrypoint_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{sha}\"]".lower()
         clickDeleteImage(entrypoint_sel)
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
@@ -1164,7 +1165,7 @@ WantedBy=multi-user.target default.target
                 # Select the image row
 
                 # show image listing toggle
-                imageId = f"{self.imageSha}{'true' if self.user == 'system' else 'false'}"
+                imageId = f"{'0' if self.user == 'system' else 'user'}-{self.imageSha}"
                 sel = f"#containers-images tbody tr[data-row-id=\"{imageId}\"]"
                 b.wait_visible(sel)
                 b.click(sel + " td.pf-v5-c-table__toggle button")
@@ -1289,7 +1290,7 @@ WantedBy=multi-user.target default.target
 
         self.login()
 
-        image1_sel = f"#containers-images tbody tr[data-row-id=\"{image1_sha}true\"]".lower()
+        image1_sel = f"#containers-images tbody tr[data-row-id=\"0-{image1_sha}\"]".lower()
 
         b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
         b.click(f'{image1_sel} .pf-v5-c-menu-toggle')
@@ -1303,7 +1304,7 @@ WantedBy=multi-user.target default.target
 
         image1_update_sha = self.execute(True, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
         self.assertNotEqual(image1_sha, image1_update_sha)
-        b.wait_visible(f"#containers-images tbody tr[data-row-id=\"{image1_update_sha}true\"]".lower())
+        b.wait_visible(f"#containers-images tbody tr[data-row-id=\"0-{image1_update_sha}\"]".lower())
 
         # Try to pull multiple images, drop to superuser as its easier to
         # remove all images and pulling all images will show an error if the
@@ -1348,8 +1349,8 @@ WantedBy=multi-user.target default.target
         b.wait_in_text("div.download-in-progress", "Pulling")
         b.wait_not_present('h4.pf-v5-c-alert__title:contains("Failed to download image")')
         b.wait_not_present("div.download-in-progress")
-        b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"{image1_sha}false\"]".lower())
-        b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"{image2_sha}false\"]".lower())
+        b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"user-{image1_sha}\"]".lower())
+        b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"user-{image2_sha}\"]".lower())
 
         # assert the image size changed
         b.wait(lambda: getImageSize(image1) > 20)
@@ -2281,7 +2282,8 @@ WantedBy=multi-user.target default.target
             "image" can be substring, "state" might be string or array of possible states, other are
             checked for exact match.
         """
-        sel = "#containers-containers #table-" + pod + f" tbody tr[data-row-id=\"{row_id}{auth}\"]".lower()
+        uid = '0' if auth else 'user'
+        sel = "#containers-containers #table-" + pod + f" tbody tr[data-row-id=\"{uid}-{row_id}\"]".lower()
         b = self.browser
         if name:
             b.wait_text(sel + " .container-name", name)
@@ -2922,8 +2924,8 @@ WantedBy=multi-user.target default.target
         self.waitContainerRow('container_1')
         self.waitContainerRow('container_2')
 
-        container_1_sel = f"#containers-containers tbody tr[data-row-id=\"{container_1_id}{'true'}\"]"
-        container_2_sel = f"#containers-containers tbody tr[data-row-id=\"{container_2_id}{'true'}\"]"
+        container_1_sel = f"#containers-containers tbody tr[data-row-id=\"0-{container_1_id}\"]"
+        container_2_sel = f"#containers-containers tbody tr[data-row-id=\"0-{container_2_id}\"]"
 
         b.wait_visible(container_1_sel + " .ct-badge-toolbox:contains('toolbox')")
         b.wait_visible(container_2_sel + " .ct-badge-distrobox:contains('distrobox')")
@@ -2932,7 +2934,7 @@ WantedBy=multi-user.target default.target
             self.createQuadlet("container_3", auth=True)
             container_3_id = m.execute("podman container inspect --format '{{.Id}}' container_3").strip()
             self.waitContainerRow('container_3')
-            container_3_sel = f"#containers-containers tbody tr[data-row-id=\"{container_3_id}{'true'}\"]"
+            container_3_sel = f"#containers-containers tbody tr[data-row-id=\"0-{container_3_id}\"]"
             b.wait_visible(container_3_sel + " .ct-badge-service:contains('service')")
 
     def testCreatePodSystem(self):

@@ -84,7 +84,7 @@ export class ImageRunModal extends React.Component {
 
         let default_owner = this.props.systemServiceAvailable ? systemOwner : this.props.user;
         if (this.props.pod)
-            default_owner = this.props.pod.isSystem ? systemOwner : this.props.user;
+            default_owner = this.props.pod.uid === 0 ? systemOwner : this.props.user;
 
         this.state = {
             command,
@@ -230,17 +230,17 @@ export class ImageRunModal extends React.Component {
         return createConfig;
     }
 
-    createContainer = (isSystem, createConfig, runImage) => {
+    createContainer = (uid, createConfig, runImage) => {
         const Dialogs = this.props.dialogs;
-        client.createContainer(isSystem, createConfig)
+        client.createContainer(uid, createConfig)
                 .then(reply => {
                     if (runImage) {
-                        client.postContainer(isSystem, "start", reply.Id, {})
+                        client.postContainer(uid, "start", reply.Id, {})
                                 .then(() => Dialogs.close())
                                 .catch(ex => {
                                     // If container failed to start remove it, so a user can fix the settings and retry and
                                     // won't get another error that the container name is already taken.
-                                    client.delContainer(isSystem, reply.Id, true)
+                                    client.delContainer(uid, reply.Id, true)
                                             .then(() => {
                                                 this.setState({
                                                     dialogError: _("Container failed to be started"),
@@ -273,24 +273,25 @@ export class ImageRunModal extends React.Component {
         const Dialogs = this.props.dialogs;
         const createConfig = this.getCreateConfig();
         const { pullLatestImage } = this.state;
-        const isSystem = this.isSystem();
+        const uid = this.isSystem() ? 0 : null;
         let imageExists = true;
 
         try {
-            await client.imageExists(isSystem, createConfig.image);
+            await client.imageExists(uid, createConfig.image);
         } catch (error) {
             imageExists = false;
         }
 
         if (imageExists && !pullLatestImage) {
-            this.createContainer(isSystem, createConfig, runImage);
+            this.createContainer(uid, createConfig, runImage);
         } else {
             Dialogs.close();
             const tempImage = { ...createConfig };
 
             // Assign temporary properties to allow rendering
             tempImage.Id = tempImage.name;
-            tempImage.isSystem = isSystem;
+            tempImage.uid = uid;
+            tempImage.key = utils.makeKey(tempImage.uid, tempImage.Id);
             tempImage.State = { Status: _("downloading") };
             tempImage.Created = new Date();
             tempImage.Name = tempImage.name;
@@ -299,11 +300,11 @@ export class ImageRunModal extends React.Component {
 
             onDownloadContainer(tempImage);
 
-            client.pullImage(isSystem, createConfig.image).then(reply => {
-                client.createContainer(isSystem, createConfig)
+            client.pullImage(uid, createConfig.image).then(reply => {
+                client.createContainer(uid, createConfig)
                         .then(reply => {
                             if (runImage) {
-                                client.postContainer(isSystem, "start", reply.Id, {})
+                                client.postContainer(uid, "start", reply.Id, {})
                                         .then(() => onDownloadContainerFinished(createConfig))
                                         .catch(ex => {
                                             onDownloadContainerFinished(createConfig);
@@ -590,10 +591,10 @@ export class ImageRunModal extends React.Component {
             let need_header = this.state.searchByRegistry == 'all';
             (reg in images ? images[reg] : [])
                     .filter(image => {
-                        if (image.isSystem && !isSystem) {
+                        if (image.uid !== undefined && image.uid === 0 && !isSystem) {
                             return false;
                         }
-                        if ('isSystem' in image && !image.isSystem && isSystem) {
+                        if (image.uid !== undefined && image.uid !== 0 && isSystem) {
                             return false;
                         }
                         return image.Name.search(input) !== -1;
@@ -667,7 +668,7 @@ export class ImageRunModal extends React.Component {
 
     async validateContainerName(containerName) {
         try {
-            await client.containerExists(this.isSystem(), containerName);
+            await client.containerExists(this.isSystem() ? 0 : null, containerName);
         } catch (error) {
             return;
         }

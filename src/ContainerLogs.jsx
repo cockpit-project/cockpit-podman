@@ -112,7 +112,7 @@ class ContainerLogs extends React.Component {
         }
         this.resize(this.props.width);
 
-        const connection = rest.connect(this.props.system ? 0 : null);
+        const connection = rest.connect(this.props.uid);
         const options = {
             method: "GET",
             path: client.VERSION + "libpod/containers/" + this.props.containerId + "/logs",
@@ -173,7 +173,7 @@ class ContainerLogs extends React.Component {
 
 ContainerLogs.propTypes = {
     containerId: PropTypes.string.isRequired,
-    system: PropTypes.bool.isRequired,
+    uid: PropTypes.number,
     width: PropTypes.number.isRequired
 };
 

@@ -65,10 +65,10 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, userSe
 
         const actions = [];
         if (deleteUserImages) {
-            actions.push(client.pruneUnusedImages(false));
+            actions.push(client.pruneUnusedImages(null));
         }
         if (deleteSystemImages) {
-            actions.push(client.pruneUnusedImages(true));
+            actions.push(client.pruneUnusedImages(0));
         }
         Promise.all(actions).then(close)
                 .catch(ex => {
@@ -79,8 +79,8 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, userSe
     };
 
     const isSystem = systemServiceAvailable;
-    const userImages = unusedImages.filter(image => !image.isSystem);
-    const systemImages = unusedImages.filter(image => image.isSystem);
+    const userImages = unusedImages.filter(image => image.uid === null);
+    const systemImages = unusedImages.filter(image => image.uid === 0);
     const showCheckboxes = userImages.length > 0 && systemImages.length > 0;
 
     return (

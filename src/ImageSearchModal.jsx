@@ -122,7 +122,7 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
         if (activeConnection)
             activeConnection.close();
         Dialogs.close();
-        downloadImage(selectedImageName, imageTag, isSystem);
+        downloadImage(selectedImageName, imageTag, isSystem ? 0 : null);
     };
 
     const handleClose = () => {
