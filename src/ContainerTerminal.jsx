@@ -115,7 +115,7 @@ class ContainerTerminal extends React.Component {
         const realWidth = this.term._core._renderService.dimensions.css.cell.width;
         const cols = Math.floor((width - padding) / realWidth);
         this.term.resize(cols, 24);
-        client.resizeContainersTTY(this.props.system, this.state.sessionId, this.props.tty, cols, 24)
+        client.resizeContainersTTY(this.props.uid, this.state.sessionId, this.props.tty, cols, 24)
                 .catch(e => this.setState({ errorMessage: e.message }));
     }
 
@@ -190,9 +190,9 @@ class ContainerTerminal extends React.Component {
     }
 
     execAndConnect() {
-        client.execContainer(this.props.system, this.state.container)
+        client.execContainer(this.props.uid, this.state.container)
                 .then(r => {
-                    const address = rest.getAddress(this.props.system ? 0 : null);
+                    const address = rest.getAddress(this.props.uid);
                     const channel = cockpit.channel({
                         payload: "stream",
                         unix: address.path,
@@ -212,7 +212,7 @@ class ContainerTerminal extends React.Component {
     }
 
     connectToTty() {
-        const address = rest.getAddress(this.props.system ? 0 : null);
+        const address = rest.getAddress(this.props.uid);
         const channel = cockpit.channel({
             payload: "stream",
             unix: address.path,
@@ -276,7 +276,7 @@ ContainerTerminal.propTypes = {
     containerId: PropTypes.string.isRequired,
     containerStatus: PropTypes.string.isRequired,
     width: PropTypes.number.isRequired,
-    system: PropTypes.bool.isRequired,
+    uid: PropTypes.number,
     tty: PropTypes.bool,
 };
 

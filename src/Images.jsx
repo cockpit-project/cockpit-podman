@@ -45,13 +45,13 @@ class Images extends React.Component {
         this.renderRow = this.renderRow.bind(this);
     }
 
-    downloadImage(imageName, imageTag, system) {
+    downloadImage(imageName, imageTag, uid) {
         let pullImageId = imageName;
         if (imageTag)
             pullImageId += ":" + imageTag;
 
         this.setState(previous => ({ imageDownloadInProgress: [...previous.imageDownloadInProgress, imageName] }));
-        client.pullImage(system, pullImageId)
+        client.pullImage(uid, pullImageId)
                 .then(() => {
                     this.setState(previous => ({ imageDownloadInProgress: previous.imageDownloadInProgress.filter((image) => image != imageName) }));
                 })
@@ -78,7 +78,7 @@ class Images extends React.Component {
     };
 
     onPullAllImages = () => {
-        Object.values(this.props.images).forEach((image) => this.downloadImage(utils.image_name(image), null, image.isSystem));
+        Object.values(this.props.images).forEach((image) => this.downloadImage(utils.image_name(image), null, image.uid));
     };
 
     onOpenPruneUnusedImagesDialog = () => {
@@ -90,7 +90,7 @@ class Images extends React.Component {
         if (imageContainerList === null) {
             return { title: _("unused"), count: 0 };
         }
-        const containers = imageContainerList[image.Id + image.isSystem.toString()];
+        const containers = imageContainerList[image.key];
         if (containers !== undefined) {
             const title = cockpit.format(cockpit.ngettext("$0 container", "$0 containers", containers.length), containers.length);
             return { title, count: containers.length };
@@ -119,7 +119,7 @@ class Images extends React.Component {
                 imageStats.imagesTotal += 1;
                 imageStats.imagesSize += image.Size;
 
-                const usedBy = imageContainerList[image.Id + image.isSystem.toString()];
+                const usedBy = imageContainerList[image.key];
                 if (usedBy === undefined) {
                     imageStats.unusedTotal += 1;
                     imageStats.unusedSize += image.Size;
@@ -137,7 +137,7 @@ class Images extends React.Component {
 
         const columns = [
             { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
-            { title: image.isSystem ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
+            { title: (image.uid == 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
             { title: <utils.RelativeTime time={image.Created * 1000} />, props: { className: "ignore-pixels" } },
             { title: utils.truncate_id(image.Id), props: { className: "ignore-pixels" } },
             { title: cockpit.format_bytes(image.Size), props: { className: "ignore-pixels", modifier: "nowrap" } },
@@ -157,7 +157,7 @@ class Images extends React.Component {
             renderer: ImageDetails,
             data: {
                 image,
-                containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.Id + image.isSystem.toString()] : null,
+                containers: this.props.imageContainerList !== null ? this.props.imageContainerList[image.key] : null,
                 showAll: this.props.showAll,
             }
         });
@@ -174,8 +174,8 @@ class Images extends React.Component {
                                 tabRenderers={tabs} />,
             columns,
             props: {
-                key: image.Id + image.isSystem.toString(),
-                "data-row-id": image.Id + image.isSystem.toString(),
+                key: image.key,
+                "data-row-id": image.key,
             },
         };
     }
@@ -201,9 +201,9 @@ class Images extends React.Component {
         if (this.props.images !== null) {
             filtered = Object.keys(this.props.images).filter(id => {
                 if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
-                    if (this.props.ownerFilter === "system" && !this.props.images[id].isSystem)
+                    if (this.props.ownerFilter === "system" && this.props.images[id].uid !== 0)
                         return false;
-                    if (this.props.ownerFilter !== "system" && this.props.images[id].isSystem)
+                    if (this.props.ownerFilter !== "system" && this.props.images[id].uid === 0)
                         return false;
                 }
 
@@ -218,8 +218,8 @@ class Images extends React.Component {
 
         filtered.sort((a, b) => {
             // User images are in front of system ones
-            if (this.props.images[a].isSystem !== this.props.images[b].isSystem)
-                return this.props.images[a].isSystem ? 1 : -1;
+            if (this.props.images[a].uid !== this.props.images[b].uid)
+                return this.props.images[a].uid === 0 ? 1 : -1;
             const name_a = this.props.images[a].RepoTags ? this.props.images[a].RepoTags[0] : "";
             const name_b = this.props.images[b].RepoTags ? this.props.images[b].RepoTags[0] : "";
             if (name_a === "")
@@ -238,9 +238,9 @@ class Images extends React.Component {
 
             // Only filter by selected user
             if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
-                if (this.props.ownerFilter === "system" && !this.props.images[id].isSystem)
+                if (this.props.ownerFilter === "system" && this.props.images[id].uid !== 0)
                     return false;
-                if (this.props.ownerFilter !== "system" && this.props.images[id].isSystem)
+                if (this.props.ownerFilter !== "system" && this.props.images[id].uid === 0)
                     return false;
             }
 
@@ -400,7 +400,7 @@ const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, 
     };
 
     const pullImage = () => {
-        downloadImage(utils.image_name(image), null, image.isSystem);
+        downloadImage(utils.image_name(image), null, image.uid);
     };
 
     const removeImage = () => {
