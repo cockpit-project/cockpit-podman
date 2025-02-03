@@ -1,17 +1,6 @@
 import rest from './rest.js';
 
-const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
 export const VERSION = "/v1.12/";
-
-export function getAddress(system) {
-    if (system)
-        return PODMAN_SYSTEM_ADDRESS;
-    const xrd = sessionStorage.getItem('XDG_RUNTIME_DIR');
-    if (xrd)
-        return (xrd + "/podman/podman.sock");
-    console.warn("$XDG_RUNTIME_DIR is not present. Cannot use user service.");
-    return "";
-}
 
 function podmanCall(name, method, args, system, body) {
     const options = {
@@ -21,7 +10,7 @@ function podmanCall(name, method, args, system, body) {
         params: args,
     };
 
-    return rest.call(getAddress(system), system, options);
+    return rest.call(system ? 0 : null, options);
 }
 
 const podmanJson = (name, method, args, system, body) => podmanCall(name, method, args, system, body)
@@ -35,8 +24,8 @@ function podmanMonitor(name, method, args, callback, system) {
         params: args,
     };
 
-    const connection = rest.connect(getAddress(system), system);
-    return connection.monitor(options, callback, system);
+    const connection = rest.connect(system ? 0 : null);
+    return connection.monitor(options, callback);
 }
 
 export const streamEvents = (system, callback) => podmanMonitor("libpod/events", "GET", {}, callback, system);

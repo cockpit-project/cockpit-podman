@@ -28,9 +28,9 @@ export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"),
 
 export const fallbackRegistries = ["docker.io", "quay.io"];
 
-export function debug(system, ...args) {
+export function debug(...args) {
     if (window.debugging === "all" || window.debugging?.includes("podman"))
-        console.debug("podman", system ? "system" : "user", ...args);
+        console.debug("podman", ...args);
 }
 
 export function truncate_id(id) {

@@ -405,7 +405,7 @@ export class ImageRunModal extends React.Component {
             this.activeConnection.close();
 
         this.setState({ searchFinished: false, searchInProgress: true });
-        this.activeConnection = rest.connect(client.getAddress(this.isSystem()), this.isSystem());
+        this.activeConnection = rest.connect(this.isSystem() ? 0 : null);
         const searches = [];
 
         // Try to get specified image manifest

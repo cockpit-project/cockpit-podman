@@ -112,7 +112,7 @@ class ContainerLogs extends React.Component {
         }
         this.resize(this.props.width);
 
-        const connection = rest.connect(client.getAddress(this.props.system), this.props.system);
+        const connection = rest.connect(this.props.system ? 0 : null);
         const options = {
             method: "GET",
             path: client.VERSION + "libpod/containers/" + this.props.containerId + "/logs",
@@ -125,7 +125,7 @@ class ContainerLogs extends React.Component {
             },
         };
 
-        connection.monitor(options, this.onStreamMessage, this.props.system, true)
+        connection.monitor(options, this.onStreamMessage, true)
                 .then(this.onStreamClose)
                 .catch(e => {
                     const error = JSON.parse(new TextDecoder().decode(e.message));
