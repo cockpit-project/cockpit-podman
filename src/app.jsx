@@ -34,6 +34,7 @@ import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
+import rest from './rest.js';
 import { WithPodmanInfo } from './util.js';
 
 const _ = cockpit.gettext;
@@ -487,7 +488,8 @@ class Application extends React.Component {
 
         // HACK: Listen for podman socket/service going away; this is only necessary with the C bridge
         // (Debian 12, RHEL 8). With the Python bridge, the above streamEvents() resolves when the service goes away.
-        const ch = cockpit.channel({ superuser: system ? "require" : null, payload: "stream", unix: client.getAddress(system) });
+        const address = rest.getAddress(system ? 0 : null);
+        const ch = cockpit.channel({ unix: address.path, superuser: address.superuser, payload: "stream" });
         ch.addEventListener("close", () => {
             console.log("init", system ? "system" : "user", "podman service closed");
             this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
