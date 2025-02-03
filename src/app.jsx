@@ -487,7 +487,8 @@ class Application extends React.Component {
                     this.cleanupAfterService(system);
                 });
 
-        // Listen for podman socket/service going away
+        // HACK: Listen for podman socket/service going away; this is only necessary with the C bridge
+        // (Debian 12, RHEL 8). With the Python bridge, the above streamEvents() resolves when the service goes away.
         const ch = cockpit.channel({ superuser: system ? "require" : null, payload: "stream", unix: client.getAddress(system) });
         ch.addEventListener("close", () => {
             console.log("init", system ? "system" : "user", "podman service closed");

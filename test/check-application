@@ -1640,19 +1640,33 @@ WantedBy=multi-user.target default.target
     def testFailingPodmanService(self):
         b = self.browser
 
-        self.execute(True, "systemctl mask podman.service")
-        self.addCleanup(self.execute, True, "systemctl unmask podman.service")
-        self.execute(False, "systemctl --user mask podman.service")
-        self.addCleanup(self.execute, False, "systemctl --user unmask podman.service")
-        self.login_and_go("/podman")
+        try:
+            self.execute(True, "systemctl mask podman.service")
+            self.execute(False, "systemctl --user mask podman.service")
+            self.login_and_go("/podman")
 
-        # Troubleshoot action
+            # Troubleshoot action
+            b.wait_text("#app .pf-v5-c-empty-state__title", "Podman service failed")
+            b.click("#app .pf-v5-c-empty-state button")
+            b.enter_page("/system/services")
+            # services page is too slow
+            with b.wait_timeout(60):
+                b.wait_in_text("#service-details", "podman.socket")
+            b.logout()
+        finally:
+            self.execute(True, "systemctl unmask podman.service")
+            self.execute(False, "systemctl --user unmask podman.service")
+
+        # now let it fail while c-podman is running
+        b.login_and_go("/podman")
+        b.wait_visible("#app")
+        b.wait_in_text("#containers-images", "system")
+        b.wait_in_text("#containers-images", "user")
+        self.execute(True, "systemctl stop podman.service")
+        b.wait_not_in_text("#containers-images", "system")
+        b.wait_in_text("#containers-images", "user")
+        self.execute(False, "systemctl --user stop podman.service")
         b.wait_text("#app .pf-v5-c-empty-state__title", "Podman service failed")
-        b.click("#app .pf-v5-c-empty-state button")
-        b.enter_page("/system/services")
-        # services page is too slow
-        with b.wait_timeout(60):
-            b.wait_in_text("#service-details", "podman.socket")
 
     def testCreateContainerSystem(self):
         self._testCreateContainer(True)
