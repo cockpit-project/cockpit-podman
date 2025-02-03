@@ -20,14 +20,37 @@ let call_id = 0;
 
 const NL = '\n'.charCodeAt(0); // always 10, but avoid magic constant
 
-function connect(address, system) {
+const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
+
+/* uid: null for logged in session user; 0 for root; in the future we'll support other users */
+/* Return { path, superuser } */
+function getAddress(uid) {
+    if (uid === null) {
+        // FIXME: make this async and call cockpit.user()
+        const xrd = sessionStorage.getItem('XDG_RUNTIME_DIR');
+        if (xrd)
+            return { path: xrd + "/podman/podman.sock", superuser: null };
+        console.warn("$XDG_RUNTIME_DIR is not present. Cannot use user service.");
+        return { path: "", superuser: null };
+    }
+
+    if (uid === 0)
+        return { path: PODMAN_SYSTEM_ADDRESS, superuser: "require" };
+
+    throw new Error(`getAddress: uid ${uid} not supported`);
+}
+
+/* uid: null for logged in session user; 0 for root; in the future we'll support other users */
+function connect(uid) {
+    const addr = getAddress(uid);
     /* This doesn't create a channel until a request */
     /* HACK: use binary channel to work around https://github.com/cockpit-project/cockpit/issues/19235 */
-    const http = cockpit.http(address, { superuser: system ? "require" : null, binary: true });
+    const http = cockpit.http(addr.path, { superuser: addr.superuser, binary: true });
     const connection = {};
     const decoder = new TextDecoder();
+    const user_str = (uid === null) ? "user" : (uid === 0) ? "root" : `uid ${uid}`;
 
-    connection.monitor = function(options, callback, system, return_raw) {
+    connection.monitor = function(options, callback, return_raw) {
         return new Promise((resolve, reject) => {
             let buffer = new Uint8Array();
 
@@ -48,7 +71,7 @@ function connect(address, system) {
                                 buffer = buffer.slice(idx + 1);
 
                                 const line_str = decoder.decode(line);
-                                debug(system, "monitor", line_str);
+                                debug(user_str, "monitor", line_str);
                                 callback(JSON.parse(line_str));
                             }
                         }
@@ -62,18 +85,18 @@ function connect(address, system) {
 
     connection.call = function (options) {
         const id = call_id++;
-        debug(system, `call ${id}:`, JSON.stringify(options));
+        debug(user_str, `call ${id}:`, JSON.stringify(options));
         return new Promise((resolve, reject) => {
             options = options || {};
             http.request(options)
                     .then(result => {
                         const text = decoder.decode(result);
-                        debug(system, `call ${id} result:`, text);
+                        debug(user_str, `call ${id} result:`, text);
                         resolve(text);
                     })
                     .catch((error, content) => {
                         const text = decoder.decode(content);
-                        debug(system, `call ${id} error:`, JSON.stringify(error), "content", text);
+                        debug(user_str, `call ${id} error:`, JSON.stringify(error), "content", text);
                         manage_error(reject, error, text);
                     });
         });
@@ -90,8 +113,8 @@ function connect(address, system) {
  * Connects to the podman service, performs a single call, and closes the
  * connection.
  */
-async function call (address, system, parameters) {
-    const connection = connect(address, system);
+async function call (uid, parameters) {
+    const connection = connect(uid);
     const result = await connection.call(parameters);
     connection.close();
     return result;
@@ -99,5 +122,6 @@ async function call (address, system, parameters) {
 
 export default {
     connect,
-    call
+    call,
+    getAddress,
 };

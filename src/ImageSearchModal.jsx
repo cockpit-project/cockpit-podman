@@ -48,7 +48,7 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
     // can't use that so instead we pass the selected registry.
     const onSearchTriggered = (searchRegistry = "", forceSearch = false) => {
         // When search re-triggers close any existing active connection
-        activeConnection = rest.connect(client.getAddress(isSystem), isSystem);
+        activeConnection = rest.connect(isSystem ? 0 : null);
         if (activeConnection)
             activeConnection.close();
         setSearchFinished(false);
