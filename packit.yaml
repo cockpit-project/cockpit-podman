@@ -18,14 +18,8 @@ srpm_build_deps:
 jobs:
   - job: copr_build
     trigger: pull_request
-    targets:
-    - fedora-41
-    - fedora-42
-    - fedora-latest-aarch64
-    - fedora-development
-    - centos-stream-9-x86_64
-    - centos-stream-9-aarch64
-    - centos-stream-10
+    # implicitly defined by "tests" job, no extra build-only targets
+    targets: []
 
   - job: tests
     trigger: pull_request
