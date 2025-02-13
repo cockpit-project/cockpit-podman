@@ -85,7 +85,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
     };
 
     const createPod = (isSystem, createConfig) => {
-        client.createPod(isSystem, createConfig)
+        client.createPod(isSystem ? 0 : null, createConfig)
                 .then(() => Dialogs.close())
                 .catch(ex => {
                     setDialogError(_("Pod failed to be created"));

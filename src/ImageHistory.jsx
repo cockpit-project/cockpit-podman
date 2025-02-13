@@ -20,16 +20,16 @@ const IdColumn = Id => {
 const ImageDetails = ({ image }) => {
     const [history, setHistory] = useState([]);
     const [error, setError] = useState(null);
-    const isSystem = image.isSystem;
+    const uid = image.uid;
     const id = image.Id;
 
     useEffect(() => {
-        client.imageHistory(isSystem, id).then(setHistory)
+        client.imageHistory(uid, id).then(setHistory)
                 .catch(ex => {
                     console.error("Cannot get image history", ex);
                     setError(true);
                 });
-    }, [isSystem, id]);
+    }, [uid, id]);
 
     const columns = ["ID", _("Created"), _("Created by"), _("Size"), _("Comments")];
     let showComments = false;
