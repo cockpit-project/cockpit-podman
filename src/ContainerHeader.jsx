@@ -7,19 +7,20 @@ import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dis
 import cockpit from 'cockpit';
 const _ = cockpit.gettext;
 
-const ContainerHeader = ({ user, twoOwners, ownerFilter, handleOwnerChanged, textFilter, handleFilterChanged }) => {
+const ContainerHeader = ({ users, ownerFilter, handleOwnerChanged, textFilter, handleFilterChanged }) => {
     return (
         <Toolbar className="pf-m-page-insets">
             <ToolbarContent>
-                { twoOwners &&
+                { users.length >= 2 &&
                     <>
                         <ToolbarItem variant="label">
                             {_("Owner")}
                         </ToolbarItem>
                         <ToolbarItem>
                             <FormSelect id="containers-containers-owner" value={ownerFilter} onChange={(_, value) => handleOwnerChanged(value)}>
-                                <FormSelectOption value='user' label={user} />
-                                <FormSelectOption value={0} label={_("System")} />
+                                { users.map(user => <FormSelectOption key={user.name}
+                                                                      value={user.uid == null ? "user" : user.uid}
+                                                                      label={user.name} />) }
                                 <FormSelectOption value='all' label={_("All")} />
                             </FormSelect>
                         </ToolbarItem>

@@ -35,26 +35,34 @@ import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
 import rest from './rest.js';
-import { makeKey, WithPodmanInfo } from './util.js';
+import { makeKey, WithPodmanInfo, debug } from './util.js';
 
 const _ = cockpit.gettext;
+
+// sort order of "users" state for dialogs: system, session user, then other users by ascending name
+function compareUser(a, b) {
+    if (a.uid === 0)
+        return -1;
+    if (b.uid === 0)
+        return 1;
+    if (a.uid === null)
+        return -1;
+    if (b.uid === null)
+        return 1;
+    return a.name.localeCompare(b.name);
+}
 
 class Application extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            systemServiceAvailable: null,
-            userServiceAvailable: null,
+            // currently connected services per user: { uid, name, imagesLoaded, containersLoaded, podsLoaded }
+            // start with dummy state to wait for initialization
+            users: [{ uid: 0, name: _("system") }, { uid: null, name: _("user") }],
             images: null,
-            userImagesLoaded: false,
-            systemImagesLoaded: false,
             containers: null,
             containersFilter: "all",
             containersStats: {},
-            userContainersLoaded: null,
-            systemContainersLoaded: null,
-            userPodsLoaded: null,
-            systemPodsLoaded: null,
             textFilter: "",
             ownerFilter: "all",
             dropDownValue: 'Everything',
@@ -63,7 +71,6 @@ class Application extends React.Component {
             selinuxAvailable: false,
             podmanRestartAvailable: false,
             userPodmanRestartAvailable: false,
-            currentUser: _("User"),
             userLingeringEnabled: null,
             location: {},
         };
@@ -188,10 +195,8 @@ class Application extends React.Component {
                             copyContainers[detail.key] = detail;
                         }
 
-                        return {
-                            containers: copyContainers,
-                            [uid === 0 ? "systemContainersLoaded" : "userContainersLoaded"]: true,
-                        };
+                        const users = prevState.users.map(u => u.uid === uid ? { ...u, containersLoaded: true } : u);
+                        return { containers: copyContainers, users };
                     });
                     this.updateContainerStats(uid);
                 })
@@ -215,10 +220,8 @@ class Application extends React.Component {
                             copyImages[image.key] = image;
                         });
 
-                        return {
-                            images: copyImages,
-                            [uid == 0 ? "systemImagesLoaded" : "userImagesLoaded"]: true
-                        };
+                        const users = prevState.users.map(u => u.uid === uid ? { ...u, imagesLoaded: true } : u);
+                        return { images: copyImages, users };
                     });
                 })
                 .catch(ex => {
@@ -243,10 +246,8 @@ class Application extends React.Component {
                             copyPods[pod.key] = pod;
                         }
 
-                        return {
-                            pods: copyPods,
-                            [uid == 0 ? "systemPodsLoaded" : "userPodsLoaded"]: true,
-                        };
+                        const users = prevState.users.map(u => u.uid === uid ? { ...u, podsLoaded: true } : u);
+                        return { pods: copyPods, users };
                     });
                 })
                 .catch(ex => {
@@ -453,35 +454,37 @@ class Application extends React.Component {
                 });
         });
 
-        this.setState({ [uid === 0 ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+        this.setState(prevState => ({ users: prevState.users.filter(u => u.uid !== uid) }));
+
         // regardless of whose service went away (system/user), it makes owner filter disappear, so reset it
         this.onOwnerChanged("all");
     }
 
-    async init(uid) {
+    async init(uid, username) {
         const system = uid === 0;
 
         try {
             await cockpit.spawn(["systemctl", ...(system ? [] : ["--user"]), "start", "podman.socket"],
                                 { superuser: system ? "require" : null, err: "message" });
             const reply = await client.getInfo(uid);
-            this.setState({
-                [system ? "systemServiceAvailable" : "userServiceAvailable"]: true,
-                version: reply.version.Version,
-                registries: reply.registries,
-                cgroupVersion: reply.host.cgroupVersion,
+            this.setState(prevState => {
+                const users = prevState.users.filter(u => u.uid !== uid);
+                users.push({ uid, name: username, containersLoaded: false, podsLoaded: false, imagesLoaded: false });
+                // keep a nice sort order for dialogs
+                users.sort(compareUser);
+                debug("init uid", uid, "username", username, "new users:", users);
+                return {
+                    users,
+                    version: reply.version.Version,
+                    registries: reply.registries,
+                    cgroupVersion: reply.host.cgroupVersion,
+                };
             });
         } catch (err) {
             if (!system || err.problem != 'access-denied')
                 console.warn("init uid", uid, "getInfo failed:", err.toString());
 
-            this.setState({
-                [system ? "systemServiceAvailable" : "userServiceAvailable"]: false,
-                [system ? "systemContainersLoaded" : "userContainersLoaded"]: true,
-                [system ? "systemImagesLoaded" : "userImagesLoaded"]: true,
-                [system ? "systemPodsLoaded" : "userPodsLoaded"]: true
-            });
-
+            this.setState(prevState => ({ users: prevState.users.filter(u => u.uid !== uid) }));
             return;
         }
 
@@ -506,28 +509,24 @@ class Application extends React.Component {
     }
 
     componentDidMount() {
-        superuser.addEventListener("changed", () => this.init(0));
+        superuser.addEventListener("changed", () => this.init(0, _("system")));
 
         cockpit.user().then(user => {
             // there is no "user service" for root, ignore that
             if (user.id === 0) {
-                this.setState({
-                    userImagesLoaded: true,
-                    userContainersLoaded: true,
-                    userPodsLoaded: true,
-                });
+                // clear the dummy init user, otherwise UI waits forever for initialization
+                this.setState(prevState => ({ users: prevState.users.filter(u => u.uid !== null) }));
                 return;
             }
 
             cockpit.script("echo $XDG_RUNTIME_DIR")
                     .then(xrd => {
                         sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
-                        this.init(null);
+                        this.init(null, user.name || _("User"));
                         this.checkUserRestartService();
                     })
                     .catch(e => console.log("Could not read $XDG_RUNTIME_DIR:", e.message));
 
-            this.setState({ currentUser: user.name || _("User") });
             // HACK: https://github.com/systemd/systemd/issues/22244#issuecomment-1210357701
             cockpit.file(`/var/lib/systemd/linger/${user.name}`).watch((content, tag) => {
                 if (content == null && tag === '-') {
@@ -594,10 +593,8 @@ class Application extends React.Component {
     }
 
     render() {
-        if (this.state.systemServiceAvailable === null && this.state.userServiceAvailable === null) // not detected yet
-            return null;
-
-        if (!this.state.systemServiceAvailable && !this.state.userServiceAvailable) {
+        // show troubleshoot if no users are available, i.e. all user's podman services failed
+        if (this.state.users.length === 0) {
             return (
                 <Page>
                     <PageSection variant={PageSectionVariants.light}>
@@ -631,36 +628,36 @@ class Application extends React.Component {
         } else
             imageContainerList = null;
 
+        const loadingImages = this.state.users.find(u => !u.imagesLoaded);
+        const loadingContainers = this.state.users.find(u => !u.containersLoaded);
+        const loadingPods = this.state.users.find(u => !u.podsLoaded);
+
         const imageList = (
             <Images
                 key="imageList"
-                images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
+                images={loadingImages ? null : this.state.images}
                 imageContainerList={imageContainerList}
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
                 showAll={ () => this.setState({ containersFilter: "all" }) }
-                user={this.state.currentUser}
-                userServiceAvailable={this.state.userServiceAvailable}
-                systemServiceAvailable={this.state.systemServiceAvailable}
+                users={this.state.users}
             />
         );
         const containerList = (
             <Containers
                 key="containerList"
                 version={this.state.version}
-                images={this.state.systemImagesLoaded && this.state.userImagesLoaded ? this.state.images : null}
-                containers={this.state.systemContainersLoaded && this.state.userContainersLoaded ? this.state.containers : null}
-                pods={this.state.systemPodsLoaded && this.state.userPodsLoaded ? this.state.pods : null}
+                images={loadingImages ? null : this.state.images}
+                containers={loadingContainers ? null : this.state.containers}
+                pods={loadingPods ? null : this.state.pods}
                 containersStats={this.state.containersStats}
                 filter={this.state.containersFilter}
                 handleFilterChange={this.onContainerFilterChanged}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
-                user={this.state.currentUser}
+                users={this.state.users}
                 onAddNotification={this.onAddNotification}
-                userServiceAvailable={this.state.userServiceAvailable}
-                systemServiceAvailable={this.state.systemServiceAvailable}
                 cgroupVersion={this.state.cgroupVersion}
                 updateContainer={this.updateContainer}
             />
@@ -702,8 +699,7 @@ class Application extends React.Component {
                               handleOwnerChanged={this.onOwnerChanged}
                               ownerFilter={this.state.ownerFilter}
                               textFilter={this.state.textFilter}
-                              twoOwners={this.state.systemServiceAvailable && this.state.userServiceAvailable}
-                              user={this.state.currentUser}
+                              users={this.state.users}
                             />
                         </PageSection>
                         <PageSection className='ct-pagesection-mobile'>

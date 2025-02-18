@@ -69,12 +69,7 @@ class Images extends React.Component {
 
     onOpenNewImagesDialog = () => {
         const Dialogs = this.context;
-        Dialogs.show(
-            <ImageSearchModal downloadImage={this.downloadImage}
-                              user={this.props.user}
-                              userServiceAvailable={this.props.userServiceAvailable}
-                              systemServiceAvailable={this.props.systemServiceAvailable} />
-        );
+        Dialogs.show(<ImageSearchModal downloadImage={this.downloadImage} users={this.props.users} />);
     };
 
     onPullAllImages = () => {
@@ -135,18 +130,19 @@ class Images extends React.Component {
         const tabs = [];
         const { title: usedByText, count: usedByCount } = this.getUsedByText(image);
 
+        const user = this.props.users.find(user => user.uid === image.uid);
+        cockpit.assert(user, `User not found for image uid ${image.uid}`);
+
         const columns = [
             { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
-            { title: (image.uid == 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
+            { title: (image.uid == 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{user.name}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
             { title: <utils.RelativeTime time={image.Created * 1000} />, props: { className: "ignore-pixels" } },
             { title: utils.truncate_id(image.Id), props: { className: "ignore-pixels" } },
             { title: cockpit.format_bytes(image.Size), props: { className: "ignore-pixels", modifier: "nowrap" } },
             { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" } },
             {
                 title: <ImageActions image={image} onAddNotification={this.props.onAddNotification}
-                                     user={this.props.user}
-                                     userServiceAvailable={this.props.userServiceAvailable}
-                                     systemServiceAvailable={this.props.systemServiceAvailable}
+                                     users={this.props.users}
                                      downloadImage={this.downloadImage} />,
                 props: { className: 'pf-v5-c-table__action content-action' }
             },
@@ -320,13 +316,13 @@ class Images extends React.Component {
                   * unused images at that time.  Thus, we can't use
                   * Dialog.show for it but include it here in the
                   * DOM. */}
-                {this.state.showPruneUnusedImagesModal &&
-                <PruneUnusedImagesModal
-                  close={() => this.setState({ showPruneUnusedImagesModal: false })}
-                  unusedImages={unusedImages}
-                  onAddNotification={this.props.onAddNotification}
-                  userServiceAvailable={this.props.userServiceAvailable}
-                  systemServiceAvailable={this.props.systemServiceAvailable} /> }
+                { this.state.showPruneUnusedImagesModal &&
+                    <PruneUnusedImagesModal
+                    close={() => this.setState({ showPruneUnusedImagesModal: false })}
+                    unusedImages={unusedImages}
+                    onAddNotification={this.props.onAddNotification}
+                    users={this.props.users} />
+                }
                 {this.state.imageDownloadInProgress.length > 0 && <CardFooter>
                     <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress.join(', ')}... </div>
                 </CardFooter>}
@@ -373,7 +369,7 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePullAllImages, handleP
     );
 };
 
-const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, userServiceAvailable, downloadImage }) => {
+const ImageActions = ({ image, onAddNotification, users, downloadImage }) => {
     const Dialogs = useDialogs();
 
     const runImage = () => {
@@ -383,9 +379,7 @@ const ImageActions = ({ image, onAddNotification, user, systemServiceAvailable, 
                     <DialogsContext.Consumer>
                         {(Dialogs) => (
                             <ImageRunModal
-                              systemServiceAvailable={systemServiceAvailable}
-                              userServiceAvailable={userServiceAvailable}
-                              user={user}
+                              users={users}
                               image={image}
                               onAddNotification={onAddNotification}
                               podmanInfo={podmanInfo}

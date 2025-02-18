@@ -393,10 +393,13 @@ class Containers extends React.Component {
                 state.push(<Badge key={healthcheck} isRead className={"ct-badge-container-" + healthcheck}>{localized_health}</Badge>);
         }
 
+        const user = this.props.users.find(user => user.uid === container.uid);
+        cockpit.assert(user, `User not found for container uid ${container.uid}`);
+
         const columns = [
             { title: info_block, sortKey: container.Name ?? container.Id },
             {
-                title: (container.uid === 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{this.props.user}</div>,
+                title: (container.uid === 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{user.name}</div>,
                 props: { modifier: "nowrap" },
                 sortKey: container.key,
             },
@@ -702,14 +705,12 @@ class Containers extends React.Component {
                         {(podmanInfo) => (
                             <DialogsContext.Consumer>
                                 {(Dialogs) => (
-                                    <ImageRunModal user={this.props.user}
-                                                              localImages={nonIntermediateImages}
-                                                              pod={inPod}
-                                                              systemServiceAvailable={this.props.systemServiceAvailable}
-                                                              userServiceAvailable={this.props.userServiceAvailable}
-                                                              onAddNotification={this.props.onAddNotification}
-                                                              podmanInfo={podmanInfo}
-                                                              dialogs={Dialogs} />
+                                    <ImageRunModal users={this.props.users}
+                                                   localImages={nonIntermediateImages}
+                                                   pod={inPod}
+                                                   onAddNotification={this.props.onAddNotification}
+                                                   podmanInfo={podmanInfo}
+                                                   dialogs={Dialogs} />
                                 )}
                             </DialogsContext.Consumer>
                         )}
@@ -718,9 +719,7 @@ class Containers extends React.Component {
 
         const createPod = () => {
             Dialogs.show(<PodCreateModal
-                systemServiceAvailable={this.props.systemServiceAvailable}
-                userServiceAvailable={this.props.userServiceAvailable}
-                user={this.props.user}
+                users={this.props.users}
                 onAddNotification={this.props.onAddNotification} />);
         };
 
@@ -869,8 +868,7 @@ class Containers extends React.Component {
                       close={() => this.setState({ showPruneUnusedContainersModal: false })}
                       unusedContainers={unusedContainers}
                       onAddNotification={this.props.onAddNotification}
-                      userSystemServiceAvailable={this.props.userServiceAvailable && this.props.systemServiceAvailable}
-                      user={this.props.user} /> }
+                      users={this.props.users} /> }
                 </CardBody>
             </Card>
         );

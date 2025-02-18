@@ -20,14 +20,12 @@ import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
-const systemOwner = "system";
-
-export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvailable }) => {
+export const PodCreateModal = ({ users }) => {
     const { version, selinuxAvailable } = utils.usePodmanInfo();
     const [podName, setPodName] = useState(dockerNames.getRandomName());
     const [publish, setPublish] = useState([]);
     const [volumes, setVolumes] = useState([]);
-    const [owner, setOwner] = useState(systemServiceAvailable ? systemOwner : user);
+    const [owner, setOwner] = useState(users[0]);
     const [dialogError, setDialogError] = useState(null);
     const [dialogErrorDetail, setDialogErrorDetail] = useState(null);
     const [validationFailed, setValidationFailed] = useState({});
@@ -84,8 +82,8 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
         });
     };
 
-    const createPod = (isSystem, createConfig) => {
-        client.createPod(isSystem ? 0 : null, createConfig)
+    const createPod = (uid, createConfig) => {
+        client.createPod(uid, createConfig)
                 .then(() => Dialogs.close())
                 .catch(ex => {
                     setDialogError(_("Pod failed to be created"));
@@ -97,7 +95,7 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
         if (!validateForm())
             return;
         const createConfig = getCreateConfig();
-        createPod(owner === systemOwner, createConfig);
+        createPod(owner.uid, createConfig);
     };
 
     const isFormInvalid = validationFailed => {
@@ -168,18 +166,16 @@ export const PodCreateModal = ({ user, systemServiceAvailable, userServiceAvaila
                            }} />
                 <FormHelper fieldId="create-pod-dialog-name" helperTextInvalid={validationFailed?.podName} />
             </FormGroup>
-            { userServiceAvailable && systemServiceAvailable &&
+            { users.length > 1 &&
                 <FormGroup isInline hasNoPaddingTop fieldId='create-pod-dialog-owner' label={_("Owner")} className="ct-m-horizontal">
-                    <Radio value={systemOwner}
-                            label={_("System")}
-                            id="create-pod-dialog-owner-system"
-                            isChecked={owner === systemOwner}
-                            onChange={() => setOwner(systemOwner)} />
-                    <Radio value={user}
-                            label={cockpit.format("$0 $1", _("User:"), user)}
-                            id="create-pod-dialog-owner-user"
+                    { users.map(user => (
+                        <Radio key={user.name}
+                            value={user.name}
+                            label={user.uid === 0 ? _("System") : cockpit.format("$0 $1", _("User:"), user.name)}
+                            id={"create-pod-dialog-owner-" + user.name }
                             isChecked={owner === user}
-                            onChange={() => setOwner(user)} />
+                            onChange={() => setOwner(user)} />))
+                    }
                 </FormGroup>
             }
             <DynamicListForm id='create-pod-dialog-publish'
