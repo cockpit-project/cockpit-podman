@@ -23,13 +23,13 @@ import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
 
-export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, systemServiceAvailable }) => {
+export const ImageSearchModal = ({ downloadImage, users }) => {
     const [searchInProgress, setSearchInProgress] = useState(false);
     const [searchFinished, setSearchFinished] = useState(false);
     const [imageIdentifier, setImageIdentifier] = useState('');
     const [imageList, setImageList] = useState([]);
     const [imageTag, setImageTag] = useState("");
-    const [isSystem, setIsSystem] = useState(systemServiceAvailable);
+    const [user, setUser] = useState(users[0]);
     const [selectedRegistry, setSelectedRegistry] = useState("");
     const [selected, setSelected] = useState("");
     const [dialogError, setDialogError] = useState("");
@@ -48,7 +48,7 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
     // can't use that so instead we pass the selected registry.
     const onSearchTriggered = (searchRegistry = "", forceSearch = false) => {
         // When search re-triggers close any existing active connection
-        activeConnection = rest.connect(isSystem ? 0 : null);
+        activeConnection = rest.connect(user.uid);
         if (activeConnection)
             activeConnection.close();
         setSearchFinished(false);
@@ -116,13 +116,13 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
         }
     };
 
-    const onToggleUser = ev => setIsSystem(ev.currentTarget.value === "system");
+    const onToggleUser = ev => setUser(users.find(u => u.name === ev.currentTarget.value));
     const onDownloadClicked = () => {
         const selectedImageName = imageList[selected].Name;
         if (activeConnection)
             activeConnection.close();
         Dialogs.close();
-        downloadImage(selectedImageName, imageTag, isSystem ? 0 : null);
+        downloadImage(selectedImageName, imageTag, user.uid);
     };
 
     const handleClose = () => {
@@ -157,10 +157,16 @@ export const ImageSearchModal = ({ downloadImage, user, userServiceAvailable, sy
         >
             <Form isHorizontal>
                 {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} />}
-                { userServiceAvailable && systemServiceAvailable &&
+                { users.length > 1 &&
                 <FormGroup id="as-user" label={_("Owner")} isInline>
-                    <Radio name="user" value="system" id="system" onChange={onToggleUser} isChecked={isSystem} label={_("system")} />
-                    <Radio name="user" value="user" id="user" onChange={onToggleUser} isChecked={!isSystem} label={user} />
+                    { users.map(u => (
+                        <Radio key={u.name}
+                               value={u.name}
+                               label={u.name}
+                               id={"image-search-modal-owner-" + u.name}
+                               onChange={onToggleUser}
+                               isChecked={u === user} />))
+                    }
                 </FormGroup>}
                 <Flex spaceItems={{ default: 'inlineFlex', modifier: 'spaceItemsXl' }}>
                     <FormGroup fieldId="search-image-dialog-name" label={_("Search for")}>

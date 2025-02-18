@@ -1111,7 +1111,7 @@ WantedBy=multi-user.target default.target
 
             def fillDialog(self):
                 # Search for image specified with self.imageName and self.imageTag
-                b.click(f"#{self.user}")
+                b.click(f"#image-search-modal-owner-{self.user}")
                 b.set_val('#registry-select', "localhost:5000")
                 # HACK: Sometimes the value is not shown fully. FIXME
                 b.set_input_text("#search-image-dialog-name", self.imageName, value_check=False)
@@ -1205,6 +1205,7 @@ WantedBy=multi-user.target default.target
         b.click("#image-actions-dropdown")
         b.click("button:contains(Download new image)")
         b.wait_visible('div.pf-v5-c-modal-box header:contains("Search for an image")')
+        b.wait_visible("#image-search-modal-owner-admin")
         # HACK: Sometimes the value is not shown fully. FIXME
         b.set_input_text("#search-image-dialog-name", "my-busybox", value_check=False)
 
@@ -1225,7 +1226,7 @@ WantedBy=multi-user.target default.target
             .expectDownloadSuccess()
         dialog0.deleteImage()
 
-        dialog1 = DownloadImageDialog(self, imageName='my-busybox', user="user")
+        dialog1 = DownloadImageDialog(self, imageName='my-busybox', user="admin")
         dialog1.openDialog() \
             .fillDialog() \
             .selectImageAndDownload() \
@@ -1779,13 +1780,13 @@ WantedBy=multi-user.target default.target
         output = self.execute(auth, f"podman exec {container_name} ls -lh /latest").strip()
         self.assertNotIn("No such file or directory", output)
 
-        # Test creating a container with
+        # Test creating a container with choosing owner
         if auth:
             container_name = "busybox-download-admin"
             b.click("#containers-containers button.pf-v5-c-button.pf-m-primary")
 
             # Start container as admin
-            b.click('#run-image-dialog-owner-user')
+            b.click('#run-image-dialog-owner-admin')
 
             # Create Container, image is pulled and should end up being "Running"
             b.set_input_text("#run-image-dialog-name", container_name)
@@ -2375,8 +2376,8 @@ WantedBy=multi-user.target default.target
         b.click("button:contains(Prune unused images)")
 
         # Deselect both
-        b.click("#deleteSystemImages")
-        b.click("#deleteUserImages")
+        b.click("#deleteImages-system")
+        b.click("#deleteImages-admin")
         b.wait_visible(".pf-v5-c-modal-box button:contains(Prune):disabled")
 
         # Admin / user images are selected
@@ -2385,7 +2386,7 @@ WantedBy=multi-user.target default.target
             expected_images -= 1
         b.wait_js_func("ph_count_check", ".pf-v5-c-modal-box__body .pf-v5-c-list li", expected_images)
         # Select user images
-        b.click("#deleteUserImages")
+        b.click("#deleteImages-admin")
         b.click(".pf-v5-c-modal-box button:contains(Prune)")
 
         # System images are left over
@@ -2792,8 +2793,8 @@ WantedBy=multi-user.target default.target
         if auth:
             self.execute(False, "podman pod create --infra=false --name=system_pod")
             b.click("#table-system_pod .create-container-in-pod")
-            b.wait_visible("#run-image-dialog-owner-user:checked")
-            b.wait_visible("#run-image-dialog-owner-user:disabled")
+            b.wait_visible("#run-image-dialog-owner-admin:checked")
+            b.wait_visible("#run-image-dialog-owner-admin:disabled")
             b.wait_visible("#run-image-dialog-owner-system:disabled")
 
     def testCreateContainerInPodSystem(self) -> None:
@@ -3033,7 +3034,7 @@ WantedBy=multi-user.target default.target
             pod_name = 'testpod2'
             b.click("#containers-containers-create-pod-btn")
             b.set_input_text("#create-pod-dialog-name", pod_name)
-            b.click("#create-pod-dialog-owner-user")
+            b.click("#create-pod-dialog-owner-admin")
             b.click("#create-pod-create-btn")
 
             b.set_val("#containers-containers-filter", "all")

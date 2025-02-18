@@ -39,8 +39,6 @@ import "./ImageRunModal.scss";
 
 const _ = cockpit.gettext;
 
-const systemOwner = "system";
-
 const units = {
     KB: {
         name: "KB",
@@ -82,9 +80,9 @@ export class ImageRunModal extends React.Component {
             selectedImage = utils.image_name(this.props.image);
         }
 
-        let default_owner = this.props.systemServiceAvailable ? systemOwner : this.props.user;
-        if (this.props.pod)
-            default_owner = this.props.pod.uid === 0 ? systemOwner : this.props.user;
+        const default_owner = this.props.pod
+            ? this.props.users.find(u => u.uid === this.props.pod.uid)
+            : this.props.users[0];
 
         this.state = {
             command,
@@ -209,9 +207,10 @@ export class ImageRunModal extends React.Component {
             if (this.state.restartPolicy === "on-failure" && this.state.restartTries !== null) {
                 createConfig.restart_tries = this.state.restartTries;
             }
+            const hasSystem = this.props.users.find(u => u.uid === 0);
             // Enable podman-restart.service for system containers, for user
             // sessions enable-linger needs to be enabled for containers to start on boot.
-            if (this.state.restartPolicy === "always" && (this.props.podmanInfo.userLingeringEnabled || this.props.systemServiceAvailable)) {
+            if (this.state.restartPolicy === "always" && (this.props.podmanInfo.userLingeringEnabled || hasSystem)) {
                 this.enablePodmanRestartService();
             }
         }
@@ -273,7 +272,7 @@ export class ImageRunModal extends React.Component {
         const Dialogs = this.props.dialogs;
         const createConfig = this.getCreateConfig();
         const { pullLatestImage } = this.state;
-        const uid = this.isSystem() ? 0 : null;
+        const uid = this.state.owner.uid;
         let imageExists = true;
 
         try {
@@ -559,12 +558,9 @@ export class ImageRunModal extends React.Component {
 
     debouncedInputChanged = debounce(300, this.handleImageSelectInput);
 
-    handleOwnerSelect = (event) => {
-        const value = event.currentTarget.value;
-        this.setState({
-            owner: value
-        });
-    };
+    handleOwnerSelect = event => this.setState({
+        owner: this.props.users.find(u => u.name == event.currentTarget.value)
+    });
 
     filterImages = () => {
         const { localImages } = this.props;
@@ -638,10 +634,7 @@ export class ImageRunModal extends React.Component {
                 });
     };
 
-    isSystem = () => {
-        const { owner } = this.state;
-        return owner === systemOwner;
-    };
+    isSystem = () => this.state.owner.uid === 0;
 
     isFormInvalid = validationFailed => {
         function checkGroup(validation, values) {
@@ -668,7 +661,7 @@ export class ImageRunModal extends React.Component {
 
     async validateContainerName(containerName) {
         try {
-            await client.containerExists(this.isSystem() ? 0 : null, containerName);
+            await client.containerExists(this.state.owner.uid, containerName);
         } catch (error) {
             return;
         }
@@ -826,7 +819,7 @@ export class ImageRunModal extends React.Component {
                 </FormGroup>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-v5-c-form pf-m-horizontal">
-                        { this.props.userServiceAvailable && this.props.systemServiceAvailable &&
+                        { this.props.users.length > 1 &&
                         <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}
                                    labelIcon={
                                        <Popover aria-label={_("Owner help")}
@@ -851,7 +844,7 @@ export class ImageRunModal extends React.Component {
                                                       </TextList>
                                                   </TextContent>
                                                   <TextContent>
-                                                      <Text component={TextVariants.h4}>{cockpit.format("$0 $1", _("User:"), this.props.user)}</Text>
+                                                      <Text component={TextVariants.h4}>{cockpit.format("$0 $1", _("User:"), this.props.users[1].name)}</Text>
                                                       <TextList>
                                                           <TextListItem>
                                                               {_("Ideal for development")}
@@ -868,18 +861,15 @@ export class ImageRunModal extends React.Component {
                                            </button>
                                        </Popover>
                                    }>
-                            <Radio value="system"
-                                   label={_("System")}
-                                   id="run-image-dialog-owner-system"
-                                   isChecked={owner === "system"}
-                                   isDisabled={this.props.pod}
-                                   onChange={this.handleOwnerSelect} />
-                            <Radio value={this.props.user}
-                                   label={cockpit.format("$0 $1", _("User:"), this.props.user)}
-                                   id="run-image-dialog-owner-user"
-                                   isDisabled={this.props.pod}
-                                   isChecked={owner === this.props.user}
-                                   onChange={this.handleOwnerSelect} />
+                            { this.props.users.map(user => (
+                                <Radio key={user.name}
+                                       value={user.name}
+                                       label={user.uid === 0 ? _("System") : cockpit.format("$0 $1", _("User:"), user.name)}
+                                       id={"run-image-dialog-owner-" + user.name}
+                                       isChecked={owner === user}
+                                       isDisabled={this.props.pod}
+                                       onChange={this.handleOwnerSelect} />))
+                            }
                         </FormGroup>
                         }
                         <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}

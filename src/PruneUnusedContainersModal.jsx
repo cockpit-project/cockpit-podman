@@ -12,7 +12,7 @@ import { RelativeTime } from './util.js';
 
 const _ = cockpit.gettext;
 
-const getContainerRow = (container, userSystemServiceAvailable, user, selected) => {
+const getContainerRow = (container, showOwnerColumn, users, selected) => {
     const columns = [
         {
             title: container.name,
@@ -25,9 +25,11 @@ const getContainerRow = (container, userSystemServiceAvailable, user, selected) 
         },
     ];
 
-    if (userSystemServiceAvailable)
+    const username = users.find(u => u.uid === container.uid)?.name;
+
+    if (showOwnerColumn)
         columns.push({
-            title: container.system ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{user}</div>,
+            title: container.uid === 0 ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{username}</div>,
             sortKey: container.key,
             props: {
                 className: "ignore-pixels",
@@ -38,7 +40,7 @@ const getContainerRow = (container, userSystemServiceAvailable, user, selected) 
     return { columns, selected, props: { key: container.key } };
 };
 
-const PruneUnusedContainersModal = ({ close, unusedContainers, onAddNotification, userSystemServiceAvailable, user }) => {
+const PruneUnusedContainersModal = ({ close, unusedContainers, onAddNotification, users }) => {
     const [isPruning, setPruning] = useState(false);
     const [selectedContainerKeys, setSelectedContainerKeys] = React.useState(unusedContainers.map(u => u.key));
 
@@ -62,7 +64,9 @@ const PruneUnusedContainersModal = ({ close, unusedContainers, onAddNotification
         { title: _("Created"), sortable: true },
     ];
 
-    if (userSystemServiceAvailable)
+    const showOwnerColumn = unusedContainers.some(u => u.uid !== 0);
+
+    if (showOwnerColumn)
         columns.push({ title: _("Owner"), sortable: true });
 
     const selectAllContainers = isSelecting => setSelectedContainerKeys(isSelecting ? unusedContainers.map(c => c.key) : []);
@@ -73,7 +77,7 @@ const PruneUnusedContainersModal = ({ close, unusedContainers, onAddNotification
     });
 
     const onSelectContainer = (key, _rowIndex, isSelecting) => {
-        const container = unusedContainers.filter(u => u.key === key)[0];
+        const container = unusedContainers.find(u => u.key === key);
         setContainerSelected(container, isSelecting);
     };
 
@@ -95,10 +99,10 @@ const PruneUnusedContainersModal = ({ close, unusedContainers, onAddNotification
         >
             <p>{_("Removes selected non-running containers")}</p>
             <ListingTable columns={columns}
-                          onSelect={(_event, isSelecting, rowIndex, rowData) => onSelectContainer(rowData.props.key, rowIndex, isSelecting)}
+                          onSelect={(_event, isSelecting, rowIndex, rowData) => onSelectContainer(rowData.props.id, rowIndex, isSelecting)}
                           onHeaderSelect={(_event, isSelecting) => selectAllContainers(isSelecting)}
                           id="unused-container-list"
-                          rows={unusedContainers.map(container => getContainerRow(container, userSystemServiceAvailable, user, isContainerSelected(container))) }
+                          rows={unusedContainers.map(container => getContainerRow(container, showOwnerColumn, users, isContainerSelected(container))) }
                           variant="compact" sortBy={{ index: 0, direction: SortByDirection.asc }} />
         </Modal>
     );
