@@ -440,7 +440,7 @@ class Application extends React.Component {
         }
     }
 
-    cleanupAfterService(uid, key) {
+    cleanupAfterService(uid) {
         ["images", "containers", "pods"].forEach(t => {
             if (this.state[t])
                 this.setState(prevState => {
@@ -452,6 +452,10 @@ class Application extends React.Component {
                     return { [t]: copy };
                 });
         });
+
+        this.setState({ [uid === 0 ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+        // regardless of whose service went away (system/user), it makes owner filter disappear, so reset it
+        this.onOwnerChanged("all");
     }
 
     async init(uid) {
@@ -487,12 +491,7 @@ class Application extends React.Component {
 
         client.streamEvents(uid, message => this.handleEvent(message, uid))
                 .catch(e => console.error("init uid", uid, "streamEvents failed:", e.toString()))
-                .finally(() => {
-                    this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-                    // regardless of whose service went away (system/user), it makes owner filter disappear, so reset it
-                    this.onOwnerChanged("all");
-                    this.cleanupAfterService(uid);
-                });
+                .finally(() => this.cleanupAfterService(uid));
 
         // HACK: Listen for podman socket/service going away; this is only necessary with the C bridge
         // (Debian 12, RHEL 8). With the Python bridge, the above streamEvents() resolves when the service goes away.
@@ -500,9 +499,6 @@ class Application extends React.Component {
         const ch = cockpit.channel({ unix: address.path, superuser: address.superuser, payload: "stream" });
         ch.addEventListener("close", () => {
             console.log("init uid", uid, "podman service closed");
-            this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
-            // regardless of whose service went away (system/user), it makes owner filter disappear, so reset it
-            this.onOwnerChanged("all");
             this.cleanupAfterService(uid);
         });
 
