@@ -128,7 +128,7 @@ class Application extends React.Component {
             delete options.owner;
             this.updateUrl(Object.assign(options));
         } else {
-            this.updateUrl(Object.assign(options, { owner: value }));
+            this.updateUrl(Object.assign(options, { owner: value.toString() }));
         }
     }
 
@@ -489,6 +489,8 @@ class Application extends React.Component {
                 .catch(e => console.error("init uid", uid, "streamEvents failed:", e.toString()))
                 .finally(() => {
                     this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+                    // regardless of whose service went away (system/user), it makes owner filter disappear, so reset it
+                    this.onOwnerChanged("all");
                     this.cleanupAfterService(uid);
                 });
 
@@ -499,6 +501,8 @@ class Application extends React.Component {
         ch.addEventListener("close", () => {
             console.log("init uid", uid, "podman service closed");
             this.setState({ [system ? "systemServiceAvailable" : "userServiceAvailable"]: false });
+            // regardless of whose service went away (system/user), it makes owner filter disappear, so reset it
+            this.onOwnerChanged("all");
             this.cleanupAfterService(uid);
         });
 
@@ -565,9 +569,16 @@ class Application extends React.Component {
                 if (options.container) {
                     this.onContainerFilterChanged(options.container);
                 }
-                const owners = ["user", "system", "all"];
-                if (owners.indexOf(options.owner) !== -1) {
+                if (["user", "all"].includes(options.owner)) {
                     this.onOwnerChanged(options.owner);
+                } else if (options.owner === undefined) {
+                    this.onOwnerChanged("all");
+                } else {
+                    const uid = parseInt(options.owner);
+                    if (!isNaN(uid))
+                        this.onOwnerChanged(uid);
+                    else
+                        console.log("Ignoring invalid URL owner value:", options.owner);
                 }
             }
         });

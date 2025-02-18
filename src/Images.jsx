@@ -200,11 +200,10 @@ class Images extends React.Component {
         let filtered = [];
         if (this.props.images !== null) {
             filtered = Object.keys(this.props.images).filter(id => {
-                if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
-                    if (this.props.ownerFilter === "system" && this.props.images[id].uid !== 0)
-                        return false;
-                    if (this.props.ownerFilter !== "system" && this.props.images[id].uid === 0)
-                        return false;
+                if (this.props.ownerFilter !== "all") {
+                    if (this.props.ownerFilter === "user")
+                        return this.props.images[id].uid === null;
+                    return this.props.images[id].uid === this.props.ownerFilter;
                 }
 
                 const tags = this.props.images[id].RepoTags || [];
@@ -237,11 +236,10 @@ class Images extends React.Component {
                 return false;
 
             // Only filter by selected user
-            if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
-                if (this.props.ownerFilter === "system" && this.props.images[id].uid !== 0)
-                    return false;
-                if (this.props.ownerFilter !== "system" && this.props.images[id].uid === 0)
-                    return false;
+            if (this.props.ownerFilter !== "all") {
+                if (this.props.ownerFilter === "user")
+                    return this.props.images[id].uid === null;
+                return this.props.images[id].uid === this.props.ownerFilter;
             }
 
             // Any text filter hides all images

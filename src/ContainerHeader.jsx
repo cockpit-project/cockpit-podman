@@ -19,7 +19,7 @@ const ContainerHeader = ({ user, twoOwners, ownerFilter, handleOwnerChanged, tex
                         <ToolbarItem>
                             <FormSelect id="containers-containers-owner" value={ownerFilter} onChange={(_, value) => handleOwnerChanged(value)}>
                                 <FormSelectOption value='user' label={user} />
-                                <FormSelectOption value='system' label={_("System")} />
+                                <FormSelectOption value={0} label={_("System")} />
                                 <FormSelectOption value='all' label={_("All")} />
                             </FormSelect>
                         </ToolbarItem>
