@@ -500,30 +500,25 @@ class Application extends React.Component {
     componentDidMount() {
         superuser.addEventListener("changed", () => this.init(true));
 
-        cockpit.script("[ `id -u` -eq 0 ] || echo $XDG_RUNTIME_DIR")
-                .then(xrd => {
-                    const isRoot = !xrd || xrd.split("/").pop() == "root";
-                    if (!isRoot) {
+        cockpit.user().then(user => {
+            // there is no "user service" for root, ignore that
+            if (user.id === 0) {
+                this.setState({
+                    userImagesLoaded: true,
+                    userContainersLoaded: true,
+                    userPodsLoaded: true,
+                });
+                return;
+            }
+
+            cockpit.script("echo $XDG_RUNTIME_DIR")
+                    .then(xrd => {
                         sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
                         this.init(false);
                         this.checkUserRestartService();
-                    } else {
-                        this.setState({
-                            userImagesLoaded: true,
-                            userContainersLoaded: true,
-                            userPodsLoaded: true,
-                        });
-                    }
-                })
-                .catch(e => console.log("Could not read $XDG_RUNTIME_DIR: ", e.message));
-        cockpit.spawn("selinuxenabled", { error: "ignore" })
-                .then(() => this.setState({ selinuxAvailable: true }))
-                .catch(() => this.setState({ selinuxAvailable: false }));
+                    })
+                    .catch(e => console.log("Could not read $XDG_RUNTIME_DIR:", e.message));
 
-        cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
-                .then(out => this.setState({ podmanRestartAvailable: out.trim() === "loaded" }));
-
-        cockpit.user().then(user => {
             this.setState({ currentUser: user.name || _("User") });
             // HACK: https://github.com/systemd/systemd/issues/22244#issuecomment-1210357701
             cockpit.file(`/var/lib/systemd/linger/${user.name}`).watch((content, tag) => {
@@ -534,6 +529,13 @@ class Application extends React.Component {
                 }
             });
         });
+
+        cockpit.spawn("selinuxenabled", { error: "ignore" })
+                .then(() => this.setState({ selinuxAvailable: true }))
+                .catch(() => this.setState({ selinuxAvailable: false }));
+
+        cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
+                .then(out => this.setState({ podmanRestartAvailable: out.trim() === "loaded" }));
 
         cockpit.addEventListener("locationchanged", this.onNavigate);
         this.onNavigate();
