@@ -44,7 +44,6 @@ class Application extends React.Component {
         this.state = {
             systemServiceAvailable: null,
             userServiceAvailable: null,
-            enableService: true,
             images: null,
             userImagesLoaded: false,
             systemImagesLoaded: false,
@@ -55,7 +54,6 @@ class Application extends React.Component {
             systemContainersLoaded: null,
             userPodsLoaded: null,
             systemPodsLoaded: null,
-            userServiceExists: false,
             textFilter: "",
             ownerFilter: "all",
             dropDownValue: 'Everything',
@@ -514,7 +512,6 @@ class Application extends React.Component {
                             userImagesLoaded: true,
                             userContainersLoaded: true,
                             userPodsLoaded: true,
-                            userServiceExists: false
                         });
                     }
                 })
