@@ -503,7 +503,7 @@ WantedBy=multi-user.target default.target
         b.wait_not_present('div.pf-v5-c-modal-box header:contains("Search for an image")')
 
         # Check that when we filter only system stuff an then drop privileges that we show user stuff
-        b.set_val("#containers-containers-owner", "system")
+        b.set_val("#containers-containers-owner", "0")
         b.wait_not_present("#containers-containers .pod-name:contains('pod_user')")
         b.wait_not_present("#containers-containers .container-name:contains('b')")
         # Checking images is harder but if there would be more than one this would fail
@@ -681,10 +681,10 @@ WantedBy=multi-user.target default.target
                 self.waitNumContainers(1, auth=True)
                 b.wait_in_text("#containers-containers", "system")
 
-            b.set_val("#containers-containers-owner", "system")
+            b.set_val("#containers-containers-owner", "0")
             verify_system()
             b.set_val("#containers-containers-owner", "all")
-            b.go("#/?owner=system")
+            b.go("#/?owner=0")
             verify_system()
 
             def verify_user():

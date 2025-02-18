@@ -592,13 +592,11 @@ class Containers extends React.Component {
         if (this.props.containers !== null && this.props.pods !== null) {
             filtered = Object.keys(this.props.containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id].State.Status));
 
-            if (this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") {
+            if (this.props.ownerFilter !== "all") {
                 filtered = filtered.filter(id => {
-                    if (this.props.ownerFilter === "system" && this.props.containers[id].uid !== 0)
-                        return false;
-                    if (this.props.ownerFilter !== "system" && this.props.containers[id].uid === 0)
-                        return false;
-                    return true;
+                    if (this.props.ownerFilter === "user")
+                        return this.props.containers[id].uid === null;
+                    return this.props.containers[id].uid === this.props.ownerFilter;
                 });
             }
 
@@ -656,9 +654,9 @@ class Containers extends React.Component {
                     if ((this.props.filter == "running" && pod.Status != "Running") ||
                         // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
                         (!partitionedContainers[section].length && pod.Name.toLowerCase().indexOf(lcf) < 0) ||
-                        ((this.props.userServiceAvailable && this.props.systemServiceAvailable && this.props.ownerFilter !== "all") &&
-                         ((this.props.ownerFilter === "system" && pod.uid !== 0) ||
-                            (this.props.ownerFilter !== "system" && pod.uid === 0))))
+                        (this.props.ownerFilter !== "all" &&
+                         ((this.props.ownerFilter === "user" && pod.uid !== null) ||
+                            (this.props.ownerFilter !== "user" && pod.uid !== this.props.ownerFilter))))
                         delete partitionedContainers[section];
                 }
             });
