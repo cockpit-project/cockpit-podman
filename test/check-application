@@ -377,7 +377,8 @@ WantedBy=multi-user.target default.target
         b.set_input_text('#containers-filter input', 'test-pod-1-system')
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
-        # TODO add pixel test when this is again reachable - https://github.com/cockpit-project/bots/issues/2463
+
+        b.assert_pixels('#containers-containers', "pods", skip_layouts=["rtl", "mobile"])
 
         # Check Pod Actions
         self.performPodAction("pod-1", "system", "Start")
