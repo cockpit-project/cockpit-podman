@@ -45,7 +45,7 @@ import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, onAddNotification, localImages, updateContainer, isSystemdService }) => {
+const ContainerActions = ({ container, onAddNotification, localImages, updateContainer, isSystemdService, isDownloading }) => {
     const Dialogs = useDialogs();
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
@@ -243,7 +243,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
         </DropdownItem>
     );
 
-    return <KebabDropdown position="right" dropdownItems={actions} />;
+    return <KebabDropdown position="right" dropdownItems={actions} isDisabled={isDownloading} />;
 };
 
 export let onDownloadContainer = function funcOnDownloadContainer(container) {
@@ -405,16 +405,15 @@ class Containers extends React.Component {
             { title: <LabelGroup isVertical>{state}</LabelGroup>, sortKey: containerState },
         ];
 
-        if (!container.isDownloading) {
-            columns.push({
-                title: <ContainerActions container={container}
+        columns.push({
+            title: <ContainerActions container={container}
                                          onAddNotification={this.props.onAddNotification}
                                          localImages={localImages}
                                          updateContainer={this.props.updateContainer}
-                                         isSystemdService={isSystemdService} />,
-                props: { className: "pf-v5-c-table__action" }
-            });
-        }
+                                         isSystemdService={isSystemdService}
+                                         isDownloading={container.isDownloading} />,
+            props: { className: "pf-v5-c-table__action" }
+        });
 
         const tty = !!container.Config?.Tty;
 
