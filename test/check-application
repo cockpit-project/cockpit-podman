@@ -54,12 +54,12 @@ def podman_version(cls):
     return tuple(int(v.split('-')[0]) for v in version.split('.'))
 
 
-def showImages(browser):
+def showImages(browser: testlib.Browser) -> None:
     if browser.attr("#containers-images button.pf-v5-c-expandable-section__toggle", "aria-expanded") == 'false':
         browser.click("#containers-images button.pf-v5-c-expandable-section__toggle")
 
 
-def checkImage(browser, name, owner):
+def checkImage(browser: testlib.Browser, name: str, owner: str) -> None:
     showImages(browser)
     browser.wait_visible("#containers-images table")
     browser.wait_js_func("""(function (first, last) {
@@ -162,7 +162,7 @@ class TestApplication(testlib.MachineCase):
             ".*Error occurred while connecting console: cannot resize session: cannot resize container.*",
         )
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         if self.getError():
             # dump container logs for debugging
             for auth in [False, True]:
@@ -176,10 +176,10 @@ class TestApplication(testlib.MachineCase):
         cmd = f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}"
         return self.execute(auth, cmd).strip()
 
-    def waitNumImages(self, expected):
+    def waitNumImages(self, expected: int) -> None:
         self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected)
 
-    def waitNumContainers(self, expected, auth):
+    def waitNumContainers(self, expected: int, *, auth: bool):
         if auth and self.machine.ostree_image:
             extra = 1  # cockpit/ws
         else:
@@ -187,19 +187,19 @@ class TestApplication(testlib.MachineCase):
 
         self.browser.wait_js_func("ph_count_check", "#containers-containers tbody", expected + extra)
 
-    def performContainerAction(self, container, cmd):
+    def performContainerAction(self, container: str, cmd: str) -> None:
         b = self.browser
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v5-c-menu-toggle")
         b.click(f"#containers-containers tbody tr:contains('{container}') button.pf-v5-c-menu__item:contains({cmd})")
 
-    def getContainerAction(self, container, cmd):
+    def getContainerAction(self, container: str, cmd: str) -> str:
         return f"#containers-containers tbody tr:contains('{container}') button.pf-v5-c-menu__item:contains({cmd})"
 
-    def toggleExpandedContainer(self, container):
+    def toggleExpandedContainer(self, container: str) -> None:
         b = self.browser
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v5-c-table__toggle button")
 
-    def getContainerAttr(self, container, key, selector=""):
+    def getContainerAttr(self, container: str, key: str, selector: str = "") -> str:
         b = self.browser
         return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}] {selector}")
 
@@ -209,7 +209,7 @@ class TestApplication(testlib.MachineCase):
         else:
             return self.admin_s.execute(cmd)
 
-    def login(self, system=True):
+    def login(self, *, system: bool = True) -> None:
         # HACK: The first rootless call often gets stuck or fails
         # In such case we have alert banner to start the service (or just empty state)
         # A real user would just hit the button so lets do the same as this is always getting
@@ -236,7 +236,7 @@ class TestApplication(testlib.MachineCase):
                     b.click("#app .pf-v5-c-empty-state button.pf-m-primary")
                     b.wait_not_present("#app .pf-v5-c-empty-state button")
 
-    def waitPodRow(self, podName, present=False):
+    def waitPodRow(self, podName: str, *, present: bool = False) -> None:
         if present:
             self.browser.wait_visible("#table-" + podName)
         else:
@@ -254,14 +254,14 @@ class TestApplication(testlib.MachineCase):
                 self.browser.wait_in_text("#table-" + podName + " .pf-v5-c-empty-state",
                                           "No running containers in this pod")
 
-    def waitContainerRow(self, container, present=True):
+    def waitContainerRow(self, container: str, *, present: bool = True) -> None:
         b = self.browser
         if present:
             b.wait_visible(f'#containers-containers td[data-label="Container"]:contains("{container}")')
         else:
             b.wait_not_present(f'#containers-containers td[data-label="Container"]:contains("{container}")')
 
-    def performPodAction(self, podName, podOwner, action):
+    def performPodAction(self, podName: str, podOwner: str, action: str) -> None:
         b = self.browser
 
         b.click(f"#pod-{podName}-{podOwner}-action-toggle")
@@ -283,7 +283,7 @@ class TestApplication(testlib.MachineCase):
             self.fail("Timed out waiting for StartedAt change")
             return ''  # quiesce mypy, not reached
 
-    def setupRegistry(self):
+    def setupRegistry(self) -> None:
         m = self.machine
 
         self.execute(True, f"""
@@ -321,7 +321,7 @@ WantedBy=multi-user.target default.target
         self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service")
         self.execute(auth, f"until {systemctl_cmd} is-active {name}.service; do sleep 1; done")
 
-    def testPods(self):
+    def testPods(self) -> None:
         b = self.browser
 
         self.login()
@@ -333,7 +333,7 @@ WantedBy=multi-user.target default.target
         # Run a pods as system
         self.machine.execute("podman pod create --infra=false --name pod-1")
 
-        self.waitPodRow("pod-1", False)
+        self.waitPodRow("pod-1", present=False)
         self.filter_containers("all")
         self.waitPodContainer("pod-1", [])
 
@@ -368,7 +368,7 @@ WantedBy=multi-user.target default.target
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
         self.filter_containers("running")
-        self.waitPodRow("pod-1", False)
+        self.waitPodRow("pod-1", present=False)
 
         self.filter_containers("all")
         b.set_input_text('#containers-filter input', 'pod-1')
@@ -409,7 +409,7 @@ WantedBy=multi-user.target default.target
         # Alert should be shown, that running pods need to be force deleted.
         b.wait_in_text(".pf-v5-c-modal-box__body .pf-v5-c-list", "test-pod-1-system")
         b.click(".pf-v5-c-modal-box button:contains('Force delete')")
-        self.waitPodRow("pod-1", False)
+        self.waitPodRow("pod-1", present=False)
 
         b.click('#containers-filter button[aria-label="Reset"]')
         self.machine.execute("podman pod create --infra=false --name pod-2")
@@ -423,7 +423,7 @@ WantedBy=multi-user.target default.target
         self.performPodAction("pod-2", "system", "Delete")
         b.wait_not_in_text(".pf-v5-c-modal-box__body", "test-pod-2-system")
         b.click(".pf-v5-c-modal-box button:contains('Delete')")
-        self.waitPodRow("pod-2", False)
+        self.waitPodRow("pod-2", present=False)
 
         # Volumes / mounts
         self.machine.execute("podman pod create -p 9999:9999 -v /tmp:/app --name pod-3")
@@ -439,7 +439,7 @@ WantedBy=multi-user.target default.target
         b.click("#table-pod-3-title .pod-details-volumes-btn")
         b.wait_in_text(".pf-v5-c-popover__content", "/tmp ↔ /app")
 
-    def testBasicSystem(self):
+    def testBasicSystem(self) -> None:
         self._testBasic(True)
 
         b = self.browser
@@ -587,7 +587,7 @@ WantedBy=multi-user.target default.target
         if auth and self.machine.ostree_image:
             expected_ws += "ws"
 
-        self.login(auth)
+        self.login(system=auth)
 
         # Check all containers
         if auth:
@@ -671,12 +671,12 @@ WantedBy=multi-user.target default.target
         # Test owner filtering
         if auth:
             self.waitNumImages(self.user_images_count + self.system_images_count)
-            self.waitNumContainers(2, True)
+            self.waitNumContainers(2, auth=True)
 
             def verify_system():
                 self.waitNumImages(self.system_images_count)
                 b.wait_in_text("#containers-images", "system")
-                self.waitNumContainers(1, True)
+                self.waitNumContainers(1, auth=True)
                 b.wait_in_text("#containers-containers", "system")
 
             b.set_val("#containers-containers-owner", "system")
@@ -688,7 +688,7 @@ WantedBy=multi-user.target default.target
             def verify_user():
                 self.waitNumImages(self.user_images_count)
                 b.wait_in_text("#containers-images", "admin")
-                self.waitNumContainers(1, False)
+                self.waitNumContainers(1, auth=False)
                 b.wait_in_text("#containers-containers", "admin")
 
             b.set_val("#containers-containers-owner", "user")
@@ -699,7 +699,7 @@ WantedBy=multi-user.target default.target
 
             b.set_val("#containers-containers-owner", "all")
             self.waitNumImages(self.user_images_count + self.system_images_count)
-            self.waitNumContainers(2, True)
+            self.waitNumContainers(2, auth=True)
         else:  # No 'owner' selector when not privileged
             b.wait_not_present("#containers-containers-owner")
 
@@ -767,13 +767,13 @@ WantedBy=multi-user.target default.target
         if auth:
             self.performContainerAction("swamped-crate-system", "Delete")
             self.confirm_modal("Force delete")
-            self.waitContainerRow("swamped-crate-system", False)
+            self.waitContainerRow("swamped-crate-system", present=False)
 
         self.filter_containers("all")
 
         self.performContainerAction("swamped-crate-user", "Delete")
         self.confirm_modal("Force delete")
-        self.waitContainerRow("swamped-crate-user", False)
+        self.waitContainerRow("swamped-crate-user", present=False)
 
         self.waitContainerRow("test-sh-user")
         self.performContainerAction("test-sh-user", "Delete")
@@ -955,17 +955,17 @@ WantedBy=multi-user.target default.target
         self.confirm_modal("Force delete")
         b.wait_not_in_text("#containers-images", "<none>:<none>")
 
-    def testCommitUser(self):
-        self._testCommit(False)
+    def testCommitUser(self) -> None:
+        self._testCommit(auth=False)
 
-    def testCommitSystem(self):
-        self._testCommit(True)
+    def testCommitSystem(self) -> None:
+        self._testCommit(auth=True)
 
-    def _testCommit(self, auth):
+    def _testCommit(self, *, auth: bool) -> None:
         b = self.browser
         self.allow_browser_errors("Failed to commit container .* repository name must be lowercase")
 
-        self.login(auth)
+        self.login(system=auth)
 
         # run a container (will exit immediately) and test the display of commit modal
         self.execute(auth, f"podman run -d --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'")
@@ -1255,13 +1255,13 @@ WantedBy=multi-user.target default.target
               .selectImageAndDownload() \
               .expectDownloadErrorForNonExistingTag()
 
-    def testPullImage(self):
+    def testPullImage(self) -> None:
         b = self.browser
         m = self.machine
 
         self.setupRegistry()
 
-        def buildImage(auth, size, image_name):
+        def buildImage(image_name: str, size: int, *, auth: bool) -> None:
             temp_dir = self.machine.execute(f"""
                 set -eu
                 D=$(mktemp -d -p {self.vm_tmpdir})
@@ -1279,11 +1279,11 @@ WantedBy=multi-user.target default.target
         image1 = "localhost:5000/test-image:1"
 
         # build update and push it
-        buildImage(True, 50, image1)
+        buildImage(image1, 50, auth=True)
         self.execute(True, f"podman push {image1}; podman rmi {image1}")
 
         # build image which we try to pull
-        buildImage(True, 1, image1)
+        buildImage(image1, 1, auth=True)
         image1_sha = self.execute(True, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
 
         self.login()
@@ -1312,21 +1312,21 @@ WantedBy=multi-user.target default.target
         image1 = "localhost:5000/test-image:1"
 
         # build update and push it
-        buildImage(False, 25, image1)
+        buildImage(image1, 25, auth=False)
         self.execute(False, f"podman push {image1}; podman rmi {image1}")
 
         # build image which we try to pull
-        buildImage(False, 1, image1)
+        buildImage(image1, 1, auth=False)
         image1_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
 
         image2 = "localhost:5000/test-image:2"
 
         # build update and push it
-        buildImage(False, 50, image2)
+        buildImage(image2, 50, auth=False)
         self.execute(False, f"podman push {image2}; podman rmi {image2}")
 
         # build image which we try to pull
-        buildImage(False, 10, image2)
+        buildImage(image2, 10, auth=False)
         image2_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {image2}").strip()
 
         self.execute(False, """
@@ -1354,10 +1354,10 @@ WantedBy=multi-user.target default.target
         b.wait(lambda: getImageSize(image1) > 20)
         b.wait(lambda: getImageSize(image2) > 40)
 
-    def testLifecycleOperationsUser(self):
+    def testLifecycleOperationsUser(self) -> None:
         self._testLifecycleOperations(False)
 
-    def testLifecycleOperationsSystem(self):
+    def testLifecycleOperationsSystem(self) -> None:
         self._testLifecycleOperations(True)
 
     def _testLifecycleOperations(self, auth):
@@ -1690,7 +1690,7 @@ WantedBy=multi-user.target default.target
         # Untag busybox image which duplicates the image we are about to download
         self.execute(True, f"podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox")
 
-        self.login(auth)
+        self.login(system=auth)
 
         b = self.browser
         container_name = "busybox-downloaded"
@@ -1807,13 +1807,13 @@ WantedBy=multi-user.target default.target
             b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
             b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
 
-    def testRunImageSystem(self):
-        self._testRunImage(True)
+    def testRunImageSystem(self) -> None:
+        self._testRunImage(auth=True)
 
-    def testRunImageUser(self):
-        self._testRunImage(False)
+    def testRunImageUser(self) -> None:
+        self._testRunImage(auth=False)
 
-    def _testRunImage(self, auth):
+    def _testRunImage(self, *, auth) -> None:
         b = self.browser
         m = self.machine
 
@@ -1821,7 +1821,7 @@ WantedBy=multi-user.target default.target
         if auth:
             self.execute(False, "podman rmi --all")
 
-        self.login(auth)
+        self.login(system=auth)
 
         b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
 
@@ -2298,12 +2298,12 @@ WantedBy=multi-user.target default.target
                 state = [state]
             b.wait(lambda: b.text(sel + " td[data-label=State]") in state)
 
-    def filter_containers(self, value):
+    def filter_containers(self, value: str) -> None:
         """Use dropdown menu in the header to filter containers"""
         b = self.browser
         b.set_val("#containers-containers-filter", value)
 
-    def confirm_modal(self, text):
+    def confirm_modal(self, text: str) -> None:
         """Wait for the pop up window and click the button with text"""
         b = self.browser
         b.click(f".pf-v5-c-modal-box footer button:contains({text})")
@@ -2325,7 +2325,7 @@ WantedBy=multi-user.target default.target
             self.login_and_go("/podman", user="root", enable_root_login=True)
             b.wait_visible("#app")
         else:
-            self.login(auth)
+            self.login(system=auth)
 
         leftover_images = 1
         # cockpit-ws image
@@ -2363,10 +2363,10 @@ WantedBy=multi-user.target default.target
         b.click("#image-actions-dropdown")
         b.wait_visible(".pf-m-disabled.pf-v5-c-menu__list-item:contains(Prune unused images)")
 
-    def testPruneUnusedImagesSystemSelections(self):
+    def testPruneUnusedImagesSystemSelections(self) -> None:
         """ Test the prune unused images selection options"""
         b = self.browser
-        self.login(True)
+        self.login(system=True)
 
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
@@ -2403,17 +2403,17 @@ WantedBy=multi-user.target default.target
         b.click("#image-actions-dropdown")
         b.wait_visible(".pf-v5-c-menu__list-item.pf-m-disabled:contains(Prune unused images)")
 
-    def testPruneUnusedContainersSystem(self):
-        self._testPruneUnusedContainersSystem(True)
+    def testPruneUnusedContainersSystem(self) -> None:
+        self._testPruneUnusedContainersSystem(auth=True)
 
-    def testPruneUnusedContainersUser(self):
-        self._testPruneUnusedContainersSystem(False)
+    def testPruneUnusedContainersUser(self) -> None:
+        self._testPruneUnusedContainersSystem(auth=False)
 
-    def _testPruneUnusedContainersSystem(self, auth):
+    def _testPruneUnusedContainersSystem(self, *, auth: bool):
         """Test the prune unused container image dialog"""
 
         b = self.browser
-        self.login(auth)
+        self.login(system=auth)
 
         # Create running and non-running containers
         self.execute(auth, "podman pod create --name pod")
@@ -2445,10 +2445,10 @@ WantedBy=multi-user.target default.target
         b.wait_not_present(".pf-v5-c-modal-box__body")
 
         if auth:
-            self.waitContainerRow("notrunning", False)
-            self.waitContainerRow("adminnotrunning", False)
+            self.waitContainerRow("notrunning", present=False)
+            self.waitContainerRow("adminnotrunning", present=False)
         else:
-            self.waitContainerRow("notrunning", False)
+            self.waitContainerRow("notrunning", present=False)
 
         # Verify running containers still exists
         self.waitContainerRow("containerrunning")
@@ -2458,8 +2458,8 @@ WantedBy=multi-user.target default.target
                  "image": IMG_BUSYBOX, "command": 'sh -c "sleep infinity"'}]
         self.waitPodContainer("pod", pods, auth)
 
-    def testCreateContainerValidation(self):
-        def validateField(groupSelector, value, errorMessage, resetValue=""):
+    def testCreateContainerValidation(self) -> None:
+        def validateField(groupSelector: str, value: str, errorMessage: str, resetValue: str = "") -> None:
             b.wait_visible(".pf-v5-c-modal-box__footer #create-image-create-run-btn:not(:disabled)")
             b.set_input_text(f"{groupSelector} input", value)
             b.wait_in_text(f"{groupSelector} .pf-v5-c-helper-text__item-text", errorMessage)
@@ -2476,7 +2476,7 @@ WantedBy=multi-user.target default.target
         self.allow_browser_errors("No routable interface.*")
         self.allow_browser_errors(".*ddress already in use.*5000.*")
         b = self.browser
-        self.login(False)
+        self.login(system=False)
         container_name = 'portused'
 
         # Start a podman container which uses a port
@@ -2555,14 +2555,14 @@ WantedBy=multi-user.target default.target
         b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
         self.waitContainerRow(container_name)
 
-    def _testHealthcheck(self, auth):
+    def _testHealthcheck(self, *, auth: bool) -> None:
         b = self.browser
 
         # Just drop user images so we can use simpler selectors
         if auth:
             self.execute(False, f"podman rmi {IMG_BUSYBOX}")
 
-        self.login(auth)
+        self.login(system=auth)
 
         b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
 
@@ -2686,11 +2686,11 @@ WantedBy=multi-user.target default.target
         status = self.execute(auth, f"podman inspect --format '{{{{.State.Health.Status}}}}' {containername}").strip()
         self.assertEqual(status, "unhealthy")
 
-    def testHealthcheckSystem(self):
-        self._testHealthcheck(True)
+    def testHealthcheckSystem(self) -> None:
+        self._testHealthcheck(auth=True)
 
-    def testHealthcheckUser(self):
-        self._testHealthcheck(False)
+    def testHealthcheckUser(self) -> None:
+        self._testHealthcheck(auth=False)
 
     # Ubuntu 2204 lacks user systemd units
     # https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
@@ -2718,7 +2718,7 @@ WantedBy=multi-user.target default.target
         if auth:
             self.execute(False, f"podman rmi {IMG_BUSYBOX}")
 
-        self.login(auth)
+        self.login(system=auth)
         b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
 
         def create_container(name, policy=None):
@@ -2754,7 +2754,7 @@ WantedBy=multi-user.target default.target
         podname = "pod1"
         self.execute(auth, f"podman pod create --infra=false --name={podname}")
 
-        self.login(auth)
+        self.login(system=auth)
 
         self.filter_containers('all')
         b.click(".create-container-in-pod")
@@ -2793,16 +2793,16 @@ WantedBy=multi-user.target default.target
             b.wait_visible("#run-image-dialog-owner-user:disabled")
             b.wait_visible("#run-image-dialog-owner-system:disabled")
 
-    def testCreateContainerInPodSystem(self):
+    def testCreateContainerInPodSystem(self) -> None:
         self._testCreateContainerInPod(True)
 
-    def testCreateContainerInPodUser(self):
+    def testCreateContainerInPodUser(self) -> None:
         self._testCreateContainerInPod(False)
 
-    def testPauseResumeContainerSystem(self):
+    def testPauseResumeContainerSystem(self) -> None:
         self._testPauseResumeContainer(True)
 
-    def testPauseResumeContainerUser(self):
+    def testPauseResumeContainerUser(self) -> None:
         # rootless cgroupv1 containers do not support pausing
         if not self.has_cgroupsV2:
             return
@@ -2813,7 +2813,7 @@ WantedBy=multi-user.target default.target
         container_name = "pauseresume"
 
         self.execute(auth, f"podman run -dt --name {container_name} --stop-timeout 0 {IMG_ALPINE}")
-        self.login(auth)
+        self.login(system=auth)
 
         self.waitContainerRow(container_name)
         self.toggleExpandedContainer(container_name)
@@ -2833,18 +2833,18 @@ WantedBy=multi-user.target default.target
         b.wait(lambda: self.getContainerAttr(container_name, "State") == "Running")
 
     def testRenameContainerSystem(self):
-        self._testRenameContainer(True)
+        self._testRenameContainer(auth=True)
 
     def testRenameContainerUser(self):
-        self._testRenameContainer(False)
+        self._testRenameContainer(auth=False)
 
-    def _testRenameContainer(self, auth):
+    def _testRenameContainer(self, *, auth: bool) -> None:
         b = self.browser
         container_name = "rename"
         container_name_new = "rename-new"
 
         self.execute(auth, f"podman container create -t --name {container_name} {IMG_BUSYBOX}")
-        self.login(auth)
+        self.login(system=auth)
 
         self.filter_containers('all')
 
@@ -2893,7 +2893,7 @@ WantedBy=multi-user.target default.target
             self.waitContainerRow(service_name)
             b.wait_not_present(self.getContainerAction(service_name, 'Rename'))
 
-    def testMultipleContainers(self):
+    def testMultipleContainers(self) -> None:
         self.login()
 
         # Create 31 containers
@@ -2906,7 +2906,7 @@ WantedBy=multi-user.target default.target
         for i in range(31):
             self.execute(True, f"podman rm -f container{i}")
 
-    def testSpecialContainers(self):
+    def testSpecialContainers(self) -> None:
         m = self.machine
         b = self.browser
 
@@ -2945,7 +2945,7 @@ WantedBy=multi-user.target default.target
         m = self.machine
         pod_name = "testpod1"
 
-        self.login(auth)
+        self.login(system=auth)
 
         b.click("#containers-containers-create-pod-btn")
         b.set_input_text("#create-pod-dialog-name", "")
@@ -3037,7 +3037,7 @@ WantedBy=multi-user.target default.target
             self.waitPodContainer(pod_name, [])
 
     @testlib.skipImage("passthrough log driver not supported", "ubuntu-2204")
-    def testLogErrors(self):
+    def testLogErrors(self) -> None:
         b = self.browser
         container_name = "logissue"
         self.login()
@@ -3050,7 +3050,7 @@ WantedBy=multi-user.target default.target
         b.wait_in_text(".pf-m-expanded .pf-v5-c-empty-state__content", "failed to obtain logs for Container")
 
     @testlib.skipOstree("/lib is read-only")
-    def testManifest(self):
+    def testManifest(self) -> None:
         b = self.browser
         m = self.machine
         self.restore_file("/lib/systemd/system/podman.socket", post_restore_action="systemctl daemon-reload")
@@ -3066,7 +3066,7 @@ WantedBy=multi-user.target default.target
 
     @testlib.skipImage("nginx not installed", "centos-*", "rhel-*", "debian-*", "ubuntu-*", "arch")
     @testlib.skipOstree("nginx not installed")
-    def testNonSearchableRegistry(self):
+    def testNonSearchableRegistry(self) -> None:
         b = self.browser
         m = self.machine
 
