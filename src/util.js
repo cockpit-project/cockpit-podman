@@ -28,10 +28,14 @@ export const podStates = [_("Created"), _("Running"), _("Stopped"), _("Paused"),
 
 export const fallbackRegistries = ["docker.io", "quay.io"];
 
-export function debug(system, ...args) {
+export function debug(...args) {
     if (window.debugging === "all" || window.debugging?.includes("podman"))
-        console.debug("podman", system ? "system" : "user", ...args);
+        console.debug("podman", ...args);
 }
+
+// containers, pods, images states are indexed by these keys, to make the container IDs
+// globally unique across users
+export const makeKey = (uid, id) => `${uid ?? "user"}-${id}`;
 
 export function truncate_id(id) {
     if (!id) {
