@@ -10,7 +10,7 @@ import * as client from './client.js';
 
 const _ = cockpit.gettext;
 
-const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
+const ContainerDeleteModal = ({ con, containerWillDelete, onAddNotification }) => {
     const Dialogs = useDialogs();
 
     const handleRemoveContainer = () => {
@@ -18,7 +18,7 @@ const ContainerDeleteModal = ({ containerWillDelete, onAddNotification }) => {
         const id = container ? container.Id : "";
 
         Dialogs.close();
-        client.delContainer(container.uid, id, false)
+        client.delContainer(con, id, false)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to remove container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });

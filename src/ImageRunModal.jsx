@@ -230,17 +230,17 @@ export class ImageRunModal extends React.Component {
         return createConfig;
     }
 
-    createContainer = (uid, createConfig, runImage) => {
+    createContainer = (con, createConfig, runImage) => {
         const Dialogs = this.props.dialogs;
-        client.createContainer(uid, createConfig)
+        client.createContainer(con, createConfig)
                 .then(reply => {
                     if (runImage) {
-                        client.postContainer(uid, "start", reply.Id, {})
+                        client.postContainer(con, "start", reply.Id, {})
                                 .then(() => Dialogs.close())
                                 .catch(ex => {
                                     // If container failed to start remove it, so a user can fix the settings and retry and
                                     // won't get another error that the container name is already taken.
-                                    client.delContainer(uid, reply.Id, true)
+                                    client.delContainer(con, reply.Id, true)
                                             .then(() => {
                                                 this.setState({
                                                     inProgress: false,
@@ -278,24 +278,24 @@ export class ImageRunModal extends React.Component {
         const Dialogs = this.props.dialogs;
         const createConfig = this.getCreateConfig();
         const { pullLatestImage } = this.state;
-        const uid = this.state.owner.uid;
+        const con = this.state.owner.con;
         let imageExists = true;
 
         try {
-            await client.imageExists(uid, createConfig.image);
+            await client.imageExists(con, createConfig.image);
         } catch (error) {
             imageExists = false;
         }
 
         if (imageExists && !pullLatestImage) {
-            this.createContainer(uid, createConfig, runImage);
+            this.createContainer(con, createConfig, runImage);
         } else {
             Dialogs.close();
             const tempImage = { ...createConfig };
 
             // Assign temporary properties to allow rendering
             tempImage.Id = tempImage.name;
-            tempImage.uid = uid;
+            tempImage.uid = con.uid;
             tempImage.key = utils.makeKey(tempImage.uid, tempImage.Id);
             tempImage.State = { Status: _("downloading") };
             tempImage.Created = new Date();
@@ -305,11 +305,11 @@ export class ImageRunModal extends React.Component {
 
             onDownloadContainer(tempImage);
 
-            client.pullImage(uid, createConfig.image).then(reply => {
-                client.createContainer(uid, createConfig)
+            client.pullImage(con, createConfig.image).then(reply => {
+                client.createContainer(con, createConfig)
                         .then(reply => {
                             if (runImage) {
-                                client.postContainer(uid, "start", reply.Id, {})
+                                client.postContainer(con, "start", reply.Id, {})
                                         .then(() => onDownloadContainerFinished(createConfig))
                                         .catch(ex => {
                                             onDownloadContainerFinished(createConfig);
@@ -667,7 +667,7 @@ export class ImageRunModal extends React.Component {
 
     async validateContainerName(containerName) {
         try {
-            await client.containerExists(this.state.owner.uid, containerName);
+            await client.containerExists(this.state.owner.con, containerName);
         } catch (error) {
             return;
         }
