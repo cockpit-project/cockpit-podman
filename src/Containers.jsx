@@ -239,14 +239,16 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
         </DropdownItem>
     );
 
-    actions.push(<Divider key="separator-2" />);
-    actions.push(
-        <DropdownItem key="delete"
+    if (!isSystemdService) {
+        actions.push(<Divider key="separator-2" />);
+        actions.push(
+            <DropdownItem key="delete"
                       className="pf-m-danger"
                       onClick={deleteContainer}>
-            {_("Delete")}
-        </DropdownItem>
-    );
+                {_("Delete")}
+            </DropdownItem>
+        );
+    }
 
     return <KebabDropdown position="right" dropdownItems={actions} isDisabled={isDownloading} />;
 };
