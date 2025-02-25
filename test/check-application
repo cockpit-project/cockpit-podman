@@ -3206,6 +3206,31 @@ WantedBy=multi-user.target default.target
         self.performContainerAction(IMG_ALPINE, "Start")
         b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
 
+    def _testQuadlets(self, *, system: bool = False) -> None:
+        b = self.browser
+        self.login(system=system)
+
+        service_name = "quak"
+        self.createQuadlet(service_name, auth=system)
+        self.waitContainerRow(service_name)
+
+        # Cannot delete a quadlet container, they are managed by .container units
+        b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v5-c-menu-toggle")
+        b.wait_visible(self.getContainerAction(service_name, 'Commit'))
+        b.wait_not_present(self.getContainerAction(service_name, 'Delete'))
+        b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v5-c-menu-toggle")
+        b.wait_not_present('.pf-v5-c-menu__item')
+
+    # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
+    @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
+    def testQuadletsSystem(self):
+        self._testQuadlets(system=True)
+
+    # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
+    @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
+    def testQuadletsUsers(self):
+        self._testQuadlets(system=False)
+
 
 if __name__ == '__main__':
     testlib.test_main()
