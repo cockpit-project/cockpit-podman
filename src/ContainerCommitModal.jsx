@@ -17,7 +17,7 @@ import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
-const ContainerCommitModal = ({ container, localImages }) => {
+const ContainerCommitModal = ({ con, container, localImages }) => {
     const Dialogs = useDialogs();
 
     const [imageName, setImageName] = useState("");
@@ -77,7 +77,7 @@ const ContainerCommitModal = ({ container, localImages }) => {
         setNameError("");
         setDialogError("");
         setDialogErrorDetail("");
-        client.commitContainer(container.uid, commitData)
+        client.commitContainer(con, commitData)
                 .then(() => Dialogs.close())
                 .catch(ex => {
                     setDialogError(cockpit.format(_("Failed to commit container $0"), container.Name));

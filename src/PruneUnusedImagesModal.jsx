@@ -65,7 +65,7 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, users 
     const handlePruneUnusedImages = () => {
         setPruning(true);
 
-        const actions = deleteOwners.map(owner => client.pruneUnusedImages(owner.uid));
+        const actions = deleteOwners.map(owner => client.pruneUnusedImages(owner.con));
         Promise.all(actions).then(close)
                 .catch(ex => {
                     const error = _("Failed to prune unused images");

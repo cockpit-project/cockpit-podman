@@ -87,7 +87,7 @@ export const PodCreateModal = ({ users }) => {
         if (!validateForm())
             return;
         setInProgress(true);
-        client.createPod(owner.uid, getCreateConfig())
+        client.createPod(owner.con, getCreateConfig())
                 .then(Dialogs.close)
                 .catch(ex => {
                     setInProgress(false);

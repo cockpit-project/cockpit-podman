@@ -45,7 +45,7 @@ import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 
 const _ = cockpit.gettext;
 
-const ContainerActions = ({ container, onAddNotification, localImages, updateContainer, isSystemdService, isDownloading }) => {
+const ContainerActions = ({ con, container, onAddNotification, localImages, updateContainer, isSystemdService, isDownloading }) => {
     const Dialogs = useDialogs();
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
@@ -55,7 +55,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
             const handleForceRemoveContainer = () => {
                 const id = container ? container.Id : "";
 
-                return client.delContainer(container.uid, id, true)
+                return client.delContainer(con, id, true)
                         .catch(ex => {
                             const error = cockpit.format(_("Failed to force remove container $0"), container.Name); // not-covered: OS error
                             onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -69,7 +69,8 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
                                            handleForceRemove={handleForceRemoveContainer}
                                            reason={_("Deleting a running container will erase all data in it.")} />);
         } else {
-            Dialogs.show(<ContainerDeleteModal containerWillDelete={container}
+            Dialogs.show(<ContainerDeleteModal con={con}
+                                               containerWillDelete={container}
                                                onAddNotification={onAddNotification} />);
         }
     };
@@ -79,7 +80,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
 
         if (force)
             args.t = 0;
-        client.postContainer(container.uid, "stop", container.Id, args)
+        client.postContainer(con, "stop", container.Id, args)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to stop container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -87,7 +88,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
     };
 
     const startContainer = () => {
-        client.postContainer(container.uid, "start", container.Id, {})
+        client.postContainer(con, "start", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to start container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -95,7 +96,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
     };
 
     const resumeContainer = () => {
-        client.postContainer(container.uid, "unpause", container.Id, {})
+        client.postContainer(con, "unpause", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to resume container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -103,7 +104,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
     };
 
     const pauseContainer = () => {
-        client.postContainer(container.uid, "pause", container.Id, {})
+        client.postContainer(con, "pause", container.Id, {})
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to pause container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -111,7 +112,8 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
     };
 
     const commitContainer = () => {
-        Dialogs.show(<ContainerCommitModal container={container}
+        Dialogs.show(<ContainerCommitModal con={con}
+                                           container={container}
                                            localImages={localImages} />);
     };
 
@@ -120,7 +122,7 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
 
         if (force)
             args.t = 0;
-        client.postContainer(container.uid, "restart", container.Id, args)
+        client.postContainer(con, "restart", container.Id, args)
                 .catch(ex => {
                     const error = cockpit.format(_("Failed to restart container $0"), container.Name); // not-covered: OS error
                     onAddNotification({ type: 'danger', error, errorDetail: ex.message });
@@ -129,18 +131,21 @@ const ContainerActions = ({ container, onAddNotification, localImages, updateCon
 
     const renameContainer = () => {
         if (container.State.Status !== "running") {
-            Dialogs.show(<ContainerRenameModal container={container}
+            Dialogs.show(<ContainerRenameModal con={con}
+                                               container={container}
                                                updateContainer={updateContainer} />);
         }
     };
 
     const checkpointContainer = () => {
-        Dialogs.show(<ContainerCheckpointModal containerWillCheckpoint={container}
+        Dialogs.show(<ContainerCheckpointModal con={con}
+                                               containerWillCheckpoint={container}
                                                onAddNotification={onAddNotification} />);
     };
 
     const restoreContainer = () => {
-        Dialogs.show(<ContainerRestoreModal containerWillRestore={container}
+        Dialogs.show(<ContainerRestoreModal con={con}
+                                            containerWillRestore={container}
                                             onAddNotification={onAddNotification} />);
     };
 
@@ -409,12 +414,13 @@ class Containers extends React.Component {
         ];
 
         columns.push({
-            title: <ContainerActions container={container}
-                                         onAddNotification={this.props.onAddNotification}
-                                         localImages={localImages}
-                                         updateContainer={this.props.updateContainer}
-                                         isSystemdService={isSystemdService}
-                                         isDownloading={container.isDownloading} />,
+            title: <ContainerActions con={user.con}
+                                     container={container}
+                                     onAddNotification={this.props.onAddNotification}
+                                     localImages={localImages}
+                                     updateContainer={this.props.updateContainer}
+                                     isSystemdService={isSystemdService}
+                                     isDownloading={container.isDownloading} />,
             props: { className: "pf-v5-c-table__action" }
         });
 
@@ -442,7 +448,7 @@ class Containers extends React.Component {
                 tabs.push({
                     name: _("Console"),
                     renderer: ContainerTerminal,
-                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid, tty }
+                    data: { con: user.con, containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid, tty }
                 });
             }
         }
@@ -451,7 +457,7 @@ class Containers extends React.Component {
             tabs.push({
                 name: _("Health check"),
                 renderer: ContainerHealthLogs,
-                data: { container, onAddNotification: this.props.onAddNotification, state: localized_health }
+                data: { con: user.con, container, onAddNotification: this.props.onAddNotification, state: localized_health }
             });
         }
 
@@ -815,8 +821,11 @@ class Containers extends React.Component {
                                         });
                                         let caption;
                                         let podStatus;
+                                        let pod;
+                                        let con;
                                         if (section !== 'no-pod') {
-                                            const pod = this.props.pods[section];
+                                            pod = this.props.pods[section];
+                                            con = this.props.users.find(u => u.uid === pod.uid).con;
                                             tableProps['aria-label'] = cockpit.format("Containers of pod $0", pod.Name);
                                             podStatus = pod.Status;
                                             caption = pod.Name;
@@ -833,7 +842,9 @@ class Containers extends React.Component {
                                                         onClick={() => createContainer(this.props.pods[section])}>
                                                     {_("Create container in pod")}
                                                 </Button>
-                                                <PodActions onAddNotification={this.props.onAddNotification} pod={this.props.pods[section]} />
+                                                <PodActions con={con}
+                                                            onAddNotification={this.props.onAddNotification}
+                                                            pod={pod} />
                                             </>
                                         );
                                         return (
