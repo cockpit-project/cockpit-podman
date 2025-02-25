@@ -15,7 +15,7 @@ import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
-const ContainerRenameModal = ({ container, updateContainer }) => {
+const ContainerRenameModal = ({ con, container, updateContainer }) => {
     const Dialogs = useDialogs();
     const [name, setName] = useState(container.Name);
     const { version } = utils.usePodmanInfo();
@@ -44,12 +44,12 @@ const ContainerRenameModal = ({ container, updateContainer }) => {
 
         setNameError(null);
         setDialogError(null);
-        client.renameContainer(container.uid, container.Id, { name })
+        client.renameContainer(con, container.Id, { name })
                 .then(() => {
                     Dialogs.close();
                     // HACK: This is a workaround for missing API rename event in Podman versions less than 4.1.
                     if (version.localeCompare("4.1", undefined, { numeric: true, sensitivity: 'base' }) < 0) {
-                        updateContainer(container.Id, container.uid); // not-covered: only on old version
+                        updateContainer(con, container.Id); // not-covered: only on old version
                     }
                 })
                 .catch(ex => {
