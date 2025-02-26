@@ -3273,6 +3273,138 @@ PodName={name}
     def testQuadletsUsers(self):
         self._testQuadlets(system=False)
 
+    def testOtherUsers(self):
+        m = self.machine
+        b = self.browser
+
+        # create two system users with running container
+        ssh = {}
+        uids = {}
+        with open(DEFAULT_IDENTITY_PUB_FILE) as f:
+            authorized_keys = f.read()
+        for user in ['guitar', 'piano']:
+            m.execute(f"useradd --create-home {user}; loginctl enable-linger {user}")
+            uids[user] = m.execute(f"id -u {user}").strip()
+            m.write(f"/home/{user}/.ssh/authorized_keys", authorized_keys, owner=f"{user}:{user}", perm="600")
+            self.addCleanup(m.execute, f"loginctl disable-linger {user}; rm -rf /home/{user}")
+
+            ssh[user] = ssh_connection.SSHConnection(user=user,
+                                                     address=m.ssh_address,
+                                                     ssh_port=m.ssh_port,
+                                                     identity_file=m.identity_file)
+            ssh[user].execute(f"""
+            podman load < /var/lib/test-images/localhosttest-busyboxlatest.tar
+            podman tag {IMG_BUSYBOX} example.com/{user}/myimg
+            podman rmi {IMG_BUSYBOX}
+            podman run -d --name {user}c1 --stop-timeout=0 example.com/{user}/myimg sleep infinity
+            """)
+            self.addCleanup(ssh[user].execute, """
+            systemctl --user stop podman.service podman.socket
+            podman system reset --force
+            """)
+
+        # add a system and admin user container into the mix
+        self.execute(True, f"podman run -d --name sysc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity")
+        self.execute(False, f"podman run -d --name adminc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity")
+
+        self.login_and_go("/podman")
+        b.wait_visible("#app")
+
+        # standard and both extra users get detected, with well-defined sorting
+        b.wait_text("#containers-containers-owner", "systemadminguitarpianoAll")
+        b.wait_val("#containers-containers-owner", "all")
+
+        # shows system + admin by default
+        self.waitNumImages(self.user_images_count + self.system_images_count)
+        self.waitNumContainers(2, auth=True)
+        b.wait_text("#containers-containers tbody:nth-of-type(1) .container-name", "adminc1")
+        b.wait_text("#containers-containers tbody:nth-of-type(2) .container-name", "sysc1")
+        showImages(b)
+
+        # switching to other user only shows its images and containers
+        for user in ['guitar', 'piano']:
+            b.set_val("#containers-containers-owner", uids[user])
+            self.waitNumContainers(1, auth=False)
+            b.wait_text("#containers-containers .container-name", f"{user}c1")
+            b.wait_text("#containers-containers [data-label='Owner']", f"user: {user}")
+
+            b.wait_text("#containers-images [data-label='Image']", f"example.com/{user}/myimg:latest")
+            b.wait_text("#containers-images [data-label='Owner']", f"user: {user}")
+
+            self.waitNumImages(1)
+
+        # switch to "all" disconnects other users
+        b.set_val("#containers-containers-owner", "all")
+        self.waitNumContainers(2, auth=True)
+        self.waitNumImages(self.user_images_count + self.system_images_count)
+
+        # reconnect to guitar
+        b.set_val("#containers-containers-owner", uids['guitar'])
+        self.waitNumContainers(1, auth=False)
+
+        # switch session user, disconnects from last other user guitar
+        b.set_val("#containers-containers-owner", "user")
+        self.waitNumContainers(1, auth=False)
+        self.waitNumImages(self.user_images_count)
+
+        b.set_val("#containers-containers-owner", "all")
+        self.waitNumContainers(2, auth=True)
+        self.waitNumImages(self.user_images_count + self.system_images_count)
+
+        # reconnect to guitar
+        b.set_val("#containers-containers-owner", uids["guitar"])
+        self.waitNumContainers(1, auth=False)
+        self.waitNumImages(1)
+
+        # container lifecycle actions
+        self.performContainerAction("example.com/guitar/myimg:latest", "Force stop")
+        b.wait(lambda: self.getContainerAttr("guitarc1", "State") in NOT_RUNNING)
+        self.performContainerAction("example.com/guitar/myimg:latest", "Start")
+        b.wait(lambda: self.getContainerAttr("guitarc1", "State") == "Running")
+
+        # container creation/removal
+        b.click('#containers-images tbody tr:contains("example.com/guitar/myimg") .ct-container-create')
+        b.set_input_text("#run-image-dialog-name", "new-guitar")
+        b.click("#create-image-create-btn")
+        b.wait_not_present("div.pf-v5-c-modal-box")
+        self.waitContainerRow("new-guitar")
+        self.performContainerAction("new-guitar", "Delete")
+        b.click(".pf-v5-c-modal-box button:contains(Delete)")
+        self.waitContainerRow("new-guitar", present=False)
+
+        # switch user via URL
+        b.go(f"#/?owner={uids['piano']}")
+        b.wait_js_cond(f'window.location.hash === "#/?owner={uids["piano"]}"')
+        b.wait_text("#containers-containers .container-name", "pianoc1")
+
+        # changing to an unknown user keeps the current filter
+        b.go("#/?owner=99999")
+        b.wait_js_cond(f'window.location.hash === "#/?owner={uids["piano"]}"')
+        b.wait_text("#containers-containers .container-name", "pianoc1")
+
+        b.logout()
+
+        # check quadlet detection
+        # old podman versions don't have quadlet support
+        if m.image not in ["rhel-8-10", "ubuntu-2204", "debian-stable"]:
+            ssh['guitar'].execute("podman rm -f --all")
+
+            quadlet = """[Container]
+Image=example.com/guitar/myimg
+Exec=sleep infinity
+ContainerName=guitarq1
+"""
+            ssh['guitar'].write("/home/guitar/.config/containers/systemd/guitarq1.container",
+                                quadlet, owner="guitar:guitar")
+            ssh['guitar'].execute("systemctl --user daemon-reload; systemctl --user start guitarq1")
+
+            self.login_and_go("/podman")
+            b.set_val("#containers-containers-owner", uids['guitar'])
+            self.waitNumContainers(1, auth=False)
+            b.wait_text("#containers-containers .container-name", "guitarq1")
+            b.wait_text("#containers-containers [data-label='Owner']", "user: guitar")
+            b.wait_visible("#containers-containers .ct-badge-service")
+
 
 if __name__ == '__main__':
     testlib.test_main()
