@@ -97,6 +97,7 @@ export class ImageRunModal extends React.Component {
             memoryConfigure: false,
             cpuSharesConfigure: false,
             memoryUnit: 'MB',
+            inProgress: false,
             validationFailed: {},
             volumes: [],
             restartPolicy: "no",
@@ -242,12 +243,14 @@ export class ImageRunModal extends React.Component {
                                     client.delContainer(uid, reply.Id, true)
                                             .then(() => {
                                                 this.setState({
+                                                    inProgress: false,
                                                     dialogError: _("Container failed to be started"),
                                                     dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
                                                 });
                                             })
                                             .catch(ex => {
                                                 this.setState({
+                                                    inProgress: false,
                                                     dialogError: _("Failed to clean up container"),
                                                     dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
                                                 });
@@ -259,6 +262,7 @@ export class ImageRunModal extends React.Component {
                 })
                 .catch(ex => {
                     this.setState({
+                        inProgress: false,
                         dialogError: _("Container failed to be created"),
                         dialogErrorDetail: cockpit.format("$0: $1", ex.reason, ex.message)
                     });
@@ -268,6 +272,8 @@ export class ImageRunModal extends React.Component {
     async onCreateClicked(runImage = false) {
         if (!await this.validateForm())
             return;
+
+        this.setState({ inProgress: true });
 
         const Dialogs = this.props.dialogs;
         const createConfig = this.getCreateConfig();
@@ -1204,6 +1210,9 @@ export class ImageRunModal extends React.Component {
                 </Tabs>
             </Form>
         );
+
+        const isDisabled = (!image && selectedImage === "") || this.isFormInvalid(dialogValues.validationFailed) || this.state.inProgress;
+
         return (
             <Modal isOpen
                    position="top" variant="medium"
@@ -1218,13 +1227,15 @@ export class ImageRunModal extends React.Component {
                    }}
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
-                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)} isDisabled={(!image && selectedImage === "") || this.isFormInvalid(dialogValues.validationFailed)}>
+                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)}
+                               isDisabled={isDisabled} isLoading={this.state.inProgress}>
                            {_("Create and run")}
                        </Button>
-                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)} isDisabled={(!image && selectedImage === "") || this.isFormInvalid(dialogValues.validationFailed)}>
+                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)}
+                               isDisabled={isDisabled} isLoading={this.state.inProgress}>
                            {_("Create")}
                        </Button>
-                       <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
+                       <Button variant='link' className='btn-cancel' onClick={Dialogs.close} isDisabled={this.state.inProgress}>
                            {_("Cancel")}
                        </Button>
                    </>}
