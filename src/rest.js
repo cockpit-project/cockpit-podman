@@ -23,8 +23,8 @@ const CR = '\r'.charCodeAt(0); // always 13, but avoid magic constant
 
 const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
 
-/* uid: null for logged in session user; 0 for root; in the future we'll support other users */
-/* Return { path, superuser } */
+/* uid: null for logged in session user, otherwise standard Unix user ID
+ * Return { path, superuser } */
 function getAddress(uid) {
     if (uid === null) {
         // FIXME: make this async and call cockpit.user()
@@ -37,6 +37,9 @@ function getAddress(uid) {
 
     if (uid === 0)
         return { path: PODMAN_SYSTEM_ADDRESS, superuser: "require" };
+
+    if (Number.isInteger(uid))
+        return { path: `/run/user/${uid}/podman/podman.sock`, superuser: "require" };
 
     throw new Error(`getAddress: uid ${uid} not supported`);
 }
