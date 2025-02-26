@@ -570,8 +570,11 @@ class Application extends React.Component {
                     const uid = parseInt(options.owner);
                     if (!isNaN(uid))
                         this.setState({ ownerFilter: uid });
-                    else
+                    else {
                         console.log("Ignoring invalid URL owner value:", options.owner);
+                        // go back to previous valid filter
+                        this.onOwnerChanged(this.state.ownerFilter);
+                    }
                 }
             }
         });

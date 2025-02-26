@@ -699,6 +699,11 @@ WantedBy=multi-user.target default.target
             b.go("#/?owner=user")
             verify_user()
 
+            # changing to an invalid user keeps the current filter
+            b.go("#/?owner=huh")
+            b.wait_js_cond('window.location.hash === "#/?owner=user"')
+            verify_user()
+
             b.set_val("#containers-containers-owner", "all")
             self.waitNumImages(self.user_images_count + self.system_images_count)
             self.waitNumContainers(2, auth=True)
