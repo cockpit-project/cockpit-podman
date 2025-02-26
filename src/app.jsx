@@ -130,10 +130,38 @@ class Application extends React.Component {
         });
 
         const options = { ...this.state.location };
-        if (value == "all")
+        if (value == "all") {
             delete options.owner;
-        else
-            options.owner = value.toString();
+        } else {
+            const uid = value === 'user' ? null : parseInt(value);
+            const user = this.state.users.find(u => u.uid === uid);
+            if (user) {
+                // disconnect other non-standard users, to avoid piling up connections
+                this.setState(prevState => ({
+                    users: prevState.users.map(u => {
+                        if (u.uid !== 0 && u.uid !== null && u.con) {
+                            debug("onOwnerChanged", user.name, ": closing unused connection to", u.name);
+                            u.con.close();
+                            return { uid: u.uid, name: u.name, con: null };
+                        } else
+                            return u;
+                    })
+                }), () => {
+                    if (user.con === null) {
+                        debug("onOwnerChanged", user.name, ": initializing connection");
+                        this.init(user.uid, user.name);
+                    } else {
+                        debug("onOwnerChanged", user.name, ": connection already initialized");
+                    }
+                });
+
+                options.owner = value.toString();
+            } else {
+                console.warn("Unknown user", value, "in URL, ignoring; known users:", JSON.stringify(this.state.users.map(u => u.name)));
+                delete options.owner;
+            }
+        }
+
         this.updateUrl(options);
     }
 
@@ -440,6 +468,7 @@ class Application extends React.Component {
     }
 
     cleanupAfterService(con) {
+        debug("cleanupAfterService", con.uid, "current owner filter:", this.state.ownerFilter);
         ["images", "containers", "pods"].forEach(t => {
             if (this.state[t])
                 this.setState(prevState => {
@@ -452,20 +481,30 @@ class Application extends React.Component {
                 });
         });
 
-        this.setState(prevState => ({ users: prevState.users.filter(u => u.uid !== con.uid) }));
+        // keep dummy (null) connections from other users, only remove valid ones
+        this.setState(prevState => ({ users: prevState.users.filter(u => u.con === null || u.uid !== con.uid) }));
 
-        // regardless of whose service went away (system/user), it makes owner filter disappear, so reset it
-        this.onOwnerChanged("all");
+        // reset owner filter if the current filter is the closed connection
+        if (con.uid == this.state.ownerFilter)
+            this.onOwnerChanged("all");
     }
 
     async init(uid, username) {
+        debug("init uid", uid, "name", username);
         const system = uid === 0;
+        const is_other_user = (uid !== 0 && uid !== null);
 
         let con = null;
 
         try {
-            await cockpit.spawn(["systemctl", ...(system ? [] : ["--user"]), "start", "podman.socket"],
-                                { superuser: system ? "require" : null, err: "message" });
+            const start_args = [
+                ...(is_other_user ? ["runuser", "-u", username, "--"] : []),
+                "systemctl",
+                ...(system ? [] : ["--user"]),
+                "start", "podman.socket"
+            ];
+            const environ = is_other_user ? ["XDG_RUNTIME_DIR=/run/user/" + uid] : [];
+            await cockpit.spawn(start_args, { superuser: uid === null ? null : "require", err: "message", environ });
             con = rest.connect(uid);
             const reply = await client.getInfo(con);
             this.setState(prevState => {
@@ -528,6 +567,37 @@ class Application extends React.Component {
                     this.setState({ userLingeringEnabled: true });
                 }
             });
+
+            // detect which other users have containers running
+            cockpit.spawn([
+                'find', '/sys/fs/cgroup',
+                // RHEL 8 version still calls it "podman-*.scope", newer ones "libpod*"
+                '-name', 'libpod*s.cope', '-o', '-name', 'podman-*.scope',
+                '-exec', 'stat', '--format=%u %U', '{}', ';'],
+                          { superuser: "require", error: "message" })
+                    .then(output => {
+                        const other_users = [];
+                        const trimmed = output.trim();
+                        if (!trimmed)
+                            return;
+
+                        trimmed.split('\n').forEach(line => {
+                            const [uid_str, username] = line.split(' ');
+                            const uid = parseInt(uid_str);
+                            if (isNaN(uid)) {
+                                console.error(`User container detection: invalid uid '${uid_str}' in output '${output}'`); // not-covered: Should Not Happen™
+                                return;
+                            }
+                            // ignore standard users
+                            if (uid === 0 || uid === user.id)
+                                return;
+                            if (!other_users.find(u => u.uid === uid))
+                                other_users.push({ uid, name: username, con: null });
+                        });
+                        debug("other users who have containers running:", JSON.stringify(other_users));
+                        this.setState(prevState => ({ users: prevState.users.concat(other_users) }));
+                    })
+                    .catch(ex => console.warn("failed to detect other users:", ex));
         });
 
         cockpit.spawn("selinuxenabled", { error: "ignore" })
@@ -627,9 +697,9 @@ class Application extends React.Component {
         } else
             imageContainerList = null;
 
-        const loadingImages = this.state.users.find(u => !u.imagesLoaded);
-        const loadingContainers = this.state.users.find(u => !u.containersLoaded);
-        const loadingPods = this.state.users.find(u => !u.podsLoaded);
+        const loadingImages = this.state.users.find(u => u.con && !u.imagesLoaded);
+        const loadingContainers = this.state.users.find(u => u.con && !u.containersLoaded);
+        const loadingPods = this.state.users.find(u => u.con && !u.podsLoaded);
 
         const imageList = (
             <Images
