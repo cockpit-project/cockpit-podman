@@ -26,6 +26,7 @@ export const PodCreateModal = ({ users }) => {
     const [publish, setPublish] = useState([]);
     const [volumes, setVolumes] = useState([]);
     const [owner, setOwner] = useState(users[0]);
+    const [inProgress, setInProgress] = useState(false);
     const [dialogError, setDialogError] = useState(null);
     const [dialogErrorDetail, setDialogErrorDetail] = useState(null);
     const [validationFailed, setValidationFailed] = useState({});
@@ -82,20 +83,17 @@ export const PodCreateModal = ({ users }) => {
         });
     };
 
-    const createPod = (uid, createConfig) => {
-        client.createPod(uid, createConfig)
-                .then(() => Dialogs.close())
-                .catch(ex => {
-                    setDialogError(_("Pod failed to be created"));
-                    setDialogErrorDetail(cockpit.format("$0: $1", ex.reason, ex.message));
-                });
-    };
-
     const onCreateClicked = () => {
         if (!validateForm())
             return;
-        const createConfig = getCreateConfig();
-        createPod(owner.uid, createConfig);
+        setInProgress(true);
+        client.createPod(owner.uid, getCreateConfig())
+                .then(Dialogs.close)
+                .catch(ex => {
+                    setInProgress(false);
+                    setDialogError(_("Pod failed to be created"));
+                    setDialogErrorDetail(cockpit.format("$0: $1", ex.reason, ex.message));
+                });
     };
 
     const isFormInvalid = validationFailed => {
@@ -211,11 +209,12 @@ export const PodCreateModal = ({ users }) => {
                 onEscapePress={Dialogs.close}
                 title={_("Create pod")}
                 footer={<>
-                    <Button variant='primary' id="create-pod-create-btn" onClick={() => onCreateClicked()}
-                            isDisabled={isFormInvalid(validationFailed)}>
+                    <Button variant='primary' id="create-pod-create-btn" onClick={onCreateClicked}
+                            isLoading={inProgress}
+                            isDisabled={isFormInvalid(validationFailed) || inProgress}>
                         {_("Create")}
                     </Button>
-                    <Button variant='link' className='btn-cancel' onClick={Dialogs.close}>
+                    <Button variant='link' className='btn-cancel' isDisabled={inProgress} onClick={Dialogs.close}>
                         {_("Cancel")}
                     </Button>
                 </>}
