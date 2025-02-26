@@ -116,13 +116,12 @@ class Application extends React.Component {
             textFilter: value
         });
 
-        const options = this.state.location;
-        if (value === "") {
+        const options = { ...this.state.location };
+        if (value === "")
             delete options.name;
-            this.updateUrl(Object.assign(options));
-        } else {
-            this.updateUrl(Object.assign(this.state.location, { name: value }));
-        }
+        else
+            options.name = value;
+        this.updateUrl(options);
     }
 
     onOwnerChanged(value) {
@@ -130,13 +129,12 @@ class Application extends React.Component {
             ownerFilter: value
         });
 
-        const options = this.state.location;
-        if (value == "all") {
+        const options = { ...this.state.location };
+        if (value == "all")
             delete options.owner;
-            this.updateUrl(Object.assign(options));
-        } else {
-            this.updateUrl(Object.assign(options, { owner: value.toString() }));
-        }
+        else
+            options.owner = value.toString();
+        this.updateUrl(options);
     }
 
     onContainerFilterChanged(value) {
