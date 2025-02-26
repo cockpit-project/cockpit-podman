@@ -563,13 +563,13 @@ class Application extends React.Component {
                     this.onContainerFilterChanged(options.container);
                 }
                 if (["user", "all"].includes(options.owner)) {
-                    this.onOwnerChanged(options.owner);
+                    this.setState({ ownerFilter: options.owner });
                 } else if (options.owner === undefined) {
-                    this.onOwnerChanged("all");
+                    this.setState({ ownerFilter: "all" });
                 } else {
                     const uid = parseInt(options.owner);
                     if (!isNaN(uid))
-                        this.onOwnerChanged(uid);
+                        this.setState({ ownerFilter: uid });
                     else
                         console.log("Ignoring invalid URL owner value:", options.owner);
                 }
