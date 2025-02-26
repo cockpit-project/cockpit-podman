@@ -12,7 +12,7 @@ import * as client from './client.js';
 
 const _ = cockpit.gettext;
 
-const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }) => {
+const ContainerCheckpointModal = ({ con, containerWillCheckpoint, onAddNotification }) => {
     const Dialogs = useDialogs();
     const [inProgress, setProgress] = useState(false);
     const [keep, setKeep] = useState(false);
@@ -21,7 +21,7 @@ const ContainerCheckpointModal = ({ containerWillCheckpoint, onAddNotification }
 
     const handleCheckpointContainer = () => {
         setProgress(true);
-        client.postContainer(containerWillCheckpoint.uid, "checkpoint", containerWillCheckpoint.Id, {
+        client.postContainer(con, "checkpoint", containerWillCheckpoint.Id, {
             keep,
             leaveRunning,
             tcpEstablished,

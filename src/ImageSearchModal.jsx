@@ -122,7 +122,7 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
         if (activeConnection)
             activeConnection.close();
         Dialogs.close();
-        downloadImage(selectedImageName, imageTag, user.uid);
+        downloadImage(selectedImageName, imageTag, user.con);
     };
 
     const handleClose = () => {
