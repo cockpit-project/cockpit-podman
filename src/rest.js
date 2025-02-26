@@ -22,8 +22,8 @@ const NL = '\n'.charCodeAt(0); // always 10, but avoid magic constant
 
 const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
 
-/* uid: null for logged in session user; 0 for root; in the future we'll support other users */
-/* Return { path, superuser } */
+/* uid: null for logged in session user, otherwise standard Unix user ID
+ * Return { path, superuser } */
 function getAddress(uid) {
     if (uid === null) {
         // FIXME: make this async and call cockpit.user()
@@ -37,16 +37,21 @@ function getAddress(uid) {
     if (uid === 0)
         return { path: PODMAN_SYSTEM_ADDRESS, superuser: "require" };
 
+    if (Number.isInteger(uid))
+        return { path: `/run/user/${uid}/podman/podman.sock`, superuser: "require" };
+
     throw new Error(`getAddress: uid ${uid} not supported`);
 }
 
-/* uid: null for logged in session user; 0 for root; in the future we'll support other users */
+/* uid: null for logged in session user; 0 for root; in the future we'll support other users
+ * Returns a connection object with methods monitor(), call(), and close(), and an `uid` property.
+ */
 function connect(uid) {
     const addr = getAddress(uid);
     /* This doesn't create a channel until a request */
     /* HACK: use binary channel to work around https://github.com/cockpit-project/cockpit/issues/19235 */
     const http = cockpit.http(addr.path, { superuser: addr.superuser, binary: true });
-    const connection = {};
+    const connection = { uid };
     const decoder = new TextDecoder();
     const user_str = (uid === null) ? "user" : (uid === 0) ? "root" : `uid ${uid}`;
 
@@ -109,19 +114,7 @@ function connect(uid) {
     return connection;
 }
 
-/*
- * Connects to the podman service, performs a single call, and closes the
- * connection.
- */
-async function call (uid, parameters) {
-    const connection = connect(uid);
-    const result = await connection.call(parameters);
-    connection.close();
-    return result;
-}
-
 export default {
     connect,
-    call,
     getAddress,
 };

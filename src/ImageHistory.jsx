@@ -17,19 +17,18 @@ const IdColumn = Id => {
     return Id;
 };
 
-const ImageDetails = ({ image }) => {
+const ImageDetails = ({ con, image }) => {
     const [history, setHistory] = useState([]);
     const [error, setError] = useState(null);
-    const uid = image.uid;
     const id = image.Id;
 
     useEffect(() => {
-        client.imageHistory(uid, id).then(setHistory)
+        client.imageHistory(con, id).then(setHistory)
                 .catch(ex => {
                     console.error("Cannot get image history", ex);
                     setError(true);
                 });
-    }, [uid, id]);
+    }, [con, id]);
 
     const columns = ["ID", _("Created"), _("Created by"), _("Size"), _("Comments")];
     let showComments = false;

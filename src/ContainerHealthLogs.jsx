@@ -44,7 +44,7 @@ const HealthcheckOnFailureActionText = {
     kill: _("Force stop"),
 };
 
-const ContainerHealthLogs = ({ container, onAddNotification, state }) => {
+const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
     const healthCheck = container.Config?.Healthcheck ?? container.Config?.Health ?? {}; // not-covered: only on old version
     const healthState = container.State?.Healthcheck ?? container.State?.Health ?? {}; // not-covered: only on old version
     const logs = [...(healthState.Log || [])].reverse(); // not-covered: Log should always exist, belt-and-suspenders
@@ -91,7 +91,7 @@ const ContainerHealthLogs = ({ container, onAddNotification, state }) => {
                 { container.State.Status === "running" &&
                     <FlexItem>
                         <Button variant="secondary" onClick={() => {
-                            client.runHealthcheck(container.uid, container.Id)
+                            client.runHealthcheck(con, container.Id)
                                     .catch(ex => {
                                         const error = cockpit.format(_("Failed to run health check on container $0"), container.Name); // not-covered: OS error
                                         onAddNotification({ type: 'danger', error, errorDetail: ex.message });
