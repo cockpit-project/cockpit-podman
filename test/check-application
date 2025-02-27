@@ -1353,8 +1353,8 @@ WantedBy=multi-user.target default.target
         b.click("#image-actions-dropdown")
         b.click("button:contains(Pull all images)")
         b.wait_in_text("div.download-in-progress", "Pulling")
-        b.wait_not_present('h4.pf-v5-c-alert__title:contains("Failed to download image")')
         b.wait_not_present("div.download-in-progress")
+        b.wait_not_present('.pf-v5-c-alert__title')
         b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"user-{image1_sha}\"]".lower())
         b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"user-{image2_sha}\"]".lower())
 
