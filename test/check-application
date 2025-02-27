@@ -1337,19 +1337,13 @@ WantedBy=multi-user.target default.target
         buildImage(image2, 10, auth=False)
         image2_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {image2}").strip()
 
-        self.execute(False, """
-            podman rmi localhost/test-busybox:latest
-            podman rmi localhost/test-alpine:latest
-
-            # Remove registry container
-            podman rmi localhost/test-registry:latest
-        """)
-
         # Ubuntu has an old podman which ships with a k8s image
         if m.image == "ubuntu-2204":
             self.execute(False, "podman rmi k8s.gcr.io/pause:3.5")
+            self.user_images_count -= 1
+            b.wait_not_in_text("#containers-images", "pause")
 
-        b.wait_in_text("#containers-images", "2 images")
+        b.wait_in_text("#containers-images", f"{self.user_images_count + 2} images")
         b.click("#image-actions-dropdown")
         b.click("button:contains(Pull all images)")
         b.wait_in_text("div.download-in-progress", "Pulling")
@@ -1361,6 +1355,16 @@ WantedBy=multi-user.target default.target
         # assert the image size changed
         b.wait(lambda: getImageSize(image1) > 20)
         b.wait(lambda: getImageSize(image2) > 40)
+
+        # after pulling the two test-images, we now have two <none>:<none> intermediate images
+        # pulling all images ignores them
+        b.wait_in_text("#containers-images", f"{self.user_images_count + 4} images")
+        b.click("#image-actions-dropdown")
+        b.click("button:contains(Pull all images)")
+        b.wait_in_text("div.download-in-progress", "Pulling")
+        b.wait_not_present("div.download-in-progress")
+        b.wait_not_present('.pf-v5-c-alert__title')
+        b.wait_in_text("#containers-images", f"{self.user_images_count + 4} images")
 
     def testLifecycleOperationsUser(self) -> None:
         self._testLifecycleOperations(False)

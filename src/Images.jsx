@@ -72,9 +72,13 @@ class Images extends React.Component {
         Dialogs.show(<ImageSearchModal downloadImage={this.downloadImage} users={this.props.users} />);
     };
 
-    onPullAllImages = () => {
-        Object.values(this.props.images).forEach((image) => this.downloadImage(utils.image_name(image), null, image.uid));
-    };
+    onPullAllImages = () => Object.values(this.props.images).forEach(image => {
+        // ignore nameless (intermediate) images and the localhost/ pseudo-registry (which cannot be pulled)
+        if (image.RepoTags?.find(tag => !tag.startsWith("localhost/")))
+            this.downloadImage(image.RepoTags[0], null, image.uid);
+        else
+            utils.debug("onPullAllImages: ignoring image", image);
+    });
 
     onOpenPruneUnusedImagesDialog = () => {
         this.setState({ showPruneUnusedImagesModal: true });
