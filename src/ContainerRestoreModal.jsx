@@ -12,7 +12,7 @@ import * as client from './client.js';
 
 const _ = cockpit.gettext;
 
-const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
+const ContainerRestoreModal = ({ con, containerWillRestore, onAddNotification }) => {
     const Dialogs = useDialogs();
 
     const [inProgress, setInProgress] = useState(false);
@@ -23,7 +23,7 @@ const ContainerRestoreModal = ({ containerWillRestore, onAddNotification }) => {
 
     const handleRestoreContainer = () => {
         setInProgress(true);
-        client.postContainer(containerWillRestore.uid, "restore", containerWillRestore.Id, {
+        client.postContainer(con, "restore", containerWillRestore.Id, {
             keep,
             tcpEstablished,
             ignoreStaticIP,

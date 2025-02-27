@@ -47,9 +47,11 @@ const PruneUnusedContainersModal = ({ close, unusedContainers, onAddNotification
     const handlePruneUnusedContainers = () => {
         setPruning(true);
 
+        const con_for = uid => users.find(u => u.uid === uid).con;
+
         const actions = unusedContainers
                 .filter(u => selectedContainerKeys.includes(u.key))
-                .map(u => client.delContainer(u.uid, u.id, true));
+                .map(u => client.delContainer(con_for(u.uid), u.id, true));
 
         Promise.all(actions).then(close)
                 .catch(ex => {

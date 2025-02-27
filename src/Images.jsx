@@ -45,13 +45,13 @@ class Images extends React.Component {
         this.renderRow = this.renderRow.bind(this);
     }
 
-    downloadImage(imageName, imageTag, uid) {
+    downloadImage(imageName, imageTag, con) {
         let pullImageId = imageName;
         if (imageTag)
             pullImageId += ":" + imageTag;
 
         this.setState(previous => ({ imageDownloadInProgress: [...previous.imageDownloadInProgress, imageName] }));
-        client.pullImage(uid, pullImageId)
+        client.pullImage(con, pullImageId)
                 .then(() => {
                     this.setState(previous => ({ imageDownloadInProgress: previous.imageDownloadInProgress.filter((image) => image != imageName) }));
                 })
@@ -72,10 +72,12 @@ class Images extends React.Component {
         Dialogs.show(<ImageSearchModal downloadImage={this.downloadImage} users={this.props.users} />);
     };
 
+    _con_for = image => this.props.users.find(u => u.uid === image.uid).con;
+
     onPullAllImages = () => Object.values(this.props.images).forEach(image => {
         // ignore nameless (intermediate) images and the localhost/ pseudo-registry (which cannot be pulled)
         if (image.RepoTags?.find(tag => !tag.startsWith("localhost/")))
-            this.downloadImage(image.RepoTags[0], null, image.uid);
+            this.downloadImage(image.RepoTags[0], null, this._con_for(image));
         else
             utils.debug("onPullAllImages: ignoring image", image);
     });
@@ -145,7 +147,9 @@ class Images extends React.Component {
             { title: cockpit.format_bytes(image.Size), props: { className: "ignore-pixels", modifier: "nowrap" } },
             { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" } },
             {
-                title: <ImageActions image={image} onAddNotification={this.props.onAddNotification}
+                title: <ImageActions con={user.con}
+                                     image={image}
+                                     onAddNotification={this.props.onAddNotification}
                                      users={this.props.users}
                                      downloadImage={this.downloadImage} />,
                 props: { className: 'pf-v5-c-table__action content-action' }
@@ -164,9 +168,7 @@ class Images extends React.Component {
         tabs.push({
             name: _("History"),
             renderer: ImageHistory,
-            data: {
-                image,
-            }
+            data: { con: user.con, image }
         });
         return {
             expandedContent: <ListingPanel
@@ -373,7 +375,7 @@ const ImageOverActions = ({ handleDownloadNewImage, handlePullAllImages, handleP
     );
 };
 
-const ImageActions = ({ image, onAddNotification, users, downloadImage }) => {
+const ImageActions = ({ con, image, onAddNotification, users, downloadImage }) => {
     const Dialogs = useDialogs();
 
     const runImage = () => {
@@ -396,11 +398,12 @@ const ImageActions = ({ image, onAddNotification, users, downloadImage }) => {
     };
 
     const pullImage = () => {
-        downloadImage(utils.image_name(image), null, image.uid);
+        downloadImage(utils.image_name(image), null, con);
     };
 
     const removeImage = () => {
-        Dialogs.show(<ImageDeleteModal imageWillDelete={image}
+        Dialogs.show(<ImageDeleteModal con={con}
+                                       imageWillDelete={image}
                                        onAddNotification={onAddNotification} />);
     };
 
