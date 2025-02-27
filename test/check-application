@@ -3087,7 +3087,7 @@ WantedBy=multi-user.target default.target
 
         # Nginx config simulates behavior of ghcr.io in terms of `podman search` and `podman manifest inspect`
         self.write_file("/etc/nginx/conf.d/default.conf", NGINX_DEFAULT_CONF,
-            post_restore_action="systemctl stop nginx.service; setsebool -P httpd_can_network_connect 0")
+                        post_restore_action="systemctl stop nginx.service; setsebool -P httpd_can_network_connect 0")
         self.execute(True, """
             setsebool -P httpd_can_network_connect 1
             systemctl start nginx.service
