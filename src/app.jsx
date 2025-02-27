@@ -616,6 +616,9 @@ class Application extends React.Component {
             );
         }
 
+        if (this.state.users.find(u => u.con === null && (u.uid === 0 || u.uid === null))) // not initialized yet
+            return null;
+
         let imageContainerList = {};
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
