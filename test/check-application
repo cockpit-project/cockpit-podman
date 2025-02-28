@@ -181,7 +181,7 @@ class TestApplication(testlib.MachineCase):
         self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected)
 
     def waitNumContainers(self, expected: int, *, auth: bool) -> None:
-        if auth and self.machine.ostree_image:
+        if auth and self.machine.ws_container:
             extra = 1  # cockpit/ws
         else:
             extra = 0
