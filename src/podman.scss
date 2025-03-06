@@ -108,6 +108,13 @@
     }
 }
 
+/* Override the card's font-family RedHatDisplay for the service Badge so it
+ * looks consistent with a normal container service badge.
+ */
+.pf-v5-c-card__title-text .ct-badge-service {
+    font-family: var(--pf-v5-global--FontFamily--text);
+}
+
 .green {
     color: var(--pf-v5-global--success-color--100);
 }
