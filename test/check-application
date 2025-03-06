@@ -276,7 +276,8 @@ class TestApplication(testlib.MachineCase):
         m.write("/etc/containers/registries.conf", REGISTRIES_CONF)
         self.execute(True, "systemctl stop podman.service")
 
-    def createQuadlet(self, name: str, *, auth: bool = False) -> None:
+    def createQuadlet(self, name: str, podName: str | None = None, *, auth: bool = False) -> None:
+        pod_option = f'Pod={podName}.pod' if podName else ''
         quadlet = f"""
 [Unit]
 Description=Podman - {name}
@@ -286,6 +287,7 @@ After=local-fs.target
 Image={IMG_BUSYBOX}
 Exec=sleep infinity
 ContainerName={name}
+{pod_option}
 
 [Install]
 WantedBy=multi-user.target default.target
@@ -300,6 +302,22 @@ WantedBy=multi-user.target default.target
         self.write_file(service_file, quadlet)
         self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}.service")
         self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service")
+
+    def createQuadletPod(self, name: str, *, auth: bool = False) -> None:
+        quadlet = f"""
+[Pod]
+PodName={name}
+"""
+        service_file = f"/etc/containers/systemd/{name}.pod"
+        if not auth:  # user session
+            service_file = f"/home/admin/.config/containers/systemd/{name}.pod"
+
+        systemctl_cmd = "systemctl" if auth else "systemctl --user"
+        self.addCleanup(self.execute, auth, f"{systemctl_cmd} daemon-reload")
+        self.write_file(service_file, quadlet)
+        self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}-pod.service")
+        self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}-pod.service")
+        self.execute(auth, f"until {systemctl_cmd} is-active {name}-pod.service; do sleep 1; done")
 
     def testPods(self) -> None:
         b = self.browser
@@ -3220,6 +3238,20 @@ WantedBy=multi-user.target default.target
         b.wait_not_present(self.getContainerAction(service_name, 'Delete'))
         b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v5-c-menu-toggle")
         b.wait_not_present('.pf-v5-c-menu__item')
+
+        # Quadlet pod support was introduced in podman 5.0.0
+        if podman_version(self) >= (5, 0, 0):
+            podName = "homeassistant"
+            self.createQuadletPod(podName, auth=system)
+            self.createQuadlet("zigbee", podName=podName, auth=system)
+            self.waitPodRow(podName, present=True)
+            containerId = self.execute(system, "podman inspect --format '{{.Id}}' zigbee").strip()
+            self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
+                                  "command": "sleep infinity", "state": "Running", "id": containerId}],
+                                  system=system)
+
+            # Cannot create a container in a pod
+            b.wait_not_present(".create-container-in-pod")
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
