@@ -824,12 +824,14 @@ class Containers extends React.Component {
                                         let caption;
                                         let podStatus;
                                         let pod;
+                                        let isPodService = false;
                                         let con;
                                         if (section !== 'no-pod') {
                                             pod = this.props.pods[section];
                                             con = this.props.users.find(u => u.uid === pod.uid).con;
                                             tableProps['aria-label'] = cockpit.format("Containers of pod $0", pod.Name);
                                             podStatus = pod.Status;
+                                            isPodService = Boolean(pod.Labels?.PODMAN_SYSTEMD_UNIT);
                                             caption = pod.Name;
                                         } else {
                                             tableProps['aria-label'] = _("Containers");
@@ -838,12 +840,13 @@ class Containers extends React.Component {
                                         const actions = caption && (
                                             <>
                                                 <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
+                                                {!isPodService &&
                                                 <Button variant="secondary"
                                                         className="create-container-in-pod"
                                                         isDisabled={nonIntermediateImages === null}
                                                         onClick={() => createContainer(this.props.pods[section])}>
                                                     {_("Create container in pod")}
-                                                </Button>
+                                                </Button>}
                                                 <PodActions con={con}
                                                             onAddNotification={this.props.onAddNotification}
                                                             pod={pod} />
