@@ -3253,6 +3253,9 @@ PodName={name}
             # Cannot create a container in a pod
             b.wait_not_present(".create-container-in-pod")
 
+            # Quadlet pods are shown as a service group
+            b.wait_visible("#table-homeassistant .pf-v5-c-card__header .ct-badge-service:contains('service')")
+
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
     def testQuadletsSystem(self):
