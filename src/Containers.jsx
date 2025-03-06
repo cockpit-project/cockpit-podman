@@ -380,7 +380,7 @@ class Containers extends React.Component {
                     <span className="container-name">{container.Name}</span>
                     {isToolboxContainer && <Badge className='ct-badge-toolbox'>toolbox</Badge>}
                     {isDistroboxContainer && <Badge className='ct-badge-distrobox'>distrobox</Badge>}
-                    {isSystemdService && <Badge className='ct-badge-service'>service</Badge>}
+                    {isSystemdService && <Badge className='ct-badge-service'>{_("service")}</Badge>}
                 </Flex>
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
