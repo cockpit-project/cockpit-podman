@@ -865,6 +865,7 @@ class Containers extends React.Component {
                                                         <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
                                                             <h3 className='pod-name'>{caption}</h3>
                                                             <span>{_("pod")}</span>
+                                                            {isPodService && <Badge className='ct-badge-service'>{_("service")}</Badge>}
                                                             {this.renderPodDetails(this.props.pods[section], podStatus)}
                                                         </Flex>
                                                     </CardTitle>
