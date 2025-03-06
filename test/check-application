@@ -3214,6 +3214,9 @@ WantedBy=multi-user.target default.target
             # Cannot create a container in a pod
             b.wait_not_present(".create-container-in-pod")
 
+            # Quadlet pods are shown as a service group
+            b.wait_in_text("#table-homeassistant-title", "pod service group")
+
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
     def testQuadletsSystem(self):
