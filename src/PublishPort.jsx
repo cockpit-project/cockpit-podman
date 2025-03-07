@@ -48,7 +48,7 @@ export function validatePublishPort(value, key) {
     }
 }
 
-export const PublishPort = ({ id, item, onChange, idx, removeitem, itemCount, validationFailed, onValidationChange }) =>
+export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, validationFailed, onValidationChange }) =>
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-6-col-on-md"
