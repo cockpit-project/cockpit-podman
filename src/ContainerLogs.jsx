@@ -113,19 +113,9 @@ class ContainerLogs extends React.Component {
         this.resize(this.props.width);
 
         const connection = rest.connect(this.props.uid);
-        const options = {
-            method: "GET",
-            path: client.VERSION + "libpod/containers/" + this.props.containerId + "/logs",
-            body: "",
-            binary: true,
-            params: {
-                follow: true,
-                stdout: true,
-                stderr: true,
-            },
-        };
-
-        connection.monitor(options, this.onStreamMessage, true)
+        connection.monitor(client.VERSION + "libpod/containers/" + this.props.containerId +
+                           "/logs?follow=true&stdout=true&stderr=true",
+                           this.onStreamMessage, true)
                 .then(this.onStreamClose)
                 .catch(e => {
                     const error = JSON.parse(new TextDecoder().decode(e.message));
@@ -149,7 +139,18 @@ class ContainerLogs extends React.Component {
             }
             // First 8 bytes encode information about stream and frame
             // See 'Stream format' on https://docs.docker.com/engine/api/v1.40/#operation/ContainerAttach
-            this.view.writeln(data.slice(8));
+            while (data.byteLength >= 8) {
+                // split into frames (size is the second 32-bit word)
+                const size = data[7] + data[6] * 0x100 + data[5] * 0x10000 + data[4] * 0x1000000;
+                const frame = data.slice(8, 8 + size);
+                // old podman versions just have CR endings, append NL then
+                if (frame[size - 1] === 13)
+                    this.view.writeln(frame);
+                else
+                    // recent podman  versions have CRNL endings
+                    this.view.write(frame);
+                data = data.slice(8 + size);
+            }
         }
     }
 
