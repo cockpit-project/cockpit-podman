@@ -494,18 +494,11 @@ class Application extends React.Component {
         this.updatePods(con);
 
         client.streamEvents(con, message => this.handleEvent(message, con))
-                .catch(e => console.error("init uid", uid, "streamEvents failed:", e.toString()))
-                .finally(() => this.cleanupAfterService(con));
-
-        // HACK: Listen for podman socket/service going away; this is only necessary with the C bridge
-        // (Debian 12, RHEL 8). With the Python bridge, the above streamEvents() resolves when the service goes away.
-        const address = rest.getAddress(uid);
-        const ch = cockpit.channel({ unix: address.path, superuser: address.superuser, payload: "stream" });
-        ch.addEventListener("close", () => {
-            console.log("init uid", uid, "podman service closed");
-            this.cleanupAfterService(con);
-        });
-        ch.send("GET " + client.VERSION + "libpod/events HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
+                .catch(e => console.error("uid", uid, "streamEvents failed:", e.toString()))
+                .finally(() => {
+                    console.log("uid", uid, "podman service closed");
+                    this.cleanupAfterService(con);
+                });
     }
 
     componentDidMount() {

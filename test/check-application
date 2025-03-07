@@ -3147,6 +3147,38 @@ WantedBy=multi-user.target default.target
         b.wait_text("button.pf-v5-c-menu__item:not([disabled])", "localhost:5000/my-busybox:search-tag")
         b.wait_js_cond("document.querySelectorAll('.pf-v5-c-menu__item:not([disabled])').length === 1")
 
+    @testlib.skipImage("page does not survive this with the C bridge", "ubuntu-2204", "rhel-8-*")
+    def testReconnectStability(self):
+        # reloading the page reconnects to the podman services; make sure this works reliably
+        b = self.browser
+
+        self.execute(True, f"podman run -d --name sys1 --stop-timeout 0 {IMG_BUSYBOX} sleep infinity")
+        self.execute(False, f"podman run -d --name user1 --stop-timeout 0 {IMG_ALPINE} sleep infinity")
+        self.login()
+
+        for _ in range(10):
+            self.waitNumContainers(2, auth=True)
+            b.wait_text("#containers-containers tbody:nth-of-type(1) .container-name", "sys1")
+            b.wait_text("#containers-containers tbody:nth-of-type(2) .container-name", "user1")
+            b.wait(lambda: self.getContainerAttr("user1", "State") == "Running")
+            b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
+
+            b.reload()
+            b.enter_page("/podman")
+            b.wait_visible("#app")
+
+        # system events still work
+        self.performContainerAction(IMG_BUSYBOX, "Force stop")
+        b.wait(lambda: self.getContainerAttr("sys1", "State") in NOT_RUNNING)
+        self.performContainerAction(IMG_BUSYBOX, "Start")
+        b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
+
+        # user events still work
+        self.performContainerAction(IMG_ALPINE, "Force stop")
+        b.wait(lambda: self.getContainerAttr("user1", "State") in NOT_RUNNING)
+        self.performContainerAction(IMG_ALPINE, "Start")
+        b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
+
 
 if __name__ == '__main__':
     testlib.test_main()

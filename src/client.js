@@ -10,16 +10,7 @@ const podmanCall = (con, name, method, args, body) => con.call({
 const podmanJson = (con, name, method, args, body) => podmanCall(con, name, method, args, body)
         .then(reply => JSON.parse(reply));
 
-const podmanMonitor = (con, name, method, args, callback) => con.monitor(
-    {
-        method,
-        path: VERSION + name,
-        body: "",
-        params: args
-    },
-    callback);
-
-export const streamEvents = (con, callback) => podmanMonitor(con, "libpod/events", "GET", {}, callback);
+export const streamEvents = (con, callback) => con.monitor(VERSION + "libpod/events", callback);
 
 export function getInfo(con) {
     return new Promise((resolve, reject) => {
@@ -33,7 +24,7 @@ export function getInfo(con) {
 
 export const getContainers = con => podmanJson(con, "libpod/containers/json", "GET", { all: true });
 
-export const streamContainerStats = (con, callback) => podmanMonitor(con, "libpod/containers/stats", "GET", { stream: true }, callback);
+export const streamContainerStats = (con, callback) => con.monitor(VERSION + "libpod/containers/stats", callback);
 
 export function inspectContainer(con, id) {
     const options = {
