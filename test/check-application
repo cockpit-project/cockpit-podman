@@ -212,31 +212,10 @@ class TestApplication(testlib.MachineCase):
             return self.admin_s.execute(cmd)
 
     def login(self, *, system: bool = True) -> None:
-        # HACK: The first rootless call often gets stuck or fails
-        # In such case we have alert banner to start the service (or just empty state)
-        # A real user would just hit the button so lets do the same as this is always getting
-        # back to us and we waste too much time reporting to podman with mixed results.
-        # Examples:
-        #     https://github.com/containers/podman/issues/8762
-        #     https://github.com/containers/podman/issues/9251
-        #     https://github.com/containers/podman/issues/6660
-
         b = self.browser
-
         self.login_and_go("/podman", superuser=system)
         b.wait_visible("#app")
-
-        with self.browser.wait_timeout(30):
-            try:
-                b.wait_not_in_text("#containers-containers", "Loading")
-                b.wait_not_present("#overview div.pf-v5-c-alert")
-            except testlib.Error:
-                if system:
-                    b.click("#overview div.pf-v5-c-alert .pf-v5-c-alert__action > button:contains(Start)")
-                    b.wait_not_present("#overview div.pf-v5-c-alert")
-                else:
-                    b.click("#app .pf-v5-c-empty-state button.pf-m-primary")
-                    b.wait_not_present("#app .pf-v5-c-empty-state button")
+        b.wait_not_in_text("#containers-containers", "Loading")
 
     def waitPodRow(self, podName: str, *, present: bool = False) -> None:
         if present:
@@ -1675,8 +1654,7 @@ WantedBy=multi-user.target default.target
             self.execute(False, "systemctl --user unmask podman.service")
 
         # now let it fail while c-podman is running
-        b.login_and_go("/podman")
-        b.wait_visible("#app")
+        self.login()
         b.wait_in_text("#containers-images", "system")
         b.wait_in_text("#containers-images", "user")
         self.execute(True, "systemctl stop podman.service")
