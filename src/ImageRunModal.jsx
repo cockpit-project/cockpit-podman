@@ -283,7 +283,7 @@ export class ImageRunModal extends React.Component {
 
         try {
             await client.imageExists(con, createConfig.image);
-        } catch (error) {
+        } catch {
             imageExists = false;
         }
 
@@ -305,7 +305,7 @@ export class ImageRunModal extends React.Component {
 
             onDownloadContainer(tempImage);
 
-            client.pullImage(con, createConfig.image).then(reply => {
+            client.pullImage(con, createConfig.image).then(_reply => {
                 client.createContainer(con, createConfig)
                         .then(reply => {
                             if (runImage) {
@@ -531,7 +531,7 @@ export class ImageRunModal extends React.Component {
         });
     };
 
-    onImageSelect = (event, value, placeholder) => {
+    onImageSelect = (event, value) => {
         if (event === undefined)
             return;
 
@@ -668,7 +668,7 @@ export class ImageRunModal extends React.Component {
     async validateContainerName(containerName) {
         try {
             await client.containerExists(this.state.owner.con, containerName);
-        } catch (error) {
+        } catch {
             return;
         }
         return _("Name already in use");
@@ -908,7 +908,7 @@ export class ImageRunModal extends React.Component {
                                 onInputChange={this.debouncedInputChanged}
                                 isDisabled={!!this.props.image}
                                 // We do our own filtering when producing imageListOptions
-                                filterFunction={(filterValue, options) => options}
+                                filterFunction={(_filterValue, options) => options}
                                 selectOptions={imageListOptions.concat(spinnerOptions)}
                                 footer={footer} />
                         </FormGroup>

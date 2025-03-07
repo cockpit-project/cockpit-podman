@@ -30,7 +30,7 @@ export function validateVolume(value, key) {
     }
 }
 
-export const Volume = ({ id, item, onChange, idx, removeitem, additem, options, itemCount, validationFailed, onValidationChange }) =>
+export const Volume = ({ id, item, onChange, idx, removeitem, _additem, options, _itemCount, validationFailed, onValidationChange }) =>
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-4-col-on-md"

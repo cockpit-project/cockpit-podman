@@ -92,7 +92,7 @@ class ContainerTerminal extends React.Component {
         this.connectChannel();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         // Connect channel when there is none and either container started or tty was resolved
         if (!this.state.channel && (
             (this.props.containerStatus === "running" && prevProps.containerStatus !== "running") ||
@@ -242,7 +242,7 @@ class ContainerTerminal extends React.Component {
         return buffer.length;
     }
 
-    onChannelClose(event, options) {
+    onChannelClose() {
         this.term.write('\x1b[31m disconnected \x1b[m\r\n');
         this.disconnectChannel();
         this.setState({ channel: null });

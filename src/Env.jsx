@@ -31,7 +31,7 @@ export function validateEnvVar(env, key) {
     }
 }
 
-const handleEnvValue = (key, value, idx, onChange, additem, itemCount, companionField) => {
+const handleEnvValue = (key, value, idx, onChange, additem, _itemCount, companionField) => {
     // Allow the input of KEY=VALUE separated value pairs for bulk import only if the other
     // field is not empty.
     if (value.includes('=') && !companionField) {
