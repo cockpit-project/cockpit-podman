@@ -42,7 +42,7 @@ const ContainerCommitModal = ({ con, container, localImages }) => {
         if (full_name.indexOf("/") < 0)
             full_name = "localhost/" + full_name;
 
-        if (!force && localImages.some(image => image.uid === container.uid && image.Name === full_name)) {
+        if (!force && localImages?.some(image => image.uid === container.uid && image.Name === full_name)) {
             setNameError(_("Image name is not unique"));
             return;
         }
