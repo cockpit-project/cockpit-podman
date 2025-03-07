@@ -3201,9 +3201,15 @@ WantedBy=multi-user.target default.target
         # Cannot delete a quadlet container, they are managed by .container units
         b.wait_not_present(self.getContainerAction(service_name, 'Delete'))
 
+        # Lifecycle operations are not available such as Stop/Restart/Pause
+        b.wait_not_present(self.getContainerAction(service_name, 'Stop'))
+        b.wait_not_present(self.getContainerAction(service_name, 'Restart'))
+        b.wait_not_present(self.getContainerAction(service_name, 'Pause'))
+
         # Quadlet pod support was introduced in podman 5.0.0
         if podman_version(self) >= (5, 0, 0):
             podName = "homeassistant"
+            podOwner = "system" if system else "admin"
             self.createQuadletPod(podName, auth=system)
             self.createQuadlet("zigbee", podName=podName, auth=system)
             self.waitPodRow(podName, present=True)
@@ -3216,6 +3222,9 @@ WantedBy=multi-user.target default.target
 
             # Quadlet pods are shown as a service group
             b.wait_in_text("#table-homeassistant-title", "pod service group")
+
+            # Lifecycle operations are not available such as Start/Restart
+            b.wait_visible(f"#pod-{podName}-{podOwner}-action-toggle:disabled")
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")

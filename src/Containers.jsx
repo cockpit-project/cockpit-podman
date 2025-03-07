@@ -160,44 +160,51 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
 
     const actions = [];
     if (isRunning || isPaused) {
-        actions.push(
-            <DropdownItem key="stop"
+        // TODO: cockpit-podman does not show stopped quadlet based containers or pods so allowing
+        // users to stop or restart would make them disseaper from the list. In the case of a restart
+        // if it fails.
+        if (!isSystemdService) {
+            actions.push(
+                <DropdownItem key="stop"
                           onClick={() => stopContainer()}>
-                {_("Stop")}
-            </DropdownItem>,
-            <DropdownItem key="force-stop"
+                    {_("Stop")}
+                </DropdownItem>,
+                <DropdownItem key="force-stop"
                           onClick={() => stopContainer(true)}>
-                {_("Force stop")}
-            </DropdownItem>,
-            <DropdownItem key="restart"
+                    {_("Force stop")}
+                </DropdownItem>,
+                <DropdownItem key="restart"
                           onClick={() => restartContainer()}>
-                {_("Restart")}
-            </DropdownItem>,
-            <DropdownItem key="force-restart"
+                    {_("Restart")}
+                </DropdownItem>,
+                <DropdownItem key="force-restart"
                           onClick={() => restartContainer(true)}>
-                {_("Force restart")}
-            </DropdownItem>
-        );
+                    {_("Force restart")}
+                </DropdownItem>
+            );
 
-        if (!isPaused) {
-            actions.push(
-                <DropdownItem key="pause"
+            if (!isPaused) {
+                actions.push(
+                    <DropdownItem key="pause"
                           onClick={() => pauseContainer()}>
-                    {_("Pause")}
-                </DropdownItem>
-            );
-        } else {
-            actions.push(
-                <DropdownItem key="resume"
+                        {_("Pause")}
+                    </DropdownItem>
+                );
+            } else {
+                actions.push(
+                    <DropdownItem key="resume"
                           onClick={() => resumeContainer()}>
-                    {_("Resume")}
-                </DropdownItem>
-            );
+                        {_("Resume")}
+                    </DropdownItem>
+                );
+            }
         }
 
         if (container.uid == 0 && !isPaused) {
+            if (actions.length > 0)
+                actions.push(<Divider key="separator-0" />);
+
             actions.push(
-                <Divider key="separator-0" />,
                 <DropdownItem key="checkpoint"
                               onClick={() => checkpointContainer()}>
                     {_("Checkpoint")}
@@ -849,7 +856,9 @@ class Containers extends React.Component {
                                                 </Button>}
                                                 <PodActions con={con}
                                                             onAddNotification={this.props.onAddNotification}
-                                                            pod={pod} />
+                                                            pod={pod}
+                                                            isPodService={isPodService}
+                                                />
                                             </>
                                         );
                                         return (

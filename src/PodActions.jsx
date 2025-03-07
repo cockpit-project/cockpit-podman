@@ -69,7 +69,7 @@ const PodDeleteModal = ({ con, pod }) => {
     );
 };
 
-export const PodActions = ({ con, onAddNotification, pod }) => {
+export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
     const Dialogs = useDialogs();
 
     const dropdownItems = [];
@@ -190,6 +190,7 @@ export const PodActions = ({ con, onAddNotification, pod }) => {
             toggleButtonId={"pod-" + pod.Name + (pod.uid === 0 ? "-system" : "-user") + "-action-toggle"}
             position="right"
             dropdownItems={dropdownItems}
+            isDisabled={isPodService}
         />
     );
 };
