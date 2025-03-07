@@ -160,44 +160,51 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
 
     const actions = [];
     if (isRunning || isPaused) {
-        actions.push(
-            <DropdownItem key="stop"
+        // TODO: cockpit-podman does not show stopped quadlet based containers or pods so allowing
+        // users to stop or restart would make them disseaper from the list. In the case of a restart
+        // if it fails.
+        if (!isSystemdService) {
+            actions.push(
+                <DropdownItem key="stop"
                           onClick={() => stopContainer()}>
-                {_("Stop")}
-            </DropdownItem>,
-            <DropdownItem key="force-stop"
+                    {_("Stop")}
+                </DropdownItem>,
+                <DropdownItem key="force-stop"
                           onClick={() => stopContainer(true)}>
-                {_("Force stop")}
-            </DropdownItem>,
-            <DropdownItem key="restart"
+                    {_("Force stop")}
+                </DropdownItem>,
+                <DropdownItem key="restart"
                           onClick={() => restartContainer()}>
-                {_("Restart")}
-            </DropdownItem>,
-            <DropdownItem key="force-restart"
+                    {_("Restart")}
+                </DropdownItem>,
+                <DropdownItem key="force-restart"
                           onClick={() => restartContainer(true)}>
-                {_("Force restart")}
-            </DropdownItem>
-        );
+                    {_("Force restart")}
+                </DropdownItem>
+            );
 
-        if (!isPaused) {
-            actions.push(
-                <DropdownItem key="pause"
+            if (!isPaused) {
+                actions.push(
+                    <DropdownItem key="pause"
                           onClick={() => pauseContainer()}>
-                    {_("Pause")}
-                </DropdownItem>
-            );
-        } else {
-            actions.push(
-                <DropdownItem key="resume"
+                        {_("Pause")}
+                    </DropdownItem>
+                );
+            } else {
+                actions.push(
+                    <DropdownItem key="resume"
                           onClick={() => resumeContainer()}>
-                    {_("Resume")}
-                </DropdownItem>
-            );
+                        {_("Resume")}
+                    </DropdownItem>
+                );
+            }
         }
 
         if (container.uid == 0 && !isPaused) {
+            if (actions.length > 0)
+                actions.push(<Divider key="separator-0" />);
+
             actions.push(
-                <Divider key="separator-0" />,
                 <DropdownItem key="checkpoint"
                               onClick={() => checkpointContainer()}>
                     {_("Checkpoint")}
@@ -239,14 +246,16 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
         </DropdownItem>
     );
 
-    actions.push(<Divider key="separator-2" />);
-    actions.push(
-        <DropdownItem key="delete"
+    if (!isSystemdService) {
+        actions.push(<Divider key="separator-2" />);
+        actions.push(
+            <DropdownItem key="delete"
                       className="pf-m-danger"
                       onClick={deleteContainer}>
-            {_("Delete")}
-        </DropdownItem>
-    );
+                {_("Delete")}
+            </DropdownItem>
+        );
+    }
 
     return <KebabDropdown position="right" dropdownItems={actions} isDisabled={isDownloading} />;
 };
@@ -378,7 +387,7 @@ class Containers extends React.Component {
                     <span className="container-name">{container.Name}</span>
                     {isToolboxContainer && <Badge className='ct-badge-toolbox'>toolbox</Badge>}
                     {isDistroboxContainer && <Badge className='ct-badge-distrobox'>distrobox</Badge>}
-                    {isSystemdService && <Badge className='ct-badge-service'>service</Badge>}
+                    {isSystemdService && <Badge className='ct-badge-service'>{_("service")}</Badge>}
                 </Flex>
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
@@ -822,12 +831,14 @@ class Containers extends React.Component {
                                         let caption;
                                         let podStatus;
                                         let pod;
+                                        let isPodService = false;
                                         let con;
                                         if (section !== 'no-pod') {
                                             pod = this.props.pods[section];
                                             con = this.props.users.find(u => u.uid === pod.uid).con;
                                             tableProps['aria-label'] = cockpit.format("Containers of pod $0", pod.Name);
                                             podStatus = pod.Status;
+                                            isPodService = Boolean(pod.Labels?.PODMAN_SYSTEMD_UNIT);
                                             caption = pod.Name;
                                         } else {
                                             tableProps['aria-label'] = _("Containers");
@@ -836,15 +847,18 @@ class Containers extends React.Component {
                                         const actions = caption && (
                                             <>
                                                 <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
+                                                {!isPodService &&
                                                 <Button variant="secondary"
                                                         className="create-container-in-pod"
                                                         isDisabled={nonIntermediateImages === null}
                                                         onClick={() => createContainer(this.props.pods[section])}>
                                                     {_("Create container in pod")}
-                                                </Button>
+                                                </Button>}
                                                 <PodActions con={con}
                                                             onAddNotification={this.props.onAddNotification}
-                                                            pod={pod} />
+                                                            pod={pod}
+                                                            isPodService={isPodService}
+                                                />
                                             </>
                                         );
                                         return (
@@ -859,7 +873,7 @@ class Containers extends React.Component {
                                                     <CardTitle>
                                                         <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
                                                             <h3 className='pod-name'>{caption}</h3>
-                                                            <span>{_("pod group")}</span>
+                                                            <span>{isPodService ? _("pod service group") : _("pod group")}</span>
                                                             {this.renderPodDetails(this.props.pods[section], podStatus)}
                                                         </Flex>
                                                     </CardTitle>

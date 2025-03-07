@@ -276,7 +276,8 @@ class TestApplication(testlib.MachineCase):
         m.write("/etc/containers/registries.conf", REGISTRIES_CONF)
         self.execute(True, "systemctl stop podman.service")
 
-    def createQuadlet(self, name: str, *, auth: bool = False) -> None:
+    def createQuadlet(self, name: str, podName: str | None = None, *, auth: bool = False) -> None:
+        pod_option = f'Pod={podName}.pod' if podName else ''
         quadlet = f"""
 [Unit]
 Description=Podman - {name}
@@ -286,6 +287,7 @@ After=local-fs.target
 Image={IMG_BUSYBOX}
 Exec=sleep infinity
 ContainerName={name}
+{pod_option}
 
 [Install]
 WantedBy=multi-user.target default.target
@@ -301,6 +303,25 @@ WantedBy=multi-user.target default.target
         self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}.service")
         self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service")
         self.execute(auth, f"until {systemctl_cmd} is-active {name}.service; do sleep 1; done")
+
+    def createQuadletPod(self, name: str, *, auth: bool = False) -> None:
+        quadlet = f"""
+[Pod]
+PodName={name}
+
+[Install]
+WantedBy=multi-user.target default.target
+"""
+        service_file = f"/etc/containers/systemd/{name}.pod"
+        if not auth:  # user session
+            service_file = f"/home/admin/.config/containers/systemd/{name}.pod"
+
+        systemctl_cmd = "systemctl" if auth else "systemctl --user"
+        self.addCleanup(self.execute, auth, f"{systemctl_cmd} daemon-reload")
+        self.write_file(service_file, quadlet)
+        self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}-pod.service")
+        self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}-pod.service")
+        self.execute(auth, f"until {systemctl_cmd} is-active {name}-pod.service; do sleep 1; done")
 
     def testPods(self) -> None:
         b = self.browser
@@ -3146,6 +3167,47 @@ WantedBy=multi-user.target default.target
         b.set_input_text("#create-image-image input", "localhost:5000/my-busybox:search-tag")
         b.wait_text("button.pf-v5-c-menu__item:not([disabled])", "localhost:5000/my-busybox:search-tag")
         b.wait_js_cond("document.querySelectorAll('.pf-v5-c-menu__item:not([disabled])').length === 1")
+
+    def _testQuadlets(self, *, system: bool = False) -> None:
+        b = self.browser
+        self.login(system=system)
+
+        service_name = "quak"
+        self.createQuadlet(service_name, auth=system)
+        self.waitContainerRow(service_name)
+
+        # Cannot delete a quadlet container, they are managed by .container units
+        b.wait_not_present(self.getContainerAction(service_name, 'Delete'))
+
+        # Lifecycle operations are not available such as Stop/Restart/Pause
+        b.wait_not_present(self.getContainerAction(service_name, 'Stop'))
+        b.wait_not_present(self.getContainerAction(service_name, 'Restart'))
+        b.wait_not_present(self.getContainerAction(service_name, 'Pause'))
+
+        # Quadlet pod support was introduced in podman 5.0.0
+        if podman_version(self) >= (5, 0, 0):
+            podName = "homeassistant"
+            podOwner = "system" if system else "admin"
+            self.createQuadletPod(podName, auth=system)
+            self.createQuadlet("zigbee", podName=podName, auth=system)
+            self.waitPodRow(podName, present=True)
+            containerId = self.execute(system, "podman inspect --format '{{.Id}}' zigbee").strip()
+            self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
+                                  "command": "sleep infinity", "state": "Running", "id": containerId}])
+
+            # Cannot create a container in a pod
+            b.wait_not_present(".create-container-in-pod")
+
+            # Quadlet pods are shown as a service group
+            b.wait_in_text("#table-homeassistant-title", "pod service group")
+
+            # Lifecycle operations are not available such as Start/Restart
+            b.wait_visible(f"#pod-{podName}-{podOwner}-action-toggle:disabled")
+
+    # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
+    @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
+    def testQuadletsSystem(self):
+        self._testQuadlets(system=True)
 
 
 if __name__ == '__main__':
