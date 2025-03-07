@@ -50,7 +50,7 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
     const isRunning = container.State.Status == "running";
     const isPaused = container.State.Status === "paused";
 
-    const deleteContainer = (event) => {
+    const deleteContainer = () => {
         if (container.State.Status == "running") {
             const handleForceRemoveContainer = () => {
                 const id = container ? container.Id : "";
