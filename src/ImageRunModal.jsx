@@ -82,7 +82,9 @@ export class ImageRunModal extends React.Component {
 
         const default_owner = this.props.pod
             ? this.props.users.find(u => u.uid === this.props.pod.uid)
-            : this.props.users[0];
+            : (this.props.image
+                ? this.props.users.find(u => u.uid === this.props.image.uid)
+                : this.props.users[0]);
 
         this.state = {
             command,
