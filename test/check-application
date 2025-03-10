@@ -2262,6 +2262,30 @@ WantedBy=multi-user.target default.target
             b.wait_in_text('#containers-containers .pf-v5-c-empty-state', 'No running containers')
             b.wait_in_text('#containers-images .pf-v5-c-empty-state', 'No images')
 
+    def testRunImageUserWithAuth(self):
+        b = self.browser
+
+        self.login()
+        showImages(b)
+
+        # create container from user image
+        b.wait_in_text("#containers-images", IMG_BUSYBOX)
+        b.click(f"#containers-images tr[data-row-id^='user-']:contains({IMG_BUSYBOX_LATEST}) .ct-container-create")
+        b.wait_visible("#run-image-dialog-owner-admin:checked")
+        b.set_input_text("#run-image-dialog-name", "user1")
+        b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
+        b.wait_not_present(".pf-v5-c-modal-box")
+        user1_sha = self.execute(False, "podman inspect --format '{{.Id}}' user1").strip()
+        self.waitContainer(user1_sha, auth=False, owner="admin", state='Running')
+
+        b.click(f"#containers-images tr[data-row-id^='0-']:contains({IMG_BUSYBOX_LATEST}) .ct-container-create")
+        b.wait_visible("#run-image-dialog-owner-system:checked")
+        b.set_input_text("#run-image-dialog-name", "sys1")
+        b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
+        b.wait_not_present(".pf-v5-c-modal-box")
+        sys1_sha = self.execute(True, "podman inspect --format '{{.Id}}' sys1").strip()
+        self.waitContainer(sys1_sha, auth=True, owner="system", state='Running')
+
     def check_content(self, kind: str, present: list[str], not_present: list[str]) -> None:
         b = self.browser
         for item in present:
