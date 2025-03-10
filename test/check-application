@@ -1280,7 +1280,7 @@ WantedBy=multi-user.target default.target
 
         image1_sel = f"#containers-images tbody tr[data-row-id=\"0-{image1_sha}\"]".lower()
 
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
         b.click(f'{image1_sel} .pf-v5-c-menu-toggle')
         b.click(image1_sel + " button.pf-v5-c-menu__item:contains('Pull')")
         b.wait_in_text("div.download-in-progress", "Pulling")
@@ -1817,8 +1817,7 @@ WantedBy=multi-user.target default.target
             self.execute(False, "podman rmi --all")
 
         self.login(system=auth)
-
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_in_text("#containers-images", IMG_BUSYBOX)
         b.wait_in_text("#containers-images", IMG_ALPINE)
@@ -2478,7 +2477,7 @@ WantedBy=multi-user.target default.target
 
         # Start a podman container which uses a port
         self.execute(False, f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}")
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
@@ -2560,8 +2559,7 @@ WantedBy=multi-user.target default.target
             self.execute(False, f"podman rmi {IMG_BUSYBOX}")
 
         self.login(system=auth)
-
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
@@ -2646,7 +2644,7 @@ WantedBy=multi-user.target default.target
                             skip_layouts=["rtl"])
 
         self.toggleExpandedContainer("sick")
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
@@ -2716,7 +2714,7 @@ WantedBy=multi-user.target default.target
             self.execute(False, f"podman rmi {IMG_BUSYBOX}")
 
         self.login(system=auth)
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         def create_container(name: str, policy: str | None = None) -> None:
             b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
