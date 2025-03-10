@@ -10,6 +10,7 @@ import time
 from typing import Self
 
 import testlib
+from lib.constants import DEFAULT_IDENTITY_PUB_FILE
 from machine.machine_core import ssh_connection
 
 REGISTRIES_CONF = """
@@ -1280,7 +1281,7 @@ WantedBy=multi-user.target default.target
 
         image1_sel = f"#containers-images tbody tr[data-row-id=\"0-{image1_sha}\"]".lower()
 
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
         b.click(f'{image1_sel} .pf-v5-c-menu-toggle')
         b.click(image1_sel + " button.pf-v5-c-menu__item:contains('Pull')")
         b.wait_in_text("div.download-in-progress", "Pulling")
@@ -1817,8 +1818,7 @@ WantedBy=multi-user.target default.target
             self.execute(False, "podman rmi --all")
 
         self.login(system=auth)
-
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_in_text("#containers-images", IMG_BUSYBOX)
         b.wait_in_text("#containers-images", IMG_ALPINE)
@@ -1849,6 +1849,12 @@ WantedBy=multi-user.target default.target
         b.set_input_text("#run-image-dialog-name", "busybox-with-tty")
 
         b.wait_visible("#run-image-dialog-command[value='sh']")
+
+        # shows Owner iff authenticated
+        if auth:
+            b.wait_visible("#run-image-dialog-owner-system:checked")
+        else:
+            b.wait_not_in_text(".pf-v5-c-modal-box", "Owner")
 
         # Check memory configuration
         # Only works with CGroupsV2
@@ -2257,6 +2263,30 @@ WantedBy=multi-user.target default.target
             b.wait_in_text('#containers-containers .pf-v5-c-empty-state', 'No running containers')
             b.wait_in_text('#containers-images .pf-v5-c-empty-state', 'No images')
 
+    def testRunImageUserWithAuth(self):
+        b = self.browser
+
+        self.login()
+        showImages(b)
+
+        # create container from user image
+        b.wait_in_text("#containers-images", IMG_BUSYBOX)
+        b.click(f"#containers-images tr[data-row-id^='user-']:contains({IMG_BUSYBOX_LATEST}) .ct-container-create")
+        b.wait_visible("#run-image-dialog-owner-admin:checked")
+        b.set_input_text("#run-image-dialog-name", "user1")
+        b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
+        b.wait_not_present(".pf-v5-c-modal-box")
+        user1_sha = self.execute(False, "podman inspect --format '{{.Id}}' user1").strip()
+        self.waitContainer(user1_sha, auth=False, owner="admin", state='Running')
+
+        b.click(f"#containers-images tr[data-row-id^='0-']:contains({IMG_BUSYBOX_LATEST}) .ct-container-create")
+        b.wait_visible("#run-image-dialog-owner-system:checked")
+        b.set_input_text("#run-image-dialog-name", "sys1")
+        b.click('.pf-v5-c-modal-box__footer #create-image-create-run-btn')
+        b.wait_not_present(".pf-v5-c-modal-box")
+        sys1_sha = self.execute(True, "podman inspect --format '{{.Id}}' sys1").strip()
+        self.waitContainer(sys1_sha, auth=True, owner="system", state='Running')
+
     def check_content(self, kind: str, present: list[str], not_present: list[str]) -> None:
         b = self.browser
         for item in present:
@@ -2478,7 +2508,7 @@ WantedBy=multi-user.target default.target
 
         # Start a podman container which uses a port
         self.execute(False, f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}")
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
@@ -2560,8 +2590,7 @@ WantedBy=multi-user.target default.target
             self.execute(False, f"podman rmi {IMG_BUSYBOX}")
 
         self.login(system=auth)
-
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
@@ -2646,7 +2675,7 @@ WantedBy=multi-user.target default.target
                             skip_layouts=["rtl"])
 
         self.toggleExpandedContainer("sick")
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
         b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
@@ -2716,7 +2745,7 @@ WantedBy=multi-user.target default.target
             self.execute(False, f"podman rmi {IMG_BUSYBOX}")
 
         self.login(system=auth)
-        b.click("#containers-images button.pf-v5-c-expandable-section__toggle")
+        showImages(b)
 
         def create_container(name: str, policy: str | None = None) -> None:
             b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
@@ -3178,6 +3207,101 @@ WantedBy=multi-user.target default.target
         b.wait(lambda: self.getContainerAttr("user1", "State") in NOT_RUNNING)
         self.performContainerAction(IMG_ALPINE, "Start")
         b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
+
+    def testOtherUsers(self):
+        m = self.machine
+        b = self.browser
+
+        # create two system users with running container
+        ssh = {}
+        uids = {}
+        with open(DEFAULT_IDENTITY_PUB_FILE) as f:
+            authorized_keys = f.read()
+        for user in ['guitar', 'piano']:
+            m.execute(f"useradd --create-home {user}; loginctl enable-linger {user}")
+            uids[user] = m.execute(f"id -u {user}").strip()
+            m.write(f"/home/{user}/.ssh/authorized_keys", authorized_keys, owner=f"{user}:{user}", perm="600")
+            self.addCleanup(m.execute, f"loginctl disable-linger {user}; rm -rf /home/{user}")
+
+            ssh[user] = ssh_connection.SSHConnection(user=user,
+                                                     address=m.ssh_address,
+                                                     ssh_port=m.ssh_port,
+                                                     identity_file=m.identity_file)
+            ssh[user].execute(f"""
+            podman load < /var/lib/test-images/localhosttest-busyboxlatest.tar
+            podman tag {IMG_BUSYBOX} example.com/{user}/myimg
+            podman rmi {IMG_BUSYBOX}
+            podman run -d --name {user}c1 example.com/{user}/myimg sleep infinity
+            """)
+            self.addCleanup(ssh[user].execute, """
+            systemctl --user stop podman.service podman.socket
+            podman system reset --force
+            """)
+
+        # add a system and admin user container into the mix
+        self.execute(True, f"podman run -d --name sysc1 {IMG_BUSYBOX} sleep infinity")
+        self.execute(False, f"podman run -d --name adminc1 {IMG_BUSYBOX} sleep infinity")
+
+        self.login_and_go("/podman")
+        b.wait_visible("#app")
+
+        # standard and both extra users get detected, with well-defined sorting
+        b.wait_text("#containers-containers-owner", "systemadminguitarpianoAll")
+        b.wait_val("#containers-containers-owner", "all")
+
+        # shows system + admin by default
+        self.waitNumImages(self.user_images_count + self.system_images_count)
+        self.waitNumContainers(2, auth=True)
+        b.wait_text("#containers-containers tbody:nth-of-type(1) .container-name", "adminc1")
+        b.wait_text("#containers-containers tbody:nth-of-type(2) .container-name", "sysc1")
+        showImages(b)
+
+        # switching to other user only shows its images and containers
+        for user in ['guitar', 'piano']:
+            b.set_val("#containers-containers-owner", uids[user])
+            self.waitNumContainers(1, auth=False)
+            b.wait_text("#containers-containers .container-name", f"{user}c1")
+            b.wait_text("#containers-containers [data-label='Owner']", f"user: {user}")
+
+            b.wait_text("#containers-images [data-label='Image']", f"example.com/{user}/myimg:latest")
+            b.wait_text("#containers-images [data-label='Owner']", f"user: {user}")
+
+            self.waitNumImages(1)
+
+        # switch to "all", this keeps the piano connection still
+        b.set_val("#containers-containers-owner", "all")
+        self.waitNumContainers(3, auth=True)
+        self.waitNumImages(self.user_images_count + self.system_images_count + 1)
+
+        # switch session user, disconnects from last other user
+        b.set_val("#containers-containers-owner", "user")
+        self.waitNumContainers(1, auth=False)
+        self.waitNumImages(self.user_images_count)
+
+        b.set_val("#containers-containers-owner", "all")
+        self.waitNumContainers(2, auth=True)
+        self.waitNumImages(self.user_images_count + self.system_images_count)
+
+        # reconnect to guitar
+        b.set_val("#containers-containers-owner", uids["guitar"])
+        self.waitNumContainers(1, auth=False)
+        self.waitNumImages(1)
+
+        # container lifecycle actions
+        self.performContainerAction("example.com/guitar/myimg:latest", "Force stop")
+        b.wait(lambda: self.getContainerAttr("guitarc1", "State") in NOT_RUNNING)
+        self.performContainerAction("example.com/guitar/myimg:latest", "Start")
+        b.wait(lambda: self.getContainerAttr("guitarc1", "State") == "Running")
+
+        # container creation/removal
+        b.click('#containers-images tbody tr:contains("example.com/guitar/myimg") .ct-container-create')
+        b.set_input_text("#run-image-dialog-name", "new-guitar")
+        b.click("#create-image-create-btn")
+        b.wait_not_present("div.pf-v5-c-modal-box")
+        self.waitContainerRow("new-guitar")
+        self.performContainerAction("new-guitar", "Delete")
+        b.click(".pf-v5-c-modal-box button:contains(Delete)")
+        self.waitContainerRow("new-guitar", present=False)
 
 
 if __name__ == '__main__':
