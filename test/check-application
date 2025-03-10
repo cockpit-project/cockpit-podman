@@ -1849,6 +1849,12 @@ WantedBy=multi-user.target default.target
 
         b.wait_visible("#run-image-dialog-command[value='sh']")
 
+        # shows Owner iff authenticated
+        if auth:
+            b.wait_visible("#run-image-dialog-owner-system:checked")
+        else:
+            b.wait_not_in_text(".pf-v5-c-modal-box", "Owner")
+
         # Check memory configuration
         # Only works with CGroupsV2
         if auth or self.has_cgroupsV2:
