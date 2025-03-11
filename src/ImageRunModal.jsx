@@ -852,7 +852,7 @@ export class ImageRunModal extends React.Component {
                                                       </TextList>
                                                   </TextContent>
                                                   <TextContent>
-                                                      <Text component={TextVariants.h4}>{cockpit.format("$0 $1", _("User:"), this.props.users[1].name)}</Text>
+                                                      <Text component={TextVariants.h4}>{_("User")}</Text>
                                                       <TextList>
                                                           <TextListItem>
                                                               {_("Ideal for development")}
