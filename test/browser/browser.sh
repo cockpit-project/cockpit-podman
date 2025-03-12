@@ -20,6 +20,11 @@ if [ -n "$main_builds_repo" ]; then
     dnf distro-sync -y --repo 'copr*' cockpit-podman
 fi
 
+dnf -y copr enable rhcontainerbot/podman-next
+dnf -y copr enable packit/containers-podman-25538
+dnf -y update --repo "copr*"
+dnf install -y podman-102:5.4.0-1.20250311175348417518.pr25538.13.946ccfa0a.fc41.x86_64
+
 # Show critical package versions
 rpm -q runc crun podman criu passt catatonit kernel-core selinux-policy cockpit-podman cockpit-bridge || true
 
