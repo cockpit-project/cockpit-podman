@@ -61,7 +61,7 @@ class Application extends React.Component {
             users: [{ con: null, uid: 0, name: _("system") }, { con: null, uid: null, name: _("user") }],
             images: null,
             containers: null,
-            containersFilter: "all",
+            onlyRunning: false,
             containersStats: {},
             textFilter: "",
             ownerFilter: "all",
@@ -78,7 +78,7 @@ class Application extends React.Component {
         this.onDismissNotification = this.onDismissNotification.bind(this);
         this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onOwnerChanged = this.onOwnerChanged.bind(this);
-        this.onContainerFilterChanged = this.onContainerFilterChanged.bind(this);
+        this.onContainerOnlyRunningChanged = this.onContainerOnlyRunningChanged.bind(this);
         this.updateContainer = this.updateContainer.bind(this);
         this.goToServicePage = this.goToServicePage.bind(this);
         this.onNavigate = this.onNavigate.bind(this);
@@ -137,18 +137,15 @@ class Application extends React.Component {
         this.updateUrl(options);
     }
 
-    onContainerFilterChanged(value) {
-        this.setState({
-            containersFilter: value
-        });
+    onContainerOnlyRunningChanged(value) {
+        this.setState({ onlyRunning: value });
 
-        const options = this.state.location;
-        if (value == "running") {
-            delete options.container;
-            this.updateUrl(Object.assign(options));
-        } else {
-            this.updateUrl(Object.assign(options, { container: value }));
-        }
+        const options = { ...this.state.location };
+        if (value)
+            options.running = "true";
+        else
+            delete options.running;
+        this.updateUrl(options);
     }
 
     updateState(state, key, newValue) {
@@ -554,9 +551,7 @@ class Application extends React.Component {
                 if (options.name) {
                     this.onFilterChanged(options.name);
                 }
-                if (options.container) {
-                    this.onContainerFilterChanged(options.container);
-                }
+                this.onContainerOnlyRunningChanged(options.running == "true");
                 if (["user", "all"].includes(options.owner)) {
                     this.setState({ ownerFilter: options.owner });
                 } else if (options.owner === undefined) {
@@ -639,7 +634,7 @@ class Application extends React.Component {
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
-                showAll={ () => this.setState({ containersFilter: "all" }) }
+                showAll={ () => this.setState({ onlyRunning: false }) }
                 users={this.state.users}
             />
         );
@@ -651,8 +646,8 @@ class Application extends React.Component {
                 containers={loadingContainers ? null : this.state.containers}
                 pods={loadingPods ? null : this.state.pods}
                 containersStats={this.state.containersStats}
-                filter={this.state.containersFilter}
-                handleFilterChange={this.onContainerFilterChanged}
+                onlyRunning={this.state.onlyRunning}
+                handleOnlyRunningChange={this.onContainerOnlyRunningChanged}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
                 users={this.state.users}

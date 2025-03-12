@@ -5,9 +5,9 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
 import { Divider } from "@patternfly/react-core/dist/esm/components/Divider";
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
-import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { LabelGroup } from "@patternfly/react-core/dist/esm/components/Label";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
+import { Switch } from "@patternfly/react-core/dist/esm/components/Switch";
 import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
 import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
@@ -595,11 +595,11 @@ class Containers extends React.Component {
             emptyCaption = _("Loading...");
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No containers that match the current filter");
-        else if (this.props.filter == "running")
+        else if (this.props.onlyRunning)
             emptyCaption = _("No running containers");
 
         if (this.props.containers !== null && this.props.pods !== null) {
-            filtered = Object.keys(this.props.containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id].State.Status));
+            filtered = Object.keys(this.props.containers).filter(id => !this.props.onlyRunning || ["running", "restarting"].includes(this.props.containers[id].State.Status));
 
             if (this.props.ownerFilter !== "all") {
                 filtered = filtered.filter(id => {
@@ -660,7 +660,7 @@ class Containers extends React.Component {
                 const lcf = this.props.textFilter.toLowerCase();
                 if (section != "no-pod") {
                     const pod = this.props.pods[section];
-                    if ((this.props.filter == "running" && pod.Status != "Running") ||
+                    if ((this.props.onlyRunning && pod.Status != "Running") ||
                         // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
                         (!partitionedContainers[section].length && pod.Name.toLowerCase().indexOf(lcf) < 0) ||
                         (this.props.ownerFilter !== "all" &&
@@ -732,14 +732,11 @@ class Containers extends React.Component {
         const filterRunning = (
             <Toolbar>
                 <ToolbarContent className="containers-containers-toolbarcontent">
-                    <ToolbarItem variant="label" htmlFor="containers-containers-filter">
-                        {_("Show")}
-                    </ToolbarItem>
-                    <ToolbarItem>
-                        <FormSelect id="containers-containers-filter" value={this.props.filter} onChange={(_, value) => this.props.handleFilterChange(value)}>
-                            <FormSelectOption value='all' label={_("All")} />
-                            <FormSelectOption value='running' label={_("Only running")} />
-                        </FormSelect>
+                    <ToolbarItem alignSelf="center">
+                        <Switch id="containers-containers-only-running"
+                                label={_("Only running")}
+                                isChecked={this.props.onlyRunning}
+                                onChange={(_, value) => this.props.handleOnlyRunningChange(value)} />
                     </ToolbarItem>
                     <Divider orientation={{ default: "vertical" }} />
                     <ToolbarItem>

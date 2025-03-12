@@ -229,11 +229,11 @@ class TestApplication(testlib.MachineCase):
                 self.waitContainer(container["id"], auth=system, name=container["name"], image=container["image"],
                                    cmd=container["command"], state=container["state"], pod=podName)
         else:
-            if self.browser.val("#containers-containers-filter") == "all":
-                self.browser.wait_in_text("#table-" + podName + " .pf-v5-c-empty-state", "No containers in this pod")
+            if self.browser.get_checked("#containers-containers-only-running"):
+                wait_text = "No running containers in this pod"
             else:
-                self.browser.wait_in_text("#table-" + podName + " .pf-v5-c-empty-state",
-                                          "No running containers in this pod")
+                wait_text = "No containers in this pod"
+            self.browser.wait_in_text("#table-" + podName + " .pf-v5-c-empty-state", wait_text)
 
     def waitContainerRow(self, container: str, *, present: bool = True) -> None:
         b = self.browser
@@ -307,7 +307,7 @@ WantedBy=multi-user.target default.target
 
         self.login()
 
-        self.filter_containers("running")
+        self.set_only_running(checked=True)
         if not self.machine.ostree_image:
             b.wait_in_text("#containers-containers", "No running containers")
 
@@ -315,7 +315,7 @@ WantedBy=multi-user.target default.target
         self.machine.execute("podman pod create --infra=false --name pod-1")
 
         self.waitPodRow("pod-1", present=False)
-        self.filter_containers("all")
+        self.set_only_running(checked=False)
         self.waitPodContainer("pod-1", [])
 
         def get_pod_cpu_usage(pod_name: str) -> float:
@@ -348,10 +348,10 @@ WantedBy=multi-user.target default.target
         self.machine.execute("podman pod stop -t0 pod-1")  # disable timeout, so test doesn't wait endlessly
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
-        self.filter_containers("running")
+        self.set_only_running(checked=True)
         self.waitPodRow("pod-1", present=False)
 
-        self.filter_containers("all")
+        self.set_only_running(checked=False)
         b.set_input_text('#containers-filter input', 'pod-1')
         self.waitPodContainer("pod-1", [{"name": "test-pod-1-system", "image": IMG_ALPINE,
                                          "command": "sleep 100", "state": NOT_RUNNING, "id": containerId}])
@@ -428,7 +428,7 @@ WantedBy=multi-user.target default.target
 
         # Test dropping and gaining privileges
         b.set_val("#containers-containers-owner", "all")
-        self.filter_containers("all")
+        self.set_only_running(checked=False)
         self.execute(False, "podman pod create --infra=false --name pod_user")
         self.execute(True, "podman pod create --infra=false --name pod_system")
 
@@ -636,7 +636,7 @@ WantedBy=multi-user.target default.target
         b.wait_not_present(hello_sel)
 
         # make sure no running containers shown; on CoreOS there's the cockpit/ws container
-        self.filter_containers('running')
+        self.set_only_running(checked=True)
         if auth and self.machine.ostree_image:
             self.waitContainerRow("ws")
         else:
@@ -665,7 +665,7 @@ WantedBy=multi-user.target default.target
             b.set_val("#containers-containers-owner", "0")
             verify_system()
             b.set_val("#containers-containers-owner", "all")
-            b.go("#/?owner=0")
+            b.go("#/?owner=0&running=true")
             verify_system()
 
             def verify_user() -> None:
@@ -677,12 +677,12 @@ WantedBy=multi-user.target default.target
             b.set_val("#containers-containers-owner", "user")
             verify_user()
             b.set_val("#containers-containers-owner", "all")
-            b.go("#/?owner=user")
+            b.go("#/?owner=user&running=true")
             verify_user()
 
             # changing to an invalid user keeps the current filter
-            b.go("#/?owner=huh")
-            b.wait_js_cond('window.location.hash === "#/?owner=user"')
+            b.go("#/?owner=huh&running=true")
+            b.wait_js_cond('window.location.hash === "#/?owner=user&running=true"')
             verify_user()
 
             b.set_val("#containers-containers-owner", "all")
@@ -742,7 +742,7 @@ WantedBy=multi-user.target default.target
         b.wait_collected_text("#containers-containers .container-name", ''.join(sorted(expected)))
 
         # show running container
-        self.filter_containers('running')
+        self.set_only_running(checked=True)
         if auth:
             self.waitContainer(system_containers["swamped-crate-system"], auth=True, name='swamped-crate-system',
                                image=IMG_BUSYBOX, cmd="sleep 1000", state='Running')
@@ -757,7 +757,7 @@ WantedBy=multi-user.target default.target
             self.confirm_modal("Force delete")
             self.waitContainerRow("swamped-crate-system", present=False)
 
-        self.filter_containers("all")
+        self.set_only_running(checked=False)
 
         self.performContainerAction("swamped-crate-user", "Delete")
         self.confirm_modal("Force delete")
@@ -958,7 +958,7 @@ WantedBy=multi-user.target default.target
         # run a container (will exit immediately) and test the display of commit modal
         self.execute(auth, f"podman run -d --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'")
 
-        self.filter_containers("all")
+        self.set_only_running(checked=False)
         self.waitContainerRow("test-sh0")
         self.toggleExpandedContainer("test-sh0")
 
@@ -1361,7 +1361,7 @@ WantedBy=multi-user.target default.target
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
         self.login()
-        self.filter_containers('all')
+        self.set_only_running(checked=False)
 
         # run a container
         self.execute(auth, f"""
@@ -1520,7 +1520,7 @@ WantedBy=multi-user.target default.target
         b = self.browser
 
         self.login()
-        self.filter_containers('all')
+        self.set_only_running(checked=False)
 
         if not self.has_criu:
             # On cgroupsv1 systems just check that we get expected error messages
@@ -2167,7 +2167,7 @@ WantedBy=multi-user.target default.target
             # podman ≥ 1.8 translates 0 default into actual value
             self.assertIn(cpuShares, ['0', '1024'])
 
-        b.set_val("#containers-containers-filter", "all")
+        self.set_only_running(checked=False)
 
         b.click(".pf-m-expanded button:contains('Console')")
         b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
@@ -2203,7 +2203,7 @@ WantedBy=multi-user.target default.target
         self.check_images([IMG_ALPINE, IMG_BUSYBOX, IMG_REGISTRY], [])
         b.wait_js_cond('window.location.hash === "#/"')
 
-        self.filter_containers("running")
+        self.set_only_running(checked=True)
         id_with_tty = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
 
         container_sel = f'#containers-images tbody tr:contains("{IMG_BUSYBOX}")'
@@ -2211,13 +2211,13 @@ WantedBy=multi-user.target default.target
         # running container, just selects it, but leaves "Only running" alone
         b.click(f"{container_sel} + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-with-tty')")  # noqa: E501
         b.wait_js_cond('window.location.hash === "#' + id_with_tty + '"')
-        b.wait_val("#containers-containers-filter", "running")
+        b.wait_visible("#containers-containers-only-running:checked")
         # FIXME: expanding running container details does not actually work right now
         # b.wait_in_text("#containers-containers tr.pf-m-expanded .container-details", "sleep infinity")
         # stopped container, switches to showing all containers
 
         # Create a container without starting it
-        self.filter_containers("all")
+        self.set_only_running(checked=False)
         container_name = "busybox-not-started"
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
         b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
@@ -2233,12 +2233,12 @@ WantedBy=multi-user.target default.target
         sha = self.execute(auth, "podman inspect --format '{{.Id}}' " + container_name).strip()
         self.waitContainer(sha, auth=auth, name=container_name, image=IMG_BUSYBOX, state=['Configured', 'Created'])
 
-        self.filter_containers("running")
+        self.set_only_running(checked=True)
         b.wait_not_in_text("#containers-containers", "busybox-not-started")
         container_sel = f"#containers-images tbody tr:contains('{IMG_BUSYBOX}') + tr div.ct-listing-panel-body"
         b.click(f"{container_sel} dt:contains('Used by') + dd button:contains('busybox-not-started')")
         b.wait_js_cond(f"window.location.hash === '#{sha}'")
-        b.wait_val("#containers-containers-filter", "all")
+        b.wait_visible("#containers-containers-only-running:not(:checked)")
         b.wait_in_text("#containers-containers", "busybox-not-started")
         # auto-expands container details
         b.wait_in_text("#containers-containers tbody tr:contains('busybox-not-started') + tr", "sleep infinity")
@@ -2258,7 +2258,7 @@ WantedBy=multi-user.target default.target
                 self.execute(auth, "podman rm --all --force --time 0")
             self.execute(auth, "podman rmi -af")
             b.wait_in_text('#containers-containers .pf-v5-c-empty-state', 'No containers')
-            b.set_val("#containers-containers-filter", "running")
+            self.set_only_running(checked=True)
             b.wait_in_text('#containers-containers .pf-v5-c-empty-state', 'No running containers')
             b.wait_in_text('#containers-images .pf-v5-c-empty-state', 'No images')
 
@@ -2324,10 +2324,8 @@ WantedBy=multi-user.target default.target
                 state = [state]
             b.wait(lambda: b.text(sel + " td[data-label=State]") in state)
 
-    def filter_containers(self, value: str) -> None:
-        """Use dropdown menu in the header to filter containers"""
-        b = self.browser
-        b.set_val("#containers-containers-filter", value)
+    def set_only_running(self, *, checked: bool) -> None:
+        self.browser.set_checked("#containers-containers-only-running", checked)
 
     def confirm_modal(self, text: str) -> None:
         """Wait for the pop up window and click the button with text"""
@@ -2781,7 +2779,7 @@ WantedBy=multi-user.target default.target
 
         self.login(system=auth)
 
-        self.filter_containers('all')
+        self.set_only_running(checked=False)
         b.click(".create-container-in-pod")
 
         # the podname should be in the "Create container" header
@@ -2846,7 +2844,7 @@ WantedBy=multi-user.target default.target
         self.performContainerAction(container_name, "Pause")
 
         # show all containers and check status
-        self.filter_containers('all')
+        self.set_only_running(checked=False)
 
         # Check that container details are not lost when the container is paused
         b.click(".pf-m-expanded button:contains('Integration')")
@@ -2871,7 +2869,7 @@ WantedBy=multi-user.target default.target
         self.execute(auth, f"podman container create -t --name {container_name} {IMG_BUSYBOX}")
         self.login(system=auth)
 
-        self.filter_containers('all')
+        self.set_only_running(checked=False)
 
         self.waitContainerRow(container_name)
         self.toggleExpandedContainer(container_name)
@@ -3025,7 +3023,7 @@ WantedBy=multi-user.target default.target
             b.set_input_text('#create-pod-dialog-volume-1-container-path', '/tmp/rw')
 
         b.click("#create-pod-create-btn")
-        b.set_val("#containers-containers-filter", "all")
+        self.set_only_running(checked=False)
         self.waitPodContainer(pod_name, [])
 
         container_name = 'test-pod-1-system' if auth else 'test-pod-1'
@@ -3058,7 +3056,7 @@ WantedBy=multi-user.target default.target
             b.click("#create-pod-dialog-owner-admin")
             b.click("#create-pod-create-btn")
 
-            b.set_val("#containers-containers-filter", "all")
+            self.set_only_running(checked=False)
             self.waitPodContainer(pod_name, [])
 
     @testlib.skipImage("passthrough log driver not supported", "ubuntu-2204")
