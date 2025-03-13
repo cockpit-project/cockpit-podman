@@ -859,7 +859,7 @@ class Containers extends React.Component {
                                                     <CardTitle>
                                                         <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
                                                             <h3 className='pod-name'>{caption}</h3>
-                                                            <span>{_("pod group")}</span>
+                                                            <span>{_("pod")}</span>
                                                             {this.renderPodDetails(this.props.pods[section], podStatus)}
                                                         </Flex>
                                                     </CardTitle>
