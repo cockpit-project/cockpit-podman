@@ -192,7 +192,7 @@ class TestApplication(testlib.MachineCase):
     def performContainerAction(self, container: str, cmd: str) -> None:
         b = self.browser
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v5-c-menu-toggle")
-        b.click(f"#containers-containers tbody tr:contains('{container}') button.pf-v5-c-menu__item:contains({cmd})")
+        b.click(self.getContainerAction(container, cmd))
 
     def getContainerAction(self, container: str, cmd: str) -> str:
         return f"#containers-containers tbody tr:contains('{container}') button.pf-v5-c-menu__item:contains({cmd})"
