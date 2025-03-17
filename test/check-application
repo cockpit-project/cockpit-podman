@@ -300,7 +300,6 @@ WantedBy=multi-user.target default.target
         self.write_file(service_file, quadlet)
         self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}.service")
         self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service")
-        self.execute(auth, f"until {systemctl_cmd} is-active {name}.service; do sleep 1; done")
 
     def testPods(self) -> None:
         b = self.browser
