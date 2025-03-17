@@ -1,58 +1,58 @@
 @import "global-variables";
 
 .container-pod {
-    .pf-v5-c-card__header {
+    .pf-v6-c-card__header {
         border-color: #ddd;
-        padding-block-start: var(--pf-v5-global--spacer--md);
+        padding-block-start: var(--pf-t--global--spacer--md);
     }
 
     .pod-header-details {
 	border-color: #ddd;
-	margin-block-start: var(--pf-v5-global--spacer--md);
-	margin-inline: var(--pf-v5-global--spacer--md);
+	margin-block-start: var(--pf-t--global--spacer--md);
+	margin-inline: var(--pf-t--global--spacer--md);
     }
 
     .pod-details-button {
        padding-inline: 0;
-       margin-inline-end: var(--pf-v5-global--spacer--md);
+       margin-inline-end: var(--pf-t--global--spacer--md);
     }
 
     .pod-details-button-color {
-       color: var(--pf-v5-c-button--m-secondary--Color);
+       color: var(--pf-v6-c-button--m-secondary--Color);
     }
 
-    .pf-v5-c-card__title {
+    .pf-v6-c-card__title {
         padding: 0;
-        font-weight: var(--pf-v5-global--FontWeight--normal);
-        font-size: var(--pf-v5-global--FontSize--sm);
+        font-weight: var(--pf-t--global--font--weight--body);
+        font-size: var(--pf-t--global--font--size--md);
 
         .pod-name {
-            font-weight: var(--pf-v5-global--FontWeight--bold);
-            font-size: var(--pf-v5-global--FontSize--md);
+            font-weight: var(--pf-t--global--font--weight--300);
+            font-size: var(--pf-t--global--font--size--md);
             padding-inline-end: 1rem;
         }
     }
 
-    > .pf-v5-c-card__header {
+    > .pf-v6-c-card__header {
         &:not(:last-child) {
-            padding-block-end: var(--pf-v5-global--spacer-sm);
+            padding-block-end: var(--pf-t--global--spacer--sm);
         }
 
         // Reduce vertical padding of pod header items
-        > .pf-v5-c-card__title > .pf-l-flex {
-            row-gap: var(--pf-v5-global--spacer--sm);
+        > .pf-v6-c-card__title > .pf-l-flex {
+            row-gap: var(--pf-t--global--spacer--sm);
         }
     }
 }
 
 // override ct-card font size, so cpu/ram don't look absurdly big
-#app .pf-v5-c-card.container-pod div.pf-v5-c-card__title-text {
+#app .pf-v6-c-card.container-pod div.pf-v6-c-card__title-text {
     font-weight: normal;
-    font-size: var(--pf-v5-global--FontSize--md);
+    font-size: var(--pf-t--global--font--size--md);
 }
 
 .pod-stat {
-    @media (max-width: $pf-v5-global--breakpoint--sm - 1) {
+    @media (max-width: $pf-v6-global--breakpoint--sm - 1) {
         // Place each pod stat on its own row
         flex-basis: 100%;
         display: grid;
@@ -72,8 +72,8 @@
 }
 
 .ct-table-empty td {
-    padding-block: var(--pf-v5-global--spacer--sm) var(--pf-v5-global--spacer--lg);
-    padding-inline: var(--pf-v5-global--spacer--md);
+    padding-block: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg);
+    padding-inline: var(--pf-t--global--spacer--md);
 }
 
 /* HACK - force DescriptionList to wrap but not fill the width */
@@ -82,12 +82,14 @@
     flex-wrap: wrap;
 }
 
-/* Upstream issue https://github.com/patternfly/patternfly/pull/3714 */
-.containers-containers .pf-v5-c-toolbar__content-section {
-    gap: var(--pf-v5-global--spacer--sm);
+/* Upstream issue https://github.com/patternfly/patternfly/pull/7396
+ * Will be fixed in PF v6.2.0
+ */
+.containers-containers .pf-v6-c-toolbar__content-section {
+    gap: var(--pf-t--global--spacer--sm);
 }
 
 /* Drop the excessive margin for a Dropdown button */
-.containers-containers .pf-v5-c-toolbar__content-section > :nth-last-child(2) {
+.containers-containers .pf-v6-c-toolbar__content-section > :nth-last-child(2) {
     margin-inline-end: 0;
 }

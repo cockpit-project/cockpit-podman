@@ -12,7 +12,7 @@ const IdColumn = Id => {
     Id = utils.truncate_id(Id);
     // Not an id but <missing> or something else
     if (/<[a-z]+>/.test(Id)) {
-        return <div className="pf-v5-u-disabled-color-100">{Id}</div>;
+        return <div className="ct-grey-text">{Id}</div>;
     }
     return Id;
 };
