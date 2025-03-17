@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
-import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import {
+    Modal
+} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import { useDialogs } from "dialogs.jsx";
 import { fmt_to_fragments } from 'utils.jsx';

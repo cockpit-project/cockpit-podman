@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
-import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import {
+    Modal
+} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
 import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
 
 import cockpit from 'cockpit';
@@ -43,7 +45,7 @@ function ImageOptions({ images, checked, user, handleChange, name, showCheckbox 
             }
             <List id={listNameId}>
                 {shownImages.map((image, index) =>
-                    <ListItem className="pf-v5-u-ml-md" key={index}>
+                    <ListItem className="pf-v6-u-ml-md" key={index}>
                         {utils.image_name(image)}
                     </ListItem>
                 )}

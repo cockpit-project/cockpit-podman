@@ -3,16 +3,14 @@
     font-weight: bold;
 }
 
-#containers-images .pf-v5-c-table.pf-m-compact .pf-v5-c-table__action {
-    --pf-v5-c-table__action--PaddingTop: 0.5rem;
-    --pf-v5-c-table__action--PaddingBottom: 0.5rem;
-}
-
-.containers-images .pf-v5-c-expandable-section__content {
-    margin-block-start: 0;
+#containers-images .pf-v6-c-table.pf-m-compact .pf-v6-c-table__action {
+    --pf-v6-c-table--cell--responsive--PaddingBlockEnd: 0.5rem;
+    --pf-v6-c-table--m-compact__action--PaddingBlockStart: 0.5rem;
+    --pf-v6-c-table--cell--PaddingBlockStart: 0.5rem;
+    --pf-v6-c-table--cell--responsive--PaddingInlineEnd: 05rem;
 }
 
 /* Override font-size due to h2 being wrapped in a Flex */
-.containers-images-title {
-    font-size: var(--pf-v5-global--FontSize--2xl);
+h2.containers-images-title {
+    font-size: var(--pf-t--global--font--size--2xl);
 }

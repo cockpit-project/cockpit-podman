@@ -2,9 +2,9 @@ import React from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
+import { Content, ContentVariants } from "@patternfly/react-core/dist/esm/components/Content";
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { ExpandableSection } from "@patternfly/react-core/dist/esm/components/ExpandableSection";
-import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { cellWidth } from '@patternfly/react-table';
 import { KebabDropdown } from "cockpit-components-dropdown.jsx";
@@ -152,7 +152,7 @@ class Images extends React.Component {
                                      onAddNotification={this.props.onAddNotification}
                                      users={this.props.users}
                                      downloadImage={this.downloadImage} />,
-                props: { className: 'pf-v5-c-table__action content-action' }
+                props: { className: 'pf-v6-c-table__action content-action' }
             },
         ];
 
@@ -274,13 +274,13 @@ class Images extends React.Component {
         const { imageStats, unusedImages } = this.calculateStats();
         const imageTitleStats = (
             <>
-                <Text component={TextVariants.h5}>
+                <Content component={ContentVariants.div}>
                     {cockpit.format(cockpit.ngettext("$0 image total, $1", "$0 images total, $1", imageStats.imagesTotal), imageStats.imagesTotal, cockpit.format_bytes(imageStats.imagesSize))}
-                </Text>
+                </Content>
                 {imageStats.unusedTotal !== 0 &&
-                <Text component={TextVariants.h5}>
+                <Content component={ContentVariants.div}>
                     {cockpit.format(cockpit.ngettext("$0 unused image, $1", "$0 unused images, $1", imageStats.unusedTotal), imageStats.unusedTotal, cockpit.format_bytes(imageStats.unusedSize))}
-                </Text>
+                </Content>
                 }
             </>
         );
@@ -288,13 +288,13 @@ class Images extends React.Component {
         return (
             <Card id="containers-images" key="images" className="containers-images">
                 <CardHeader>
-                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-v5-u-w-100">
+                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-v6-u-w-100">
                         <FlexItem grow={{ default: 'grow' }}>
                             <Flex>
                                 <CardTitle>
-                                    <Text component={TextVariants.h2} className="containers-images-title">{_("Images")}</Text>
+                                    <Content component={ContentVariants.h1} className="containers-images-title">{_("Images")}</Content>
                                 </CardTitle>
-                                <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-v5-global--spacer--xs)" }}>{imageTitleStats}</Flex>
+                                <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-t--global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
                         </FlexItem>
                         <FlexItem>

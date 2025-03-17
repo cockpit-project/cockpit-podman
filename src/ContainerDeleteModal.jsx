@@ -1,7 +1,9 @@
 import React from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
-import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import {
+    Modal
+} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
 import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
