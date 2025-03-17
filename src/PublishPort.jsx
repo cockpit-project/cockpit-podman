@@ -55,13 +55,11 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                 id={id + "-ip-address-group"}
                 label={_("IP address")}
                 fieldId={id + "-ip-address"}
-                labelIcon={
+                labelHelp={
                     <Popover aria-label={_("IP address help")}
                         enableFlip
                         bodyContent={_("If host IP is set to 0.0.0.0 or not set at all, the port will be bound on all IPs on the host.")}>
-                        <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
-                            <OutlinedQuestionCircleIcon />
-                        </button>
+                        <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                     </Popover>
                 }>
                 <TextInput id={id + "-ip-address"}
@@ -78,13 +76,11 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                     id={id + "-host-port-group"}
                     label={_("Host port")}
                     fieldId={id + "-host-port"}
-                    labelIcon={
+                    labelHelp={
                         <Popover aria-label={_("Host port help")}
                             enableFlip
                             bodyContent={_("If the host port is not set the container port will be randomly assigned a port on the host.")}>
-                            <button onClick={e => e.preventDefault()} className="pf-v5-c-form__group-label-help">
-                                <OutlinedQuestionCircleIcon />
-                            </button>
+                            <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                         </Popover>
                     }>
                 <TextInput id={id + "-host-port"}
@@ -122,7 +118,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
             <FormGroup className="pf-m-2-col-on-md"
                         label={_("Protocol")}
                         fieldId={id + "-protocol"}>
-                <FormSelect className='pf-v5-c-form-control container-port-protocol'
+                <FormSelect className='pf-v6-c-form-control container-port-protocol'
                             id={id + "-protocol"}
                             value={item.protocol}
                             onChange={(_event, value) => onChange(idx, 'protocol', value)}>

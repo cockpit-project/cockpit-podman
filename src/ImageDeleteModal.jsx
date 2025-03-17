@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { List, ListItem } from '@patternfly/react-core/dist/esm/components/List';
-import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
+import {
+    Modal
+} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
 import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { useDialogs } from "dialogs.jsx";
 

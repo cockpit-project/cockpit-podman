@@ -1,47 +1,48 @@
 @import "global-variables";
 
+// TODO @Venefilyn: This is needed as on mobile without it you won't get any spacing
+// between the right side of the screen - it also creates a width that's wider than
+// the current viewport, which we definitely want to disallow
+//
+// Check if this can be supported in a better way - currently it's suboptimal due
+// to not working well with transform and desktop for example.
 // Ensure the width fits within the screen boundaries (with padding on the sides)
-.pf-v5-c-select__menu {
+.pf-v6-c-menu {
     // 3xl is the left+right padding for an iPhone SE;
     // this works on other screen sizes as well
-    max-inline-size: calc(100vw - var(--pf-v5-global--spacer--3xl));
+    max-inline-size: calc(100vw - var(--pf-t--global--spacer--3xl));
 }
 
-// Make sure the footer is visible with more then 5 results.
-.pf-c-select__menu-list {
-    // 35% viewport height is for 1280x720;
-    // since it picks the min of the two, it works everywhere
-    max-block-size: min(20rem, 35vh);
-    overflow: hidden scroll;
-}
-
-// Fix the dot next to spinner: https://github.com/patternfly/patternfly-react/issues/6383
-.pf-v5-c-select__list-item.pf-m-loading {
-    list-style-type: none;
-}
-
-.image-search-footer {
-    flex-wrap: wrap;
-
-    .pf-v5-c-toggle-group__text {
-        word-wrap: break-word;
-    }
-}
-
- // PF4 does not yet support multiple form fields for the same label
-.ct-input-group-spacer-sm.pf-v5-l-flex {
+// PF4 does not yet support multiple form fields for the same label
+.ct-input-group-spacer-sm.pf-v6-l-flex {
     // Limit width for select entries and inputs in the input groups otherwise they take up the whole space
-    > .pf-v5-c-select, .pf-v5-c-form-control:not(.pf-v5-c-select__toggle-typeahead) {
-      max-inline-size: 8ch;
+    > .pf-v6-c-select, .pf-v6-c-form-control:not(.pf-v6-c-select__toggle-typeahead) {
+      max-inline-size: 10rch;
     }
 }
 
 // HACK: A local copy of pf-m-horizontal (as ct-m-horizontal),
 // but applied at the FormGroup level instead of Form
-@media (min-width: $pf-v5-global--breakpoint--md) {
-    .pf-v5-c-form__group.ct-m-horizontal {
+@media (min-width: $pf-v6-global--breakpoint--md) {
+    .pf-v6-c-form__group.ct-m-horizontal {
         display: grid;
-        grid-column-gap: var(--pf-v5-c-form--m-horizontal__group-label--md--GridColumnGap);
-        grid-template-columns: var(--pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth) var(--pf-v5-c-form--m-horizontal__group-control--md--GridColumnWidth);
+        grid-column-gap: var(--pf-v6-c-form--m-horizontal__group-label--md--GridColumnGap);
+        grid-template-columns: var(--pf-v6-c-form--m-horizontal__group-label--md--GridColumnWidth) var(--pf-v6-c-form--m-horizontal__group-control--md--GridColumnWidth);
+    }
+}
+
+// NOTE @Venefilyn: We need to get the checkbox aligned with the other inputs
+// This has been reported upstream https://github.com/patternfly/patternfly/issues/7411
+.dynamic-form-group .pf-v6-c-form__group-control > .pf-v6-c-check {
+    block-size: calc(var(--pf-t--global--font--size--md) * var(--pf-t--global--font--line-height--body) + 12px);
+}
+
+.dynamic-form-group .remove-button-group {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+
+    button {
+      margin-block-end: var(--pf-t--global--spacer--xs);
     }
 }

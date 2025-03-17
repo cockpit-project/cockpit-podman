@@ -21,8 +21,8 @@ import React from 'react';
 
 import { Alert, AlertActionCloseButton, AlertGroup } from "@patternfly/react-core/dist/esm/components/Alert";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
-import { EmptyState, EmptyStateHeader, EmptyStateFooter, EmptyStateIcon, EmptyStateActions, EmptyStateVariant } from "@patternfly/react-core/dist/esm/components/EmptyState";
-import { Page, PageSection, PageSectionVariants } from "@patternfly/react-core/dist/esm/components/Page";
+import { EmptyState, EmptyStateFooter, EmptyStateActions, EmptyStateVariant } from "@patternfly/react-core/dist/esm/components/EmptyState";
+import { Page, PageSection, } from "@patternfly/react-core/dist/esm/components/Page";
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { WithDialogs } from "dialogs.jsx";
@@ -670,10 +670,9 @@ class Application extends React.Component {
         // show troubleshoot if no users are available, i.e. all user's podman services failed
         if (this.state.users.length === 0) {
             return (
-                <Page>
-                    <PageSection variant={PageSectionVariants.light}>
-                        <EmptyState variant={EmptyStateVariant.full}>
-                            <EmptyStateHeader titleText={_("Podman service failed")} icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} headingLevel="h2" />
+                <Page className="no-masthead-sidebar">
+                    <PageSection hasBodyWrapper={false}>
+                        <EmptyState headingLevel="h2" icon={ExclamationCircleIcon} titleText={_("Podman service failed")} variant={EmptyStateVariant.full}>
                             <EmptyStateFooter>
                                 <EmptyStateActions>
                                     <Button variant="primary" onClick={this.goToServicePage}>
@@ -767,10 +766,10 @@ class Application extends React.Component {
         return (
             <WithPodmanInfo value={contextInfo}>
                 <WithDialogs>
-                    <Page id="overview" key="overview">
+                    <Page id="overview" key="overview" className="no-masthead-sidebar">
                         {notificationList}
-                        <PageSection className="content-filter" padding={{ default: 'noPadding' }}
-                          variant={PageSectionVariants.light}>
+                        <PageSection hasBodyWrapper={false} className="content-filter"
+                        >
                             <ContainerHeader
                               handleFilterChanged={this.onFilterChanged}
                               handleOwnerChanged={this.onOwnerChanged}
@@ -779,7 +778,7 @@ class Application extends React.Component {
                               users={this.state.users}
                             />
                         </PageSection>
-                        <PageSection className='ct-pagesection-mobile'>
+                        <PageSection hasBodyWrapper={false} className='ct-pagesection-mobile'>
                             <Stack hasGutter>
                                 {imageList}
                                 {containerList}

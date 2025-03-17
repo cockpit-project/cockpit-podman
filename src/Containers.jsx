@@ -3,12 +3,12 @@ import React from 'react';
 import { Badge } from "@patternfly/react-core/dist/esm/components/Badge";
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Card, CardBody, CardHeader, CardTitle } from "@patternfly/react-core/dist/esm/components/Card";
+import { Content, ContentVariants } from "@patternfly/react-core/dist/esm/components/Content";
 import { Divider } from "@patternfly/react-core/dist/esm/components/Divider";
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { LabelGroup } from "@patternfly/react-core/dist/esm/components/Label";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
-import { Text, TextVariants } from "@patternfly/react-core/dist/esm/components/Text";
 import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dist/esm/components/Toolbar";
 import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
 import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
@@ -430,7 +430,7 @@ class Containers extends React.Component {
                                      updateContainer={this.props.updateContainer}
                                      isSystemdService={isSystemdService}
                                      isDownloading={container.isDownloading} />,
-            props: { className: "pf-v5-c-table__action" }
+            props: { className: "pf-v6-c-table__action" }
         });
 
         const tty = !!container.Config?.Tty;
@@ -530,15 +530,15 @@ class Containers extends React.Component {
                             <Tooltip content={_("CPU")}>
                                 <MicrochipIcon />
                             </Tooltip>
-                            <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("CPU")}</Text>
-                            <Text component={TextVariants.p} className="pod-cpu">{podStats.cpu}%</Text>
+                            <Content component={ContentVariants.p} className="pf-v6-u-hidden-on-sm">{_("CPU")}</Content>
+                            <Content component={ContentVariants.p} className="pod-cpu">{podStats.cpu}%</Content>
                         </Flex>
                         <Flex className='pod-stat' spaceItems={{ default: 'spaceItemsSm' }}>
                             <Tooltip content={_("Memory")}>
                                 <MemoryIcon />
                             </Tooltip>
-                            <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("Memory")}</Text>
-                            <Text component={TextVariants.p} className="pod-memory">{cockpit.format_bytes(podStats.mem)}</Text>
+                            <Content component={ContentVariants.p} className="pf-v6-u-hidden-on-sm">{_("Memory")}</Content>
+                            <Content component={ContentVariants.p} className="pod-memory">{cockpit.format_bytes(podStats.mem)}</Content>
                         </Flex>
                     </>
                 }
@@ -554,7 +554,7 @@ class Containers extends React.Component {
                                         icon={<PortIcon className="pod-details-button-color" />}
                                 >
                                     {numPorts}
-                                    <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("ports")}</Text>
+                                    <Content component={ContentVariants.p} className="pf-v6-u-hidden-on-sm">{_("ports")}</Content>
                                 </Button>
                             </Popover>
                         </Tooltip>
@@ -569,7 +569,7 @@ class Containers extends React.Component {
                             icon={<VolumeIcon className="pod-details-button-color" />}
                             >
                                 {infraContainer.Mounts.length}
-                                <Text component={TextVariants.p} className="pf-v5-u-hidden-on-sm">{_("volumes")}</Text>
+                                <Content component={ContentVariants.p} className="pf-v6-u-hidden-on-sm">{_("volumes")}</Content>
                             </Button>
                         </Popover>
                     </Tooltip>
@@ -741,7 +741,7 @@ class Containers extends React.Component {
         const filterRunning = (
             <Toolbar>
                 <ToolbarContent className="containers-containers-toolbarcontent">
-                    <ToolbarItem variant="label" htmlFor="containers-containers-filter">
+                    <ToolbarItem alignSelf="center" variant="label" htmlFor="containers-containers-filter">
                         {_("Show")}
                     </ToolbarItem>
                     <ToolbarItem>
@@ -798,9 +798,9 @@ class Containers extends React.Component {
         };
 
         const card = (
-            <Card id="containers-containers" className="containers-containers" isClickable isSelectable>
+            <Card id="containers-containers" className="containers-containers">
                 <CardHeader actions={{ actions: filterRunning }}>
-                    <CardTitle><Text component={TextVariants.h2}>{_("Containers")}</Text></CardTitle>
+                    <CardTitle><Content component={ContentVariants.h1}>{_("Containers")}</Content></CardTitle>
                 </CardHeader>
                 <CardBody>
                     <Flex direction={{ default: 'column' }}>
@@ -865,7 +865,6 @@ class Containers extends React.Component {
                                             <Card key={'table-' + section}
                                              id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
                                              isPlain={section == "no-pod"}
-                                             isFlat={section != "no-pod"}
                                              className="container-pod"
                                              isClickable
                                              isSelectable>
