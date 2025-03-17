@@ -49,8 +49,8 @@ COCKPIT_REPO_FILES = \
 	tools/node-modules \
 	$(NULL)
 
-COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
-COCKPIT_REPO_COMMIT = 6b9175d50226d2aa6d34445c0c04cd9d12e87b8b # 335
+COCKPIT_REPO_URL = https://github.com/Venefilyn/cockpit.git
+COCKPIT_REPO_COMMIT = d2206b11acc35b1f7bbcf8ea2e48862fcca7ec78 # PF6
 
 $(COCKPIT_REPO_FILES): $(COCKPIT_REPO_STAMP)
 COCKPIT_REPO_TREE = '$(strip $(COCKPIT_REPO_COMMIT))^{tree}'
