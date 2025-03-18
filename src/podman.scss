@@ -6,29 +6,29 @@
 // For pf-u-disabled-color-100
 @import "@patternfly/patternfly/utilities/Text/text.css";
 
-#app .pf-v5-c-card.containers-containers, #app .pf-v5-c-card.containers-images {
+#app .pf-v6-c-card.containers-containers, #app .pf-v6-c-card.containers-images {
     @extend .ct-card;
 }
 
-.pf-v5-c-modal-box__title-text {
+.pf-v6-c-modal-box__title-text {
     white-space: break-spaces;
 }
 
 #containers-images, #containers-containers {
     // Decrease padding for the image/container toggle button list
-    .pf-v5-c-table.pf-m-compact .pf-v5-c-table__toggle {
+    .pf-v6-c-table.pf-m-compact .pf-v6-c-table__toggle {
         padding-inline-start: 0;
     }
 
     // don't make the columns too narrow
-    th .pf-v5-c-table__text {
+    th .pf-v6-c-table__text {
         min-inline-size: fit-content;
     }
 }
 
 @media screen and (max-width: 768px) {
     // Badges should not stretch in mobile mode
-    .pf-v5-c-table [data-label] > .pf-v5-c-badge {
+    .pf-v6-c-table [data-label] > .pf-v6-c-badge {
         justify-self: start;
     }
 }
@@ -40,12 +40,12 @@
 }
 
 .container-block small {
-    @include pf-v5-line-clamp("1");
+    @include pf-v6-line-clamp("1");
     color: var(--pf-v5-global--Color--200);
 }
 
 .container-name {
-    font-size: var(--pf-v5-global--FontSize--lg);
+    font-size: var(--pf-t--global--font--size--lg);
     font-weight: 400;
 }
 
@@ -53,7 +53,7 @@
     max-inline-size: 15em;
 }
 
-.pf-v5-c-alert__description {
+.pf-v6-c-alert__description {
     overflow-wrap: anywhere;
 }
 
@@ -64,46 +64,47 @@
 }
 
 .ct-badge-container-running, .ct-badge-pod-running {
-  background-color: var(--pf-v5-global--info-color--100);
+  background-color: var(--pf-t--global--icon--color--severity--none--default);
   color: white;
 }
 
 .ct-badge-container-healthy {
-  background-color: var(--pf-v5-global--success-color--100);
+  background-color: var(--pf-t--global--border--color--status--success--default);
   color: white;
 }
 
 .ct-badge-container-unhealthy {
-  background-color: var(--pf-v5-global--danger-color--100);
+  background-color: var(--pf-t--global--border--color--status--danger--default);
   color: white;
 }
 
 .ct-badge-toolbox {
-    background-color: var(--pf-v5-global--palette--purple-100);
-    color: var(--pf-v5-global--palette--purple-600);
+    background-color: var(--pf-t--color--purple--10);
+    color: var(--pf-t--color--purple--60);
 
-    .pf-v5-theme-dark & {
-        background-color: var(--pf-v5-global--palette--purple-500);
+    .pf-v6-theme-dark & {
+        background-color: var(--pf-t--color--purple--50);
         color: white;
     }
 }
 
+/* FIXME GOLD WAS REMOVED */
 .ct-badge-distrobox {
-    background-color: var(--pf-v5-global--palette--gold-100);
-    color: var(--pf-v5-global--palette--gold-600);
+    background-color: var(--pf-t--color--green--10);
+    color: var(--pf-t--color--green--60);
 
-    .pf-v5-theme-dark & {
-        background-color: var(--pf-v5-global--palette--gold-500);
+    .pf-v6-theme-dark & {
+        background-color: var(--pf-t--color--green--50);
         color: white;
     }
 }
 
 .ct-badge-service {
-    background-color: var(--pf-v5-global--palette--light-blue-100);
-    color: var(--pf-v5-global--palette--light-blue-600);
+    background-color: var(--pf-t--color--blue--10);
+    color: var(--pf-t--color--blue--60);
 
-    .pf-v5-theme-dark & {
-        background-color: var(--pf-v5-global--palette--light-blue-500);
+    .pf-v6-theme-dark & {
+        background-color: var(--pf-t--color--blue--50);
         color: white;
     }
 }
@@ -111,16 +112,17 @@
 /* Override the card's font-family RedHatDisplay for the service Badge so it
  * looks consistent with a normal container service badge.
  */
-.pf-v5-c-card__title-text .ct-badge-service {
-    font-family: var(--pf-v5-global--FontFamily--text);
+.pf-v6-c-card__title-text .ct-badge-service {
+    font-family: var(--pf-t--global--font--family--body);
 }
 
+
 .green {
-    color: var(--pf-v5-global--success-color--100);
+    color: var(--pf-t--global--border--color--status--success--default);
 }
 
 .red {
-  color: var(--pf-v5-global--danger-color--100);
+    color: var(--pf-t--global--border--color--status--danger--default);
 }
 
 // Hide the header nav from the expandable rows - this should be better done with JS but the current cockpit-listing-panel implementation does not support this variant
@@ -136,7 +138,7 @@
 .ct-numeric-column {
     text-align: end;
 
-    .pf-v5-c-table__button {
+    .pf-v6-c-table__button {
         // right-justify the button inside of the th
         flex-direction: row-reverse;
         margin-inline-start: 0;
@@ -156,13 +158,13 @@
     --pf-v5-c-table-tr--responsive--PaddingLeft: 0;
 }
 
-@media (max-width: $pf-v5-global--breakpoint--md - 1) {
+@media (max-width: $pf-v6-global--breakpoint--md - 1) {
     .show-only-when-wide {
         display: none;
     }
 }
 
-@media (min-width: $pf-v5-global--breakpoint--md) {
+@media (min-width: $pf-v6-global--breakpoint--md) {
     .show-only-when-narrow {
         display: none;
     }
@@ -175,8 +177,8 @@
 }
 
 // Override table padding on mobile
-@media (max-width: $pf-v5-global--breakpoint--md) {
-    .health-logs.pf-m-grid-md.pf-v5-c-table tr:where(.pf-v5-c-table__tr):not(.pf-v5-c-table__expandable-row) {
+@media (max-width: $pf-v6-global--breakpoint--md) {
+    .health-logs.pf-m-grid-md.pf-v6-c-table tr:where(.pf-v6-c-table__tr):not(.pf-v6-c-table__expandable-row) {
         padding: 0;
     }
 }

@@ -9,8 +9,8 @@ const _ = cockpit.gettext;
 
 const ContainerHeader = ({ users, ownerFilter, handleOwnerChanged, textFilter, handleFilterChanged }) => {
     return (
-        <Toolbar className="pf-m-page-insets">
-            <ToolbarContent>
+        <Toolbar inset={{ sm: 'insetSm', default: 'insetNone' }}>
+            <ToolbarContent alignItems='baseline'>
                 { users.length >= 2 &&
                     <>
                         <ToolbarItem variant="label">

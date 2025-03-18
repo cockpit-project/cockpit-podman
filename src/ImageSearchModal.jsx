@@ -4,9 +4,11 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { DataList, DataListCell, DataListItem, DataListItemCells, DataListItemRow } from "@patternfly/react-core/dist/esm/components/DataList";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
-import { Modal } from "@patternfly/react-core/dist/esm/components/Modal";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import {
+    Modal
+} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
 import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { useDialogs } from "dialogs.jsx";
