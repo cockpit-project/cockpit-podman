@@ -1,10 +1,8 @@
 @use "ct-card.scss";
 @use "page.scss";
 @import "global-variables";
-// For pf-v5-line-clamp
+// For pf-v6-line-clamp
 @import "@patternfly/patternfly/sass-utilities/mixins.scss";
-// For pf-u-disabled-color-100
-@import "@patternfly/patternfly/utilities/Text/text.css";
 
 #app .pf-v6-c-card.containers-containers, #app .pf-v6-c-card.containers-images {
     @extend .ct-card;
@@ -41,7 +39,7 @@
 
 .container-block small {
     @include pf-v6-line-clamp("1");
-    color: var(--pf-v5-global--Color--200);
+    color: var(--pf-t--global--text--color--subtle);
 }
 
 .container-name {
@@ -64,49 +62,33 @@
 }
 
 .ct-badge-container-running, .ct-badge-pod-running {
-  background-color: var(--pf-t--global--icon--color--severity--none--default);
-  color: white;
+    background-color: var(--pf-t--global--color--status--info--default);
+    color: var(--pf-t--global--text--color--status--on-info--default);
 }
 
 .ct-badge-container-healthy {
-  background-color: var(--pf-t--global--border--color--status--success--default);
-  color: white;
+    background-color: var(--pf-t--global--border--color--status--success--default);
+    color: var(--pf-t--global--text--color--status--on-success--default);
 }
 
 .ct-badge-container-unhealthy {
-  background-color: var(--pf-t--global--border--color--status--danger--default);
-  color: white;
+    background-color: var(--pf-t--global--border--color--status--danger--default);
+    color: var(--pf-t--global--text--color--status--on-danger--default);
 }
 
 .ct-badge-toolbox {
-    background-color: var(--pf-t--color--purple--10);
-    color: var(--pf-t--color--purple--60);
-
-    .pf-v6-theme-dark & {
-        background-color: var(--pf-t--color--purple--50);
-        color: white;
-    }
+    background-color: var(--pf-t--global--color--nonstatus--purple--default);
+    color: var(--pf-t--global--text--color--nonstatus--on-purple--default);
 }
 
-/* FIXME GOLD WAS REMOVED */
 .ct-badge-distrobox {
-    background-color: var(--pf-t--color--green--10);
-    color: var(--pf-t--color--green--60);
-
-    .pf-v6-theme-dark & {
-        background-color: var(--pf-t--color--green--50);
-        color: white;
-    }
+    background-color: var(--pf-t--global--color--nonstatus--green--default);
+    color: var(--pf-t--global--text--color--nonstatus--on-green--default);
 }
 
 .ct-badge-service {
-    background-color: var(--pf-t--color--blue--10);
-    color: var(--pf-t--color--blue--60);
-
-    .pf-v6-theme-dark & {
-        background-color: var(--pf-t--color--blue--50);
-        color: white;
-    }
+    background-color: var(--pf-t--global--color--nonstatus--blue--default);
+    color: var(--pf-t--global--text--color--nonstatus--on-blue--default);
 }
 
 /* Override the card's font-family RedHatDisplay for the service Badge so it
@@ -116,22 +98,8 @@
     font-family: var(--pf-t--global--font--family--body);
 }
 
-
-.green {
-    color: var(--pf-t--global--border--color--status--success--default);
-}
-
-.red {
-    color: var(--pf-t--global--border--color--status--danger--default);
-}
-
-// Hide the header nav from the expandable rows - this should be better done with JS but the current cockpit-listing-panel implementation does not support this variant
-#containers-images .ct-listing-panel-head {
-    display: none;
-}
-
 .ct-grey-text {
-   color: var(--pf-v5-global--Color--200);
+    color: var(--pf-t--global--text--color--subtle);
 }
 
 // HACK: PF should offer that: https://github.com/patternfly/patternfly/issues/6572
@@ -150,14 +118,6 @@
     white-space: nowrap !important;
 }
 
-// Remove doubled-up padding and borders on nested tables in mobile
-.ct-listing-panel-body .ct-table tr {
-    --pf-v5-c-table-tr--responsive--PaddingTop: 0;
-    --pf-v5-c-table-tr--responsive--PaddingRight: 0;
-    --pf-v5-c-table-tr--responsive--PaddingBottom: 0;
-    --pf-v5-c-table-tr--responsive--PaddingLeft: 0;
-}
-
 @media (max-width: $pf-v6-global--breakpoint--md - 1) {
     .show-only-when-wide {
         display: none;
@@ -167,12 +127,6 @@
 @media (min-width: $pf-v6-global--breakpoint--md) {
     .show-only-when-narrow {
         display: none;
-    }
-
-    // Add  borders to no pod containers list and images list
-    .container-pod.pf-m-plain tbody,
-    .containers-images tbody {
-        border: var(--pf-v5-c-card--m-flat--BorderWidth) solid var(--pf-v5-c-card--m-flat--BorderColor);
     }
 }
 

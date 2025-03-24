@@ -59,9 +59,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                     <Popover aria-label={_("IP address help")}
                         enableFlip
                         bodyContent={_("If host IP is set to 0.0.0.0 or not set at all, the port will be bound on all IPs on the host.")}>
-                        <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                            <OutlinedQuestionCircleIcon />
-                        </button>
+                        <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                     </Popover>
                 }>
                 <TextInput id={id + "-ip-address"}
@@ -82,9 +80,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                         <Popover aria-label={_("Host port help")}
                             enableFlip
                             bodyContent={_("If the host port is not set the container port will be randomly assigned a port on the host.")}>
-                            <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                <OutlinedQuestionCircleIcon />
-                            </button>
+                            <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                         </Popover>
                     }>
                 <TextInput id={id + "-host-port"}

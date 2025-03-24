@@ -741,7 +741,7 @@ class Containers extends React.Component {
         const filterRunning = (
             <Toolbar>
                 <ToolbarContent className="containers-containers-toolbarcontent">
-                    <ToolbarItem variant="label" htmlFor="containers-containers-filter">
+                    <ToolbarItem alignSelf="center" variant="label" htmlFor="containers-containers-filter">
                         {_("Show")}
                     </ToolbarItem>
                     <ToolbarItem>
@@ -798,9 +798,9 @@ class Containers extends React.Component {
         };
 
         const card = (
-            <Card id="containers-containers" className="containers-containers" isClickable isSelectable>
+            <Card id="containers-containers" className="containers-containers">
                 <CardHeader actions={{ actions: filterRunning }}>
-                    <CardTitle><Content component={ContentVariants.h2}>{_("Containers")}</Content></CardTitle>
+                    <CardTitle><Content component={ContentVariants.h1}>{_("Containers")}</Content></CardTitle>
                 </CardHeader>
                 <CardBody>
                     <Flex direction={{ default: 'column' }}>

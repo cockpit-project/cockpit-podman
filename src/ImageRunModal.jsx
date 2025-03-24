@@ -861,9 +861,7 @@ export class ImageRunModal extends React.Component {
                                                   </Content>
                                               </>
                                           }>
-                                           <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                               <OutlinedQuestionCircleIcon />
-                                           </button>
+                                           <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                        </Popover>
                                    }>
                             { this.props.users.map(user => (
@@ -888,9 +886,7 @@ export class ImageRunModal extends React.Component {
                                         <FlexItem>{cockpit.format(_("Searching: $0"), "quay.io/busybox")}</FlexItem>
                                     </Flex>
                                 }>
-                                  <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                      <OutlinedQuestionCircleIcon />
-                                  </button>
+                                  <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                               </Popover>
                           }
                         >
@@ -976,9 +972,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("CPU Shares help")}
                                       enableFlip
                                       bodyContent={_("CPU shares determine the priority of running containers. Default priority is 1024. A higher number prioritizes this container. A lower number decreases priority.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                          <OutlinedQuestionCircleIcon />
-                                      </button>
+                                      <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
                                 <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
@@ -1008,9 +1002,7 @@ export class ImageRunModal extends React.Component {
                               <Popover aria-label={_("Restart policy help")}
                                 enableFlip
                                 bodyContent={userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
-                                  <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                      <OutlinedQuestionCircleIcon />
-                                  </button>
+                                  <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                               </Popover>
                           }
                                 >
@@ -1092,9 +1084,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check interval help")}
                                       enableFlip
                                       bodyContent={_("Interval how often health check is run.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                          <OutlinedQuestionCircleIcon />
-                                      </button>
+                                      <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
                             <InputGroup>
@@ -1117,9 +1107,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check timeout help")}
                                       enableFlip
                                       bodyContent={_("The maximum time allowed to complete the health check before an interval is considered failed.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                          <OutlinedQuestionCircleIcon />
-                                      </button>
+                                      <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
                             <InputGroup>
@@ -1142,9 +1130,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check start period help")}
                                       enableFlip
                                       bodyContent={_("The initialization time needed for a container to bootstrap.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                          <OutlinedQuestionCircleIcon />
-                                      </button>
+                                      <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
                             <InputGroup>
@@ -1167,9 +1153,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health check retries help")}
                                       enableFlip
                                       bodyContent={_("The number of retries allowed before a healthcheck is considered to be unhealthy.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                          <OutlinedQuestionCircleIcon />
-                                      </button>
+                                      <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
                             <NumberInput
@@ -1190,9 +1174,7 @@ export class ImageRunModal extends React.Component {
                                   <Popover aria-label={_("Health failure check action help")}
                                       enableFlip
                                       bodyContent={_("Action to take once the container transitions to an unhealthy state.")}>
-                                      <button onClick={e => e.preventDefault()} className="pf-v6-c-form__group-label-help">
-                                          <OutlinedQuestionCircleIcon />
-                                      </button>
+                                      <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
                             {HealthCheckOnFailureActionOrder.map(item =>

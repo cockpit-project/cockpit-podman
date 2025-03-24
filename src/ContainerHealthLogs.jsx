@@ -19,6 +19,7 @@
 
 import React from 'react';
 
+import { Icon } from '@patternfly/react-core';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
@@ -113,7 +114,7 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
                                       columns: [
                                           {
                                               title: <Flex flexWrap={{ default: 'nowrap' }} spaceItems={{ default: 'spaceItemsSm' }} alignItems={{ default: 'alignItemsCenter' }}>
-                                                  {log.ExitCode === 0 ? <CheckCircleIcon className="green" /> : <ErrorCircleOIcon className="red" />}
+                                                  {log.ExitCode === 0 ? <Icon status="success"><CheckCircleIcon className="green" /></Icon> : <Icon status="danger"><ErrorCircleOIcon className="red" /></Icon>}
                                                   <span>{log.ExitCode === 0 ? _("Passed health run") : _("Failed health run")}</span>
                                               </Flex>
                                           },

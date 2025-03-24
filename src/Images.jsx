@@ -274,11 +274,11 @@ class Images extends React.Component {
         const { imageStats, unusedImages } = this.calculateStats();
         const imageTitleStats = (
             <>
-                <Content component={ContentVariants.h5}>
+                <Content component={ContentVariants.div}>
                     {cockpit.format(cockpit.ngettext("$0 image total, $1", "$0 images total, $1", imageStats.imagesTotal), imageStats.imagesTotal, cockpit.format_bytes(imageStats.imagesSize))}
                 </Content>
                 {imageStats.unusedTotal !== 0 &&
-                <Content component={ContentVariants.h5}>
+                <Content component={ContentVariants.div}>
                     {cockpit.format(cockpit.ngettext("$0 unused image, $1", "$0 unused images, $1", imageStats.unusedTotal), imageStats.unusedTotal, cockpit.format_bytes(imageStats.unusedSize))}
                 </Content>
                 }
@@ -292,7 +292,7 @@ class Images extends React.Component {
                         <FlexItem grow={{ default: 'grow' }}>
                             <Flex>
                                 <CardTitle>
-                                    <Content component={ContentVariants.h2} className="containers-images-title">{_("Images")}</Content>
+                                    <Content component={ContentVariants.h1} className="containers-images-title">{_("Images")}</Content>
                                 </CardTitle>
                                 <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-t--global--spacer--xs)" }}>{imageTitleStats}</Flex>
                             </Flex>
