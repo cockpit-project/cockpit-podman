@@ -10,6 +10,7 @@ import time
 from typing import Self
 
 import testlib
+from lib.constants import DEFAULT_IDENTITY_PUB_FILE
 from machine.machine_core import ssh_connection
 
 REGISTRIES_CONF = """
@@ -113,14 +114,9 @@ class TestApplication(testlib.MachineCase):
             """)
 
         # Create admin session
-        m.execute("""
-            if [ ! -d /home/admin/.ssh ]; then
-                mkdir /home/admin/.ssh
-                cp /root/.ssh/* /home/admin/.ssh
-                chown -R admin:admin /home/admin/.ssh
-                chmod -R go-wx /home/admin/.ssh
-            fi
-            """)
+        with open(DEFAULT_IDENTITY_PUB_FILE) as f:
+            authorized_keys = f.read()
+        m.write("/home/admin/.ssh/authorized_keys", authorized_keys, owner="admin:admin", perm="600")
         self.admin_s = ssh_connection.SSHConnection(user="admin",
                                                     address=m.ssh_address,
                                                     ssh_port=m.ssh_port,
