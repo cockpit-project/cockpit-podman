@@ -436,7 +436,7 @@ class Containers extends React.Component {
         const tty = !!container.Config?.Tty;
 
         const tabs = [];
-        if (container.State) {
+        if (container.State && user.con !== null) {
             tabs.push({
                 name: _("Details"),
                 renderer: ContainerDetails,
