@@ -457,8 +457,7 @@ export class ImageRunModal extends React.Component {
                         let imageResults = [];
                         const manifestResult = handleManifestsQuery(reply[0]);
 
-                        for (let i = 1; i < reply.length; i++) {
-                            const result = reply[i];
+                        for (const result of reply) {
                             if (result.status === "fulfilled") {
                                 imageResults = imageResults.concat(JSON.parse(result.value));
                             } else if (!manifestResult && !imageExistsLocally(value, this.props.localImages)) {
