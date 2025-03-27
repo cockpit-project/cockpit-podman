@@ -1230,12 +1230,18 @@ export class ImageRunModal extends React.Component {
                    }}
                    title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
                    footer={<>
-                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)}
-                               isDisabled={isDisabled} isLoading={this.state.inProgress}>
+                       <Button variant='primary'
+                               id="create-image-create-run-btn"
+                               onClick={this.onCreateClicked(true)}
+                               isDisabled={isDisabled}
+                               isLoading={this.state.inProgress}>
                            {_("Create and run")}
                        </Button>
-                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)}
-                               isDisabled={isDisabled} isLoading={this.state.inProgress}>
+                       <Button variant='secondary'
+                               id="create-image-create-btn"
+                               onClick={this.onCreateClicked(false)}
+                               isDisabled={isDisabled}
+                               isLoading={this.state.inProgress}>
                            {_("Create")}
                        </Button>
                        <Button variant='link' className='btn-cancel' onClick={Dialogs.close} isDisabled={this.state.inProgress}>
