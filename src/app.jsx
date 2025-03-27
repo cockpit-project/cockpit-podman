@@ -142,13 +142,12 @@ class Application extends React.Component {
             containersFilter: value
         });
 
-        const options = this.state.location;
-        if (value == "running") {
+        const options = { ...this.state.location };
+        if (value == "running")
             delete options.container;
-            this.updateUrl(Object.assign(options));
-        } else {
-            this.updateUrl(Object.assign(options, { container: value }));
-        }
+        else
+            options.container = value;
+        this.updateUrl(options);
     }
 
     updateState(state, key, newValue) {
