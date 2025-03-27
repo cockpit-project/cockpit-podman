@@ -767,17 +767,13 @@ export class ImageRunModal extends React.Component {
                     this.setState({ searchByRegistry: 'all' });
                 }}
                 // Ignore SelectToggle's touchstart's default behaviour
-                onTouchStart={ev => {
-                    ev.stopPropagation();
-                }}
+                onTouchStart={ev => ev.stopPropagation()}
                 />
                 <ToggleGroupItem text={_("Local")} key='local' isSelected={this.state.searchByRegistry == 'local'} onChange={(ev, _) => {
                     ev.stopPropagation();
                     this.setState({ searchByRegistry: 'local' });
                 }}
-                onTouchStart={ev => {
-                    ev.stopPropagation();
-                }}
+                onTouchStart={ev => ev.stopPropagation()}
                 />
                 {podmanRegistries.map(registry => {
                     const index = this.truncateRegistryDomain(registry);
