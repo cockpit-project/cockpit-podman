@@ -763,22 +763,24 @@ export class ImageRunModal extends React.Component {
         // Add the search component
         const footer = (
             <ToggleGroup className='image-search-footer' aria-label={_("Search by registry")}>
-                <ToggleGroupItem text={_("All")} key='all' isSelected={this.state.searchByRegistry == 'all'} onChange={(ev, _) => {
-                    ev.stopPropagation();
-                    this.setState({ searchByRegistry: 'all' });
-                }}
+                <ToggleGroupItem text={_("All")}
+                                 isSelected={this.state.searchByRegistry == 'all'}
+                                 onChange={(ev, _) => {
+                                     ev.stopPropagation();
+                                     this.setState({ searchByRegistry: 'all' });
+                                 }}
                 // Ignore SelectToggle's touchstart's default behaviour
                 onTouchStart={ev => {
                     ev.stopPropagation();
                 }}
                 />
-                <ToggleGroupItem text={_("Local")} key='local' isSelected={this.state.searchByRegistry == 'local'} onChange={(ev, _) => {
-                    ev.stopPropagation();
-                    this.setState({ searchByRegistry: 'local' });
-                }}
-                onTouchStart={ev => {
-                    ev.stopPropagation();
-                }}
+                <ToggleGroupItem text={_("Local")}
+                                 isSelected={this.state.searchByRegistry == 'local'}
+                                 onChange={(ev, _) => {
+                                     ev.stopPropagation();
+                                     this.setState({ searchByRegistry: 'local' });
+                                 }}
+                                 onTouchStart={ev => ev.stopPropagation()}
                 />
                 {podmanRegistries.map(registry => {
                     const index = this.truncateRegistryDomain(registry);
