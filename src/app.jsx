@@ -116,7 +116,7 @@ class Application extends React.Component {
             textFilter: value
         });
 
-        const options = { ...this.state.location };
+        const options = this.state.location;
         if (value === "")
             delete options.name;
         else
@@ -129,7 +129,7 @@ class Application extends React.Component {
             ownerFilter: value
         });
 
-        const options = { ...this.state.location };
+        const options = this.state.location;
         if (value == "all")
             delete options.owner;
         else
