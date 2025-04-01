@@ -7,7 +7,7 @@ import json
 import re
 import sys
 import time
-from typing import Self
+from typing import Self, Sequence, TypedDict
 
 import testlib
 from lib.constants import DEFAULT_IDENTITY_PUB_FILE
@@ -50,10 +50,12 @@ server {
 """
 
 
-def podman_version(cls):
-    version = cls.execute(False, "podman -v").strip().split(' ')[-1]
-    # HACK: handle possible rc versions such as 4.4.0-rc2
-    return tuple(int(v.split('-')[0]) for v in version.split('.'))
+class ContainerList(TypedDict):
+    id: str
+    name: str
+    image: str
+    command: str
+    state: list[str] | str
 
 
 def showImages(browser: testlib.Browser) -> None:
@@ -76,7 +78,7 @@ def checkImage(browser: testlib.Browser, name: str, owner: str) -> None:
 @testlib.nondestructive
 class TestApplication(testlib.MachineCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         m = self.machine
         m.execute("""
@@ -224,7 +226,7 @@ class TestApplication(testlib.MachineCase):
         else:
             self.browser.wait_not_present("#table-" + podName)
 
-    def waitPodContainer(self, podName, containerList, system=True):
+    def waitPodContainer(self, podName: str, containerList: Sequence[ContainerList], *, system: bool = True) -> None:
         if len(containerList):
             for container in containerList:
                 self.waitContainer(container["id"], auth=system, name=container["name"], image=container["image"],
@@ -1416,7 +1418,7 @@ PodName={name}
         picket_fence_sha = self.execute(auth, "podman inspect --format '{{.Id}}' picket-fence").strip()
         self.waitContainer(picket_fence_sha, auth=auth, name="picket-fence", state="Running")
 
-        def get_cpu_usage(sel) -> float:
+        def get_cpu_usage(sel: str) -> float:
             cpu = self.getContainerAttr(sel, "CPU")
             self.assertIn('%', cpu)
             # If it not a number it will raise ValueError which is what we want to know
@@ -2282,7 +2284,7 @@ PodName={name}
             b.wait_in_text('#containers-containers .pf-v6-c-empty-state', 'No running containers')
             b.wait_in_text('#containers-images .pf-v6-c-empty-state', 'No images')
 
-    def testRunImageUserWithAuth(self):
+    def testRunImageUserWithAuth(self) -> None:
         b = self.browser
 
         self.login()
@@ -2320,7 +2322,7 @@ PodName={name}
         self.check_content("images", present, not_present)
 
     def waitContainer(self, row_id: str, *, auth: bool, name: str = "", image: str = "", cmd: str = "",
-                      owner: str = "", state: list[str] | str | None = None, pod: str = "no-pod"):
+                      owner: str = "", state: list[str] | str | None = None, pod: str = "no-pod") -> None:
         """Check the container with row_name has the expected values
             "image" can be substring, "state" might be string or array of possible states, other are
             checked for exact match.
@@ -2365,7 +2367,7 @@ PodName={name}
     def testPruneUnusedImagesRoot(self) -> None:
         self._testPruneUnusedImagesSystem(auth=False, root=True)
 
-    def _testPruneUnusedImagesSystem(self, *, auth: bool, root: bool = False):
+    def _testPruneUnusedImagesSystem(self, *, auth: bool, root: bool = False) -> None:
         b = self.browser
         if root:
             self.login_and_go("/podman", user="root", enable_root_login=True)
@@ -2498,11 +2500,11 @@ PodName={name}
 
         # Verify running containers still exists
         self.waitContainerRow("containerrunning")
-        pods = [{"name": "inpod", "state": "Exited", "id": notrunninginpodId,
+        pods: Sequence[ContainerList] = [{"name": "inpod", "state": "Exited", "id": notrunninginpodId,
                  "image": IMG_BUSYBOX, "command": 'sh -c "exit 1"'},
                 {"name": "inpodrunning", "state": "Running", "id": runninginpodId,
                  "image": IMG_BUSYBOX, "command": 'sh -c "sleep infinity"'}]
-        self.waitPodContainer("pod", pods, auth)
+        self.waitPodContainer("pod", pods, system=auth)
 
     def testCreateContainerValidation(self) -> None:
         def validateField(groupSelector: str, value: str, errorMessage: str, resetValue: str = "") -> None:
@@ -3054,7 +3056,8 @@ PodName={name}
         containerId = self.execute(auth, cmd).strip()
         self.waitPodContainer(pod_name,
                               [{"name": container_name, "image": IMG_ALPINE,
-                                "command": "sleep 500", "state": "Running", "id": containerId}], auth)
+                                "command": "sleep 500", "state": "Running", "id": containerId}],
+                              system=auth)
 
         self.toggleExpandedContainer(container_name)
         b.click(".pf-m-expanded button:contains('Integration')")
@@ -3197,7 +3200,7 @@ PodName={name}
         b.wait_js_cond("document.querySelectorAll('.pf-v6-c-menu__item:not([disabled])').length === 1")
 
     @testlib.skipImage("page does not survive this with the C bridge", "ubuntu-2204", "rhel-8-*")
-    def testReconnectStability(self):
+    def testReconnectStability(self) -> None:
         # reloading the page reconnects to the podman services; make sure this works reliably
         b = self.browser
 
@@ -3273,15 +3276,15 @@ PodName={name}
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
-    def testQuadletsSystem(self):
+    def testQuadletsSystem(self) -> None:
         self._testQuadlets(system=True)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
-    def testQuadletsUsers(self):
+    def testQuadletsUsers(self) -> None:
         self._testQuadlets(system=False)
 
-    def testOtherUsers(self):
+    def testOtherUsers(self) -> None:
         m = self.machine
         b = self.browser
 
