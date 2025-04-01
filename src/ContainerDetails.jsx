@@ -31,7 +31,7 @@ const ContainerDetails = ({ container }) => {
                 <DescriptionList className='container-details-basic'>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
-                        <DescriptionListDescription>{utils.truncate_id(container.Id)}</DescriptionListDescription>
+                        <DescriptionListDescription className="ignore-pixels">{utils.truncate_id(container.Id)}</DescriptionListDescription>
                     </DescriptionListGroup>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
@@ -49,15 +49,15 @@ const ContainerDetails = ({ container }) => {
                 {networkOptions && <DescriptionList columnModifier={{ default: '2Col' }} className='container-details-networking'>
                     {container.NetworkSettings?.IPAddress && <DescriptionListGroup>
                         <DescriptionListTerm>{_("IP address")}</DescriptionListTerm>
-                        <DescriptionListDescription>{container.NetworkSettings.IPAddress}</DescriptionListDescription>
+                        <DescriptionListDescription className="ignore-pixels">{container.NetworkSettings.IPAddress}</DescriptionListDescription>
                     </DescriptionListGroup>}
                     {container.NetworkSettings?.Gateway && <DescriptionListGroup>
                         <DescriptionListTerm>{_("Gateway")}</DescriptionListTerm>
-                        <DescriptionListDescription>{container.NetworkSettings.Gateway}</DescriptionListDescription>
+                        <DescriptionListDescription className="ignore-pixels">{container.NetworkSettings.Gateway}</DescriptionListDescription>
                     </DescriptionListGroup>}
                     {container.NetworkSettings?.MacAddress && <DescriptionListGroup>
                         <DescriptionListTerm>{_("MAC address")}</DescriptionListTerm>
-                        <DescriptionListDescription>{container.NetworkSettings.MacAddress}</DescriptionListDescription>
+                        <DescriptionListDescription className="container-mac-address">{container.NetworkSettings.MacAddress}</DescriptionListDescription>
                     </DescriptionListGroup>}
                 </DescriptionList>}
             </FlexItem>
