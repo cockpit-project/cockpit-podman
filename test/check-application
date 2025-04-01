@@ -170,6 +170,11 @@ class TestApplication(testlib.MachineCase):
 
         super().tearDown()
 
+    def podman_version(self) -> tuple[int, ...]:
+        version = self.execute(False, "podman -v").strip().split(' ')[-1]
+        # HACK: handle possible rc versions such as 4.4.0-rc2
+        return tuple(int(v.split('-')[0]) for v in version.split('.')[:3])
+
     def getRestartPolicy(self, container_name: str, *, auth: bool):
         cmd = f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}"
         return self.execute(auth, cmd).strip()
@@ -1627,7 +1632,7 @@ PodName={name}
         # Fixed in podman 4.4.0 https://github.com/containers/podman/issues/16666
         cmd = "podman inspect --format '{{.NetworkSettings.MacAddress}}' swamped-crate"
         new_mac_address = self.execute(True, cmd).strip()
-        if podman_version(self) >= (4, 4, 0):
+        if self.podman_version() >= (4, 4, 0):
             self.assertNotEqual(new_mac_address, mac_address)
         else:
             self.assertEqual(new_mac_address, mac_address)
@@ -2622,7 +2627,7 @@ PodName={name}
         if auth:
             b.assert_pixels('.pf-v6-c-modal-box', "healthcheck-modal", skip_layouts=["rtl"])
         # Test that the healthcheck option is not available before podman 4.3
-        if podman_version(self) < (4, 3, 0):
+        if self.podman_version() < (4, 3, 0):
             b.wait_not_present("#run-image-healthcheck-action")
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
 
@@ -2642,7 +2647,7 @@ PodName={name}
         b.wait_in_text('#container-details-healthcheck dt:contains("Timeout") + dd', '35 seconds')
         b.wait_in_text('#container-details-healthcheck dt:contains("Start period") + dd', '5 seconds')
         b.wait_not_present('#container-details-healthcheck dt:contains("Failing streak")')
-        if podman_version(self) >= (4, 3, 0):
+        if self.podman_version() >= (4, 3, 0):
             b.wait_in_text('#container-details-healthcheck dt:contains("When unhealthy") + dd', 'No action')
 
         # format changed in podman 5.1, adds StartInterval (https://github.com/containers/podman/pull/22334)
@@ -2700,7 +2705,7 @@ PodName={name}
         # To test this we make a healthcheck which depends on a file, so when starting the
         # container is healthy, after we remove the file the healthcheck should fail and our
         # configured action should executed.
-        if podman_version(self) < (4, 3, 0):
+        if self.podman_version() < (4, 3, 0):
             return
 
         containername = "healthaction"
@@ -3246,7 +3251,7 @@ PodName={name}
         b.wait_not_present('.pf-v6-c-menu__item')
 
         # Quadlet pod support was introduced in podman 5.0.0
-        if podman_version(self) >= (5, 0, 0):
+        if self.podman_version() >= (5, 0, 0):
             podName = "homeassistant"
             podOwner = "system" if system else "user"
             self.createQuadletPod(podName, auth=system)
