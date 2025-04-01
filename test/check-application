@@ -2046,6 +2046,13 @@ PodName={name}
         b.wait(lambda: "3" in self.execute(auth, "podman logs busybox-with-tty"))
 
         self.toggleExpandedContainer(IMG_BUSYBOX)
+        if auth:
+            b.assert_pixels('#containers-containers tr.pf-m-expanded',
+                            "image-details-tab",
+                            ignore=['.ignore-pixels', '.container-mac-address'],
+                            # MAC Address doesn't use a monospace font so it varies
+                            mock={'.container-mac-address': 'ce:39:71:68:e1:ba'},
+                            skip_layouts=["rtl", "mobile"])
 
         b.wait_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Created") + dd',
                     'less than a minute ago')
@@ -2387,6 +2394,8 @@ PodName={name}
         else:
             b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li",
                            self.user_images_count - leftover_images)
+        if auth:
+            b.assert_pixels('.pf-v6-c-modal-box', "prune-modal", skip_layouts=["rtl", "mobile"])
         b.click(".pf-v6-c-modal-box button:contains(Prune)")
 
         # When being superuser, admin images are also removed
@@ -2901,6 +2910,7 @@ PodName={name}
         b.wait_in_text("#commit-dialog-image-name-helper", "Name can only contain letters, numbers")
 
         b.set_input_text("#rename-dialog-container-name", container_name_new)
+        b.assert_pixels(".pf-v6-c-modal-box", "rename-dialog", skip_layouts=["rtl"])
         b.click('#btn-rename-dialog-container')
         b.wait_not_present("#rename-dialog-container-name")
 
@@ -3040,6 +3050,12 @@ PodName={name}
             b.set_file_autocomplete_val("#create-pod-dialog-volume-1", rwdir)
             b.set_input_text('#create-pod-dialog-volume-1-container-path', '/tmp/rw')
 
+        if auth:
+            b.assert_pixels(".pf-v6-c-modal-box",
+                            "create-pod",
+                            ignore=["#create-pod-dialog-volume-0-host-path-group",
+                                    "#create-pod-dialog-volume-1-host-path-group"],
+                            skip_layouts=["rtl"])
         b.click("#create-pod-create-btn")
         b.set_val("#containers-containers-filter", "all")
         self.waitPodContainer(pod_name, [])
