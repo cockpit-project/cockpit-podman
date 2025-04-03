@@ -12,7 +12,7 @@ const _ = cockpit.gettext;
 
 // ports is a mapping like { "5000/tcp": [{"HostIp": "", "HostPort": "6000"}] }
 export const renderContainerPublishedPorts = ports => {
-    if (!ports)
+    if (Object.keys(ports).length === 0)
         return null;
 
     const ranges = [];
