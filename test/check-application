@@ -2402,6 +2402,8 @@ PodName={name}
             b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li",
                            self.user_images_count - leftover_images)
         if auth:
+            self.assertTrue(b.get_checked("#deleteImages-system"))
+            self.assertTrue(b.get_checked("#deleteImages-admin"))
             b.assert_pixels('.pf-v6-c-modal-box', "prune-modal", skip_layouts=["rtl", "mobile"])
         b.click(".pf-v6-c-modal-box button:contains(Prune)")
 

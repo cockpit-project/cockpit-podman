@@ -103,7 +103,7 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, users 
                     <ImageOptions key={user.name}
                                   images={unusedImages.filter(image => image.uid === user.uid)}
                                   name={"deleteImages-" + user.name}
-                                  checked={deleteOwners.includes(user)}
+                                  checked={deleteOwners.some(u => u.uid === user.uid)}
                                   handleChange={checked => onCheckChange(user, checked)}
                                   showCheckbox={showCheckboxes}
                                   user={user} />))
