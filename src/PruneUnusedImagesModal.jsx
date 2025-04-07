@@ -78,9 +78,9 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, users 
 
     const showCheckboxes = unusedOwners.length > 1;
 
-    const onCheckChange = (user, checked) => setDeleteOwners(
-        checked ? deleteOwners.concat([user]) : deleteOwners.filter(u => u !== user)
-    );
+    const onCheckChange = (user, checked) => setDeleteOwners(prevState => {
+        return checked ? prevState.concat([user]) : prevState.filter(u => u !== user);
+    });
 
     return (
         <Modal isOpen
