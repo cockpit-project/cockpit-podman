@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 
@@ -41,6 +42,17 @@ const ContainerDetails = ({ container }) => {
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
                         <DescriptionListDescription>{utils.quote_cmdline(container.Config.Cmd)}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                    }
+                    {Boolean(container.Config?.Labels?.PODMAN_SYSTEMD_UNIT) && (container.uid === 0 || container.uid === null) &&
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("systemd service")}</DescriptionListTerm>
+                        <DescriptionListDescription>
+                            <Button variant="link" isInline onClick={
+                                () => cockpit.jump(`/system/services#/${container.Config?.Labels?.PODMAN_SYSTEMD_UNIT}` + (container.uid === null ? "?owner=user" : ""))}>
+                                {cockpit.format(_("View $0"), container.Config?.Labels?.PODMAN_SYSTEMD_UNIT)}
+                            </Button>
+                        </DescriptionListDescription>
                     </DescriptionListGroup>
                     }
                 </DescriptionList>
