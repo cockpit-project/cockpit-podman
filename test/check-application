@@ -15,10 +15,10 @@ from machine.machine_core import ssh_connection
 
 REGISTRIES_CONF = """
 [registries.search]
-registries = ['localhost:5000', 'localhost:6000']
+registries = ['localhost:5000', 'localhost:6000', 'subdomain.local.localhost:7000']
 
 [registries.insecure]
-registries = ['localhost:80', 'localhost:5000', 'localhost:6000']
+registries = ['localhost:80', 'localhost:5000', 'localhost:6000', 'subdomain.local.localhost:7000']
 """
 
 NOT_RUNNING = ["Exited", "Stopped"]
@@ -273,6 +273,8 @@ class TestApplication(testlib.MachineCase):
         self.execute(True, f"""
             podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}
             podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 {IMG_REGISTRY}
+            podman run -d -p 7000:5000 --name registry_subdomain --stop-timeout 0 {IMG_REGISTRY}
+            echo "127.0.0.1 subdomain.local.localhost" >> /etc/hosts
         """)
 
         # Add local insecure registry into registries conf
@@ -1704,8 +1706,12 @@ PodName={name}
                      f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
         self.execute(True,
                      f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox")
+        self.execute(True,
+                     f"""podman tag {IMG_BUSYBOX} subdomain.local.localhost:7000/my-busybox;
+                     podman push subdomain.local.localhost:7000/my-busybox""")
         # Untag busybox image which duplicates the image we are about to download
-        self.execute(True, f"podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox")
+        self.execute(True, f"""podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox \
+                           subdomain.local.localhost:7000/my-busybox""")
 
         self.login(system=auth)
 
@@ -1736,6 +1742,15 @@ PodName={name}
         b.wait_text(".pf-v6-c-menu__item:not([disabled])", IMG_REGISTRY_LATEST)
         if auth:
             b.assert_pixels(".pf-v6-c-modal-box", "image-select", skip_layouts=["rtl"])
+
+        # Test filter with a subdomain.
+        # HACK: podman 3.3.4 returns invalid search results for this registry, the index is shortened to
+        # only "local.localhost:7000", resulting in this invalid search result:
+        # { "Index": "local.localhost:7000", "Name": "subdomain.local.localhost:7000/my-busybox" }
+        if self.machine.image != "ubuntu-2204":
+            b.click('.pf-v6-c-toggle-group__text:contains("local.localhost")')
+            b.set_input_text("#create-image-image input", "my-busybox", blur=False)
+            b.wait_text(".pf-v6-c-menu__item:not([disabled])", "subdomain.local.localhost:7000/my-busybox")
 
         # Local registry
         b.click('button.pf-v6-c-toggle-group__button:contains("localhost:5000")')
