@@ -782,10 +782,10 @@ export class ImageRunModal extends React.Component {
                     return (
                         <ToggleGroupItem
                             text={index} key={index}
-                            isSelected={ this.state.searchByRegistry == index }
+                            isSelected={ this.state.searchByRegistry == registry }
                             onChange={ (ev, _) => {
                                 ev.stopPropagation();
-                                this.setState({ searchByRegistry: index });
+                                this.setState({ searchByRegistry: registry });
                             } }
                             onTouchStart={ ev => ev.stopPropagation() }
                         />
