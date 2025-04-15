@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-02 03:22+0000\n"
+"POT-Creation-Date: 2025-04-13 04:18+0000\n"
 "PO-Revision-Date: 2025-04-02 23:53+0000\n"
 "Last-Translator: Weblate Translation Memory <noreply-mt-weblate-translation-"
 "memory@weblate.org>\n"
@@ -160,7 +160,7 @@ msgstr "Cockpit 專案"
 msgid "Cockpit component for Podman containers"
 msgstr "Podman 容器的 Cockpit 元件"
 
-#: src/ImageDetails.jsx:17 src/ContainerDetails.jsx:42
+#: src/ImageDetails.jsx:17 src/ContainerDetails.jsx:43
 #: src/ImageRunModal.jsx:925 src/ImageRunModal.jsx:1076
 #: src/ContainerHealthLogs.jsx:63 src/ContainerCommitModal.jsx:116
 msgid "Command"
@@ -259,7 +259,7 @@ msgstr "在 pod 中建立容器"
 msgid "Create pod"
 msgstr "建立 pod"
 
-#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:67 src/Images.jsx:189
+#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:79 src/Images.jsx:189
 #: src/PruneUnusedContainersModal.jsx:68 src/ImageHistory.jsx:33
 msgid "Created"
 msgstr "己建立"
@@ -394,7 +394,7 @@ msgstr "範例，您的姓名 <yourname@example.com>"
 msgid "Example: $0"
 msgstr "範例: $0"
 
-#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:16
+#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:17
 msgid "Exited"
 msgstr "已退出"
 
@@ -555,7 +555,7 @@ msgstr "強制停止"
 msgid "GB"
 msgstr "GB"
 
-#: src/ContainerDetails.jsx:55
+#: src/ContainerDetails.jsx:67
 msgid "Gateway"
 msgstr "閘道器"
 
@@ -611,11 +611,11 @@ msgstr "主機通訊埠"
 msgid "Host port help"
 msgstr "主機通訊埠協助"
 
-#: src/ContainerDetails.jsx:33 src/Images.jsx:190
+#: src/ContainerDetails.jsx:34 src/Images.jsx:190
 msgid "ID"
 msgstr "ID"
 
-#: src/PublishPort.jsx:56 src/ContainerDetails.jsx:51
+#: src/PublishPort.jsx:56 src/ContainerDetails.jsx:63
 msgid "IP address"
 msgstr "IP 地址"
 
@@ -652,7 +652,7 @@ msgstr "忽略靜態設定的 IP 位址"
 msgid "Ignore MAC address if set statically"
 msgstr "忽略靜態設定的 MAC 位址"
 
-#: src/ContainerDetails.jsx:37 src/ImageRunModal.jsx:878 src/Images.jsx:187
+#: src/ContainerDetails.jsx:38 src/ImageRunModal.jsx:878 src/Images.jsx:187
 msgid "Image"
 msgstr "映像檔"
 
@@ -746,7 +746,7 @@ msgstr "金鑰不得以數字開頭"
 msgid "Last 5 runs"
 msgstr "最近 5 次的運行過程"
 
-#: src/ContainerDetails.jsx:75
+#: src/ContainerDetails.jsx:87
 msgid "Latest checkpoint"
 msgstr "最新檢查點"
 
@@ -778,7 +778,7 @@ msgstr "本地映像檔"
 msgid "Logs"
 msgstr "記錄檔"
 
-#: src/ContainerDetails.jsx:59
+#: src/ContainerDetails.jsx:71
 msgid "MAC address"
 msgstr "MAC 地址"
 
@@ -1181,7 +1181,7 @@ msgstr "開始輸入尋找映像檔。"
 msgid "Started at"
 msgstr "己啟動於"
 
-#: src/ContainerDetails.jsx:71 src/Containers.jsx:594
+#: src/ContainerDetails.jsx:83 src/Containers.jsx:594
 msgid "State"
 msgstr "狀態"
 
@@ -1269,7 +1269,7 @@ msgstr "無法載入映像檔歷史記錄"
 msgid "Unhealthy"
 msgstr "不健康"
 
-#: src/ContainerDetails.jsx:14
+#: src/ContainerDetails.jsx:15
 msgid "Up since:"
 msgstr "自此上線："
 
@@ -1292,6 +1292,10 @@ msgstr "使用者:"
 #: src/Env.jsx:79
 msgid "Value"
 msgstr "值"
+
+#: src/ContainerDetails.jsx:53
+msgid "View $0"
+msgstr ""
 
 #: src/ImageRunModal.jsx:1054 src/PodCreateModal.jsx:196
 #: src/ContainerIntegration.jsx:154
@@ -1371,6 +1375,12 @@ msgstr "服務"
 #: src/PruneUnusedContainersModal.jsx:34
 msgid "system"
 msgstr "系統"
+
+#: src/ContainerDetails.jsx:49
+#, fuzzy
+#| msgid "service"
+msgid "systemd service"
+msgstr "服務"
 
 #: src/Images.jsx:92 src/Images.jsx:99
 msgid "unused"

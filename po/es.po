@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-02 03:22+0000\n"
-"PO-Revision-Date: 2025-02-07 03:20+0000\n"
-"Last-Translator: N M <nm@users.noreply.translate.fedoraproject.org>\n"
+"POT-Creation-Date: 2025-04-13 04:18+0000\n"
+"PO-Revision-Date: 2025-04-10 17:53+0000\n"
+"Last-Translator: Javier Francisco <fserrador@gmail.com>\n"
 "Language-Team: Spanish <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/es/>\n"
 "Language: es\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1\n"
-"X-Generator: Weblate 5.9.2\n"
+"X-Generator: Weblate 5.10.4\n"
 
 #: src/Images.jsx:96
 msgid "$0 container"
@@ -131,7 +131,7 @@ msgstr "Comprobando estado de salud"
 
 #: src/ContainerCheckpointModal.jsx:50 src/Containers.jsx:210
 msgid "Checkpoint"
-msgstr "Checkpoint"
+msgstr "Punto comprobante"
 
 #: src/ImageRunModal.jsx:844
 msgid "Checkpoint and restore support"
@@ -157,7 +157,7 @@ msgstr "Proyecto Cockpit"
 msgid "Cockpit component for Podman containers"
 msgstr "Componente Cockpit para contenedores Podman"
 
-#: src/ImageDetails.jsx:17 src/ContainerDetails.jsx:42
+#: src/ImageDetails.jsx:17 src/ContainerDetails.jsx:43
 #: src/ImageRunModal.jsx:925 src/ImageRunModal.jsx:1076
 #: src/ContainerHealthLogs.jsx:63 src/ContainerCommitModal.jsx:116
 msgid "Command"
@@ -256,7 +256,7 @@ msgstr "Crear un contenedor en el pod"
 msgid "Create pod"
 msgstr "Crear pod"
 
-#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:67 src/Images.jsx:189
+#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:79 src/Images.jsx:189
 #: src/PruneUnusedContainersModal.jsx:68 src/ImageHistory.jsx:33
 msgid "Created"
 msgstr "Creado"
@@ -316,17 +316,15 @@ msgstr "¿Eliminar pod $0?"
 
 #: src/ImageDeleteModal.jsx:101
 msgid "Delete tagged images"
-msgstr "Borrar imágenes seleccionadas"
+msgstr "Eliminar imágenes etiquetadas"
 
 #: src/PruneUnusedImagesModal.jsx:38
-#, fuzzy
-#| msgid "Get new image"
 msgid "Delete unused images of user $0:"
-msgstr "Obtener nueva imagen"
+msgstr "Elimina imágenes inusuales del usuario $0:"
 
 #: src/PruneUnusedImagesModal.jsx:37
 msgid "Delete unused system images:"
-msgstr "Borrar imágenes del sistema sin usar:"
+msgstr "Eliminar imágenes del sistema sin usar:"
 
 #: src/ContainerDeleteModal.jsx:41
 msgid "Deleting a container will erase all data in it."
@@ -396,7 +394,7 @@ msgstr "Por ejemplo, Tu Nombre <tunombre@ejemplo.es>"
 msgid "Example: $0"
 msgstr "Por ejemplo: $0"
 
-#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:16
+#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:17
 msgid "Exited"
 msgstr "Finalizado"
 
@@ -406,11 +404,11 @@ msgstr "Comprobación de estado de salud fallada"
 
 #: src/ContainerCheckpointModal.jsx:32
 msgid "Failed to checkpoint container $0"
-msgstr "Fallo hacer el checkpoint del contenedor $0"
+msgstr "Falló hacer el checkpoint del contenedor $0"
 
 #: src/ImageRunModal.jsx:258
 msgid "Failed to clean up container"
-msgstr "Fallo al limpiar el contenedor"
+msgstr "Falló al limpiar el contenedor"
 
 #: src/ContainerCommitModal.jsx:85
 msgid "Failed to commit container $0"
@@ -557,7 +555,7 @@ msgstr "Forzar la parada"
 msgid "GB"
 msgstr "GB"
 
-#: src/ContainerDetails.jsx:55
+#: src/ContainerDetails.jsx:67
 msgid "Gateway"
 msgstr "Puerta de enlace"
 
@@ -614,11 +612,11 @@ msgstr "Puerto del anfitrión"
 msgid "Host port help"
 msgstr "Ayuda sobre el puerto del anfitrión"
 
-#: src/ContainerDetails.jsx:33 src/Images.jsx:190
+#: src/ContainerDetails.jsx:34 src/Images.jsx:190
 msgid "ID"
 msgstr "ID"
 
-#: src/PublishPort.jsx:56 src/ContainerDetails.jsx:51
+#: src/PublishPort.jsx:56 src/ContainerDetails.jsx:63
 msgid "IP address"
 msgstr "Dirección IP"
 
@@ -658,7 +656,7 @@ msgstr "Ignorar la dirección IP si se ha configurado de forma estática"
 msgid "Ignore MAC address if set statically"
 msgstr "Ignorar la dirección MAC si se ha configurado de forma estática"
 
-#: src/ContainerDetails.jsx:37 src/ImageRunModal.jsx:878 src/Images.jsx:187
+#: src/ContainerDetails.jsx:38 src/ImageRunModal.jsx:878 src/Images.jsx:187
 msgid "Image"
 msgstr "Imagen"
 
@@ -754,13 +752,13 @@ msgstr "La clave no debe empezar con un digito"
 msgid "Last 5 runs"
 msgstr "Últimas 5 comprobaciones"
 
-#: src/ContainerDetails.jsx:75
+#: src/ContainerDetails.jsx:87
 msgid "Latest checkpoint"
-msgstr "Último checkpoint"
+msgstr "Último punto comprobante"
 
 #: src/ContainerCheckpointModal.jsx:61
 msgid "Leave running after writing checkpoint to disk"
-msgstr "Seguir ejecutando tras escribir el checkpoint en disco"
+msgstr "Seguir ejecutando tras escribir el punto comprobante en disco"
 
 #: src/ContainerIntegration.jsx:134 src/ImageHistory.jsx:59
 msgid "Loading details..."
@@ -786,7 +784,7 @@ msgstr "Imágenes locales"
 msgid "Logs"
 msgstr "Registros"
 
-#: src/ContainerDetails.jsx:59
+#: src/ContainerDetails.jsx:71
 msgid "MAC address"
 msgstr "Dirección MAC"
 
@@ -1195,7 +1193,7 @@ msgstr "Comience a escribir para buscar imágenes."
 msgid "Started at"
 msgstr "Comenzó"
 
-#: src/ContainerDetails.jsx:71 src/Containers.jsx:594
+#: src/ContainerDetails.jsx:83 src/Containers.jsx:594
 msgid "State"
 msgstr "Estado"
 
@@ -1289,7 +1287,7 @@ msgstr "No se pudo cargar el historial de imágenes"
 msgid "Unhealthy"
 msgstr "Mal estado de salud"
 
-#: src/ContainerDetails.jsx:14
+#: src/ContainerDetails.jsx:15
 msgid "Up since:"
 msgstr "Levantado desde:"
 
@@ -1312,6 +1310,10 @@ msgstr "Usuario:"
 #: src/Env.jsx:79
 msgid "Value"
 msgstr "Valor"
+
+#: src/ContainerDetails.jsx:53
+msgid "View $0"
+msgstr ""
 
 #: src/ImageRunModal.jsx:1054 src/PodCreateModal.jsx:196
 #: src/ContainerIntegration.jsx:154
@@ -1393,6 +1395,10 @@ msgstr ""
 #: src/PruneUnusedContainersModal.jsx:34
 msgid "system"
 msgstr "sistema"
+
+#: src/ContainerDetails.jsx:49
+msgid "systemd service"
+msgstr ""
 
 #: src/Images.jsx:92 src/Images.jsx:99
 msgid "unused"

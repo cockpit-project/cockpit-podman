@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-02 03:22+0000\n"
-"PO-Revision-Date: 2025-03-28 10:49+0000\n"
+"POT-Creation-Date: 2025-04-13 04:18+0000\n"
+"PO-Revision-Date: 2025-04-12 09:53+0000\n"
 "Last-Translator: 김인수 <simmon@nplob.com>\n"
 "Language-Team: Korean <https://translate.fedoraproject.org/projects/cockpit-"
 "podman/main/ko/>\n"
@@ -153,7 +153,7 @@ msgstr "Cockpit 프로젝트"
 msgid "Cockpit component for Podman containers"
 msgstr "포드맨 컨테이너를 위한 cockpit 구성요소"
 
-#: src/ImageDetails.jsx:17 src/ContainerDetails.jsx:42
+#: src/ImageDetails.jsx:17 src/ContainerDetails.jsx:43
 #: src/ImageRunModal.jsx:925 src/ImageRunModal.jsx:1076
 #: src/ContainerHealthLogs.jsx:63 src/ContainerCommitModal.jsx:116
 msgid "Command"
@@ -252,7 +252,7 @@ msgstr "포드에서 컨테이너 생성"
 msgid "Create pod"
 msgstr "포드 생성"
 
-#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:67 src/Images.jsx:189
+#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:79 src/Images.jsx:189
 #: src/PruneUnusedContainersModal.jsx:68 src/ImageHistory.jsx:33
 msgid "Created"
 msgstr "생성일"
@@ -388,7 +388,7 @@ msgstr "예제, 당신의 이름 <yourname@example.com>"
 msgid "Example: $0"
 msgstr "예제: $0"
 
-#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:16
+#: src/util.js:24 src/util.js:27 src/ContainerDetails.jsx:17
 msgid "Exited"
 msgstr "종료됨"
 
@@ -549,7 +549,7 @@ msgstr "강제 멈춤"
 msgid "GB"
 msgstr "GB"
 
-#: src/ContainerDetails.jsx:55
+#: src/ContainerDetails.jsx:67
 msgid "Gateway"
 msgstr "게이트웨이"
 
@@ -605,11 +605,11 @@ msgstr "호스트 포트"
 msgid "Host port help"
 msgstr "호스트 포트 도움말"
 
-#: src/ContainerDetails.jsx:33 src/Images.jsx:190
+#: src/ContainerDetails.jsx:34 src/Images.jsx:190
 msgid "ID"
 msgstr "ID"
 
-#: src/PublishPort.jsx:56 src/ContainerDetails.jsx:51
+#: src/PublishPort.jsx:56 src/ContainerDetails.jsx:63
 msgid "IP address"
 msgstr "IP 주소"
 
@@ -649,7 +649,7 @@ msgstr "정적인 상태라면 IP 주소 무시"
 msgid "Ignore MAC address if set statically"
 msgstr "정적인 상태라면 맥 주소 무시"
 
-#: src/ContainerDetails.jsx:37 src/ImageRunModal.jsx:878 src/Images.jsx:187
+#: src/ContainerDetails.jsx:38 src/ImageRunModal.jsx:878 src/Images.jsx:187
 msgid "Image"
 msgstr "이미지"
 
@@ -744,7 +744,7 @@ msgstr "키는 숫자로 시작하면 안됩니다"
 msgid "Last 5 runs"
 msgstr "최근 5회 실행"
 
-#: src/ContainerDetails.jsx:75
+#: src/ContainerDetails.jsx:87
 msgid "Latest checkpoint"
 msgstr "최신 점검점"
 
@@ -776,7 +776,7 @@ msgstr "로컬 이미지"
 msgid "Logs"
 msgstr "기록"
 
-#: src/ContainerDetails.jsx:59
+#: src/ContainerDetails.jsx:71
 msgid "MAC address"
 msgstr "맥(mac) 주소"
 
@@ -1181,7 +1181,7 @@ msgstr "이미지를 찾으려면 입력을 시작하세요."
 msgid "Started at"
 msgstr "시작 시간"
 
-#: src/ContainerDetails.jsx:71 src/Containers.jsx:594
+#: src/ContainerDetails.jsx:83 src/Containers.jsx:594
 msgid "State"
 msgstr "상태"
 
@@ -1271,7 +1271,7 @@ msgstr "이미지 기록을 적재 할 수 없음"
 msgid "Unhealthy"
 msgstr "상태나쁨"
 
-#: src/ContainerDetails.jsx:14
+#: src/ContainerDetails.jsx:15
 msgid "Up since:"
 msgstr "이후부터:"
 
@@ -1294,6 +1294,10 @@ msgstr "사용자:"
 #: src/Env.jsx:79
 msgid "Value"
 msgstr "값"
+
+#: src/ContainerDetails.jsx:53
+msgid "View $0"
+msgstr "$0 보기"
 
 #: src/ImageRunModal.jsx:1054 src/PodCreateModal.jsx:196
 #: src/ContainerIntegration.jsx:154
@@ -1373,6 +1377,10 @@ msgstr "서비스"
 #: src/PruneUnusedContainersModal.jsx:34
 msgid "system"
 msgstr "systemd"
+
+#: src/ContainerDetails.jsx:49
+msgid "systemd service"
+msgstr "systemd 서비스"
 
 #: src/Images.jsx:92 src/Images.jsx:99
 msgid "unused"
