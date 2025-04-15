@@ -16,6 +16,10 @@ module = [
     "testvm",
 ]
 
+[tool.pyright]
+strict = ["**"]
+extraPaths = ["test/common", "bots"]
+
 [tool.ruff]
 exclude = [
     ".git/",
