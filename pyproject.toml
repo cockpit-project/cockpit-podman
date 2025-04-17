@@ -2,6 +2,14 @@
 follow_imports = 'silent'  # https://github.com/python-lsp/pylsp-mypy/issues/81
 scripts_are_modules = true  # allow checking all scripts in one invocation
 explicit_package_bases = true
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+strict_equality = true
 mypy_path = 'test/common:bots'
 exclude = [
     "bots"
@@ -56,7 +64,6 @@ select = [
     "YTT",     # flake8-2020
 ]
 ignore = [
-    "FBT002", # Boolean default value in function definition
     "FBT003", # Boolean positional value in function call
 ]
 
