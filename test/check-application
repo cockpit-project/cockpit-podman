@@ -153,8 +153,8 @@ class TestApplication(testlib.MachineCase):
         self.has_cgroupsV2 = not m.image.startswith('rhel-8')
         self.supports_quadlet = m.image not in ["debian-stable", "ubuntu-2204"]
 
-        self.system_images_count = int(self.execute(True, "podman images -n | wc -l").strip())
-        self.user_images_count = int(self.execute(False, "podman images -n | wc -l").strip())
+        self.system_images_count = int(self.execute("podman images -n | wc -l", system=True).strip())
+        self.user_images_count = int(self.execute("podman images -n | wc -l", system=False).strip())
 
         # allow console.error
         self.allow_browser_errors(
@@ -167,19 +167,20 @@ class TestApplication(testlib.MachineCase):
             # dump container logs for debugging
             for auth in [False, True]:
                 print(f"----- {'system' if auth else 'user'} containers -----", file=sys.stderr)
-                self.execute(auth, "podman ps -a >&2")
-                self.execute(auth, 'for c in $(podman ps -aq); do echo "---- $c ----" >&2; podman logs $c >&2; done')
+                self.execute("podman ps -a >&2", system=auth)
+                self.execute('for c in $(podman ps -aq); do echo "---- $c ----" >&2; podman logs $c >&2; done',
+                             system=auth)
 
         super().tearDown()
 
     def podman_version(self) -> tuple[int, ...]:
-        version = self.execute(False, "podman -v").strip().split(' ')[-1]
+        version = self.execute("podman -v", system=False).strip().split(' ')[-1]
         # HACK: handle possible rc versions such as 4.4.0-rc2
         return tuple(int(v.split('-')[0]) for v in version.split('.')[:3])
 
-    def getRestartPolicy(self, container_name: str, *, auth: bool):
+    def getRestartPolicy(self, container_name: str, *, auth: bool) -> str:
         cmd = f"podman inspect --format '{{{{.HostConfig.RestartPolicy}}}}' {container_name}"
-        return self.execute(auth, cmd).strip()
+        return self.execute(cmd, system=auth).strip()
 
     def waitNumImages(self, expected: int) -> None:
         self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected)
@@ -208,7 +209,7 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}] {selector}")
 
-    def execute(self, system, cmd):
+    def execute(self, cmd: str, *, system: bool) -> str:
         if system:
             return self.machine.execute(cmd)
         else:
@@ -254,7 +255,7 @@ class TestApplication(testlib.MachineCase):
 
     def getStartTime(self, container: str, *, auth: bool) -> str:
         # don't format the raw time strings from the API, force json format
-        out = self.execute(auth, "podman inspect --format '{{json .State.StartedAt}}' " + container)
+        out = self.execute("podman inspect --format '{{json .State.StartedAt}}' " + container, system=auth)
         return out.strip().replace('"', '')
 
     def waitRestart(self, container: str, old_start: str, *, auth: bool) -> str:
@@ -270,16 +271,16 @@ class TestApplication(testlib.MachineCase):
     def setupRegistry(self) -> None:
         m = self.machine
 
-        self.execute(True, f"""
+        self.execute(f"""
             podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}
             podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 {IMG_REGISTRY}
             podman run -d -p 7000:5000 --name registry_subdomain --stop-timeout 0 {IMG_REGISTRY}
             echo "127.0.0.1 subdomain.local.localhost" >> /etc/hosts
-        """)
+        """, system=True)
 
         # Add local insecure registry into registries conf
         m.write("/etc/containers/registries.conf", REGISTRIES_CONF)
-        self.execute(True, "systemctl stop podman.service")
+        self.execute("systemctl stop podman.service", system=True)
 
     def createQuadlet(self, name: str, podName: str | None = None, *, auth: bool = False) -> None:
         pod_option = f'Pod={podName}.pod' if podName else ''
@@ -303,10 +304,10 @@ WantedBy=multi-user.target default.target
             service_file = f"/home/admin/.config/containers/systemd/{name}.container"
 
         systemctl_cmd = "systemctl" if auth else "systemctl --user"
-        self.addCleanup(self.execute, auth, f"{systemctl_cmd} daemon-reload")
+        self.addCleanup(self.execute, f"{systemctl_cmd} daemon-reload", system=auth)
         self.write_file(service_file, quadlet)
-        self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}.service")
-        self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service")
+        self.addCleanup(self.execute, f"{systemctl_cmd} stop {name}.service", system=auth)
+        self.execute(f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service", system=auth)
 
     def createQuadletPod(self, name: str, *, auth: bool = False) -> None:
         quadlet = f"""
@@ -318,11 +319,11 @@ PodName={name}
             service_file = f"/home/admin/.config/containers/systemd/{name}.pod"
 
         systemctl_cmd = "systemctl" if auth else "systemctl --user"
-        self.addCleanup(self.execute, auth, f"{systemctl_cmd} daemon-reload")
+        self.addCleanup(self.execute, f"{systemctl_cmd} daemon-reload", system=auth)
         self.write_file(service_file, quadlet)
-        self.addCleanup(self.execute, auth, f"{systemctl_cmd} stop {name}-pod.service")
-        self.execute(auth, f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}-pod.service")
-        self.execute(auth, f"until {systemctl_cmd} is-active {name}-pod.service; do sleep 1; done")
+        self.addCleanup(self.execute, f"{systemctl_cmd} stop {name}-pod.service", system=auth)
+        self.execute(f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}-pod.service", system=auth)
+        self.execute(f"until {systemctl_cmd} is-active {name}-pod.service; do sleep 1; done", system=auth)
 
     def testPods(self) -> None:
         b = self.browser
@@ -451,8 +452,8 @@ PodName={name}
         # Test dropping and gaining privileges
         b.set_val("#containers-containers-owner", "all")
         self.filter_containers("all")
-        self.execute(False, "podman pod create --infra=false --name pod_user")
-        self.execute(True, "podman pod create --infra=false --name pod_system")
+        self.execute("podman pod create --infra=false --name pod_user", system=False)
+        self.execute("podman pod create --infra=false --name pod_system", system=True)
 
         checkImage(b, IMG_REGISTRY, "system")
         checkImage(b, IMG_REGISTRY, "admin")
@@ -624,11 +625,11 @@ PodName={name}
         mkdir $D
         printf 'FROM scratch\\nCOPY test.txt /\\nCMD ["/run.sh"]\\nCOPY test.txt /test2.txt\\n' > $D/Containerfile
         echo hello > $D/test.txt""")
-        self.execute(auth, f"podman build -t {IMG_HELLO_LATEST} {self.vm_tmpdir}/hello")
+        self.execute(f"podman build -t {IMG_HELLO_LATEST} {self.vm_tmpdir}/hello", system=auth)
 
         # prepare image ids - much easier to pick a specific container
         images = {}
-        for image in self.execute(auth, "podman images --noheading --no-trunc").strip().split("\n"):
+        for image in self.execute("podman images --noheading --no-trunc", system=auth).strip().split("\n"):
             # <name> <tag> sha256:<sha> <other things>
             items = image.split()
             images[f"{items[0]}:{items[1]}"] = items[2].split(":")[-1]
@@ -656,7 +657,7 @@ PodName={name}
         last_row_sel = "#containers-images .pf-v6-c-table__expandable-row.pf-m-expanded tbody:last-of-type"
         b.wait_in_text(f"{last_row_sel} td[data-label=\"Created by\"]", "COPY")
 
-        self.execute(auth, f"podman rmi {IMG_HELLO_LATEST}")
+        self.execute(f"podman rmi {IMG_HELLO_LATEST}", system=auth)
         b.wait_not_present(hello_sel)
 
         # make sure no running containers shown; on CoreOS there's the cockpit/ws container
@@ -668,12 +669,14 @@ PodName={name}
 
         if auth:
             # Run two containers as system (first exits immediately)
-            self.execute(auth, f"podman run -d --name test-sh-system --stop-timeout 0 {IMG_ALPINE} sh")
-            self.execute(auth, f"podman run -d --name swamped-crate-system --stop-timeout 0 {IMG_BUSYBOX} sleep 1000")
+            self.execute(f"podman run -d --name test-sh-system --stop-timeout 0 {IMG_ALPINE} sh", system=auth)
+            self.execute(f"podman run -d --name swamped-crate-system --stop-timeout 0 {IMG_BUSYBOX} sleep 1000",
+                         system=auth)
 
         # Run two containers as admin (first exits immediately)
-        self.execute(False, f"podman run -d --name test-sh-user --stop-timeout 0 {IMG_ALPINE} sh")
-        self.execute(False, f"podman run -d --name swamped-crate-user --stop-timeout 0 {IMG_BUSYBOX} sleep 1000")
+        self.execute(f"podman run -d --name test-sh-user --stop-timeout 0 {IMG_ALPINE} sh", system=False)
+        self.execute(f"podman run -d --name swamped-crate-user --stop-timeout 0 {IMG_BUSYBOX} sleep 1000",
+                     system=False)
 
         # Test owner filtering
         if auth:
@@ -717,11 +720,11 @@ PodName={name}
 
         user_containers = {}
         system_containers = {}
-        for container in self.execute(True, "podman ps --all --no-trunc").strip().split("\n")[1:]:
+        for container in self.execute("podman ps --all --no-trunc", system=True).strip().split("\n")[1:]:
             # <sha> <other things> <name>
             items = container.split()
             system_containers[items[-1]] = items[0]
-        for container in self.execute(False, "podman ps --all --no-trunc").strip().split("\n")[1:]:
+        for container in self.execute("podman ps --all --no-trunc", system=False).strip().split("\n")[1:]:
             # <sha> <other things> <name>
             items = container.split()
             user_containers[items[-1]] = items[0]
@@ -800,10 +803,10 @@ PodName={name}
 
         # delete image busybox that hasn't been used
         # First try to just untag and then remove with more tags
-        self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:1")
-        self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:2")
-        self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:3")
-        self.execute(auth, f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:4")
+        self.execute(f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:1", system=auth)
+        self.execute(f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:2", system=auth)
+        self.execute(f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:3", system=auth)
+        self.execute(f"podman tag {IMG_BUSYBOX} {IMG_BUSYBOX}:4", system=auth)
 
         busybox_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_BUSYBOX_LATEST]}\"]".lower()
         b.click(busybox_sel + " td.pf-v6-c-table__toggle button")
@@ -836,27 +839,29 @@ PodName={name}
         # Check that we correctly show networking information
         # Rootless don't have this info
         if auth:
-            self.execute(auth, f"podman run -dt --name net_check --stop-timeout 0 {IMG_ALPINE}")
+            self.execute(f"podman run -dt --name net_check --stop-timeout 0 {IMG_ALPINE}", system=auth)
             self.toggleExpandedContainer("net_check")
             b.wait_in_text(".pf-m-expanded .container-details-networking",
-                           self.execute(auth, """
-                           podman inspect --format '{{.NetworkSettings.Gateway}}' net_check""").strip())
+                           self.execute("""
+                           podman inspect --format '{{.NetworkSettings.Gateway}}' net_check""", system=auth).strip())
             b.wait_in_text(".pf-m-expanded .container-details-networking",
-                           self.execute(auth, """
-                           podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check""").strip())
+                           self.execute("""
+                           podman inspect --format '{{.NetworkSettings.IPAddress}}' net_check""",
+                                        system=auth).strip())
             b.wait_in_text(".pf-m-expanded .container-details-networking",
-                           self.execute(auth, """
-                           podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check""").strip())
-            self.execute(auth, "podman stop net_check")
-            b.wait(lambda: self.execute(True, "podman ps --all | grep -e net_check -e Exited"))
+                           self.execute("""
+                           podman inspect --format '{{.NetworkSettings.MacAddress}}' net_check""",
+                                        system=auth).strip())
+            self.execute("podman stop net_check", system=auth)
+            b.wait(lambda: self.execute("podman ps --all | grep -e net_check -e Exited", system=auth))
             self.toggleExpandedContainer("net_check")
-            sha = self.execute(auth, "podman inspect --format '{{.Id}}' net_check").strip()
+            sha = self.execute("podman inspect --format '{{.Id}}' net_check", system=auth).strip()
             self.waitContainer(sha, auth=auth, state='Exited')
 
         # delete image alpine that has been used by a container
-        self.execute(auth, f"podman run -d --name test-sh4 --stop-timeout 0 {IMG_ALPINE} sh")
+        self.execute(f"podman run -d --name test-sh4 --stop-timeout 0 {IMG_ALPINE} sh", system=auth)
         # our pixel test expects both containers to be in state "Exited"
-        sha = self.execute(auth, "podman inspect --format '{{.Id}}' test-sh4").strip()
+        sha = self.execute("podman inspect --format '{{.Id}}' test-sh4", system=auth).strip()
         self.waitContainer(sha, auth=auth, name="test-sh4", state='Exited')
         if auth:
             b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl", "mobile"])
@@ -869,15 +874,15 @@ PodName={name}
         b.wait_not_present(alpine_sel)
 
         b.wait_collected_text("#containers-containers .container-name", expected_ws)
-        self.execute(auth, f"podman run -d --name c --stop-timeout 0 {IMG_REGISTRY} sh")
+        self.execute(f"podman run -d --name c --stop-timeout 0 {IMG_REGISTRY} sh", system=auth)
         b.wait_collected_text("#containers-containers .container-name", "c" + expected_ws)
-        self.execute(auth, f"podman run -d --name a --stop-timeout 0 {IMG_REGISTRY} sh")
+        self.execute(f"podman run -d --name a --stop-timeout 0 {IMG_REGISTRY} sh", system=auth)
         b.wait_collected_text("#containers-containers .container-name", "ac" + expected_ws)
 
-        self.execute(False, f"podman run -d --name b --stop-timeout 0 {IMG_REGISTRY} sh")
+        self.execute(f"podman run -d --name b --stop-timeout 0 {IMG_REGISTRY} sh", system=False)
         if auth:
             b.wait_collected_text("#containers-containers .container-name", "abc" + expected_ws)
-            self.execute(False, f"podman run -d --name doremi --stop-timeout 0 {IMG_REGISTRY} sh")
+            self.execute(f"podman run -d --name doremi --stop-timeout 0 {IMG_REGISTRY} sh", system=False)
             b.wait_collected_text("#containers-containers .container-name", "abcdoremi" + expected_ws)
             b.wait(lambda: self.getContainerAttr("doremi", "State") in NOT_RUNNING)
         else:
@@ -885,9 +890,9 @@ PodName={name}
 
         # Test intermediate images
         b.wait_not_present(".listing-action")
-        tmpdir = self.execute(auth, "mktemp -d").strip()
-        self.execute(auth, f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Dockerfile")
-        self.execute(auth, f"podman build {tmpdir}")
+        tmpdir = self.execute("mktemp -d", system=auth).strip()
+        self.execute(f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Dockerfile", system=auth)
+        self.execute(f"podman build {tmpdir}", system=auth)
 
         b.wait_not_in_text("#containers-images", "<none>:<none>")
         b.click(".listing-action button:contains('Show intermediate images')")
@@ -914,10 +919,10 @@ PodName={name}
         b.wait_not_present(intermediate_image_sel)
 
         # Create intermediate image and use it in a container
-        tmpdir = self.execute(auth, "mktemp -d").strip()
-        self.execute(auth, f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Dockerfile")
+        tmpdir = self.execute("mktemp -d", system=auth).strip()
+        self.execute(f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Dockerfile", system=auth)
         IMG_INTERMEDIATE = 'localhost/test-intermediate'
-        self.execute(auth, f"podman build -t {IMG_INTERMEDIATE} {tmpdir}")
+        self.execute(f"podman build -t {IMG_INTERMEDIATE} {tmpdir}", system=auth)
         b.click(f'#containers-images tbody tr:contains("{IMG_INTERMEDIATE}") .ct-container-create')
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
         b.click("#create-image-create-btn")
@@ -929,7 +934,7 @@ PodName={name}
         b.click(".pf-m-expanded button:contains('Integration')")
 
         # Delete intermediate image which is in use
-        self.execute(auth, f"podman untag {IMG_INTERMEDIATE}")
+        self.execute(f"podman untag {IMG_INTERMEDIATE}", system=auth)
         clickDeleteImage(intermediate_image_sel)
         self.confirm_modal("Delete")
         self.confirm_modal("Force delete")
@@ -938,10 +943,10 @@ PodName={name}
 
         # Image without a Command, shows no Command. This is common for podman quadlets
         IMG_ENTRYPOINT = "localhost/test-entrypoint"
-        tmpdir = self.execute(auth, "mktemp -d").strip()
-        self.addCleanup(self.execute, auth, f"rm -r {tmpdir}")
-        self.execute(auth, f"echo 'FROM {IMG_REGISTRY}\nENTRYPOINT /entrypoint' > {tmpdir}/Dockerfile")
-        self.execute(auth, f"podman build -t {IMG_ENTRYPOINT} {tmpdir}")
+        tmpdir = self.execute("mktemp -d", system=auth).strip()
+        self.addCleanup(self.execute, f"rm -r {tmpdir}", system=auth)
+        self.execute(f"echo 'FROM {IMG_REGISTRY}\nENTRYPOINT /entrypoint' > {tmpdir}/Dockerfile", system=auth)
+        self.execute(f"podman build -t {IMG_ENTRYPOINT} {tmpdir}", system=auth)
 
         b.click(f"#containers-images tr:contains('{IMG_ENTRYPOINT}') td.pf-v6-c-table__toggle button")
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", "/bin/sh -c /entrypoint")
@@ -960,7 +965,7 @@ PodName={name}
         b.wait_in_text("#containers-containers tbody tr:contains('no-cmd')", IMG_ENTRYPOINT)
         b.wait_not_in_text("#containers-containers tbody tr:contains('no-cmd')", "Command")
 
-        sha = self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {IMG_ENTRYPOINT}").strip()
+        sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {IMG_ENTRYPOINT}", system=auth).strip()
         entrypoint_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{sha}\"]".lower()
         clickDeleteImage(entrypoint_sel)
         self.confirm_modal("Delete")
@@ -980,7 +985,7 @@ PodName={name}
         self.login(system=auth)
 
         # run a container (will exit immediately) and test the display of commit modal
-        self.execute(auth, f"podman run -d --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'")
+        self.execute(f"podman run -d --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'", system=auth)
 
         self.filter_containers("all")
         self.waitContainerRow("test-sh0")
@@ -1039,9 +1044,9 @@ PodName={name}
             b.wait_in_text("#containers-images", f"{expected} images")
 
         waitImageCount(self.user_images_count + 1)
-        image_id = self.execute(auth, "podman images --sort created --format '{{.Id}}' | head -n 1").strip()
-        manifest_type = self.execute(auth, "podman inspect --format '{{.ManifestType}}' " + image_id).strip()
-        cmd = self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' " + image_id).strip()
+        image_id = self.execute("podman images --sort created --format '{{.Id}}' | head -n 1", system=auth).strip()
+        manifest_type = self.execute("podman inspect --format '{{.ManifestType}}' " + image_id, system=auth).strip()
+        cmd = self.execute("podman inspect --format '{{.Config.Cmd}}' " + image_id, system=auth).strip()
         self.assertIn("docker.distribution.manifest", manifest_type)
         self.assertEqual("[sh -c ls -a]", cmd)
 
@@ -1059,21 +1064,21 @@ PodName={name}
         self.confirm_modal("Commit")
 
         waitImageCount(self.user_images_count + 2)
-        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Author}}' newname:24").strip(), "MM")
-        self.assertEqual(self.execute(auth, "podman inspect --format '{{.Config.Cmd}}' newname:24").strip(),
+        self.assertEqual(self.execute("podman inspect --format '{{.Author}}' newname:24", system=auth).strip(), "MM")
+        self.assertEqual(self.execute("podman inspect --format '{{.Config.Cmd}}' newname:24", system=auth).strip(),
                          "[sh -c ps]")
         self.assertIn("vnd.oci.image.manifest",
-                      self.execute(auth, "podman inspect --format '{{.ManifestType}}' newname:24").strip())
+                      self.execute("podman inspect --format '{{.ManifestType}}' newname:24", system=auth).strip())
 
         # Test commit of running container
-        self.execute(auth, f"podman run -d --name test-sh2 --stop-timeout 0 {IMG_BUSYBOX} sleep 1000")
+        self.execute(f"podman run -d --name test-sh2 --stop-timeout 0 {IMG_BUSYBOX} sleep 1000", system=auth)
         self.performContainerAction("test-sh2", "Commit")
         b.wait_visible(".pf-v6-c-modal-box")
         b.set_input_text("#commit-dialog-image-name", "newname")
         self.confirm_modal("Commit")
         waitImageCount(self.user_images_count + 3)
-        self.assertEqual(self.execute(auth,
-                                      "podman inspect --format '{{.Config.Cmd}}' newname:latest").strip(),
+        self.assertEqual(self.execute("podman inspect --format '{{.Config.Cmd}}' newname:latest",
+                                      system=auth).strip(),
                          "[sleep 1000]")
 
         # Test commit of running container with pause (also conflicting name through :latest)
@@ -1094,13 +1099,14 @@ PodName={name}
         def prepare() -> None:
             self.setupRegistry()
             # Push busybox image to the local registries
-            self.execute(True,
-                         f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
-            self.execute(True,
-                         f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox")
+            self.execute(f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox",
+                         system=True)
+            self.execute(f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox",
+                         system=True)
             # Untag busybox image which duplicates the image we are about to download
-            self.execute(True, f"podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox")
-            self.execute(False, f"podman rmi -f {IMG_BUSYBOX}")
+            self.execute(f"podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox",
+                         system=True)
+            self.execute(f"podman rmi -f {IMG_BUSYBOX}", system=False)
 
         class DownloadImageDialog():
             def __init__(self, test_obj: TestApplication, imageName: str,
@@ -1165,8 +1171,8 @@ PodName={name}
 
                 # Find out this image ID
                 container_name = f"localhost:5000/{self.imageName}:{self.imageTag or 'latest'}"
-                self.imageSha = execute(self.user == "system",
-                                        f"podman inspect --format '{{{{.Id}}}}' {container_name}").strip()
+                self.imageSha = execute(f"podman inspect --format '{{{{.Id}}}}' {container_name}",
+                                        system=self.user == "system").strip()
 
                 return self
 
@@ -1244,9 +1250,9 @@ PodName={name}
             .expectDownloadSuccess()
         # test recognition/deletion of multiple image tags
         second_tag = "localhost/copybox:latest"
-        self.execute(False, f"podman tag localhost:5000/my-busybox {second_tag}")
+        self.execute(f"podman tag localhost:5000/my-busybox {second_tag}", system=False)
         tag_cmd = "podman inspect --format '{{json .RepoTags }}' localhost:5000/my-busybox"
-        repo_tags = json.loads(self.execute(False, tag_cmd))
+        repo_tags = json.loads(self.execute(tag_cmd, system=False))
         b.click(f"#containers-images tr:contains('{repo_tags[0]}') td.pf-v6-c-table__toggle button")
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", second_tag)
         dialog1.deleteImage(force=True, another=second_tag)
@@ -1285,7 +1291,7 @@ PodName={name}
                 printf 'FROM scratch\\nCOPY test.img /\\n' > $D/Containerfile
                 echo $D
             """).strip()
-            self.execute(auth, f"podman build -t {image_name} {temp_dir}")
+            self.execute(f"podman build -t {image_name} {temp_dir}", system=auth)
 
         def getImageSize(image_name: str) -> float:
             return float(b.text(f"tr:contains('{image_name}') td[data-label='Disk space']").replace(' MB', ''))
@@ -1294,11 +1300,11 @@ PodName={name}
 
         # build update and push it
         buildImage(image1, 50, auth=True)
-        self.execute(True, f"podman push {image1}; podman rmi {image1}")
+        self.execute(f"podman push {image1}; podman rmi {image1}", system=True)
 
         # build image which we try to pull
         buildImage(image1, 1, auth=True)
-        image1_sha = self.execute(True, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
+        image1_sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {image1}", system=True).strip()
 
         self.login()
 
@@ -1314,7 +1320,7 @@ PodName={name}
         # new one 50MB.
         b.wait(lambda: getImageSize(image1) > 40)
 
-        image1_update_sha = self.execute(True, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
+        image1_update_sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {image1}", system=True).strip()
         self.assertNotEqual(image1_sha, image1_update_sha)
         b.wait_visible(f"#containers-images tbody tr[data-row-id=\"0-{image1_update_sha}\"]".lower())
 
@@ -1327,25 +1333,25 @@ PodName={name}
 
         # build update and push it
         buildImage(image1, 25, auth=False)
-        self.execute(False, f"podman push {image1}; podman rmi {image1}")
+        self.execute(f"podman push {image1}; podman rmi {image1}", system=False)
 
         # build image which we try to pull
         buildImage(image1, 1, auth=False)
-        image1_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {image1}").strip()
+        image1_sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {image1}", system=False).strip()
 
         image2 = "localhost:5000/test-image:2"
 
         # build update and push it
         buildImage(image2, 50, auth=False)
-        self.execute(False, f"podman push {image2}; podman rmi {image2}")
+        self.execute(f"podman push {image2}; podman rmi {image2}", system=False)
 
         # build image which we try to pull
         buildImage(image2, 10, auth=False)
-        image2_sha = self.execute(False, f"podman inspect --format '{{{{.Id}}}}' {image2}").strip()
+        image2_sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {image2}", system=False).strip()
 
         # Ubuntu has an old podman which ships with a k8s image
         if m.image == "ubuntu-2204":
-            self.execute(False, "podman rmi k8s.gcr.io/pause:3.5")
+            self.execute("podman rmi k8s.gcr.io/pause:3.5", system=False)
             self.user_images_count -= 1
             b.wait_not_in_text("#containers-images", "pause")
 
@@ -1388,13 +1394,13 @@ PodName={name}
         self.filter_containers('all')
 
         # run a container
-        self.execute(auth, f"""
+        self.execute(f"""
                 podman run -d --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh -c 'echo 123; sleep infinity';
-                podman stop swamped-crate""")
-        b.wait(lambda: self.execute(auth, "podman ps --all | grep -e swamped-crate -e Exited"))
+                podman stop swamped-crate""", system=auth)
+        b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=auth))
 
         b.wait_visible("#containers-containers")
-        container_sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
+        container_sha = self.execute("podman inspect --format '{{.Id}}' swamped-crate", system=auth).strip()
         self.waitContainer(container_sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX,
                            state='Exited', owner="system" if auth else "admin")
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v6-c-menu-toggle")
@@ -1414,10 +1420,10 @@ PodName={name}
 
         # run another container with explicit memory 400 MiB limit, with a process that uses 300 MB memory
         self.execute(
-            auth,
             f"podman run -d --name picket-fence --memory 400m --stop-timeout 0 {IMG_ALPINE} "
-            """awk 'BEGIN { y = sprintf("%300000000s",""); system("sleep infinity") }'""")
-        picket_fence_sha = self.execute(auth, "podman inspect --format '{{.Id}}' picket-fence").strip()
+            """awk 'BEGIN { y = sprintf("%300000000s",""); system("sleep infinity") }'""",
+            system=auth)
+        picket_fence_sha = self.execute("podman inspect --format '{{.Id}}' picket-fence", system=auth).strip()
         self.waitContainer(picket_fence_sha, auth=auth, name="picket-fence", state="Running")
 
         def get_cpu_usage(sel: str) -> float:
@@ -1448,9 +1454,9 @@ PodName={name}
             self.assertLessEqual(mem_abs, 300.0)
 
             # Test that the CPU value is updated dynamically
-            self.execute(auth, "podman exec -i swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null &'")
+            self.execute("podman exec -i swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null &'", system=auth)
             b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) > cpu)
-            self.execute(auth, "podman exec swamped-crate sh -c 'pkill dd'")
+            self.execute("podman exec swamped-crate sh -c 'pkill dd'", system=auth)
 
             # picket-fence has a memory limit
 
@@ -1524,7 +1530,7 @@ PodName={name}
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
         self.performContainerAction("swamped-crate", "Stop")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
-        sha = self.execute(auth, "podman inspect --format '{{.Id}}' swamped-crate").strip()
+        sha = self.execute("podman inspect --format '{{.Id}}' swamped-crate", system=auth).strip()
         self.waitContainer(sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX, state=NOT_RUNNING)
         self.performContainerAction("swamped-crate", "Start")
         self.waitContainer(sha, auth=auth, state='Running')
@@ -1550,8 +1556,8 @@ PodName={name}
             # On cgroupsv1 systems just check that we get expected error messages
 
             # Run a container
-            self.execute(True, f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh")
-            b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate"))
+            self.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh", system=True)
+            b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate", system=True))
 
             # Checkpoint the container
             self.performContainerAction(IMG_BUSYBOX, "Checkpoint")
@@ -1573,11 +1579,11 @@ PodName={name}
 
         # Run a container
         mac_address = '92:d0:c6:0a:29:38'
-        self.execute(True, f"""
+        self.execute(f"""
             podman run -dit --mac-address {mac_address} --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh;
             podman stop swamped-crate
-        """)
-        b.wait(lambda: self.execute(True, "podman ps --all | grep -e swamped-crate -e Exited"))
+        """, system=True)
+        b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=True))
 
         # Check that the restore option is not present (i.e. start is a regular button)
         b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
@@ -1635,7 +1641,7 @@ PodName={name}
         # A new MAC address should have been generated
         # Fixed in podman 4.4.0 https://github.com/containers/podman/issues/16666
         cmd = "podman inspect --format '{{.NetworkSettings.MacAddress}}' swamped-crate"
-        new_mac_address = self.execute(True, cmd).strip()
+        new_mac_address = self.execute(cmd, system=True).strip()
         if self.podman_version() >= (4, 4, 0):
             self.assertNotEqual(new_mac_address, mac_address)
         else:
@@ -1661,8 +1667,8 @@ PodName={name}
         b = self.browser
 
         try:
-            self.execute(True, "systemctl mask podman.service")
-            self.execute(False, "systemctl --user mask podman.service")
+            self.execute("systemctl mask podman.service", system=True)
+            self.execute("systemctl --user mask podman.service", system=False)
             self.login_and_go("/podman")
 
             # Troubleshoot action
@@ -1674,17 +1680,17 @@ PodName={name}
                 b.wait_in_text("#service-details", "podman.socket")
             b.logout()
         finally:
-            self.execute(True, "systemctl unmask podman.service")
-            self.execute(False, "systemctl --user unmask podman.service")
+            self.execute("systemctl unmask podman.service", system=True)
+            self.execute("systemctl --user unmask podman.service", system=False)
 
         # now let it fail while c-podman is running
         self.login()
         b.wait_in_text("#containers-images", "system")
         b.wait_in_text("#containers-images", "user")
-        self.execute(True, "systemctl stop podman.service")
+        self.execute("systemctl stop podman.service", system=True)
         b.wait_not_in_text("#containers-images", "system")
         b.wait_in_text("#containers-images", "user")
-        self.execute(False, "systemctl --user stop podman.service")
+        self.execute("systemctl --user stop podman.service", system=False)
         b.wait_text("#app .pf-v6-c-empty-state__title", "Podman service failed")
 
     def testCreateContainerSystem(self) -> None:
@@ -1695,23 +1701,25 @@ PodName={name}
 
     def _testCreateContainer(self, *, auth: bool) -> None:
         new_container = 'new-container'
-        self.execute(True, f"podman run -d --name {new_container} --stop-timeout 0 {IMG_BUSYBOX} touch /latest")
-        self.execute(True, f"podman commit {new_container} newimage")
-        new_image_sha = self.execute(True, "podman inspect --format '{{.Id}}' newimage").strip()
+        self.execute(f"podman run -d --name {new_container} --stop-timeout 0 {IMG_BUSYBOX} touch /latest",
+                     system=True)
+        self.execute(f"podman commit {new_container} newimage", system=True)
+        new_image_sha = self.execute("podman inspect --format '{{.Id}}' newimage", system=True).strip()
 
         self.setupRegistry()
 
         # Push busybox image to the local registries
-        self.execute(True,
-                     f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
-        self.execute(True,
-                     f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox")
-        self.execute(True,
-                     f"""podman tag {IMG_BUSYBOX} subdomain.local.localhost:7000/my-busybox;
-                     podman push subdomain.local.localhost:7000/my-busybox""")
+        self.execute(f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox",
+                     system=True)
+        self.execute(f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox",
+                     system=True)
+        self.execute(f"""podman tag {IMG_BUSYBOX} subdomain.local.localhost:7000/my-busybox; \
+                     podman push subdomain.local.localhost:7000/my-busybox""",
+                     system=True)
         # Untag busybox image which duplicates the image we are about to download
-        self.execute(True, f"""podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox \
-                           subdomain.local.localhost:7000/my-busybox""")
+        self.execute(f"""podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox \
+                         subdomain.local.localhost:7000/my-busybox""",
+                     system=True)
 
         self.login(system=auth)
 
@@ -1774,14 +1782,14 @@ PodName={name}
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         sel = " span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
-        self.execute(auth, f"podman exec {container_name} test ! -e /latest")
+        self.execute(f"podman exec {container_name} test ! -e /latest", system=auth)
 
         # Now that we have downloaded an image, verify that selecting download latest image
         # downloads the latest image we now push to the registry. Note this image has a /latest file
         # to differentiate it from the other local image.
-        self.execute(True, f"podman push {new_image_sha} localhost:5000/my-busybox")
-        self.execute(True, f"podman push {new_image_sha} localhost:6000/my-busybox")
-        self.execute(True, f"podman rmi {new_image_sha}")
+        self.execute(f"podman push {new_image_sha} localhost:5000/my-busybox", system=True)
+        self.execute(f"podman push {new_image_sha} localhost:6000/my-busybox", system=True)
+        self.execute(f"podman rmi {new_image_sha}", system=True)
 
         container_name = "busybox-latest"
 
@@ -1806,7 +1814,7 @@ PodName={name}
         sel = " span:not(.downloading)"
         b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
         # Verify that the latest file exists
-        output = self.execute(auth, f"podman exec {container_name} ls -lh /latest").strip()
+        output = self.execute(f"podman exec {container_name} ls -lh /latest", system=auth).strip()
         self.assertNotIn("No such file or directory", output)
 
         # Test creating a container with choosing owner
@@ -1851,7 +1859,7 @@ PodName={name}
 
         # Just drop user images so we can use simpler selectors
         if auth:
-            self.execute(False, "podman rmi --all")
+            self.execute("podman rmi --all", system=False)
 
         self.login(system=auth)
         showImages(b)
@@ -1866,7 +1874,7 @@ PodName={name}
         b.click(f'#containers-images tbody tr:contains("{IMG_ALPINE}") .ct-container-create')
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
         # depending on the precise container, this can be /bin/sh or /bin/ash
-        cmd = self.execute(auth, 'podman image inspect --format "{{.Config.Cmd}}" ' + IMG_ALPINE)
+        cmd = self.execute('podman image inspect --format "{{.Config.Cmd}}" ' + IMG_ALPINE, system=auth)
         cmd = cmd.strip().replace('[', '').replace(']', '')
         b.wait_attr("#run-image-dialog-command", "value", cmd)
         b.click(".btn-cancel")
@@ -2041,20 +2049,21 @@ PodName={name}
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("div.pf-v6-c-modal-box")
         self.waitContainerRow(IMG_BUSYBOX)
-        sha = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
+        sha = self.execute("podman inspect --format '{{.Id}}' busybox-with-tty", system=auth).strip()
         self.waitContainer(sha, auth=auth, name='busybox-with-tty', image=IMG_BUSYBOX,
                            cmd='sh -c "for i in $(seq 20); do sleep 1; echo $i; done; sleep infinity"',
                            state='Running', owner="system" if auth else "admin")
-        hasTTY = self.execute(auth, "podman inspect --format '{{.Config.Tty}}' busybox-with-tty").strip()
+        hasTTY = self.execute("podman inspect --format '{{.Config.Tty}}' busybox-with-tty", system=auth).strip()
         self.assertEqual(hasTTY, 'true')
         # Only works with CGroupsV2
         if auth or self.has_cgroupsV2:
-            memory = self.execute(auth, "podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty").strip()
+            memory = self.execute("podman inspect --format '{{.HostConfig.Memory}}' busybox-with-tty",
+                                  system=auth).strip()
             self.assertEqual(memory, '500000000')
 
         if auth:
-            cpuShares = self.execute(auth,
-                                     "podman inspect --format '{{.HostConfig.CpuShares}}' busybox-with-tty").strip()
+            cpuShares = self.execute("podman inspect --format '{{.HostConfig.CpuShares}}' busybox-with-tty",
+                                     system=auth).strip()
             self.assertEqual(cpuShares, '512')
 
         restartPolicy = self.getRestartPolicy("busybox-with-tty", auth=auth)
@@ -2065,7 +2074,7 @@ PodName={name}
             # format changed in podman 5.1 (https://github.com/containers/podman/pull/22322)
             self.assertIn(restartPolicy, ['{ 0}', '{no 0}'])
 
-        b.wait(lambda: "3" in self.execute(auth, "podman logs busybox-with-tty"))
+        b.wait(lambda: "3" in self.execute("podman logs busybox-with-tty", system=auth))
 
         self.toggleExpandedContainer(IMG_BUSYBOX)
         if auth:
@@ -2094,7 +2103,7 @@ PodName={name}
         b.wait_not_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Ports") + dd',
                            '7001/tcp')
 
-        ports = self.execute(auth, "podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty")
+        ports = self.execute("podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty", system=auth)
         self.assertRegex(ports, r'5000/tcp:\[{(0.0.0.0)? 6000}\]')
         self.assertRegex(ports, r'400[0-3]?/tcp:\[{(0.0.0.0)? 400[0-3]?}\]')
         self.assertIn('5001/udp:[{127.0.0.1 6001}]', ports)
@@ -2123,7 +2132,7 @@ PodName={name}
         b.wait_in_text(env_select, 'HOME=/root')
         b.wait_in_text(env_select, 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
 
-        env = self.execute(auth, "podman exec busybox-with-tty env")
+        env = self.execute("podman exec busybox-with-tty env", system=auth)
         self.assertIn('APPLE=ORANGE', env)
         self.assertIn('PEAR=BANANA', env)
         self.assertIn('RHUBARB=STRAWBERRY', env)
@@ -2140,10 +2149,10 @@ PodName={name}
         b.wait_in_text(vol_select, f"{rodir} \u2192 /tmp/ro")
         b.wait_in_text(vol_select, f"{rwdir} \u2194 /tmp/rw")
 
-        romnt = self.execute(auth, "podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro")
+        romnt = self.execute("podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/ro", system=auth)
         self.assertIn('ro', romnt)
         self.assertIn(rodir[4:], romnt)
-        rwmnt = self.execute(auth, "podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/rw")
+        rwmnt = self.execute("podman exec busybox-with-tty cat /proc/self/mountinfo | grep /tmp/rw", system=auth)
         self.assertIn('rw', rwmnt)
         self.assertIn(rwdir[4:], rwmnt)
 
@@ -2205,9 +2214,9 @@ PodName={name}
 
         # Rootless only works with CGroupsV2
         if auth or self.has_cgroupsV2:
-            cpuShares = self.execute(auth, """
+            cpuShares = self.execute("""
                 podman inspect --format '{{.HostConfig.CpuShares}}' busybox-without-publish
-            """).strip()
+            """, system=auth).strip()
             # podman ≥ 1.8 translates 0 default into actual value
             self.assertIn(cpuShares, ['0', '1024'])
 
@@ -2248,7 +2257,7 @@ PodName={name}
         b.wait_js_cond('window.location.hash === "#/"')
 
         self.filter_containers("running")
-        id_with_tty = self.execute(auth, "podman inspect --format '{{.Id}}' busybox-with-tty").strip()
+        id_with_tty = self.execute("podman inspect --format '{{.Id}}' busybox-with-tty", system=auth).strip()
 
         container_sel = f'#containers-images tbody tr:contains("{IMG_BUSYBOX}")'
         b.click(f'{container_sel} td.pf-v6-c-table__toggle button')
@@ -2274,7 +2283,7 @@ PodName={name}
         b.click('.pf-v6-c-modal-box__footer #create-image-create-btn')
         b.wait_not_present("div.pf-v6-c-modal-box")
 
-        sha = self.execute(auth, "podman inspect --format '{{.Id}}' " + container_name).strip()
+        sha = self.execute("podman inspect --format '{{.Id}}' " + container_name, system=auth).strip()
         self.waitContainer(sha, auth=auth, name=container_name, image=IMG_BUSYBOX, state=['Configured', 'Created'])
 
         self.filter_containers("running")
@@ -2299,8 +2308,8 @@ PodName={name}
             # Ubuntu 22.04 has old podman that does not know about --time
             if m.image != 'ubuntu-2204':
                 # Remove all containers first as it is not possible to set --time 0 to rmi command
-                self.execute(auth, "podman rm --all --force --time 0")
-            self.execute(auth, "podman rmi -af")
+                self.execute("podman rm --all --force --time 0", system=auth)
+            self.execute("podman rmi -af", system=auth)
             b.wait_in_text('#containers-containers .pf-v6-c-empty-state', 'No containers')
             b.set_val("#containers-containers-filter", "running")
             b.wait_in_text('#containers-containers .pf-v6-c-empty-state', 'No running containers')
@@ -2319,7 +2328,7 @@ PodName={name}
         b.set_input_text("#run-image-dialog-name", "user1")
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present(".pf-v6-c-modal-box")
-        user1_sha = self.execute(False, "podman inspect --format '{{.Id}}' user1").strip()
+        user1_sha = self.execute("podman inspect --format '{{.Id}}' user1", system=False).strip()
         self.waitContainer(user1_sha, auth=False, owner="admin", state='Running')
 
         b.click(f"#containers-images tr[data-row-id^='0-']:contains({IMG_BUSYBOX_LATEST}) .ct-container-create")
@@ -2327,7 +2336,7 @@ PodName={name}
         b.set_input_text("#run-image-dialog-name", "sys1")
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present(".pf-v6-c-modal-box")
-        sys1_sha = self.execute(True, "podman inspect --format '{{.Id}}' sys1").strip()
+        sys1_sha = self.execute("podman inspect --format '{{.Id}}' sys1", system=True).strip()
         self.waitContainer(sys1_sha, auth=True, owner="system", state='Running')
 
     def check_content(self, kind: str, present: list[str], not_present: list[str]) -> None:
@@ -2403,7 +2412,7 @@ PodName={name}
             leftover_images += 1
 
         # By default we have 3 unused images, start one.
-        self.execute(auth or root, f"podman run -d --name used_image --stop-timeout 0 {IMG_ALPINE} sh")
+        self.execute(f"podman run -d --name used_image --stop-timeout 0 {IMG_ALPINE} sh", system=auth or root)
         b.click("#image-actions-dropdown")
         b.click("#prune-unused-images-button")
 
@@ -2490,20 +2499,20 @@ PodName={name}
         self.login(system=auth)
 
         # Create running and non-running containers
-        self.execute(auth, "podman pod create --name pod")
-        notrunninginpodId = self.execute(auth, f"""
-            podman run --name inpod --pod pod -tid {IMG_BUSYBOX} sh -c 'exit 1'""").strip()
-        runninginpodId = self.execute(auth, f"""
-            podman run --name inpodrunning --pod pod -tid {IMG_BUSYBOX} sh -c 'sleep infinity'""").strip()
+        self.execute("podman pod create --name pod", system=auth)
+        notrunninginpodId = self.execute(f"""
+            podman run --name inpod --pod pod -tid {IMG_BUSYBOX} sh -c 'exit 1'""", system=auth).strip()
+        cmd = f"podman run --name inpodrunning --pod pod -tid {IMG_BUSYBOX} sh -c 'sleep infinity'"
+        runninginpodId = self.execute(cmd, system=auth).strip()
 
-        self.execute(auth, f"podman run --name notrunning -tid {IMG_BUSYBOX} sh -c  'exit 1'")
-        self.execute(auth, f"podman run --name containerrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'")
+        self.execute(f"podman run --name notrunning -tid {IMG_BUSYBOX} sh -c  'exit 1'", system=auth)
+        self.execute(f"podman run --name containerrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'", system=auth)
 
         # Create containers for the opposite of what we are, admin or super admin
         if auth:
-            self.execute(False, f"podman run --name adminnotrunning -tid {IMG_BUSYBOX} sh 'exit 1'")
+            self.execute(f"podman run --name adminnotrunning -tid {IMG_BUSYBOX} sh 'exit 1'", system=False)
             b.wait(lambda: self.getContainerAttr("adminnotrunning", "State") in NOT_RUNNING)
-            self.execute(False, f"podman run --name adminrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'")
+            self.execute(f"podman run --name adminrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'", system=False)
             b.wait(lambda: self.getContainerAttr("adminrunning", "State") == "Running")
 
         b.click("#containers-actions-dropdown")
@@ -2554,7 +2563,7 @@ PodName={name}
         container_name = 'portused'
 
         # Start a podman container which uses a port
-        self.execute(False, f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}")
+        self.execute(f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}", system=False)
         showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
@@ -2634,7 +2643,7 @@ PodName={name}
 
         # Just drop user images so we can use simpler selectors
         if auth:
-            self.execute(False, f"podman rmi {IMG_BUSYBOX}")
+            self.execute(f"podman rmi {IMG_BUSYBOX}", system=False)
 
         self.login(system=auth)
         showImages(b)
@@ -2663,7 +2672,7 @@ PodName={name}
         # Hide container images
         b.click("#containers-images .pf-v6-c-expandable-section__toggle button")
 
-        healthy_sha = self.execute(auth, "podman inspect --format '{{.Id}}' healthy").strip()
+        healthy_sha = self.execute("podman inspect --format '{{.Id}}' healthy", system=auth).strip()
         self.waitContainer(healthy_sha, auth=auth, state='RunningHealthy')
 
         self.toggleExpandedContainer("healthy")
@@ -2679,7 +2688,7 @@ PodName={name}
             b.wait_in_text('#container-details-healthcheck dt:contains("When unhealthy") + dd', 'No action')
 
         # format changed in podman 5.1, adds StartInterval (https://github.com/containers/podman/pull/22334)
-        self.assertIn(self.execute(auth, "podman inspect --format '{{.Config.Healthcheck}}' healthy").strip(),
+        self.assertIn(self.execute("podman inspect --format '{{.Config.Healthcheck}}' healthy", system=auth).strip(),
                       ["{[true] 5s 5m25s 35s 2}", "{[true] 5s 0s 5m25s 35s 2}"])
 
         # single successful health check
@@ -2696,9 +2705,9 @@ PodName={name}
 
         self.toggleExpandedContainer("healthy")
 
-        self.execute(auth, f"podman run --name sick -dt --health-cmd false --health-interval 5s {IMG_BUSYBOX}")
+        self.execute(f"podman run --name sick -dt --health-cmd false --health-interval 5s {IMG_BUSYBOX}", system=auth)
         self.waitContainerRow("sick")
-        unhealthy_sha = self.execute(auth, "podman inspect --format '{{.Id}}' sick").strip()
+        unhealthy_sha = self.execute("podman inspect --format '{{.Id}}' sick", system=auth).strip()
         self.waitContainer(unhealthy_sha, auth=auth, state='RunningUnhealthy')
         # Unhealthy should be first
         expected_ws = ""
@@ -2754,10 +2763,11 @@ PodName={name}
         b.wait_in_text('.pf-m-expanded #container-details-healthcheck dt:contains("When unhealthy") + dd',
                        'Force stop')
         # Removing the file should kill the container
-        status = self.execute(auth, f"podman exec {containername} rm -f /healthy").strip()
+        status = self.execute(f"podman exec {containername} rm -f /healthy", system=auth).strip()
         b.wait(lambda: self.getContainerAttr(containername,
                                              "State", "span:not(.ct-badge-container-unhealthy)") in NOT_RUNNING)
-        status = self.execute(auth, f"podman inspect --format '{{{{.State.Health.Status}}}}' {containername}").strip()
+        status = self.execute(f"podman inspect --format '{{{{.State.Health.Status}}}}' {containername}",
+                              system=auth).strip()
         self.assertEqual(status, "unhealthy")
 
     def testHealthcheckSystem(self) -> None:
@@ -2790,7 +2800,7 @@ PodName={name}
 
         # Drop user images for easy selection
         if auth:
-            self.execute(False, f"podman rmi {IMG_BUSYBOX}")
+            self.execute(f"podman rmi {IMG_BUSYBOX}", system=False)
 
         self.login(system=auth)
         showImages(b)
@@ -2815,10 +2825,11 @@ PodName={name}
         create_container(container_name, 'always')
         self.assertEqual(self.getRestartPolicy(container_name, auth=auth), '{always 0}')
         if auth:
-            podmanRestartEnabled = self.execute(True, "systemctl is-enabled podman-restart.service || true").strip()
+            podmanRestartEnabled = self.execute("systemctl is-enabled podman-restart.service || true",
+                                                system=True).strip()
         else:
-            podmanRestartEnabled = self.execute(False,
-                                                "systemctl --user is-enabled podman-restart.service || true").strip()
+            podmanRestartEnabled = self.execute("systemctl --user is-enabled podman-restart.service || true",
+                                                system=False).strip()
         self.assertEqual(podmanRestartEnabled, 'enabled')
 
     def _testCreateContainerInPod(self, *, auth: bool) -> None:
@@ -2826,7 +2837,7 @@ PodName={name}
 
         container_name = 'containerinpod'
         podname = "pod1"
-        self.execute(auth, f"podman pod create --infra=false --name={podname}")
+        self.execute(f"podman pod create --infra=false --name={podname}", system=auth)
 
         self.login(system=auth)
 
@@ -2855,13 +2866,13 @@ PodName={name}
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("#run-image-dialog-name")
 
-        container_sha = self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name}").strip()
+        container_sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {container_name}", system=auth).strip()
         self.waitContainer(container_sha, auth=auth, name=container_name, image=IMG_BUSYBOX, cmd='sh',
                            state='Running', owner="system" if auth else "admin", pod=podname)
 
         # Check that we correctly preselect owner
         if auth:
-            self.execute(False, "podman pod create --infra=false --name=system_pod")
+            self.execute("podman pod create --infra=false --name=system_pod", system=False)
             b.click("#table-system_pod .create-container-in-pod")
             b.wait_visible("#run-image-dialog-owner-admin:checked")
             b.wait_visible("#run-image-dialog-owner-admin:disabled")
@@ -2886,7 +2897,7 @@ PodName={name}
         b = self.browser
         container_name = "pauseresume"
 
-        self.execute(auth, f"podman run -dt --name {container_name} --stop-timeout 0 {IMG_ALPINE}")
+        self.execute(f"podman run -dt --name {container_name} --stop-timeout 0 {IMG_ALPINE}", system=auth)
         self.login(system=auth)
 
         self.waitContainerRow(container_name)
@@ -2917,7 +2928,7 @@ PodName={name}
         container_name = "rename"
         container_name_new = "rename-new"
 
-        self.execute(auth, f"podman container create -t --name {container_name} {IMG_BUSYBOX}")
+        self.execute(f"podman container create -t --name {container_name} {IMG_BUSYBOX}", system=auth)
         self.login(system=auth)
 
         self.filter_containers('all')
@@ -2938,7 +2949,7 @@ PodName={name}
         b.click('#btn-rename-dialog-container')
         b.wait_not_present("#rename-dialog-container-name")
 
-        self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
+        self.execute(f"podman inspect --format '{{{{.Id}}}}' {container_name_new}", system=auth).strip()
         self.waitContainerRow(container_name_new)
 
         # rename using the enter key
@@ -2955,7 +2966,7 @@ PodName={name}
         b.key("Enter")
         b.wait_not_present("#rename-dialog-container-name")
 
-        self.execute(auth, f"podman inspect --format '{{{{.Id}}}}' {container_name_new}").strip()
+        self.execute(f"podman inspect --format '{{{{.Id}}}}' {container_name_new}", system=auth).strip()
         self.waitContainerRow(container_name_new)
 
         # service containers cannot be renamed
@@ -2973,13 +2984,13 @@ PodName={name}
 
         # Create 31 containers
         for i in range(31):
-            self.execute(True, f"podman run -dt --name container{i} --stop-timeout 0 {IMG_BUSYBOX}")
+            self.execute(f"podman run -dt --name container{i} --stop-timeout 0 {IMG_BUSYBOX}", system=True)
 
         self.waitContainerRow("container30")
 
         # Generic cleanup takes too long and timeouts, so remove these container manually one by one
         for i in range(31):
-            self.execute(True, f"podman rm -f container{i}")
+            self.execute(f"podman rm -f container{i}", system=True)
 
     def testSpecialContainers(self) -> None:
         m = self.machine
@@ -3086,7 +3097,7 @@ PodName={name}
 
         container_name = 'test-pod-1-system' if auth else 'test-pod-1'
         cmd = f"podman run -d --pod {pod_name} --name {container_name} --stop-timeout 0 {IMG_ALPINE} sleep 500"
-        containerId = self.execute(auth, cmd).strip()
+        containerId = self.execute(cmd, system=auth).strip()
         self.waitPodContainer(pod_name,
                               [{"name": container_name, "image": IMG_ALPINE,
                                 "command": "sleep 500", "state": "Running", "id": containerId}],
@@ -3124,8 +3135,8 @@ PodName={name}
         container_name = "logissue"
         self.login()
 
-        self.execute(False,
-                     f"podman run --log-driver=passthrough --name {container_name} -d {IMG_ALPINE} false </dev/null")
+        self.execute(f"podman run --log-driver=passthrough --name {container_name} -d {IMG_ALPINE} false </dev/null",
+                     system=False)
         self.waitContainerRow(container_name)
         self.toggleExpandedContainer(container_name)
         b.click(".pf-m-expanded button:contains('Logs')")
@@ -3157,10 +3168,10 @@ PodName={name}
         # Nginx config simulates behavior of ghcr.io in terms of `podman search` and `podman manifest inspect`
         self.write_file("/etc/nginx/conf.d/default.conf", NGINX_DEFAULT_CONF,
                         post_restore_action="systemctl stop nginx.service; setsebool -P httpd_can_network_connect 0")
-        self.execute(True, """
+        self.execute("""
             setsebool -P httpd_can_network_connect 1
             systemctl start nginx.service
-        """)
+        """, system=True)
 
         container_name = "localhost:80/my-busybox"
         m.execute(f"""
@@ -3237,8 +3248,8 @@ PodName={name}
         # reloading the page reconnects to the podman services; make sure this works reliably
         b = self.browser
 
-        self.execute(True, f"podman run -d --name sys1 --stop-timeout 0 {IMG_BUSYBOX} sleep infinity")
-        self.execute(False, f"podman run -d --name user1 --stop-timeout 0 {IMG_ALPINE} sleep infinity")
+        self.execute(f"podman run -d --name sys1 --stop-timeout 0 {IMG_BUSYBOX} sleep infinity", system=True)
+        self.execute(f"podman run -d --name user1 --stop-timeout 0 {IMG_ALPINE} sleep infinity", system=False)
         self.login()
 
         for _ in range(10):
@@ -3293,7 +3304,7 @@ PodName={name}
             self.createQuadletPod(podName, auth=system)
             self.createQuadlet("zigbee", podName=podName, auth=system)
             self.waitPodRow(podName, present=True)
-            containerId = self.execute(system, "podman inspect --format '{{.Id}}' zigbee").strip()
+            containerId = self.execute("podman inspect --format '{{.Id}}' zigbee", system=system).strip()
             self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
                                   "command": "sleep infinity", "state": "Running", "id": containerId}],
                                   system=system)
@@ -3358,8 +3369,8 @@ PodName={name}
             """)
 
         # add a system and admin user container into the mix
-        self.execute(True, f"podman run -d --name sysc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity")
-        self.execute(False, f"podman run -d --name adminc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity")
+        self.execute(f"podman run -d --name sysc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity", system=True)
+        self.execute(f"podman run -d --name adminc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity", system=False)
 
         self.login_and_go("/podman")
         b.wait_visible("#app")
