@@ -818,9 +818,9 @@ PodName={name}
 
         clickDeleteImage(busybox_sel)
         self.assertTrue(b.get_checked(f".pf-v6-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']"))
-        b.set_checked(f".pf-v6-c-check__input[aria-label='{IMG_BUSYBOX}:1']", True)
-        b.set_checked(f".pf-v6-c-check__input[aria-label='{IMG_BUSYBOX}:3']", True)
-        b.set_checked(f".pf-v6-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']", False)
+        b.set_checked(f".pf-v6-c-check__input[aria-label='{IMG_BUSYBOX}:1']", val=True)
+        b.set_checked(f".pf-v6-c-check__input[aria-label='{IMG_BUSYBOX}:3']", val=True)
+        b.set_checked(f".pf-v6-c-check__input[aria-label='{IMG_BUSYBOX_LATEST}']", val=False)
         self.confirm_modal("Delete")
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX_LATEST}")
         b.wait_in_text(busybox_sel + " + tr", f"{IMG_BUSYBOX}:2")
@@ -1032,7 +1032,7 @@ PodName={name}
         # We prefill command
         b.wait_val("#commit-dialog-command", 'sh -c "ls -a"')
         # Test docker format
-        b.set_checked("#commit-dialog-docker", True)
+        b.set_checked("#commit-dialog-docker", val=True)
         b.click("button:contains(Commit)")
         self.confirm_modal("Force commit")
 
@@ -1087,7 +1087,7 @@ PodName={name}
             self.performContainerAction("test-sh2", "Commit")
             b.wait_visible(".pf-v6-c-modal-box")
             b.set_input_text("#commit-dialog-image-name", "newname")
-            b.set_checked("#commit-dialog-pause", True)
+            b.set_checked("#commit-dialog-pause", val=True)
             b.click("button:contains(Commit)")
             self.confirm_modal("Force commit")
             waitImageCount(self.user_images_count + 4)
@@ -1199,9 +1199,9 @@ PodName={name}
                     b.click("#delete-all")
                     b.wait_visible("#btn-img-delete:disabled")
 
-                    b.set_checked(
-                        f".pf-v6-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']", True)
-                    b.set_checked(f".pf-v6-c-check__input[aria-label='{another}']", True)
+                    b.set_checked(f".pf-v6-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']",
+                                  val=True)
+                    b.set_checked(f".pf-v6-c-check__input[aria-label='{another}']", val=True)
 
                 # Confirm deletion in the delete dialog
                 b.click(".pf-v6-c-modal-box #btn-img-delete")
@@ -1561,8 +1561,8 @@ PodName={name}
 
             # Checkpoint the container
             self.performContainerAction(IMG_BUSYBOX, "Checkpoint")
-            b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', True)
-            b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
+            b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', val=True)
+            b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', val=True)
             b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
             b.wait_not_present('.modal_dialog')
 
@@ -1600,8 +1600,8 @@ PodName={name}
 
         # Checkpoint the container
         self.performContainerAction("swamped-crate", "Checkpoint")
-        b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', True)
-        b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', True)
+        b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', val=True)
+        b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', val=True)
         b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
 
         with b.wait_timeout(300):
@@ -1631,10 +1631,10 @@ PodName={name}
         # Restore the container
         self.waitContainerRow("swamped-crate")
         self.performContainerAction("swamped-crate", "Restore")
-        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-keep', True)
-        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-tcpEstablished', True)
-        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-ignoreStaticIP', True)
-        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-ignoreStaticMAC', True)
+        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-keep', val=True)
+        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-tcpEstablished', val=True)
+        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-ignoreStaticIP', val=True)
+        b.set_checked('.pf-v6-c-modal-box input#restore-dialog-ignoreStaticMAC', val=True)
         b.click('.pf-v6-c-modal-box button:contains(Restore)')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
@@ -1650,7 +1650,7 @@ PodName={name}
         # Checkpoint the container without stopping
         self.waitContainerRow("swamped-crate")
         self.performContainerAction("swamped-crate", "Checkpoint")
-        b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-leaveRunning', True)
+        b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-leaveRunning', val=True)
         b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
 
@@ -1807,7 +1807,7 @@ PodName={name}
         b.click('button.pf-v6-c-menu__item:contains("localhost:5000/my-busybox")')
 
         # Pull the latest image
-        b.set_checked("#run-image-dialog-pull-latest-image", True)
+        b.set_checked("#run-image-dialog-pull-latest-image", val=True)
 
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
@@ -1903,7 +1903,7 @@ PodName={name}
         # Check memory configuration
         # Only works with CGroupsV2
         if auth or self.has_cgroupsV2:
-            b.set_checked("#run-image-dialog-memory-limit-checkbox", True)
+            b.set_checked("#run-image-dialog-memory-limit-checkbox", val=True)
             b.wait_visible("#run-image-dialog-memory-limit-checkbox:checked")
             b.wait_visible('#run-image-dialog-memory-limit input[value="512"]')
             b.set_input_text("#run-image-dialog-memory-limit input[type=number]", "0.5")
@@ -1915,9 +1915,9 @@ PodName={name}
             b.wait_visible("#run-image-dialog-cpu-priority-checkbox:not(:checked)")
             b.mouse('#run-image-cpu-priority button[aria-label="Decrease CPU shares"]', "click")
             b.wait_visible("#run-image-dialog-cpu-priority-checkbox:checked")
-            b.set_checked("#run-image-dialog-cpu-priority-checkbox", False)
+            b.set_checked("#run-image-dialog-cpu-priority-checkbox", val=False)
 
-            b.set_checked("#run-image-dialog-cpu-priority-checkbox", True)
+            b.set_checked("#run-image-dialog-cpu-priority-checkbox", val=True)
             b.wait_visible("#run-image-dialog-cpu-priority-checkbox:checked")
             b.wait_visible('#run-image-dialog-cpu-priority input[value="1024"]')
             b.set_input_text("#run-image-dialog-cpu-priority input[type=number]", "512")
@@ -1925,7 +1925,7 @@ PodName={name}
             b.wait_not_present("#run-image-dialog-cpu-priority-checkbox")
 
         # Enable tty
-        b.set_checked("#run-image-dialog-tty", True)
+        b.set_checked("#run-image-dialog-tty", val=True)
 
         # Set up command line
         b.set_input_text('#run-image-dialog-command',
@@ -2016,7 +2016,7 @@ PodName={name}
         rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
         m.execute(f"chown admin:admin {rodir}")
         m.execute(f"chown admin:admin {rwdir}")
-        b.set_checked("#run-image-dialog-volume-0-mode", False)
+        b.set_checked("#run-image-dialog-volume-0-mode", val=False)
 
         if self.has_selinux:
             b.set_val('#run-image-dialog-volume-0-selinux', "z")
@@ -2201,7 +2201,7 @@ PodName={name}
                          "sh -c 'for i in $(seq 20); do echo $i; sleep 3; done; sleep infinity'")
 
         # Run without tty, console should be able to `exec`
-        b.set_checked("#run-image-dialog-tty", False)
+        b.set_checked("#run-image-dialog-tty", val=False)
 
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("div.pf-v6-c-modal-box")
