@@ -1613,6 +1613,8 @@ PodName={name}
                 attachment = self.label() + "-dump.log"
                 dump_log = m.execute("find /var/lib/containers -name dump.log").strip()
                 m.download(dump_log, attachment, ".")
+                # Dump the dump to the test log, for naughty pattern matching. It's not big.
+                print(open(attachment).read())
                 testlib.attach(attachment, move=True)
                 raise
         else:
