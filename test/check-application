@@ -148,7 +148,7 @@ class TestApplication(testlib.MachineCase):
 
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1008249
         # Fixed in crun 1.20-1
-        self.has_criu = m.image != "debian-stable" and ("ubuntu" not in m.image or m.image == "ubuntu-stable")
+        self.has_criu = m.image not in ["debian-stable", "ubuntu-2204", "ubuntu-2404"]
         self.has_selinux = not any(img in m.image for img in ["arch", "debian", "ubuntu", "suse"])
         self.has_cgroupsV2 = not m.image.startswith('rhel-8')
         self.supports_quadlet = m.image not in ["debian-stable", "ubuntu-2204"]
