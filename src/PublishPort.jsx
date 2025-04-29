@@ -51,7 +51,7 @@ export function validatePublishPort(value, key) {
 export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, validationFailed, onValidationChange }) =>
     (
         <Grid hasGutter id={id}>
-            <FormGroup className="pf-m-6-col-on-md"
+            <FormGroup className="pf-m-5-col-on-md"
                 id={id + "-ip-address-group"}
                 label={_("IP address")}
                 fieldId={id + "-ip-address"}
@@ -97,7 +97,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                             }} />
                 <FormHelper helperTextInvalid={validationFailed?.hostPort} />
             </FormGroup>
-            <FormGroup className="pf-m-2-col-on-md"
+            <FormGroup className="pf-m-3-col-on-md"
                         id={id + "-container-port-group"}
                         label={_("Container port")}
                         fieldId={id + "-container-port"} isRequired>
