@@ -452,7 +452,13 @@ class Containers extends React.Component {
                 tabs.push({
                     name: _("Logs"),
                     renderer: ContainerLogs,
-                    data: { containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid }
+                    data: {
+                        containerId: container.Id,
+                        containerStatus: container.State.Status,
+                        width: this.state.width,
+                        uid: container.uid,
+                        systemd_unit: container.Config?.Labels?.PODMAN_SYSTEMD_UNIT,
+                    }
                 });
                 tabs.push({
                     name: _("Console"),
