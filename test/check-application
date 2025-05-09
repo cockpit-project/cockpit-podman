@@ -3322,6 +3322,7 @@ PodName={name}
 
         self.toggleExpandedContainer(service_name)
 
+        # Service link integration
         b.click(f"#containers-containers tbody tr:contains('{service_name}') button:contains({service_name}.service)")
         b.switch_to_top()
         if system:
@@ -3329,6 +3330,18 @@ PodName={name}
         else:
             b.wait_js_cond(f'window.location.hash === "#/{service_name}.service?owner=user"')
         b.wait_js_cond('window.location.pathname === "/system/services"')
+
+        # Logs page link integration
+        if system:
+            b.go("/podman")
+            b.enter_page("/podman")
+            b.wait_visible("#app")
+
+            b.click(".pf-m-expanded button:contains('Logs')")
+            b.click(f"#containers-containers tbody button:contains(View {service_name}.service logs)")
+            b.switch_to_top()
+            b.wait_js_cond('window.location.pathname === "/system/logs"')
+            b.wait_js_cond(f'window.location.hash === "#/?priority=info&_SYSTEMD_UNIT={service_name}.service"')
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
