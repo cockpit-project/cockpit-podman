@@ -41,7 +41,8 @@ updates:
       - dependency-name: "@patternfly/*"
         update-types: ["version-update:semver-major"]
 
-      # PF5 requires fixed major React version
+      # PF6 doesn't support React 19 yet.
+      # https://github.com/patternfly/pf-roadmap/issues/201
       - dependency-name: "*react*"
         update-types: ["version-update:semver-major"]
 
