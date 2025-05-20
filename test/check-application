@@ -283,8 +283,10 @@ class TestApplication(testlib.MachineCase):
         m.write("/etc/containers/registries.conf", REGISTRIES_CONF)
         self.execute("systemctl stop podman.service", system=True)
 
-    def createQuadlet(self, name: str, podName: str | None = None, *, auth: bool = False) -> None:
+    def createQuadlet(self, name: str, podName: str | None = None, containerName: str | None = None,
+                      *, auth: bool = False) -> None:
         pod_option = f'Pod={podName}.pod' if podName else ''
+        containername_option = f'ContainerName={containerName}' if containerName else ''
         quadlet = f"""
 [Unit]
 Description=Podman - {name}
@@ -293,7 +295,7 @@ After=local-fs.target
 [Container]
 Image={IMG_BUSYBOX}
 Exec=sleep infinity
-ContainerName={name}
+{containername_option}
 {pod_option}
 
 [Install]
@@ -2978,7 +2980,7 @@ PodName={name}
             if self.machine.image == "rhel-8-10" and not auth:
                 return
             service_name = "quadlet"
-            self.createQuadlet(service_name, auth=auth)
+            self.createQuadlet(service_name, containerName=service_name, auth=auth)
             self.waitContainerRow(service_name)
             b.wait_not_present(self.getContainerAction(service_name, 'Rename'))
 
@@ -3017,7 +3019,7 @@ PodName={name}
         b.wait_visible(container_2_sel + " .ct-badge-distrobox:contains('distrobox')")
 
         if self.supports_quadlet:
-            self.createQuadlet("container_3", auth=True)
+            self.createQuadlet("container_3", containerName="container_3", auth=True)
             container_3_id = m.execute("podman container inspect --format '{{.Id}}' container_3").strip()
             self.waitContainerRow('container_3')
             container_3_sel = f"#containers-containers tbody tr[data-row-id=\"0-{container_3_id}\"]"
@@ -3283,7 +3285,7 @@ PodName={name}
         self.login(system=system)
 
         service_name = "quak"
-        self.createQuadlet(service_name, auth=system)
+        self.createQuadlet(service_name, containerName=service_name, auth=system)
         self.waitContainerRow(service_name)
 
         b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
@@ -3305,7 +3307,7 @@ PodName={name}
             podName = "homeassistant"
             podOwner = "system" if system else "user"
             self.createQuadletPod(podName, auth=system)
-            self.createQuadlet("zigbee", podName=podName, auth=system)
+            self.createQuadlet("zigbee", containerName="zigbee", podName=podName, auth=system)
             self.waitPodRow(podName, present=True)
             containerId = self.execute("podman inspect --format '{{.Id}}' zigbee", system=system).strip()
             self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
