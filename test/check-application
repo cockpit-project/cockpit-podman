@@ -3343,6 +3343,8 @@ PodName={name}
             b.wait_js_cond('window.location.pathname === "/system/logs"')
             b.wait_js_cond(f'window.location.hash === "#/?priority=info&_SYSTEMD_UNIT={service_name}.service"')
 
+        print(b.get_js_log())
+
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
     def testQuadletsSystem(self) -> None:
