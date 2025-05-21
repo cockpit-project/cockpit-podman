@@ -3350,6 +3350,37 @@ PodName={podName}
             b.wait_js_cond('window.location.pathname === "/system/logs"')
             b.wait_js_cond(f'window.location.hash === "#/?priority=info&_SYSTEMD_UNIT={service_name}.service"')
 
+        # Quadlet pod support was introduced in podman 5.0.0
+        if self.podman_version() >= (5, 0, 0):
+            # Filtering supports services
+            self.createQuadletPod("immich", podName="media", auth=system)
+            self.createQuadlet("fancydb", containerName="database", podName="immich", auth=system)
+            b.go("/podman")
+            b.enter_page("/podman")
+            self.waitPodRow("media", present=True)
+            containerId = self.execute("podman inspect --format '{{.Id}}' database", system=system).strip()
+            self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
+                                  "command": "sleep infinity", "state": "Running", "id": containerId}],
+                                  system=system)
+
+            # Shows filtering on systemd unit
+            b.set_input_text('#containers-filter input', 'nothing')
+            self.waitContainerRow("database", present=False)
+            b.set_input_text('#containers-filter input', 'fancydb.service')
+            self.waitContainerRow("database", present=True)
+
+            # Filter still recognises the container name
+            b.set_input_text('#containers-filter input', 'nothing')
+            self.waitContainerRow("database", present=False)
+            b.set_input_text('#containers-filter input', 'database')
+            self.waitContainerRow("database", present=True)
+
+            # Filtering also works for pods
+            b.set_input_text('#containers-filter input', 'nothing')
+            self.waitPodRow("media", present=False)
+            b.set_input_text('#containers-filter input', 'immich-pod.service')
+            self.waitPodRow("media", present=True)
+
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
     def testQuadletsSystem(self) -> None:
