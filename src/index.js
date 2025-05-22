@@ -29,4 +29,8 @@ import './podman.scss';
 document.addEventListener("DOMContentLoaded", function () {
     const root = createRoot(document.getElementById('app'));
     root.render(<Application />);
+    window.onerror = function(message, source, lineno, colno, error) {
+        console.log('Global error caught:', message, source, lineno, colno, error);
+    // You can return true to prevent the default error handling
+    };
 });
