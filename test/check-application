@@ -81,6 +81,7 @@ class TestApplication(testlib.MachineCase):
     def setUp(self) -> None:
         super().setUp()
         m = self.machine
+        print(m.execute("rpm -qa | grep cockpit"))
         m.execute("""
             systemctl stop podman.service
             # Ensure podman is really stopped, otherwise it keeps the containers/ directory busy
