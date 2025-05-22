@@ -9,6 +9,11 @@ export RUN_TESTS_OPTIONS=--track-naughties
 TEST_SCENARIO=${TEST_SCENARIO:-}
 [ "${TEST_SCENARIO}" = "${TEST_SCENARIO##firefox}" ] || export TEST_BROWSER=firefox
 
+if [[ "${TEST_SCENARIO}" =~ "copr" ]]; then
+    export TEST_COPR="${TEST_SCENARIO#*copr/}"
+    TEST_SCENARIO="${TEST_SCENARIO%%/copr*}"
+fi
+
 if [ "$TEST_SCENARIO" == "devel" ]; then
     export TEST_COVERAGE=yes
 fi

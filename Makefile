@@ -26,8 +26,8 @@ VM_CUSTOMIZE_FLAGS =
 # the following scenarios need network access
 ifeq ("$(TEST_SCENARIO)","updates-testing")
 VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y update --setopt=install_weak_deps=False --enablerepo=updates-testing >&2'
-else ifeq ("$(TEST_SCENARIO)","podman-next")
-VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update --repo "copr*" >&2'
+else ifneq ($(TEST_COPR),)
+VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y copr enable $(TEST_COPR) >&2; dnf -y update --repo "copr*" >&2'
 else
 # default scenario does not install packages
 VM_CUSTOMIZE_FLAGS += --no-network
