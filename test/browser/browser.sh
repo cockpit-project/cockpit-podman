@@ -6,12 +6,6 @@ cd "${0%/*}/../.."
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
 dnf update -y podman crun conmon criu
 
-# Missing iptables-nft dependency https://issues.redhat.com/browse/RHEL-58240 and
-# https://bugzilla.redhat.com/show_bug.cgi?id=2319310
-if grep -Eq 'platform:(el10|f41)' /etc/os-release; then
-    dnf install -y iptables-nft
-fi
-
 # if we run during cross-project testing against our main-builds COPR, then let that win
 # even if Fedora has a newer revision
 main_builds_repo="$(ls /etc/yum.repos.d/*cockpit*main-builds* 2>/dev/null || true)"
