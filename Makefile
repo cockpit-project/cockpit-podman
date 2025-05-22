@@ -21,17 +21,17 @@ COCKPIT_REPO_STAMP=pkg/lib/cockpit-po-plugin.js
 # common arguments for tar, mostly to make the generated tarballs reproducible
 TAR_ARGS = --sort=name --mtime "@$(shell git show --no-patch --format='%at')" --mode=go=rX,u+rw,a-s --numeric-owner --owner=0 --group=0
 
-VM_CUSTOMIZE_FLAGS =
+VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y copr enable packit/cockpit-project-cockpit-22038 >&2; dnf -y update --repo "copr*" >&2'
 
-# the following scenarios need network access
-ifeq ("$(TEST_SCENARIO)","updates-testing")
-VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y update --setopt=install_weak_deps=False --enablerepo=updates-testing >&2'
-else ifeq ("$(TEST_SCENARIO)","podman-next")
-VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update --repo "copr*" >&2'
-else
-# default scenario does not install packages
-VM_CUSTOMIZE_FLAGS += --no-network
-endif
+# # the following scenarios need network access
+# ifeq ("$(TEST_SCENARIO)","updates-testing")
+# VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y update --setopt=install_weak_deps=False --enablerepo=updates-testing >&2'
+# else ifeq ("$(TEST_SCENARIO)","podman-next")
+# VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y copr enable rhcontainerbot/podman-next >&2; dnf -y update --repo "copr*" >&2'
+# else
+# # default scenario does not install packages
+# VM_CUSTOMIZE_FLAGS += --no-network
+# endif
 
 ifeq ($(TEST_COVERAGE),yes)
 RUN_TESTS_OPTIONS+=--coverage
