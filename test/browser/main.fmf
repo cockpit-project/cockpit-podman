@@ -1,7 +1,10 @@
-# TF/tmt don't handle this with bootc: https://issues.redhat.com/browse/TFT-3020
-# done programmatically in test/browser/browser.sh
-# require:
-
+require:
+  - systemd-container
+  - cockpit-podman
+  - cockpit-ws
+  - cockpit-system
+  - criu
+  - nginx
 duration: 30m
 
 /system:
