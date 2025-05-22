@@ -105,3 +105,11 @@ CI machinery do this on a draft pull request.
 Please see [Cockpit's test documentation](https://github.com/cockpit-project/cockpit/blob/main/test/README.md)
 for details how to run against existing VMs, interactive browser window,
 interacting with the test VM, and more.
+
+# Running tests against a Cockpit pull request
+
+The Cockpit testing infrastructure does not support testing a Cockpit pull
+request against a cockpit-podman pull request directly, but this can be
+achieved by using the packit copr build from the Cockpit pull request:
+
+    ./bots/tests-trigger fedora-42/copr/packit/cockpit-project-cockpit-$prid
