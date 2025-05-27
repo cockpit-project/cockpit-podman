@@ -44,7 +44,7 @@ const ContainerDetails = ({ container }) => {
                         <DescriptionListDescription>{utils.quote_cmdline(container.Config.Cmd)}</DescriptionListDescription>
                     </DescriptionListGroup>
                     }
-                    {Boolean(container.Config?.Labels?.PODMAN_SYSTEMD_UNIT) && (container.uid === 0 || container.uid === null) &&
+                    {utils.is_systemd_service(container.Config) && (container.uid === 0 || container.uid === null) &&
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("systemd service")}</DescriptionListTerm>
                         <DescriptionListDescription>
