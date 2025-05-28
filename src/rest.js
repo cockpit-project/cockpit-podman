@@ -52,7 +52,7 @@ function splitAtNLNL(array) {
         }
     }
     console.error("did not find NLNL in array", array); // not-covered: if this happens, it's a podman bug
-    return [array, null]; // not-covered: dito
+    return [array, null]; // not-covered: ditto
 }
 
 /* uid: null for logged in session user; 0 for root; in the future we'll support other users

@@ -560,7 +560,7 @@ class Application extends React.Component {
                             const uid = parseInt(uid_str);
                             if (isNaN(uid)) {
                                 console.error(`User container detection: invalid uid '${uid_str}' in output '${output}'`); // not-covered: Should Not Happen™
-                                return; // not-covered: dito
+                                return; // not-covered: ditto
                             }
                             // ignore standard users
                             if (uid === 0 || uid === user.id)
