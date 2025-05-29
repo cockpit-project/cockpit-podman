@@ -19,6 +19,7 @@
 
 import React from 'react';
 
+import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { CanvasAddon } from '@xterm/addon-canvas';
 import { Terminal } from "@xterm/xterm";
@@ -165,8 +166,21 @@ class ContainerLogs extends React.Component {
 
     render() {
         let element = <div className="container-logs" ref={this.logRef} />;
-        if (this.state.errorMessage)
+        const { systemd_unit, uid } = this.props;
+
+        if (this.state.errorMessage) {
             element = <EmptyStatePanel icon={ExclamationCircleIcon} title={this.state.errorMessage} />;
+        } else if (uid === 0 && systemd_unit) {
+            element = (
+                <>
+                    {element}
+                    <Button variant="link" isInline className="pf-v6-u-mt-sm" onClick={
+                        () => cockpit.jump(`/system/logs/#/?priority=info&_SYSTEMD_UNIT=${systemd_unit}`)}>
+                        {cockpit.format(_("View $0 logs"), systemd_unit)}
+                    </Button>
+                </>
+            );
+        }
 
         return element;
     }
@@ -175,7 +189,8 @@ class ContainerLogs extends React.Component {
 ContainerLogs.propTypes = {
     containerId: PropTypes.string.isRequired,
     uid: PropTypes.number,
-    width: PropTypes.number.isRequired
+    width: PropTypes.number.isRequired,
+    systemd_unit: PropTypes.string
 };
 
 export default ContainerLogs;
