@@ -169,3 +169,7 @@ export const validationClear = (validationFailed, key, onValidationChange) => {
 
 // This method needs to be outside of component as re-render would create a new instance of debounce
 export const validationDebounce = debounce(500, (validationHandler) => validationHandler());
+
+// Ignore podman-compose containers which like quadlets set PODMAN_SYSTEMD_UNIT.
+// https://github.com/containers/podman-compose/blob/0dcc864fdda280b410ad49ae4fa99740a4770cbb/podman_compose.py#L2263
+export const is_systemd_service = (container_config) => container_config?.Labels?.PODMAN_SYSTEMD_UNIT && !container_config.Labels.PODMAN_SYSTEMD_UNIT.startsWith('podman-compose@');
