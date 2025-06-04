@@ -312,10 +312,11 @@ WantedBy=multi-user.target default.target
         self.addCleanup(self.execute, f"{systemctl_cmd} stop {name}.service", system=auth)
         self.execute(f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service", system=auth)
 
-    def createQuadletPod(self, name: str, *, auth: bool = False) -> None:
+    def createQuadletPod(self, name: str, podName: str | None = None, *, auth: bool = False) -> None:
+        podName = podName if podName else name
         quadlet = f"""
 [Pod]
-PodName={name}
+PodName={podName}
 """
         service_file = f"/etc/containers/systemd/{name}.pod"
         if not auth:  # user session
