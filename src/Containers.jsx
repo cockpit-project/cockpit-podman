@@ -590,6 +590,21 @@ class Containers extends React.Component {
         this.setState({ showPruneUnusedContainersModal: true });
     };
 
+    filterContainersByText = (lcf, id) => {
+        const container = this.props.containers[id];
+        const systemd_unit_match = container.Config?.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) >= 0;
+        const name_match = container.Name.toLowerCase().indexOf(lcf) >= 0;
+        const image_match = container.ImageName.toLowerCase().indexOf(lcf) >= 0;
+
+        if (container.Pod) {
+            const pod = this.props.pods[utils.makeKey(container.uid, container.Pod)];
+            const pod_match = pod.Name.toLowerCase().indexOf(lcf) >= 0 || pod.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) >= 0;
+            return name_match || systemd_unit_match || image_match || pod_match;
+        } else {
+            return name_match || systemd_unit_match || image_match;
+        }
+    };
+
     render() {
         const Dialogs = this.context;
         const columnTitles = [
@@ -626,11 +641,7 @@ class Containers extends React.Component {
 
             if (this.props.textFilter.length > 0) {
                 const lcf = this.props.textFilter.toLowerCase();
-                filtered = filtered.filter(id => this.props.containers[id].Name.toLowerCase().indexOf(lcf) >= 0 ||
-                    (this.props.containers[id].Pod &&
-                     this.props.pods[utils.makeKey(this.props.containers[id].uid, this.props.containers[id].Pod)].Name.toLowerCase().indexOf(lcf) >= 0) ||
-                    this.props.containers[id].ImageName.toLowerCase().indexOf(lcf) >= 0
-                );
+                filtered = filtered.filter(id => this.filterContainersByText(lcf, id));
             }
 
             // Remove infra containers
@@ -677,7 +688,8 @@ class Containers extends React.Component {
                     const pod = this.props.pods[section];
                     if ((this.props.filter == "running" && pod.Status != "Running") ||
                         // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
-                        (!partitionedContainers[section].length && pod.Name.toLowerCase().indexOf(lcf) < 0) ||
+                        (!partitionedContainers[section].length && (pod.Name.toLowerCase().indexOf(lcf) < 0 ||
+                          pod.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) < 0)) ||
                         (this.props.ownerFilter !== "all" &&
                          ((this.props.ownerFilter === "user" && pod.uid !== null) ||
                             (this.props.ownerFilter !== "user" && pod.uid !== this.props.ownerFilter))))
