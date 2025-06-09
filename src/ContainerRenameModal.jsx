@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
-import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import { useDialogs } from "dialogs.jsx";
 
@@ -86,8 +86,13 @@ const ContainerRenameModal = ({ con, container, updateContainer }) => {
             position="top" variant="medium"
             onClose={Dialogs.close}
             onKeyDown={handleKeyDown}
-            title={cockpit.format(_("Rename container $0"), container.Name)}
-            footer={<>
+        >
+            <ModalHeader title={cockpit.format(_("Rename container $0"), container.Name)} />
+            <ModalBody>
+                {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError(null)} />}
+                {renameContent}
+            </ModalBody>
+            <ModalFooter>
                 <Button variant="primary"
                         className="btn-ctr-rename"
                         id="btn-rename-dialog-container"
@@ -100,10 +105,7 @@ const ContainerRenameModal = ({ con, container, updateContainer }) => {
                         onClick={Dialogs.close}>
                     {_("Cancel")}
                 </Button>
-            </>}
-        >
-            {dialogError && <ErrorNotification errorMessage={dialogError} errorDetail={dialogErrorDetail} onDismiss={() => setDialogError(null)} />}
-            {renameContent}
+            </ModalFooter>
         </Modal>
     );
 };

@@ -4,8 +4,8 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { List, ListItem } from '@patternfly/react-core/dist/esm/components/List';
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { useDialogs } from "dialogs.jsx";
 
@@ -92,35 +92,38 @@ export const ImageDeleteModal = ({ con, imageWillDelete, onAddNotification }) =>
     return (
         <Modal isOpen
                  position="top" variant="medium"
-                 titleIconVariant="warning"
                  onClose={Dialogs.close}
-                 title={cockpit.format(_("Delete $0 image?"), imageName)}
-                 footer={<>
-                     <Button id="btn-img-delete" variant="danger" isDisabled={!isIntermediateImage && checkedTags.length === 0}
-                             onClick={() => handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
-                         {isIntermediateImage ? _("Delete image") : _("Delete tagged images")}
-                     </Button>
-                     <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
-                 </>}
         >
-            <Stack hasGutter>
-                { repoTags.length > 1 && <StackItem>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</StackItem> }
-                <StackItem isFilled>
-                    {repoTags.length > 1 && <Checkbox isChecked={isAllSelected} id='delete-all' label={_("All")} aria-label='All'
-                        onChange={(_event, checked) => repoTags.forEach(item => onValueChanged(item, checked))}
-                        body={
-                            repoTags.map(x => (
-                                <Checkbox isChecked={checkedTags.indexOf(x) > -1}
-                                            id={"delete-" + x}
-                                            aria-label={x}
-                                            key={x}
-                                            label={x}
-                                            onChange={(_event, checked) => onValueChanged(x, checked)} />
-                            ))
-                        } />}
-                    {repoTags.length === 1 && <List><ListItem>{repoTags[0]}</ListItem></List>}
-                </StackItem>
-            </Stack>
+            <ModalHeader title={cockpit.format(_("Delete $0 image?"), imageName)}
+                titleIconVariant="warning"
+            />
+            <ModalBody>
+                <Stack hasGutter>
+                    { repoTags.length > 1 && <StackItem>{_("Multiple tags exist for this image. Select the tagged images to delete.")}</StackItem> }
+                    <StackItem isFilled>
+                        {repoTags.length > 1 && <Checkbox isChecked={isAllSelected} id='delete-all' label={_("All")} aria-label='All'
+                            onChange={(_event, checked) => repoTags.forEach(item => onValueChanged(item, checked))}
+                            body={
+                                repoTags.map(x => (
+                                    <Checkbox isChecked={checkedTags.indexOf(x) > -1}
+                                                id={"delete-" + x}
+                                                aria-label={x}
+                                                key={x}
+                                                label={x}
+                                                onChange={(_event, checked) => onValueChanged(x, checked)} />
+                                ))
+                            } />}
+                        {repoTags.length === 1 && <List><ListItem>{repoTags[0]}</ListItem></List>}
+                    </StackItem>
+                </Stack>
+            </ModalBody>
+            <ModalFooter>
+                <Button id="btn-img-delete" variant="danger" isDisabled={!isIntermediateImage && checkedTags.length === 0}
+                        onClick={() => handleRemoveImage(checkedTags, checkedTags.length === repoTags.length)}>
+                    {isIntermediateImage ? _("Delete image") : _("Delete tagged images")}
+                </Button>
+                <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
+            </ModalFooter>
         </Modal>
     );
 };

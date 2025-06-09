@@ -2,8 +2,8 @@ import React from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
@@ -30,15 +30,18 @@ const ContainerDeleteModal = ({ con, containerWillDelete, onAddNotification }) =
     return (
         <Modal isOpen
                position="top" variant="medium"
-               titleIconVariant="warning"
                onClose={Dialogs.close}
-               title={cockpit.format(_("Delete $0?"), containerWillDelete.Name)}
-               footer={<>
-                   <Button variant="danger" className="btn-ctr-delete" onClick={handleRemoveContainer}>{_("Delete")}</Button>{' '}
-                   <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
-               </>}
         >
-            {_("Deleting a container will erase all data in it.")}
+            <ModalHeader title={cockpit.format(_("Delete $0?"), containerWillDelete.Name)}
+                titleIconVariant="warning"
+            />
+            <ModalBody>
+                {_("Deleting a container will erase all data in it.")}
+            </ModalBody>
+            <ModalFooter>
+                <Button variant="danger" className="btn-ctr-delete" onClick={handleRemoveContainer}>{_("Delete")}</Button>{' '}
+                <Button variant="link" onClick={Dialogs.close}>{_("Cancel")}</Button>
+            </ModalFooter>
         </Modal>
     );
 };

@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
-import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import { useDialogs } from "dialogs.jsx";
 import { fmt_to_fragments } from 'utils.jsx';
@@ -135,34 +135,37 @@ const ContainerCommitModal = ({ con, container, localImages }) => {
 
     return (
         <Modal isOpen
-                 showClose={false}
-                 position="top" variant="medium"
-                 title={_("Commit container")}
-                 description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{container.Name}</b>)}
-                 footer={<>
-                     <Button variant="primary"
-                             className="btn-ctr-commit"
-                             isLoading={commitInProgress && !nameError}
-                             isDisabled={commitInProgress || nameError}
-                             onClick={() => handleCommit(false)}>
-                         {_("Commit")}
-                     </Button>
-                     {nameError && <Button variant="warning"
-                             className="btn-ctr-commit-force"
-                             isLoading={commitInProgress}
-                             isDisabled={commitInProgress}
-                             onClick={() => handleCommit(true)}>
-                         {_("Force commit")}
-                     </Button>}
-                     <Button variant="link"
-                             className="btn-ctr-cancel-commit"
-                             isDisabled={commitInProgress}
-                             onClick={Dialogs.close}>
-                         {_("Cancel")}
-                     </Button>
-                 </>}
+            position="top"
+            variant="medium"
         >
-            {commitContent}
+            <ModalHeader title={_("Commit container")}
+                description={fmt_to_fragments(_("Create a new image based on the current state of the $0 container."), <b>{container.Name}</b>)}
+            />
+            <ModalBody>
+                {commitContent}
+            </ModalBody>
+            <ModalFooter>
+                <Button variant="primary"
+                        className="btn-ctr-commit"
+                        isLoading={commitInProgress && !nameError}
+                        isDisabled={commitInProgress || nameError}
+                        onClick={() => handleCommit(false)}>
+                    {_("Commit")}
+                </Button>
+                {nameError && <Button variant="warning"
+                        className="btn-ctr-commit-force"
+                        isLoading={commitInProgress}
+                        isDisabled={commitInProgress}
+                        onClick={() => handleCommit(true)}>
+                    {_("Force commit")}
+                </Button>}
+                <Button variant="link"
+                        className="btn-ctr-cancel-commit"
+                        isDisabled={commitInProgress}
+                        onClick={Dialogs.close}>
+                    {_("Cancel")}
+                </Button>
+            </ModalFooter>
         </Modal>
     );
 };

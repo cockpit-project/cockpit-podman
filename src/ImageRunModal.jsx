@@ -6,6 +6,9 @@ import { Content, ContentVariants } from "@patternfly/react-core/dist/esm/compon
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { InputGroup, InputGroupText } from "@patternfly/react-core/dist/esm/components/InputGroup";
+import {
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { NumberInput } from "@patternfly/react-core/dist/esm/components/NumberInput";
 import { Popover } from "@patternfly/react-core/dist/esm/components/Popover";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
@@ -13,9 +16,6 @@ import { Spinner } from "@patternfly/react-core/dist/esm/components/Spinner/inde
 import { Tab, TabTitleText, Tabs } from "@patternfly/react-core/dist/esm/components/Tabs";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core/dist/esm/components/ToggleGroup";
-import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
 import { Bullseye } from "@patternfly/react-core/dist/esm/layouts/Bullseye/index.js";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid";
@@ -1206,22 +1206,24 @@ export class ImageRunModal extends React.Component {
                            Dialogs.close();
                        }
                    }}
-                   title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")}
-                   footer={<>
-                       <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)}
-                               isDisabled={isDisabled} isLoading={this.state.inProgress}>
-                           {_("Create and run")}
-                       </Button>
-                       <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)}
-                               isDisabled={isDisabled} isLoading={this.state.inProgress}>
-                           {_("Create")}
-                       </Button>
-                       <Button variant='link' className='btn-cancel' onClick={Dialogs.close} isDisabled={this.state.inProgress}>
-                           {_("Cancel")}
-                       </Button>
-                   </>}
             >
-                {defaultBody}
+                <ModalHeader title={this.props.pod ? cockpit.format(_("Create container in $0"), this.props.pod.Name) : _("Create container")} />
+                <ModalBody>
+                    {defaultBody}
+                </ModalBody>
+                <ModalFooter>
+                    <Button variant='primary' id="create-image-create-run-btn" onClick={() => this.onCreateClicked(true)}
+                            isDisabled={isDisabled} isLoading={this.state.inProgress}>
+                        {_("Create and run")}
+                    </Button>
+                    <Button variant='secondary' id="create-image-create-btn" onClick={() => this.onCreateClicked(false)}
+                            isDisabled={isDisabled} isLoading={this.state.inProgress}>
+                        {_("Create")}
+                    </Button>
+                    <Button variant='link' className='btn-cancel' onClick={Dialogs.close} isDisabled={this.state.inProgress}>
+                        {_("Cancel")}
+                    </Button>
+                </ModalFooter>
             </Modal>
         );
     }
