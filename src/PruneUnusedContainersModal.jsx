@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { SortByDirection } from "@patternfly/react-table";
 
 import cockpit from 'cockpit';
@@ -89,25 +89,27 @@ const PruneUnusedContainersModal = ({ close, unusedContainers, onAddNotification
         <Modal isOpen
                onClose={close}
                position="top" variant="medium"
-               title={cockpit.format(_("Prune unused containers"))}
-               footer={<>
-                   <Button id="btn-img-delete" variant="danger"
-                           spinnerAriaValueText={isPruning ? _("Pruning containers") : undefined}
-                           isLoading={isPruning}
-                           isDisabled={isPruning || selectedContainerKeys.length === 0}
-                           onClick={handlePruneUnusedContainers}>
-                       {isPruning ? _("Pruning containers") : _("Prune")}
-                   </Button>
-                   <Button variant="link" onClick={() => close()}>{_("Cancel")}</Button>
-               </>}
         >
-            <p>{_("Removes selected non-running containers")}</p>
-            <ListingTable columns={columns}
-                          onSelect={(_event, isSelecting, rowIndex, rowData) => onSelectContainer(rowData.props.id, rowIndex, isSelecting)}
-                          onHeaderSelect={(_event, isSelecting) => selectAllContainers(isSelecting)}
-                          id="unused-container-list"
-                          rows={unusedContainers.map(container => getContainerRow(container, showOwnerColumn, users, isContainerSelected(container))) }
-                          variant="compact" sortBy={{ index: 0, direction: SortByDirection.asc }} />
+            <ModalHeader title={cockpit.format(_("Prune unused containers"))} />
+            <ModalBody>
+                <p>{_("Removes selected non-running containers")}</p>
+                <ListingTable columns={columns}
+                              onSelect={(_event, isSelecting, rowIndex, rowData) => onSelectContainer(rowData.props.id, rowIndex, isSelecting)}
+                              onHeaderSelect={(_event, isSelecting) => selectAllContainers(isSelecting)}
+                              id="unused-container-list"
+                              rows={unusedContainers.map(container => getContainerRow(container, showOwnerColumn, users, isContainerSelected(container))) }
+                              variant="compact" sortBy={{ index: 0, direction: SortByDirection.asc }} />
+            </ModalBody>
+            <ModalFooter>
+                <Button id="btn-img-delete" variant="danger"
+                        spinnerAriaValueText={isPruning ? _("Pruning containers") : undefined}
+                        isLoading={isPruning}
+                        isDisabled={isPruning || selectedContainerKeys.length === 0}
+                        onClick={handlePruneUnusedContainers}>
+                    {isPruning ? _("Pruning containers") : _("Prune")}
+                </Button>
+                <Button variant="link" onClick={() => close()}>{_("Cancel")}</Button>
+            </ModalFooter>
         </Modal>
     );
 };
