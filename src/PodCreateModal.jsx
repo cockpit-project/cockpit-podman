@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import {
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
-import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import { useDialogs } from "dialogs.jsx";
 import * as dockerNames from 'docker-names';
@@ -209,19 +209,21 @@ export const PodCreateModal = ({ users }) => {
                 position="top" variant="medium"
                 onClose={Dialogs.close}
                 onEscapePress={Dialogs.close}
-                title={_("Create pod")}
-                footer={<>
-                    <Button variant='primary' id="create-pod-create-btn" onClick={onCreateClicked}
-                            isLoading={inProgress}
-                            isDisabled={isFormInvalid(validationFailed) || inProgress}>
-                        {_("Create")}
-                    </Button>
-                    <Button variant='link' className='btn-cancel' isDisabled={inProgress} onClick={Dialogs.close}>
-                        {_("Cancel")}
-                    </Button>
-                </>}
         >
-            {defaultBody}
+            <ModalHeader title={_("Create pod")} />
+            <ModalBody>
+                {defaultBody}
+            </ModalBody>
+            <ModalFooter>
+                <Button variant='primary' id="create-pod-create-btn" onClick={onCreateClicked}
+                        isLoading={inProgress}
+                        isDisabled={isFormInvalid(validationFailed) || inProgress}>
+                    {_("Create")}
+                </Button>
+                <Button variant='link' className='btn-cancel' isDisabled={inProgress} onClick={Dialogs.close}>
+                    {_("Cancel")}
+                </Button>
+            </ModalFooter>
         </Modal>
     );
 };

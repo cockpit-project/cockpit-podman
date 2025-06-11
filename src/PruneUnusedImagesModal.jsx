@@ -4,8 +4,8 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { Flex } from "@patternfly/react-core/dist/esm/layouts/Flex";
 
 import cockpit from 'cockpit';
@@ -86,29 +86,31 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, users 
         <Modal isOpen
                onClose={close}
                position="top" variant="medium"
-               title={cockpit.format(_("Prune unused images"))}
-               footer={<>
-                   <Button id="btn-img-delete" variant="danger"
-                           spinnerAriaValueText={isPruning ? _("Pruning images") : undefined}
-                           isLoading={isPruning}
-                           isDisabled={deleteOwners.length === 0}
-                           onClick={handlePruneUnusedImages}>
-                       {isPruning ? _("Pruning images") : _("Prune")}
-                   </Button>
-                   <Button variant="link" onClick={() => close()}>{_("Cancel")}</Button>
-               </>}
         >
-            <Flex flex={{ default: 'column' }}>
-                {unusedOwners.map(user => (
-                    <ImageOptions key={user.name}
-                                  images={unusedImages.filter(image => image.uid === user.uid)}
-                                  name={"deleteImages-" + user.name}
-                                  checked={deleteOwners.some(u => u.uid === user.uid)}
-                                  handleChange={checked => onCheckChange(user, checked)}
-                                  showCheckbox={showCheckboxes}
-                                  user={user} />))
-                }
-            </Flex>
+            <ModalHeader title={cockpit.format(_("Prune unused images"))} />
+            <ModalBody>
+                <Flex flex={{ default: 'column' }}>
+                    {unusedOwners.map(user => (
+                        <ImageOptions key={user.name}
+                                      images={unusedImages.filter(image => image.uid === user.uid)}
+                                      name={"deleteImages-" + user.name}
+                                      checked={deleteOwners.some(u => u.uid === user.uid)}
+                                      handleChange={checked => onCheckChange(user, checked)}
+                                      showCheckbox={showCheckboxes}
+                                      user={user} />))
+                    }
+                </Flex>
+            </ModalBody>
+            <ModalFooter>
+                <Button id="btn-img-delete" variant="danger"
+                        spinnerAriaValueText={isPruning ? _("Pruning images") : undefined}
+                        isLoading={isPruning}
+                        isDisabled={deleteOwners.length === 0}
+                        onClick={handlePruneUnusedImages}>
+                    {isPruning ? _("Pruning images") : _("Prune")}
+                </Button>
+                <Button variant="link" onClick={() => close()}>{_("Cancel")}</Button>
+            </ModalFooter>
         </Modal>
     );
 };

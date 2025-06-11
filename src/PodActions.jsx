@@ -6,8 +6,8 @@ import { Divider } from '@patternfly/react-core/dist/esm/components/Divider/inde
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { List, ListItem } from "@patternfly/react-core/dist/esm/components/List";
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalBody, ModalFooter, ModalHeader
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { Stack } from "@patternfly/react-core/dist/esm/layouts/Stack";
 import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 import { useDialogs } from "dialogs.jsx";
@@ -39,34 +39,37 @@ const PodDeleteModal = ({ con, pod }) => {
     return (
         <Modal isOpen
                   position="top" variant="medium"
-                  titleIconVariant="warning"
+                  onClose={Dialogs.close}
+        >
+            <ModalHeader titleIconVariant="warning"
                   title={force
                       ? cockpit.format(_("Force delete pod $0?"), pod.Name)
                       : cockpit.format(_("Delete pod $0?"), pod.Name)}
-                  onClose={Dialogs.close}
-                  footer={<>
-                      <Button variant="danger"
-                                      onClick={handlePodDelete}>
-                          {force ? _("Force delete") : _("Delete")}
-                      </Button>
-                      {' '}
-                      <Button variant="link" onClick={Dialogs.close}>
-                          {_("Cancel")}
-                      </Button>
-                  </>}
-        >
-            {deleteError &&
-            <Alert variant="danger" isInline title={_("An error occurred")}>{deleteError}</Alert>}
-            {containers.length === 0 &&
-            <p>{cockpit.format(_("Empty pod $0 will be permanently removed."), pod.Name)}</p>
-            }
-            {containers.length > 0 &&
-            <Stack hasGutter>
-                <p>{_("Deleting this pod will remove the following containers:")}</p>
-                <List>
-                    {containers.map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
-                </List>
-            </Stack>}
+            />
+            <ModalBody>
+                {deleteError &&
+                <Alert variant="danger" isInline title={_("An error occurred")}>{deleteError}</Alert>}
+                {containers.length === 0 &&
+                <p>{cockpit.format(_("Empty pod $0 will be permanently removed."), pod.Name)}</p>
+                }
+                {containers.length > 0 &&
+                <Stack hasGutter>
+                    <p>{_("Deleting this pod will remove the following containers:")}</p>
+                    <List>
+                        {containers.map(container => <ListItem key={container.Names}>{container.Names}</ListItem>)}
+                    </List>
+                </Stack>}
+            </ModalBody>
+            <ModalFooter>
+                <Button variant="danger"
+                                onClick={handlePodDelete}>
+                    {force ? _("Force delete") : _("Delete")}
+                </Button>
+                {' '}
+                <Button variant="link" onClick={Dialogs.close}>
+                    {_("Cancel")}
+                </Button>
+            </ModalFooter>
         </Modal>
     );
 };

@@ -4,8 +4,8 @@ import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Form } from "@patternfly/react-core/dist/esm/components/Form";
 import {
-    Modal
-} from '@patternfly/react-core/dist/esm/deprecated/components/Modal';
+    Modal, ModalHeader, ModalBody, ModalFooter
+} from '@patternfly/react-core/dist/esm/components/Modal';
 import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
@@ -40,31 +40,32 @@ const ContainerCheckpointModal = ({ con, containerWillCheckpoint, onAddNotificat
 
     return (
         <Modal isOpen
-               showClose={false}
                position="top" variant="medium"
-               title={cockpit.format(_("Checkpoint container $0"), containerWillCheckpoint.Name)}
-               footer={<>
-                   <Button variant="primary" isDisabled={inProgress}
-                           isLoading={inProgress}
-                           onClick={handleCheckpointContainer}>
-                       {_("Checkpoint")}
-                   </Button>
-                   <Button variant="link" isDisabled={inProgress}
-                           onClick={Dialogs.close}>
-                       {_("Cancel")}
-                   </Button>
-               </>}
         >
-            <Form isHorizontal>
-                <Checkbox label={_("Keep all temporary checkpoint files")} id="checkpoint-dialog-keep"
-                              name="keep" isChecked={keep} onChange={(_, val) => setKeep(val)} />
-                <Checkbox label={_("Leave running after writing checkpoint to disk")}
-                              id="checkpoint-dialog-leaveRunning" name="leaveRunning"
-                              isChecked={leaveRunning} onChange={(_, val) => setLeaveRunning(val)} />
-                <Checkbox label={_("Support preserving established TCP connections")}
-                              id="checkpoint-dialog-tcpEstablished" name="tcpEstablished"
-                              isChecked={tcpEstablished} onChange={(_, val) => setTcpEstablished(val) } />
-            </Form>
+            <ModalHeader title={cockpit.format(_("Checkpoint container $0"), containerWillCheckpoint.Name)} />
+            <ModalBody>
+                <Form isHorizontal>
+                    <Checkbox label={_("Keep all temporary checkpoint files")} id="checkpoint-dialog-keep"
+                                  name="keep" isChecked={keep} onChange={(_, val) => setKeep(val)} />
+                    <Checkbox label={_("Leave running after writing checkpoint to disk")}
+                                  id="checkpoint-dialog-leaveRunning" name="leaveRunning"
+                                  isChecked={leaveRunning} onChange={(_, val) => setLeaveRunning(val)} />
+                    <Checkbox label={_("Support preserving established TCP connections")}
+                                  id="checkpoint-dialog-tcpEstablished" name="tcpEstablished"
+                                  isChecked={tcpEstablished} onChange={(_, val) => setTcpEstablished(val) } />
+                </Form>
+            </ModalBody>
+            <ModalFooter>
+                <Button variant="primary" isDisabled={inProgress}
+                        isLoading={inProgress}
+                        onClick={handleCheckpointContainer}>
+                    {_("Checkpoint")}
+                </Button>
+                <Button variant="link" isDisabled={inProgress}
+                        onClick={Dialogs.close}>
+                    {_("Cancel")}
+                </Button>
+            </ModalFooter>
         </Modal>
     );
 };
