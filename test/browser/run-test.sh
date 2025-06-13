@@ -20,7 +20,9 @@ fi
 . /run/host/usr/lib/os-release
 export TEST_OS="${ID}-${VERSION_ID/./-}"
 
-if [ "$TEST_OS" = "centos-9" ]; then
+if [ -e /sysroot/ostree ]; then
+    TEST_OS="${TEST_OS}-ostree"
+elif [ "$TEST_OS" = "centos-9" ]; then
     TEST_OS="${TEST_OS}-stream"
 fi
 

@@ -4,7 +4,9 @@ set -eux
 cd "${0%/*}/../.."
 
 # HACK: ensure that critical components are up to date: https://github.com/psss/tmt/issues/682
-dnf update -y podman crun conmon criu
+if [ ! -e /sysroot/ostree ]; then
+    dnf update -y podman crun conmon criu
+fi
 
 # if we run during cross-project testing against our main-builds COPR, then let that win
 # even if Fedora has a newer revision
