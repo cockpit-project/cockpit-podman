@@ -3148,12 +3148,12 @@ PodName={podName}
         b.click(".pf-m-expanded button:contains('Logs')")
         b.wait_in_text(".pf-m-expanded .pf-v6-c-empty-state__content", "failed to obtain logs for Container")
 
-    @testlib.skipOstree("/lib is read-only")
     def testManifest(self) -> None:
         b = self.browser
         m = self.machine
-        self.restore_file("/lib/systemd/system/podman.socket", post_restore_action="systemctl daemon-reload")
-        m.execute("rm /lib/systemd/system/podman.socket")
+        unitdir = m.execute("realpath $(dirname /lib/systemd/system/podman.socket)").strip()
+        self.restore_dir(unitdir, post_restore_action="systemctl daemon-reload")
+        m.execute(f"rm {unitdir}/podman.socket")
         self.login_and_go(None)
         b.wait_in_text("#host-apps .pf-m-current", "Overview")
 
