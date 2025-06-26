@@ -1749,6 +1749,8 @@ PodName={podName}
         # No local results found
         b.set_input_text("#create-image-image input", "notfound")
 
+        b.chromium_fake_mouse = True  # FIXME; BiDi clicks flake in CI
+
         b.click('button.pf-v6-c-toggle-group__button:contains("Local")')
         b.wait_text(".pf-v6-c-menu__item[disabled]", "No images found")
         b.wait_visible("button.pf-v6-c-toggle-group__button.pf-m-selected:contains('Local')")
@@ -1783,6 +1785,8 @@ PodName={podName}
         self.assertFalse(b.is_present(".pf-v6-c-popover"))
         b.wait_val("#create-image-image input", "my-busybox")
 
+        b.chromium_fake_mouse = False
+
         # Select image
         b.click('button.pf-v6-c-menu__item:contains("localhost:5000/my-busybox")')
 
@@ -1811,6 +1815,7 @@ PodName={podName}
         b.set_input_text("#create-image-image input", "no-container")
         b.wait_text(".pf-v6-c-menu__item[disabled]", "No images found")
         # Search with full url
+        b.chromium_fake_mouse = True  # FIXME; BiDi clicks flake in CI
         b.set_input_text("#create-image-image input", "localhost:5000/my-busybox")
         b.click('button.pf-v6-c-toggle-group__button:contains("Local")')
         b.wait_visible("button.pf-v6-c-toggle-group__button.pf-m-selected:contains('Local')")
@@ -1818,6 +1823,7 @@ PodName={podName}
 
         # Select image
         b.click('button.pf-v6-c-menu__item:contains("localhost:5000/my-busybox")')
+        b.chromium_fake_mouse = False
 
         # Pull the latest image
         b.set_checked("#run-image-dialog-pull-latest-image", val=True)
@@ -2030,7 +2036,8 @@ PodName={podName}
 
         # with copy&paste you can also set multiple variables
         b.click('.env-form .btn-add')
-        b.focus('#run-image-dialog-env-4-value')
+        # focus
+        b.click('#run-image-dialog-env-4-value')
         b.wait_visible('#run-image-dialog-env-4-value:focus')
         b.set_val('#run-image-dialog-env-4-value',
                   "DURIAN=LEMON TEST_URL=wss://cockpit/?start=1&stop=0")
@@ -2644,6 +2651,7 @@ PodName={podName}
         b.click("#pf-tab-1-create-image-dialog-tab-integration")
 
         # Make sure our form validation does not crash when adding and removing invalid entries
+        b.chromium_fake_mouse = True  # FIXME; BiDi clicks flake in CI
         b.click('.env-form .btn-add')
         b.click('.env-form .btn-add')
         b.click('.env-form .btn-add')
