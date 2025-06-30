@@ -1755,9 +1755,9 @@ PodName={podName}
 
         # Local results found
         b.set_input_text("#create-image-image input", "registry")
+        # Wait for "searching in progress" spinner to go away
+        b.wait_not_present(".pf-v6-c-menu__content svg[aria-valuetext='Loading...']")
         b.wait_not_in_text(".pf-v6-c-menu__content", "Local images")
-        # HACK: Wait for "searching in progress" spinner to go away; this does not reflect in the DOM
-        time.sleep(1)
         b.wait_text(".pf-v6-c-menu__item:not([disabled])", IMG_REGISTRY_LATEST)
         if auth:
             b.assert_pixels(".pf-v6-c-modal-box", "image-select", skip_layouts=["rtl"])
