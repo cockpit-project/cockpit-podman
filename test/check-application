@@ -2634,6 +2634,7 @@ PodName={podName}
         b.click('.env-form .btn-add')
         b.click('.env-form .btn-add')
         b.set_input_text("#run-image-dialog-env-1-key-group input", "something")
+        b.wait_visible('#run-image-dialog-env-2-key-group')
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
 
         b.wait_in_text("#run-image-dialog-env-0-key-group .pf-v6-c-helper-text__item-text", "must not be empty")
