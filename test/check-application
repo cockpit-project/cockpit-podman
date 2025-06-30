@@ -2003,6 +2003,8 @@ PodName={podName}
 
         # with copy&paste you can also set multiple variables
         b.click('.env-form .btn-add')
+        b.focus('#run-image-dialog-env-4-value')
+        b.wait_visible('#run-image-dialog-env-4-value:focus')
         b.set_val('#run-image-dialog-env-4-value',
                   "DURIAN=LEMON TEST_URL=wss://cockpit/?start=1&stop=0")
         # set_val does not trigger onChange so append a space.
