@@ -1203,8 +1203,9 @@ PodName={podName}
                     b.click("#delete-all")
                     b.wait_visible("#btn-img-delete:disabled")
 
-                    b.set_checked(f".pf-v6-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']",
-                                  val=True)
+                    b.set_checked(
+                        f".pf-v6-c-check__input[aria-label='localhost:5000/{self.imageName}{imageTagSuffix}']",
+                        val=True)
                     b.set_checked(f".pf-v6-c-check__input[aria-label='{another}']", val=True)
 
                 # Confirm deletion in the delete dialog
@@ -2541,8 +2542,9 @@ PodName={podName}
 
         # Verify running containers still exists
         self.waitContainerRow("containerrunning")
-        pods: Sequence[ContainerList] = [{"name": "inpod", "state": "Exited", "id": notrunninginpodId,
-                 "image": IMG_BUSYBOX, "command": 'sh -c "exit 1"'},
+        pods: Sequence[ContainerList] = [
+                {"name": "inpod", "state": "Exited", "id": notrunninginpodId, "image": IMG_BUSYBOX,
+                 "command": 'sh -c "exit 1"'},
                 {"name": "inpodrunning", "state": "Running", "id": runninginpodId,
                  "image": IMG_BUSYBOX, "command": 'sh -c "sleep infinity"'}]
         self.waitPodContainer("pod", pods, system=auth)
