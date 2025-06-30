@@ -632,7 +632,7 @@ PodName={podName}
         self.execute(f"podman build -t {IMG_HELLO_LATEST} {self.vm_tmpdir}/hello", system=auth)
 
         # prepare image ids - much easier to pick a specific container
-        images = {}
+        images: dict[str, str] = {}
         for image in self.execute("podman images --noheading --no-trunc", system=auth).strip().split("\n"):
             # <name> <tag> sha256:<sha> <other things>
             items = image.split()
@@ -722,8 +722,8 @@ PodName={podName}
         else:  # No 'owner' selector when not privileged
             b.wait_not_present("#containers-containers-owner")
 
-        user_containers = {}
-        system_containers = {}
+        user_containers: dict[str, str] = {}
+        system_containers: dict[str, str] = {}
         for container in self.execute("podman ps --all --no-trunc", system=True).strip().split("\n")[1:]:
             # <sha> <other things> <name>
             items = container.split()
@@ -3398,8 +3398,8 @@ PodName={podName}
         b = self.browser
 
         # create two system users with running container
-        ssh = {}
-        uids = {}
+        ssh: dict[str, ssh_connection.SSHConnection] = {}
+        uids: dict[str, str] = {}
         with open(DEFAULT_IDENTITY_PUB_FILE) as f:
             authorized_keys = f.read()
         for user in ['guitar', 'piano']:
