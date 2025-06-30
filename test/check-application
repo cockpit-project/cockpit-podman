@@ -1813,6 +1813,8 @@ PodName={podName}
         # Search with full url
         b.set_input_text("#create-image-image input", "localhost:5000/my-busybox")
         b.click('button.pf-v6-c-toggle-group__button:contains("Local")')
+        b.wait_visible("button.pf-v6-c-toggle-group__button.pf-m-selected:contains('Local')")
+        b.wait_not_in_text(".pf-v6-c-menu__content", "Local images")
 
         # Select image
         b.click('button.pf-v6-c-menu__item:contains("localhost:5000/my-busybox")')
