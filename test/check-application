@@ -197,9 +197,9 @@ class TestApplication(testlib.MachineCase):
     def performContainerAction(self, container: str, cmd: str) -> None:
         b = self.browser
         b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v6-c-menu-toggle")
-        b.click(self.getContainerAction(container, cmd))
+        b.click(self.getContainerAction(cmd))
 
-    def getContainerAction(self, container: str, cmd: str) -> str:
+    def getContainerAction(self, cmd: str) -> str:
         return f".pf-v6-c-menu__item:contains({cmd})"
 
     def toggleExpandedContainer(self, container: str) -> None:
@@ -1413,7 +1413,7 @@ PodName={podName}
         if not auth:
             # Checkpoint/restore is not supported on user containers yet - the related buttons should not be shown
             # Check that the restore option is not present
-            b.wait_not_present(self.getContainerAction('swamped-crate', 'Restore'))
+            b.wait_not_present(self.getContainerAction('Restore'))
 
         b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v6-c-menu-toggle")
 
@@ -1503,8 +1503,8 @@ PodName={podName}
         if not auth:
             # Check that the checkpoint option is not present for rootless
             b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
-            b.wait_visible(self.getContainerAction(IMG_BUSYBOX, 'Force stop'))
-            b.wait_not_present(self.getContainerAction(IMG_BUSYBOX, 'Checkpoint'))
+            b.wait_visible(self.getContainerAction('Force stop'))
+            b.wait_not_present(self.getContainerAction('Checkpoint'))
             b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
         # Stop the container
         self.performContainerAction(IMG_BUSYBOX, "Force stop")
@@ -1592,7 +1592,7 @@ PodName={podName}
 
         # Check that the restore option is not present (i.e. start is a regular button)
         b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
-        b.wait_not_present(self.getContainerAction(IMG_BUSYBOX, 'Restore'))
+        b.wait_not_present(self.getContainerAction('Restore'))
         b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
 
         # Start the container
@@ -2910,7 +2910,7 @@ PodName={podName}
 
         self.waitContainerRow(container_name)
         self.toggleExpandedContainer(container_name)
-        b.wait_not_present(self.getContainerAction(container_name, 'Resume'))
+        b.wait_not_present(self.getContainerAction('Resume'))
         self.performContainerAction(container_name, "Pause")
 
         # show all containers and check status
@@ -2921,7 +2921,7 @@ PodName={podName}
         b.wait_visible(f'#containers-containers tr:contains("{IMG_ALPINE}") dt:contains("Environment variables")')
 
         b.wait(lambda: self.getContainerAttr(container_name, "State") == "Paused")
-        b.wait_not_present(self.getContainerAction(container_name, 'Pause'))
+        b.wait_not_present(self.getContainerAction('Pause'))
         self.performContainerAction(container_name, "Resume")
         b.wait(lambda: self.getContainerAttr(container_name, "State") == "Running")
 
@@ -2985,7 +2985,7 @@ PodName={podName}
             service_name = "quadlet"
             self.createQuadlet(service_name, containerName=service_name, auth=auth)
             self.waitContainerRow(service_name)
-            b.wait_not_present(self.getContainerAction(service_name, 'Rename'))
+            b.wait_not_present(self.getContainerAction('Rename'))
 
     def testMultipleContainers(self) -> None:
         self.login()
@@ -3292,15 +3292,15 @@ PodName={podName}
         self.waitContainerRow(service_name)
 
         b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
-        b.wait_visible(self.getContainerAction(service_name, 'Commit'))
+        b.wait_visible(self.getContainerAction('Commit'))
 
         # Cannot delete a quadlet container, they are managed by .container units
-        b.wait_not_present(self.getContainerAction(service_name, 'Delete'))
+        b.wait_not_present(self.getContainerAction('Delete'))
 
         # Lifecycle operations are not available such as Stop/Restart/Pause
-        b.wait_not_present(self.getContainerAction(service_name, 'Stop'))
-        b.wait_not_present(self.getContainerAction(service_name, 'Restart'))
-        b.wait_not_present(self.getContainerAction(service_name, 'Pause'))
+        b.wait_not_present(self.getContainerAction('Stop'))
+        b.wait_not_present(self.getContainerAction('Restart'))
+        b.wait_not_present(self.getContainerAction('Pause'))
 
         b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
         b.wait_not_present('.pf-v6-c-menu__item')
