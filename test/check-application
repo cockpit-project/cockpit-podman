@@ -2669,6 +2669,15 @@ PodName={podName}
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         self.waitContainerRow(container_name)
 
+    def testCreateContainerValidation2(self) -> None:
+        self.testCreateContainerValidation()
+
+    def testCreateContainerValidation3(self) -> None:
+        self.testCreateContainerValidation()
+
+    def testCreateContainerValidation4(self) -> None:
+        self.testCreateContainerValidation()
+
     def _testHealthcheck(self, *, auth: bool) -> None:
         b = self.browser
 

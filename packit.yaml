@@ -16,23 +16,6 @@ srpm_build_deps:
   - npm
 
 jobs:
-  - job: tests
-    trigger: pull_request
-    targets: &test_targets
-      fedora-41: {}
-      fedora-42: {}
-      fedora-latest-stable-aarch64: {}
-      fedora-rawhide: {}
-      centos-stream-9-x86_64:
-        distros: ["centos-stream-9", "CentOS-Stream-9-image-mode"]
-      centos-stream-9-aarch64: {}
-      centos-stream-10:
-          distros: ["centos-stream-10", "CentOS-Stream-10-image-mode"]
-
-  - job: copr_build
-    trigger: pull_request
-    targets: *test_targets
-
   - job: copr_build
     trigger: release
     owner: "@cockpit"
