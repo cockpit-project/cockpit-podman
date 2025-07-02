@@ -2651,10 +2651,13 @@ PodName={podName}
         b.click("#pf-tab-1-create-image-dialog-tab-integration")
 
         # Make sure our form validation does not crash when adding and removing invalid entries
-        b.chromium_fake_mouse = True  # FIXME; BiDi clicks flake in CI
         b.click('.env-form .btn-add')
+        b.wait_visible('#run-image-dialog-env-0-key')
         b.click('.env-form .btn-add')
+        b.wait_visible('#run-image-dialog-env-1-key')
         b.click('.env-form .btn-add')
+        b.wait_visible('#run-image-dialog-env-2-key')
+
         b.set_input_text("#run-image-dialog-env-1-key-group input", "something")
         b.wait_visible('#run-image-dialog-env-2-key-group')
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
