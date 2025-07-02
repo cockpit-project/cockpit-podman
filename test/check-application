@@ -2651,24 +2651,24 @@ PodName={podName}
         b.click("#pf-tab-1-create-image-dialog-tab-integration")
 
         # Make sure our form validation does not crash when adding and removing invalid entries
-        b.click('.env-form .btn-add')
+        b.mouse('.env-form .btn-add', 'click', scrollVisible=False)
         b.wait_visible('#run-image-dialog-env-0-key')
-        b.click('.env-form .btn-add')
+        b.mouse('.env-form .btn-add', 'click', scrollVisible=False)
         b.wait_visible('#run-image-dialog-env-1-key')
-        b.click('.env-form .btn-add')
+        b.mouse('.env-form .btn-add', 'click', scrollVisible=False)
         b.wait_visible('#run-image-dialog-env-2-key')
 
         b.set_input_text("#run-image-dialog-env-1-key-group input", "something")
         b.wait_visible('#run-image-dialog-env-2-key-group')
-        b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
+        b.mouse('.pf-v6-c-modal-box__footer #create-image-create-run-btn', 'click', scrollVisible=False)
 
         b.wait_in_text("#run-image-dialog-env-0-key-group .pf-v6-c-helper-text__item-text", "must not be empty")
         b.wait_in_text("#run-image-dialog-env-2-key-group .pf-v6-c-helper-text__item-text", "must not be empty")
 
         # remove invalid entries
-        b.click('#run-image-dialog-env-0-btn-close')
+        b.mouse('#run-image-dialog-env-0-btn-close', 'click', scrollVisible=False)
         b.wait_not_present('#run-image-dialog-env-0-key')
-        b.click('#run-image-dialog-env-2-btn-close')
+        b.mouse('#run-image-dialog-env-2-btn-close', 'click', scrollVisible=False)
         b.wait_not_present('#run-image-dialog-env-2-key')
 
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
