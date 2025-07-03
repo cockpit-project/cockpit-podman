@@ -274,8 +274,13 @@ export class ImageRunModal extends React.Component {
     };
 
     async onCreateClicked(runImage = false) {
-        if (!await this.validateForm())
+        console.log("XXX onCreateClicked", runImage, "start");
+        if (!await this.validateForm()) {
+            console.log("XXX onCreateClicked", runImage, "form failed validation");
             return;
+        }
+
+        console.log("XXX onCreateClicked", runImage, "form validated");
 
         this.setState({ inProgress: true });
 
