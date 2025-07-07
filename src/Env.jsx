@@ -96,7 +96,7 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
                     size="sm"
                     aria-label={_("Remove item")}
                     icon={<TrashIcon />}
-                    onClick={() => removeitem(idx)} />
+                    onClick={() => { console.log("XXX removing Env index", idx); removeitem(idx) } } />
             </FormGroup>
         </Grid>
     );

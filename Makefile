@@ -195,7 +195,7 @@ prepare-check: $(NODE_MODULES_TEST) $(VM_IMAGE) test/common test/reference
 # run the browser integration tests; skip check for SELinux denials
 # this will run all tests/check-* and format them as TAP
 check: prepare-check
-	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests ${RUN_TESTS_OPTIONS}
+	TEST_AUDIT_NO_SELINUX=1 test/common/run-tests -vt ${RUN_TESTS_OPTIONS}
 
 bots: $(COCKPIT_REPO_STAMP)
 	test/common/make-bots
