@@ -329,6 +329,49 @@ PodName={podName}
         self.execute(f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}-pod.service", system=auth)
         self.execute(f"until {systemctl_cmd} is-active {name}-pod.service; do sleep 1; done", system=auth)
 
+    def createKubeDeployment(self, name: str, *, auth: bool = False) -> None:
+        kube_yaml = f"""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {name}
+spec:
+  selector:
+    matchLabels:
+      app: {name}-pod
+  template:
+    spec:
+      containers:
+        - name: {name}
+          image: {IMG_BUSYBOX}
+          command: ["sleep", "infinity"]
+"""
+        kube = f"""
+[Unit]
+Description={name} kube deployment
+After=local-fs.target
+
+[Install]
+WantedBy=default.target
+
+[Kube]
+Yaml={name}.yaml
+"""
+        yaml_file = f"/etc/containers/systemd/{name}.yaml"
+        kube_file = f"/etc/containers/systemd/{name}-kube.kube"
+        if not auth:  # user session
+            yaml_file = f"/home/admin/.config/containers/systemd/{name}.yaml"
+            kube_file = f"/home/admin/.config/containers/systemd/{name}-kube.kube"
+
+        systemctl_cmd = "systemctl" if auth else "systemctl --user"
+        self.addCleanup(self.execute, f"{systemctl_cmd} daemon-reload", system=auth)
+        self.write_file(yaml_file, kube_yaml)
+        self.write_file(kube_file, kube)
+        self.execute(f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}-kube.service", system=auth)
+        self.addCleanup(self.execute, f"{systemctl_cmd} stop {name}-kube.service", system=auth)
+        self.execute(f"until {systemctl_cmd} is-active {name}-kube.service; do sleep 1; done", system=auth)
+
     def testPods(self) -> None:
         b = self.browser
 
@@ -3046,6 +3089,16 @@ PodName={podName}
             self.waitContainerRow('container_3')
             container_3_sel = f"#containers-containers tbody tr[data-row-id=\"0-{container_3_id}\"]"
             b.wait_visible(container_3_sel + " .ct-badge-service:contains('service')")
+
+            # Kube container, check that *-service container is hidden
+            self.createKubeDeployment("jellyfin", auth=True)
+            containerId = self.execute("podman inspect --format '{{.Id}}' jellyfin-pod-jellyfin", system=True).strip()
+            self.waitPodContainer("jellyfin-pod", [{"name": "jellyfin-pod-jellyfin", "image": IMG_BUSYBOX,
+                                  "command": "", "state": "Running", "id": containerId}],
+                                  system=True)
+            service_container = self.execute("podman ps --all --filter name=.*-service --format {{.Names}}",
+                                             system=True).strip()
+            b.wait_not_present(f"#containers-containers tbody tr[data-row-id=\"{service_container}\"]")
 
     def testCreatePodSystem(self) -> None:
         self._createPod(auth=True)
