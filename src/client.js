@@ -1,4 +1,5 @@
-export const VERSION = "/v1.12/";
+// podman API version; oldest one that we support
+export const VERSION = "/v3.4.0/";
 
 const podmanCall = (con, name, method, args, body) => con.call({
     method,
