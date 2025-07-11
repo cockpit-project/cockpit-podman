@@ -644,8 +644,8 @@ class Containers extends React.Component {
                 filtered = filtered.filter(id => this.filterContainersByText(lcf, id));
             }
 
-            // Remove infra containers
-            filtered = filtered.filter(id => !this.props.containers[id].IsInfra);
+            // Remove infra and service containers
+            filtered = filtered.filter(id => !this.props.containers[id].IsInfra && !this.props.containers[id].IsService);
 
             const getHealth = id => {
                 const state = this.props.containers[id]?.State;
