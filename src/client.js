@@ -15,7 +15,7 @@ export const streamEvents = (con, callback) => con.monitor(VERSION + "libpod/eve
 
 export function getInfo(con) {
     return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error("timeout")), 5000);
+        const timeout = setTimeout(() => reject(new Error("timeout")), 10000);
         podmanJson(con, "libpod/info", "GET", {})
                 .then(reply => resolve(reply))
                 .catch(reject)
