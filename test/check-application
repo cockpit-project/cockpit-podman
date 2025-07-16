@@ -2479,7 +2479,7 @@ Yaml={name}.yaml
 
         leftover_images = 1
         # cockpit-ws image
-        if self.machine.ws_container and auth:
+        if self.machine.ws_container and (auth or root):
             leftover_images += 1
 
         # By default we have 3 unused images, start one.
