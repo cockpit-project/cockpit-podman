@@ -536,7 +536,7 @@ Yaml={name}.yaml
         b.wait_not_present('div.pf-v6-c-modal-box header:contains("Search for an image")')
 
         # Gain privileges
-        b.become_superuser(passwordless=self.machine.image == "rhel4edge")
+        b.become_superuser()
 
         checkImage(b, IMG_REGISTRY, "system")
         checkImage(b, IMG_REGISTRY, "admin")
