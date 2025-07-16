@@ -2,12 +2,6 @@
 # image-customize script to prepare a bots VM for cockpit-podman testing
 set -eu
 
-if grep -q ID.*debian /usr/lib/os-release; then
-    # Debian does not enable user namespaces by default
-    echo kernel.unprivileged_userns_clone = 1 > /etc/sysctl.d/00-local-userns.conf
-    systemctl restart systemd-sysctl
-fi
-
 if grep -q ID.*suse /usr/lib/os-release; then
     # HACK: cgroups are not setup to let users use memory or cpu controllers
     #       https://bugzilla.suse.com/show_bug.cgi?id=1222450
