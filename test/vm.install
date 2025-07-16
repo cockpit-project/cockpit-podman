@@ -6,11 +6,6 @@ if grep -q ID.*debian /usr/lib/os-release; then
     # Debian does not enable user namespaces by default
     echo kernel.unprivileged_userns_clone = 1 > /etc/sysctl.d/00-local-userns.conf
     systemctl restart systemd-sysctl
-
-    # disable services that get in the way of /var/lib/containers
-    if systemctl is-enabled docker.service; then
-        systemctl disable docker.service
-    fi
 fi
 
 if grep -q ID.*suse /usr/lib/os-release; then
