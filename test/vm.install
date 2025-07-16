@@ -47,10 +47,6 @@ for img in $(podman images --format '{{.Repository}}:{{.Tag}}'); do
     podman save -o "/var/lib/test-images/${fname}.tar" "$img"
 done
 
-# 15minutes after boot tmp files are removed and podman stores some tmp lock files
-systemctl disable --now systemd-tmpfiles-clean.timer
-systemctl --global disable systemd-tmpfiles-clean.timer
-
 # mitigate stupid/broken 90s timeout for user quadlet units
 # https://github.com/containers/podman/issues/22197#issuecomment-2728794702
 mkdir -p /etc/systemd/user/podman-user-wait-network-online.service.d
