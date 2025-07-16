@@ -147,6 +147,10 @@ class TestApplication(testlib.MachineCase):
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
+        # old C bridge sometimes does that; not fixable any more
+        if m.image.startswith('rhel-8') or m.image in ['debian-stable', 'ubuntu-2204']:
+            self.allow_journal_messages(".*cockpit_http_stream_close: code should not be reached")
+
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1008249
         # Fixed in crun 1.20-1
         self.has_criu = m.image not in ["debian-stable", "ubuntu-2204", "ubuntu-2404"]
