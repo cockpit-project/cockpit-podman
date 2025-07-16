@@ -3235,10 +3235,13 @@ Yaml={name}.yaml
         self.login_and_go(None)
         b.wait_in_text("#host-apps .pf-m-current", "Overview")
 
-        if m.image.startswith("rhel-8") or m.image.startswith("centos-8") or \
-           m.image == "debian-stable" or m.image == "ubuntu-2204":
+        if (m.image.startswith("rhel-8") or
+                m.image.startswith("centos-8") or
+                m.image in ["debian-stable", "ubuntu-2204"]) and not m.ws_container:
+            # C bridge does not understand manifest conditions yet, and still shows the menu
             self.assertIn("Podman", b.text("#host-apps"))
         else:
+            # Python bridge understands manifest conditions, and hides the menu
             self.assertNotIn("Podman", b.text("#host-apps"))
 
     @testlib.skipImage("nginx not installed", "centos-*", "rhel-*", "debian-*", "ubuntu-*", "arch")
