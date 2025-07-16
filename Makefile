@@ -165,7 +165,7 @@ rpm: $(TARFILE)
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	# HACK for ostree images: skip the rpm build/install
 	if [ "$${TEST_OS%coreos}" != "$$TEST_OS" ] || [ "$${TEST_OS%bootc}" != "$$TEST_OS" ]; then \
-	    bots/image-customize --verbose --fresh --no-network $(VM_CUSTOMIZE_FLAGS) \
+	    bots/image-customize --verbose --fresh $(VM_CUSTOMIZE_FLAGS) \
 	                         --run-command 'mkdir -p /usr/local/share/cockpit' \
 	                         --upload dist/:/usr/local/share/cockpit/podman \
 	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
