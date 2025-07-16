@@ -20,8 +20,6 @@ if systemctl is-active -q firewalld.service; then
     firewall-cmd --add-service=cockpit --permanent
 fi
 
-. /usr/lib/os-release
-
 # Remove extra images, tests assume our specific set
 # Since 4.0 podman now ships the pause image
 podman images --format '{{.Repository}}:{{.Tag}}' | grep -Ev 'localhost/test-|pause|cockpit/ws' | xargs -r podman rmi -f
