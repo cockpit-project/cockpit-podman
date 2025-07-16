@@ -23,6 +23,15 @@ TAR_ARGS = --sort=name --mtime "@$(shell git show --no-patch --format='%at')" --
 
 VM_CUSTOMIZE_FLAGS =
 
+ifeq ("$(TEST_SCENARIO)","ws-container")
+VM_CUSTOMIZE_FLAGS += --upload $(TARFILE):/var/tmp/ --script $(CURDIR)/test/vm-beiboot.install
+else ifneq (,$(or $(findstring coreos,$(TEST_OS)),$(findstring bootc,$(TEST_OS))))
+# HACK for ostree images: skip the rpm build/install
+VM_CUSTOMIZE_FLAGS += --run-command 'mkdir -p /usr/local/share/cockpit' --upload dist/:/usr/local/share/cockpit/podman
+else
+VM_CUSTOMIZE_FLAGS += --build $(TARFILE) --script $(CURDIR)/test/vm-ws-package.install
+endif
+
 # the following scenarios need network access
 ifeq ("$(TEST_SCENARIO)","updates-testing")
 VM_CUSTOMIZE_FLAGS += --run-command 'dnf -y update --setopt=install_weak_deps=False --enablerepo=updates-testing >&2'
@@ -163,16 +172,7 @@ rpm: $(TARFILE)
 
 # build a VM with locally built distro pkgs installed
 $(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
-	# HACK for ostree images: skip the rpm build/install
-	if [ "$${TEST_OS%coreos}" != "$$TEST_OS" ] || [ "$${TEST_OS%bootc}" != "$$TEST_OS" ]; then \
-	    bots/image-customize --verbose --fresh $(VM_CUSTOMIZE_FLAGS) \
-	                         --run-command 'mkdir -p /usr/local/share/cockpit' \
-	                         --upload dist/:/usr/local/share/cockpit/podman \
-	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
-	else \
-	    bots/image-customize --verbose --fresh $(VM_CUSTOMIZE_FLAGS) --build $(TARFILE) \
-	                         --script $(CURDIR)/test/vm.install $(TEST_OS); \
-	fi
+	bots/image-customize --verbose --fresh $(VM_CUSTOMIZE_FLAGS) --script $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)

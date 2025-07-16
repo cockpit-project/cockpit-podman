@@ -66,6 +66,7 @@ podman rmi $CONTAINER
 
 # image setup, shared with upstream tests
 sh -x test/vm.install
+sh -x test/vm-ws-package.install
 
 systemctl enable --now cockpit.socket
 

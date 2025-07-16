@@ -1,5 +1,6 @@
 #!/bin/sh
 # image-customize script to prepare a bots VM for cockpit-podman testing
+# This part applies to any scenario, cockpit-ws package or cockpit/ws container with beiboot
 set -eu
 
 if grep -q ID.*suse /usr/lib/os-release; then
@@ -12,10 +13,6 @@ Delegate=cpu cpuset io memory pids
 EOF
 fi
 
-# don't force https:// (self-signed cert)
-mkdir -p /etc/cockpit
-printf "[WebService]\\nAllowUnencrypted=true\\n" > /etc/cockpit/cockpit.conf
-
 if systemctl is-active -q firewalld.service; then
     firewall-cmd --add-service=cockpit --permanent
 fi
@@ -24,8 +21,10 @@ fi
 # Since 4.0 podman now ships the pause image
 podman images --format '{{.Repository}}:{{.Tag}}' | grep -Ev 'localhost/test-|pause|cockpit/ws' | xargs -r podman rmi -f
 
-# clean up cockpit/ws on Fedora images, as it "breaks" pixel tests; it's only relevant for OSTree images
-bootc status --booted || podman rmi -f quay.io/cockpit/ws || true
+# clean up cockpit/ws on Fedora images, as it "breaks" pixel tests; it's only relevant for OSTree images and rhel-8 beiboot
+if grep -q '^ID=.*fedora' /usr/lib/os-release && ! bootc status --booted; then
+    podman rmi -f quay.io/cockpit/ws || true
+fi
 
 # tests reset podman, save the images
 mkdir -p /var/lib/test-images

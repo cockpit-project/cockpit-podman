@@ -1,0 +1,8 @@
+#!/bin/sh
+# image-customize script to prepare a bots VM for cockpit-podman testing
+# This part applies to cockpit-ws package
+set -eu
+
+# don't force https:// (self-signed cert)
+mkdir -p /etc/cockpit
+printf "[WebService]\\nAllowUnencrypted=true\\n" > /etc/cockpit/cockpit.conf
