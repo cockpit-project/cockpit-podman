@@ -382,7 +382,7 @@ Yaml={name}.yaml
         self.login()
 
         self.filter_containers("running")
-        if not self.machine.ostree_image:
+        if not self.machine.ws_container:
             b.wait_in_text("#containers-containers", "No running containers")
 
         # Run a pods as system
@@ -602,7 +602,7 @@ Yaml={name}.yaml
 
         b.logout()
 
-        if self.machine.ostree_image:
+        if self.machine.ws_container:
             self.machine.execute("echo foobar | passwd --stdin root")
             self.write_file("/etc/ssh/sshd_config.d/99-root-password.conf", "PermitRootLogin yes",
                             post_restore_action="systemctl try-restart sshd")
@@ -642,7 +642,7 @@ Yaml={name}.yaml
             self.allow_browser_errors("Failed to start system podman.socket.*")
 
         expected_ws = ""
-        if auth and self.machine.ostree_image:
+        if auth and self.machine.ws_container:
             expected_ws += "ws"
 
         self.login(system=auth)
@@ -713,7 +713,7 @@ Yaml={name}.yaml
 
         # make sure no running containers shown; on CoreOS there's the cockpit/ws container
         self.filter_containers('running')
-        if auth and self.machine.ostree_image:
+        if auth and self.machine.ws_container:
             self.waitContainerRow("ws")
         else:
             b.wait_in_text("#containers-containers", "No running containers")
@@ -2375,7 +2375,7 @@ Yaml={name}.yaml
         b.wait_in_text('#containers-images .pf-v6-c-empty-state', 'No images that match the current filter')
         b.click('#containers-filter button[aria-label="Reset"]')
 
-        if not auth or not self.machine.ostree_image:  # don't kill ws container
+        if not auth or not self.machine.ws_container:  # don't kill ws container
             # Ubuntu 22.04 has old podman that does not know about --time
             if m.image != 'ubuntu-2204':
                 # Remove all containers first as it is not possible to set --time 0 to rmi command
@@ -2479,7 +2479,7 @@ Yaml={name}.yaml
 
         leftover_images = 1
         # cockpit-ws image
-        if self.machine.ostree_image and auth:
+        if self.machine.ws_container and auth:
             leftover_images += 1
 
         # By default we have 3 unused images, start one.
@@ -2532,7 +2532,7 @@ Yaml={name}.yaml
 
         # Admin / user images are selected
         expected_images = self.user_images_count + self.system_images_count
-        if self.machine.ostree_image:
+        if self.machine.ws_container:
             expected_images -= 1
         b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li", expected_images)
         # Select user images
@@ -2549,9 +2549,9 @@ Yaml={name}.yaml
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
         b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li",
-                       self.system_images_count - 1 if self.machine.ostree_image else self.system_images_count)
+                       self.system_images_count - 1 if self.machine.ws_container else self.system_images_count)
         b.click(".pf-v6-c-modal-box button:contains(Prune)")
-        self.waitNumImages(1 if self.machine.ostree_image else 0)
+        self.waitNumImages(1 if self.machine.ws_container else 0)
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
@@ -2785,7 +2785,7 @@ Yaml={name}.yaml
         self.waitContainer(unhealthy_sha, auth=auth, state='RunningUnhealthy')
         # Unhealthy should be first
         expected_ws = ""
-        if auth and self.machine.ostree_image:
+        if auth and self.machine.ws_container:
             expected_ws = "ws"
         b.wait_collected_text("#containers-containers .container-name", "healthysick" + expected_ws)
 
