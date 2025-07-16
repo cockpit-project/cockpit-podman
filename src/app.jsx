@@ -504,7 +504,7 @@ class Application extends React.Component {
         this.updatePods(con);
 
         client.streamEvents(con, message => this.handleEvent(message, con))
-                .catch(e => console.error("uid", uid, "streamEvents failed:", e.toString()))
+                .catch(e => console.error("uid", uid, "streamEvents failed:", JSON.stringify(e)))
                 .finally(() => {
                     console.log("uid", uid, "podman service closed");
                     this.cleanupAfterService(con);
