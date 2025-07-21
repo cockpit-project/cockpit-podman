@@ -142,7 +142,7 @@ class Images extends React.Component {
         const columns = [
             { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
             { title: (image.uid == 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{user.name}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
-            { title: <utils.RelativeTime time={image.Created * 1000} />, props: { className: "ignore-pixels" } },
+            { title: <utils.RelativeTime time={image.Created * 1000} />, props: { className: "image-created" } },
             { title: utils.truncate_id(image.Id), props: { className: "ignore-pixels" } },
             { title: cockpit.format_bytes(image.Size), props: { className: "ignore-pixels", modifier: "nowrap" } },
             { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" } },
