@@ -915,7 +915,8 @@ Yaml={name}.yaml
         sha = self.execute("podman inspect --format '{{.Id}}' test-sh4", system=auth).strip()
         self.waitContainer(sha, auth=auth, name="test-sh4", state='Exited')
         if auth:
-            b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl", "mobile"])
+            b.assert_pixels('#app', "overview", ignore=[".ignore-pixels"], skip_layouts=["rtl", "mobile"],
+                            mock={".image-created": "2 months ago"})
         alpine_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_ALPINE_LATEST]}\"]".lower()
         b.wait_visible(alpine_sel)
         b.click(alpine_sel + " td.pf-v6-c-table__toggle button")
