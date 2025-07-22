@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 03:43+0000\n"
+"POT-Creation-Date: 2025-07-21 03:56+0000\n"
 "PO-Revision-Date: 2025-02-28 05:23+0000\n"
 "Last-Translator: Martin Pitt <mpitt@redhat.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
@@ -56,7 +56,7 @@ msgstr "容器转换到不健康状态后要执行的操作。"
 msgid "Actions"
 msgstr "操作"
 
-#: src/ImageRunModal.jsx:1045 src/PodCreateModal.jsx:185
+#: src/PodCreateModal.jsx:185 src/ImageRunModal.jsx:1045
 msgid "Add port mapping"
 msgstr "添加端口映射"
 
@@ -64,12 +64,12 @@ msgstr "添加端口映射"
 msgid "Add variable"
 msgstr "添加变量"
 
-#: src/ImageRunModal.jsx:1055 src/PodCreateModal.jsx:197
+#: src/PodCreateModal.jsx:197 src/ImageRunModal.jsx:1055
 msgid "Add volume"
 msgstr "添加卷"
 
-#: src/ContainerHeader.jsx:24 src/ImageRunModal.jsx:767 src/Containers.jsx:767
-#: src/ImageDeleteModal.jsx:104
+#: src/ImageDeleteModal.jsx:104 src/ContainerHeader.jsx:24
+#: src/ImageRunModal.jsx:767 src/Containers.jsx:767
 msgid "All"
 msgstr "所有"
 
@@ -110,13 +110,13 @@ msgstr ""
 "CPU 份额决定了运行容器的优先级。默认优先级为 1024。数字越大，容器的优先级越"
 "高。数字越小，优先级越低。"
 
-#: src/ContainerCommitModal.jsx:166 src/ContainerRestoreModal.jsx:72
-#: src/ImageRunModal.jsx:1224 src/ContainerRenameModal.jsx:106
-#: src/ContainerCheckpointModal.jsx:66 src/ContainerDeleteModal.jsx:43
-#: src/PodActions.jsx:70 src/PruneUnusedContainersModal.jsx:111
 #: src/ImageSearchModal.jsx:225 src/PodCreateModal.jsx:224
-#: src/ForceRemoveModal.jsx:33 src/PruneUnusedImagesModal.jsx:112
-#: src/ImageDeleteModal.jsx:125
+#: src/ImageDeleteModal.jsx:125 src/ContainerRestoreModal.jsx:72
+#: src/PruneUnusedContainersModal.jsx:111 src/ImageRunModal.jsx:1224
+#: src/ContainerDeleteModal.jsx:43 src/ContainerCommitModal.jsx:166
+#: src/PodActions.jsx:70 src/ContainerRenameModal.jsx:106
+#: src/PruneUnusedImagesModal.jsx:112 src/ForceRemoveModal.jsx:33
+#: src/ContainerCheckpointModal.jsx:66
 msgid "Cancel"
 msgstr "取消"
 
@@ -152,8 +152,8 @@ msgstr "Cockpit 项目"
 msgid "Cockpit component for Podman containers"
 msgstr "Podman 容器的 Cockpit 组件"
 
-#: src/ContainerCommitModal.jsx:116 src/ContainerDetails.jsx:43
-#: src/ImageRunModal.jsx:925 src/ImageRunModal.jsx:1076
+#: src/ContainerDetails.jsx:43 src/ImageRunModal.jsx:925
+#: src/ImageRunModal.jsx:1076 src/ContainerCommitModal.jsx:116
 #: src/ContainerHealthLogs.jsx:63 src/ImageDetails.jsx:17
 msgid "Command"
 msgstr "命令"
@@ -222,7 +222,7 @@ msgstr "容器端口不能为空"
 msgid "Containers"
 msgstr "容器"
 
-#: src/ImageRunModal.jsx:1221 src/PodCreateModal.jsx:221
+#: src/PodCreateModal.jsx:221 src/ImageRunModal.jsx:1221
 msgid "Create"
 msgstr "创建"
 
@@ -234,7 +234,7 @@ msgstr "根据 $0 容器的当前状态创建一个新镜像。"
 msgid "Create and run"
 msgstr "创建并运行"
 
-#: src/Images.jsx:420 src/Images.jsx:429 src/ImageRunModal.jsx:1210
+#: src/ImageRunModal.jsx:1210 src/Images.jsx:420 src/Images.jsx:429
 #: src/Containers.jsx:784
 msgid "Create container"
 msgstr "创建容器"
@@ -247,12 +247,13 @@ msgstr "在 $0 中创建容器"
 msgid "Create container in pod"
 msgstr "在 pod 中创建容器"
 
-#: src/Containers.jsx:776 src/PodCreateModal.jsx:213
+#: src/PodCreateModal.jsx:213 src/Containers.jsx:776
 msgid "Create pod"
 msgstr "创建 pod"
 
-#: src/ImageHistory.jsx:33 src/ContainerDetails.jsx:79 src/Images.jsx:189
-#: src/util.js:24 src/util.js:27 src/PruneUnusedContainersModal.jsx:68
+#: src/ImageHistory.jsx:33 src/ContainerDetails.jsx:79
+#: src/PruneUnusedContainersModal.jsx:68 src/util.js:24 src/util.js:27
+#: src/Images.jsx:189
 msgid "Created"
 msgstr "已创建"
 
@@ -288,8 +289,8 @@ msgstr "减少启动周期"
 msgid "Decrease timeout"
 msgstr "减少超时"
 
-#: src/Images.jsx:440 src/Containers.jsx:255 src/ContainerDeleteModal.jsx:42
-#: src/PodActions.jsx:66 src/PodActions.jsx:186
+#: src/ContainerDeleteModal.jsx:42 src/PodActions.jsx:66 src/PodActions.jsx:186
+#: src/Images.jsx:440 src/Containers.jsx:255
 msgid "Delete"
 msgstr "删除"
 
@@ -335,7 +336,7 @@ msgstr "删除正在运行的容器将会清除其中的所有数据。"
 msgid "Deleting this pod will remove the following containers:"
 msgstr "删除这个 Pod 将会移除这些容器："
 
-#: src/Images.jsx:160 src/ImageRunModal.jsx:826 src/Containers.jsx:441
+#: src/ImageRunModal.jsx:826 src/Images.jsx:160 src/Containers.jsx:441
 msgid "Details"
 msgstr "详情"
 
@@ -364,7 +365,7 @@ msgstr "空 pod $0 将被永久删除。"
 msgid "Entrypoint"
 msgstr "入口点"
 
-#: src/ImageRunModal.jsx:1066 src/ContainerIntegration.jsx:158
+#: src/ContainerIntegration.jsx:158 src/ImageRunModal.jsx:1066
 msgid "Environment variables"
 msgstr "环境变量"
 
@@ -372,7 +373,7 @@ msgstr "环境变量"
 msgid "Error"
 msgstr "错误"
 
-#: src/Notification.jsx:43 src/Images.jsx:61
+#: src/Images.jsx:61 src/Notification.jsx:43
 msgid "Error message"
 msgstr "错误信息"
 
@@ -492,15 +493,15 @@ msgstr "运行容器 $0 失败"
 msgid "Failed to run health check on container $0"
 msgstr "在容器 $0 上运行健康检查失败"
 
-#: src/ImageRunModal.jsx:390 src/ImageSearchModal.jsx:97
+#: src/ImageSearchModal.jsx:97 src/ImageRunModal.jsx:390
 msgid "Failed to search for images."
 msgstr "搜索镜像失败。"
 
-#: src/ImageRunModal.jsx:390 src/ImageSearchModal.jsx:97
+#: src/ImageSearchModal.jsx:97 src/ImageRunModal.jsx:390
 msgid "Failed to search for images: $0"
 msgstr "搜索镜像 $0 失败"
 
-#: src/ImageRunModal.jsx:388 src/ImageSearchModal.jsx:96
+#: src/ImageSearchModal.jsx:96 src/ImageRunModal.jsx:388
 msgid "Failed to search for new images"
 msgstr "搜索新镜像失败"
 
@@ -536,12 +537,12 @@ msgstr "强制删除"
 msgid "Force delete pod $0?"
 msgstr "强制删除 pod $0？"
 
-#: src/Containers.jsx:182 src/PodActions.jsx:126
+#: src/PodActions.jsx:126 src/Containers.jsx:182
 msgid "Force restart"
 msgstr "强制重启"
 
-#: src/ImageRunModal.jsx:64 src/Containers.jsx:174 src/PodActions.jsx:104
-#: src/ContainerHealthLogs.jsx:45
+#: src/ImageRunModal.jsx:64 src/PodActions.jsx:104
+#: src/ContainerHealthLogs.jsx:45 src/Containers.jsx:174
 msgid "Force stop"
 msgstr "强制停止"
 
@@ -609,7 +610,7 @@ msgstr "主机端口帮助"
 msgid "ID"
 msgstr "ID"
 
-#: src/ContainerDetails.jsx:63 src/PublishPort.jsx:56
+#: src/PublishPort.jsx:56 src/ContainerDetails.jsx:63
 msgid "IP address"
 msgstr "IP 地址"
 
@@ -645,7 +646,7 @@ msgstr "如果以静态方式设置，则忽略 IP 地址"
 msgid "Ignore MAC address if set statically"
 msgstr "忽略被静态设定的 MAC 地址"
 
-#: src/ContainerDetails.jsx:38 src/Images.jsx:187 src/ImageRunModal.jsx:878
+#: src/ContainerDetails.jsx:38 src/ImageRunModal.jsx:878 src/Images.jsx:187
 msgid "Image"
 msgstr "镜像"
 
@@ -705,7 +706,7 @@ msgstr "间隔"
 msgid "Interval how often health check is run."
 msgstr "健康检查运行的频率间隔。"
 
-#: src/ContainerRenameModal.jsx:36 src/PodCreateModal.jsx:121
+#: src/PodCreateModal.jsx:121 src/ContainerRenameModal.jsx:36
 msgid ""
 "Invalid characters. Name can only contain letters, numbers, and certain "
 "punctuation (_ . -)."
@@ -755,7 +756,7 @@ msgstr "加载详细信息..."
 msgid "Loading logs..."
 msgstr "正在加载日志..."
 
-#: src/Containers.jsx:625 src/ImageUsedBy.jsx:14
+#: src/ImageUsedBy.jsx:14 src/Containers.jsx:625
 msgid "Loading..."
 msgstr "加载中……"
 
@@ -767,7 +768,7 @@ msgstr "本地"
 msgid "Local images"
 msgstr "本地镜像"
 
-#: src/Containers.jsx:453 src/ContainerHealthLogs.jsx:105
+#: src/ContainerHealthLogs.jsx:105 src/Containers.jsx:453
 msgid "Logs"
 msgstr "日志"
 
@@ -807,8 +808,8 @@ msgstr "此镜像存在多个标签。选择标记的镜像以删除。"
 msgid "Must be a valid IP address"
 msgstr "必须是有效的 IP 地址"
 
-#: src/ImageRunModal.jsx:808 src/PruneUnusedContainersModal.jsx:67
-#: src/PodCreateModal.jsx:152
+#: src/PodCreateModal.jsx:152 src/PruneUnusedContainersModal.jsx:67
+#: src/ImageRunModal.jsx:808
 msgid "Name"
 msgstr "名称"
 
@@ -856,8 +857,8 @@ msgstr "没有指定环境变量"
 msgid "No images"
 msgstr "没有镜像"
 
-#: src/ImageRunModal.jsx:896 src/ImageRunModal.jsx:897
-#: src/ImageSearchModal.jsx:178
+#: src/ImageSearchModal.jsx:178 src/ImageRunModal.jsx:896
+#: src/ImageRunModal.jsx:897
 msgid "No images found"
 msgstr "没有找到镜像"
 
@@ -869,7 +870,7 @@ msgstr "没有符合当前筛选条件的镜像"
 msgid "No label"
 msgstr "无标签"
 
-#: src/ImageRunModal.jsx:1042 src/PodCreateModal.jsx:182
+#: src/PodCreateModal.jsx:182 src/ImageRunModal.jsx:1042
 msgid "No ports exposed"
 msgstr "没有公开的端口"
 
@@ -881,7 +882,7 @@ msgstr "没有 $0 的结果"
 msgid "No running containers"
 msgstr "没有正在运行的容器"
 
-#: src/ImageRunModal.jsx:1052 src/PodCreateModal.jsx:194
+#: src/PodCreateModal.jsx:194 src/ImageRunModal.jsx:1052
 msgid "No volumes specified"
 msgstr "没有指定卷"
 
@@ -897,9 +898,9 @@ msgstr "仅运行"
 msgid "Options"
 msgstr "选项"
 
-#: src/ContainerHeader.jsx:17 src/Images.jsx:188 src/ImageRunModal.jsx:828
-#: src/Containers.jsx:612 src/PruneUnusedContainersModal.jsx:74
 #: src/ImageSearchModal.jsx:146 src/PodCreateModal.jsx:170
+#: src/ContainerHeader.jsx:17 src/PruneUnusedContainersModal.jsx:74
+#: src/ImageRunModal.jsx:828 src/Images.jsx:188 src/Containers.jsx:612
 msgid "Owner"
 msgstr "所有者"
 
@@ -916,7 +917,7 @@ msgid ""
 "Paste one or more lines of key=value pairs into any field for bulk import"
 msgstr "将一个或多个 key=value 对行粘贴到批量导入的任何字段"
 
-#: src/Containers.jsx:190 src/PodActions.jsx:171
+#: src/PodActions.jsx:171 src/Containers.jsx:190
 msgid "Pause"
 msgstr "暂停"
 
@@ -948,11 +949,11 @@ msgstr "Podman 容器"
 msgid "Podman service failed"
 msgstr "Podman 服务失败"
 
-#: src/ImageRunModal.jsx:1044 src/PodCreateModal.jsx:184
+#: src/PodCreateModal.jsx:184 src/ImageRunModal.jsx:1044
 msgid "Port mapping"
 msgstr "端口映射"
 
-#: src/ImageDetails.jsx:41 src/ContainerIntegration.jsx:150
+#: src/ContainerIntegration.jsx:150 src/ImageDetails.jsx:41
 msgid "Ports"
 msgstr "端口"
 
@@ -972,7 +973,7 @@ msgstr "协议"
 msgid "Prune"
 msgstr "删除"
 
-#: src/Containers.jsx:295 src/PruneUnusedContainersModal.jsx:93
+#: src/PruneUnusedContainersModal.jsx:93 src/Containers.jsx:295
 msgid "Prune unused containers"
 msgstr "删除未使用的容器"
 
@@ -1013,7 +1014,7 @@ msgstr "只读访问"
 msgid "Read-write access"
 msgstr "读写访问"
 
-#: src/PublishPort.jsx:134 src/Env.jsx:97 src/Volume.jsx:86
+#: src/PublishPort.jsx:134 src/Volume.jsx:86 src/Env.jsx:97
 msgid "Remove item"
 msgstr "删除项目"
 
@@ -1037,8 +1038,8 @@ msgstr "重命名容器 $0"
 msgid "Resource limits can be set"
 msgstr "可以设置资源限制"
 
-#: src/ImageRunModal.jsx:62 src/Containers.jsx:178 src/util.js:24
-#: src/PodActions.jsx:115 src/ContainerHealthLogs.jsx:43
+#: src/ImageRunModal.jsx:62 src/PodActions.jsx:115 src/util.js:24
+#: src/ContainerHealthLogs.jsx:43 src/Containers.jsx:178
 msgid "Restart"
 msgstr "重启"
 
@@ -1079,7 +1080,7 @@ msgstr "使用已建立的 TCP 连接恢复"
 msgid "Restricted by user account permissions"
 msgstr "受用户帐户权限限制"
 
-#: src/Containers.jsx:197 src/PodActions.jsx:156
+#: src/PodActions.jsx:156 src/Containers.jsx:197
 msgid "Resume"
 msgstr "继续"
 
@@ -1095,7 +1096,7 @@ msgstr "重试另一个项。"
 msgid "Run health check"
 msgstr "运行健康检查"
 
-#: src/util.js:24 src/util.js:27 src/ImageUsedBy.jsx:37
+#: src/ImageUsedBy.jsx:37 src/util.js:24 src/util.js:27
 msgid "Running"
 msgstr "正在运行"
 
@@ -1151,7 +1152,7 @@ msgstr "显示中间镜像"
 msgid "Show less"
 msgstr "显示更少"
 
-#: src/PruneUnusedImagesModal.jsx:54 src/ContainerIntegration.jsx:123
+#: src/ContainerIntegration.jsx:123 src/PruneUnusedImagesModal.jsx:54
 msgid "Show more"
 msgstr "显示更多"
 
@@ -1159,7 +1160,7 @@ msgstr "显示更多"
 msgid "Size"
 msgstr "大小"
 
-#: src/Containers.jsx:220 src/PodActions.jsx:141
+#: src/PodActions.jsx:141 src/Containers.jsx:220
 msgid "Start"
 msgstr "启动"
 
@@ -1183,8 +1184,8 @@ msgstr "状态"
 msgid "Status"
 msgstr "状态"
 
-#: src/ImageRunModal.jsx:63 src/Containers.jsx:170 src/PodActions.jsx:93
-#: src/ContainerHealthLogs.jsx:44
+#: src/ImageRunModal.jsx:63 src/PodActions.jsx:93
+#: src/ContainerHealthLogs.jsx:44 src/Containers.jsx:170
 msgid "Stop"
 msgstr "停止"
 
@@ -1196,8 +1197,8 @@ msgstr "已停止"
 msgid "Support preserving established TCP connections"
 msgstr "支持保留已建立的 TCP 连接"
 
-#: src/ImageRunModal.jsx:835 src/ImageRunModal.jsx:870
-#: src/PodCreateModal.jsx:174
+#: src/PodCreateModal.jsx:174 src/ImageRunModal.jsx:835
+#: src/ImageRunModal.jsx:870
 msgid "System"
 msgstr "系统"
 
@@ -1205,7 +1206,7 @@ msgstr "系统"
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ContainerCommitModal.jsx:102 src/ImageSearchModal.jsx:212
+#: src/ImageSearchModal.jsx:212 src/ContainerCommitModal.jsx:102
 msgid "Tag"
 msgstr "标签"
 
@@ -1280,7 +1281,7 @@ msgstr "使用者"
 msgid "User"
 msgstr "用户"
 
-#: src/ImageRunModal.jsx:870 src/PodCreateModal.jsx:174
+#: src/PodCreateModal.jsx:174 src/ImageRunModal.jsx:870
 msgid "User:"
 msgstr "用户："
 
@@ -1296,8 +1297,8 @@ msgstr ""
 msgid "View $0 logs"
 msgstr ""
 
-#: src/ImageRunModal.jsx:1054 src/PodCreateModal.jsx:196
-#: src/ContainerIntegration.jsx:154
+#: src/PodCreateModal.jsx:196 src/ContainerIntegration.jsx:154
+#: src/ImageRunModal.jsx:1054
 msgid "Volumes"
 msgstr "卷"
 
@@ -1372,8 +1373,8 @@ msgstr "秒"
 msgid "service"
 msgstr ""
 
-#: src/Images.jsx:144 src/Containers.jsx:416 src/app.jsx:61 src/app.jsx:515
-#: src/PruneUnusedContainersModal.jsx:34
+#: src/PruneUnusedContainersModal.jsx:34 src/Images.jsx:144 src/app.jsx:61
+#: src/app.jsx:515 src/Containers.jsx:416
 msgid "system"
 msgstr "系统"
 
@@ -1391,8 +1392,8 @@ msgstr "未使用"
 msgid "user"
 msgstr "用户："
 
-#: src/Images.jsx:144 src/Containers.jsx:416
-#: src/PruneUnusedContainersModal.jsx:34
+#: src/PruneUnusedContainersModal.jsx:34 src/Images.jsx:144
+#: src/Containers.jsx:416
 msgid "user:"
 msgstr "用户："
 
