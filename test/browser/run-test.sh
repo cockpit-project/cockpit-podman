@@ -21,7 +21,7 @@ fi
 export TEST_OS="${ID}-${VERSION_ID/./-}"
 
 if [ -e /sysroot/ostree ]; then
-    TEST_OS="${TEST_OS}-ostree"
+    TEST_OS="${TEST_OS}-bootc"
 elif [ "$TEST_OS" = "centos-9" ]; then
     TEST_OS="${TEST_OS}-stream"
 fi
