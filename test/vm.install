@@ -37,3 +37,9 @@ done
 # https://github.com/containers/podman/issues/22197#issuecomment-2728794702
 mkdir -p /etc/systemd/user/podman-user-wait-network-online.service.d
 printf '[Service]\nExecStart=\nExecStart=/bin/true\n' > /etc/systemd/user/podman-user-wait-network-online.service.d/disable.conf
+
+# HACK: unbreak subuid assignment for new users; see
+# https://bugzilla.redhat.com/show_bug.cgi?id=2382662
+if [ -e /etc/login.defs ]; then
+    sed -i '/^SUB_.ID_COUNT/ s/ 0/ 65536/' /etc/login.defs
+fi
