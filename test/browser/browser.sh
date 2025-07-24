@@ -29,6 +29,10 @@ mkdir -p /root/.ssh
 curl https://raw.githubusercontent.com/cockpit-project/bots/main/machine/identity.pub >> /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 
+# HACK: unbreak subuid assignment for new users; see
+# https://bugzilla.redhat.com/show_bug.cgi?id=2382662
+sed -i '/^SUB_.ID_COUNT/ s/ 0/ 65536/' /etc/login.defs
+
 # create user account for logging in
 if ! id admin 2>/dev/null; then
     useradd -c Administrator -G wheel admin
