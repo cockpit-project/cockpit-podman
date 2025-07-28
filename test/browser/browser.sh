@@ -31,7 +31,8 @@ chmod 600 /root/.ssh/authorized_keys
 
 # HACK: unbreak subuid assignment for new users; see
 # https://bugzilla.redhat.com/show_bug.cgi?id=2382662
-sed -i '/^SUB_.ID_COUNT/ s/ 0/ 65536/' /etc/login.defs
+# https://issues.redhat.com/browse/RHEL-103765
+sed -i '/^SUB_.ID_COUNT/ s/\b0/65536/' /etc/login.defs
 
 # create user account for logging in
 if ! id admin 2>/dev/null; then

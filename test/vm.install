@@ -38,8 +38,13 @@ done
 mkdir -p /etc/systemd/user/podman-user-wait-network-online.service.d
 printf '[Service]\nExecStart=\nExecStart=/bin/true\n' > /etc/systemd/user/podman-user-wait-network-online.service.d/disable.conf
 
-# HACK: unbreak subuid assignment for new users; see
+# HACK: unbreak subuid assignment for current and new users; see
 # https://bugzilla.redhat.com/show_bug.cgi?id=2382662
+# https://issues.redhat.com/browse/RHEL-103765
 if [ -e /etc/login.defs ]; then
-    sed -i '/^SUB_.ID_COUNT/ s/ 0/ 65536/' /etc/login.defs
+    sed -i '/^SUB_.ID_COUNT/ s/\b0/65536/' /etc/login.defs
+fi
+if ! grep -q admin /etc/subuid; then
+    usermod --add-subuids 100000-165535 admin
+    usermod --add-subgids 100000-165535 admin
 fi
