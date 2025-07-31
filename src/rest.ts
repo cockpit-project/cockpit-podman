@@ -1,10 +1,13 @@
 import cockpit from "cockpit";
 
-import { debug } from "./util.js";
+import { debug } from "./util";
 
-function format_error(error, content) {
-    let content_o = {};
-    if (typeof content === "string") {
+type JsonObject = cockpit.JsonObject;
+
+// make this `unknown` to conveniently call it on raw error objects
+function format_error(error: object, content: unknown): object {
+    let content_o: JsonObject = {};
+    if (typeof content === 'string') {
         try {
             content_o = JSON.parse(content);
         } catch {
@@ -25,16 +28,17 @@ const CR = '\r'.charCodeAt(0); // always 13, but avoid magic constant
 
 const PODMAN_SYSTEM_ADDRESS = "/run/podman/podman.sock";
 
-/* uid: null for logged in session user, otherwise standard Unix user ID
- * Return { path, superuser } */
-function getAddress(uid) {
+export type Uid = number | null; // standard Unix UID or null for logged in session user
+
+// FIXME: export SuperuserMode in cockpit.d.ts, and use it here
+function getAddress(uid: Uid): { path: string, superuser?: cockpit.ChannelOptions["superuser"] } {
     if (uid === null) {
         // FIXME: make this async and call cockpit.user()
         const xrd = sessionStorage.getItem('XDG_RUNTIME_DIR');
         if (xrd)
-            return { path: xrd + "/podman/podman.sock", superuser: null };
+            return { path: xrd + "/podman/podman.sock" };
         console.warn("$XDG_RUNTIME_DIR is not present. Cannot use user service.");
-        return { path: "", superuser: null };
+        return { path: "" };
     }
 
     if (uid === 0)
@@ -47,7 +51,7 @@ function getAddress(uid) {
 }
 
 // split an Uint8Array at \r\n\r\n (separate headers from body)
-function splitAtNLNL(array) {
+function splitAtNLNL(array: Uint8Array): [Uint8Array, Uint8Array | null] {
     for (let i = 0; i <= array.length - 4; i++) {
         if (array[i] === CR && array[i + 1] === NL && array[i + 2] === CR && array[i + 3] === NL) {
             return [array.subarray(0, i), array.subarray(i + 4)];
@@ -57,40 +61,55 @@ function splitAtNLNL(array) {
     return [array, null]; // not-covered: ditto
 }
 
-/* uid: null for logged in session user; 0 for root; in the future we'll support other users
- * Returns a connection object with methods monitor(), call(), and close(), and an `uid` property.
- */
-function connect(uid) {
+export type MonitorCallbackJson = (data: JsonObject) => void;
+export type MonitorCallbackRaw = (data: Uint8Array) => void;
+export type MonitorCallback = MonitorCallbackJson | MonitorCallbackRaw;
+
+// type predicate helper for narrowing which monitor callback is being used
+function isReturnRaw(return_raw: boolean, callback: MonitorCallback): callback is MonitorCallbackRaw {
+    return return_raw;
+}
+
+export type Connection = {
+    uid: Uid;
+    monitor: (path: string, callback: MonitorCallback, return_raw?: boolean) => Promise<void>;
+    call: (options: JsonObject) => Promise<string>;
+    close: () => void;
+};
+
+function connect(uid: Uid): Connection {
     const addr = getAddress(uid);
     /* This doesn't create a channel until a request */
     /* HACK: use binary channel to work around https://github.com/cockpit-project/cockpit/issues/19235 */
     const http = cockpit.http(addr.path, { superuser: addr.superuser, binary: true });
-    const raw_channels = [];
-    const connection = { uid };
+    const raw_channels: cockpit.Channel<Uint8Array>[] = [];
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
     const user_str = (uid === null) ? "user" : (uid === 0) ? "root" : `uid ${uid}`;
 
-    connection.call = function (options) {
+    function call(options: JsonObject): Promise<string> {
         const id = call_id++;
         debug(user_str, `call ${id}:`, JSON.stringify(options));
         return new Promise((resolve, reject) => {
             options = options || {};
             http.request(options)
-                    .then(result => {
+                    .then((result: Uint8Array) => {
                         const text = decoder.decode(result);
                         debug(user_str, `call ${id} result:`, text);
                         resolve(text);
                     })
-                    .catch((error, content) => {
-                        const content_text = decoder.decode(content);
+                    // @ts-expect-error: magic cockpit defer error extra "content" parameter
+                    .catch((error: object, content: unknown) => {
+                        const content_text = (content instanceof Uint8Array)
+                            ? decoder.decode(content as Uint8Array)
+                            : content;
                         debug(user_str, `call ${id} error:`, JSON.stringify(error), "content", content_text);
                         reject(format_error(error, content_text));
                     });
         });
-    };
+    }
 
-    connection.monitor = function(path, callback, return_raw = false) {
+    function monitor(path: string, callback: MonitorCallback, return_raw: boolean = false): Promise<void> {
         return new Promise((resolve, reject) => {
             const ch = cockpit.channel({ unix: addr.path, superuser: addr.superuser, payload: "stream", binary: true });
             raw_channels.push(ch);
@@ -101,7 +120,7 @@ function connect(uid) {
                 resolve();
             });
 
-            const onHTTPMessage = (event, message) => {
+            const onHTTPMessage = (event: unknown, message: Uint8Array) => {
                 const [headers_bin, body] = splitAtNLNL(message);
                 const headers = decoder.decode(headers_bin);
                 debug(user_str, "monitor", path, "HTTP response:", headers);
@@ -120,8 +139,8 @@ function connect(uid) {
                 }
             };
 
-            const onDataMessage = (event, message) => {
-                if (return_raw) {
+            const onDataMessage = (_event: unknown, message: Uint8Array) => {
+                if (isReturnRaw(return_raw, callback)) {
                     // debug(user_str, "monitor", path, "raw data:", message);
                     callback(message);
                 } else {
@@ -148,14 +167,14 @@ function connect(uid) {
 
             ch.send(encoder.encode("GET " + path + " HTTP/1.0\r\nContent-Length: 0\r\n\r\n"));
         });
-    };
+    }
 
-    connection.close = function () {
+    function close(): void {
         http.close();
         raw_channels.forEach(ch => ch.close());
-    };
+    }
 
-    return connection;
+    return { uid, monitor, call, close };
 }
 
 export default {
