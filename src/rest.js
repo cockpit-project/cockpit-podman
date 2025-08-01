@@ -101,8 +101,8 @@ function connect(uid) {
                 resolve();
             });
 
-            const onHTTPMessage = message => {
-                const [headers_bin, body] = splitAtNLNL(message.detail);
+            const onHTTPMessage = (event, message) => {
+                const [headers_bin, body] = splitAtNLNL(message);
                 const headers = decoder.decode(headers_bin);
                 debug(user_str, "monitor", path, "HTTP response:", headers);
                 if (headers.match(/^HTTP\/1.*\s+200\s/)) {
@@ -112,7 +112,7 @@ function connect(uid) {
 
                     // process the initial response data
                     if (body)
-                        onDataMessage({ detail: body });
+                        onDataMessage(event, body);
                 } else {
                     // empty body Should not Happen™, would be a podman bug
                     const body_text = body ? decoder.decode(body) : "(empty)";
@@ -120,12 +120,12 @@ function connect(uid) {
                 }
             };
 
-            const onDataMessage = message => {
+            const onDataMessage = (event, message) => {
                 if (return_raw) {
-                    // debug(user_str, "monitor", path, "raw data:", message.detail);
-                    callback(message.detail);
+                    // debug(user_str, "monitor", path, "raw data:", message);
+                    callback(message);
                 } else {
-                    buffer = new Uint8Array([...buffer, ...message.detail]);
+                    buffer = new Uint8Array([...buffer, ...message]);
 
                     // split the buffer into lines on NL (this is safe with UTF-8)
                     for (;;) {
