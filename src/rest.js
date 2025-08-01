@@ -2,17 +2,19 @@ import cockpit from "cockpit";
 
 import { debug } from "./util.js";
 
-function manage_error(reject, error, content) {
+function format_error(error, content) {
     let content_o = {};
-    if (content) {
+    if (typeof content === "string") {
         try {
             content_o = JSON.parse(content);
         } catch {
             content_o.message = content;
         }
+        return { ...error, ...content_o };
+    } else {
+        console.warn("format_error(): content is not a string:", content);
+        return error;
     }
-    const c = { ...error, ...content_o };
-    reject(c);
 }
 
 // calls are async, so keep track of a call counter to associate a result with a call
@@ -80,9 +82,9 @@ function connect(uid) {
                         resolve(text);
                     })
                     .catch((error, content) => {
-                        const text = decoder.decode(content);
-                        debug(user_str, `call ${id} error:`, JSON.stringify(error), "content", text);
-                        manage_error(reject, error, text);
+                        const content_text = decoder.decode(content);
+                        debug(user_str, `call ${id} error:`, JSON.stringify(error), "content", content_text);
+                        reject(format_error(error, content_text));
                     });
         });
     };
@@ -113,7 +115,7 @@ function connect(uid) {
                 } else {
                     // empty body Should not Happen™, would be a podman bug
                     const body_text = body ? decoder.decode(body) : "(empty)";
-                    manage_error(reject, { reason: headers.split('\r\n')[0] }, body_text);
+                    reject(format_error({ reason: headers.split('\r\n')[0] }, body_text));
                 }
             };
 
