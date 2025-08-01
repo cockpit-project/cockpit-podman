@@ -67,6 +67,7 @@ function connect(uid) {
     const http = cockpit.http(addr.path, { superuser: addr.superuser, binary: true });
     const raw_channels = [];
     const connection = { uid };
+    const encoder = new TextEncoder();
     const decoder = new TextDecoder();
     const user_str = (uid === null) ? "user" : (uid === 0) ? "root" : `uid ${uid}`;
 
@@ -145,7 +146,7 @@ function connect(uid) {
             // the initial message is the HTTP status response
             ch.addEventListener("message", onHTTPMessage);
 
-            ch.send("GET " + path + " HTTP/1.0\r\nContent-Length: 0\r\n\r\n");
+            ch.send(encoder.encode("GET " + path + " HTTP/1.0\r\nContent-Length: 0\r\n\r\n"));
         });
     };
 
