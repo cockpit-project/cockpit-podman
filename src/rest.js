@@ -111,7 +111,9 @@ function connect(uid) {
                     if (body)
                         onDataMessage({ detail: body });
                 } else {
-                    manage_error(reject, { reason: headers.split('\r\n')[0] }, body);
+                    // empty body Should not Happen™, would be a podman bug
+                    const body_text = body ? decoder.decode(body) : "(empty)";
+                    manage_error(reject, { reason: headers.split('\r\n')[0] }, body_text);
                 }
             };
 

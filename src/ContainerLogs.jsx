@@ -119,9 +119,8 @@ class ContainerLogs extends React.Component {
                            this.onStreamMessage, true)
                 .then(this.onStreamClose)
                 .catch(e => {
-                    const error = JSON.parse(new TextDecoder().decode(e.message));
                     this.setState({
-                        errorMessage: error.message,
+                        errorMessage: e.message ?? e.toString(),
                         streamer: null,
                     });
                 });
