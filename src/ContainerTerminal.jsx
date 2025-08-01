@@ -148,7 +148,7 @@ class ContainerTerminal extends React.Component {
             if (pos == -1)
                 return ret;
 
-            const headers = new TextDecoder().decode(
+            const headers = decoder.decode(
                 data.subarray ? data.subarray(0, pos) : data.slice(0, pos));
 
             const parts = headers.split("\r\n", 1)[0].split(" ");
