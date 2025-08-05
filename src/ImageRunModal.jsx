@@ -429,9 +429,10 @@ export class ImageRunModal extends React.Component {
         // searching for specific image tags
         // instead only rely on manifests query (requires image:tag name)
         if (!RE_CONTAINER_TAG.test(value)) {
-            // If there are registries configured search in them, or if a user searches for `docker.io/cockpit` let
+            // If there are search registries configured, search in them, or if a user searches for `docker.io/cockpit` let
             // podman search in the user specified registry.
-            if (Object.keys(this.props.podmanInfo.registries).length !== 0 || value.includes('/')) {
+            const reg_search = this.props.podmanInfo.registries?.search;
+            if ((reg_search && reg_search.length !== 0) || value.includes('/')) {
                 searches.push(this.activeConnection.call({
                     method: "GET",
                     path: client.VERSION + "libpod/images/search",
