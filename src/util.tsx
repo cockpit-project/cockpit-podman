@@ -11,7 +11,7 @@ const _ = cockpit.gettext;
 // not documented in https://docs.podman.io/en/stable/_static/api.html#tag/system/operation/SystemInfoLibpod
 // only the fields that we actually use
 type Registries = {
-    search: string[],
+    search?: string[],
 }
 
 type PodmanInfoContextType = {
