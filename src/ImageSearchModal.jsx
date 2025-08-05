@@ -42,7 +42,7 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
     const { registries } = usePodmanInfo();
     const Dialogs = useDialogs();
     // Registries to use for searching
-    const searchRegistries = registries.search && registries.length !== 0 ? registries.search : fallbackRegistries;
+    const searchRegistries = registries?.search && registries.search.length !== 0 ? registries.search : fallbackRegistries;
 
     // Don't use on selectedRegistry state variable for finding out the
     // registry to search in as with useState we can only call something after a
