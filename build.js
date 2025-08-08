@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import process from 'node:process';
 
+import { sassPlugin } from 'esbuild-sass-plugin';
 
 import { cockpitPoEsbuildPlugin } from './pkg/lib/cockpit-po-plugin.js';
 import { cockpitRsyncEsbuildPlugin } from './pkg/lib/cockpit-rsync-plugin.js';
 import { cleanPlugin } from './pkg/lib/esbuild-cleanup-plugin.js';
-import { esbuildStylesPlugins } from './pkg/lib/esbuild-common.js';
 import { cockpitCompressPlugin } from './pkg/lib/esbuild-compress-plugin.js';
 
 const useWasm = os.arch() !== 'x64';
@@ -77,7 +77,12 @@ const context = await esbuild.context({
             }
         },
 
-        ...esbuildStylesPlugins,
+        sassPlugin({
+            loadPaths: [...nodePaths, 'node_modules'],
+            filter: /\.scss/,
+            quietDeps: true,
+        }),
+
         cockpitPoEsbuildPlugin(),
 
         ...production ? [cockpitCompressPlugin()] : [],
