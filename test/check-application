@@ -1507,7 +1507,7 @@ Yaml={name}.yaml
             self.assertLessEqual(mem_abs, 300.0)
 
             # Test that the CPU value is updated dynamically
-            self.execute("podman exec -i swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null &'", system=auth)
+            self.execute("podman exec -d swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null'", system=auth)
             b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) > cpu)
             self.execute("podman exec swamped-crate sh -c 'pkill dd'", system=auth)
 
