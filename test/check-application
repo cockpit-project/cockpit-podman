@@ -416,7 +416,7 @@ Yaml={name}.yaml
         b.wait(lambda: get_pod_memory("pod-1") > 0)
 
         # Test that cpu usage increases
-        self.machine.execute("podman exec -di test-pod-1-system sh -c 'dd bs=1024 < /dev/urandom > /dev/null'")
+        self.machine.execute("podman exec -d test-pod-1-system sh -c 'dd bs=1024 < /dev/urandom > /dev/null'")
         b.wait(lambda: get_pod_cpu_usage("pod-1") > cpu)
 
         self.machine.execute("podman pod stop -t0 pod-1")  # disable timeout, so test doesn't wait endlessly
