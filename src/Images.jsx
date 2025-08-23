@@ -6,7 +6,7 @@ import { Content, ContentVariants } from "@patternfly/react-core/dist/esm/compon
 import { DropdownItem } from '@patternfly/react-core/dist/esm/components/Dropdown/index.js';
 import { ExpandableSection } from "@patternfly/react-core/dist/esm/components/ExpandableSection";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
-import { cellWidth } from '@patternfly/react-table';
+import { cellWidth, SortByDirection } from '@patternfly/react-table';
 import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 import { useDialogs, DialogsContext } from "dialogs.jsx";
 
@@ -141,11 +141,11 @@ class Images extends React.Component {
 
         const columns = [
             { title: utils.image_name(image), header: true, props: { modifier: "breakWord" } },
-            { title: (image.uid == 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{user.name}</div>, props: { className: "ignore-pixels", modifier: "nowrap" } },
-            { title: <utils.RelativeTime time={image.Created * 1000} />, props: { className: "image-created" } },
+            { title: (image.uid == 0) ? _("system") : <div><span className="ct-grey-text">{_("user:")} </span>{user.name}</div>, props: { className: "ignore-pixels", modifier: "nowrap" }, sortKey: user.name },
+            { title: <utils.RelativeTime time={image.Created * 1000} />, props: { className: "image-created" }, sortKey: image.Created },
             { title: utils.truncate_id(image.Id), props: { className: "image-id" } },
-            { title: cockpit.format_bytes(image.Size), props: { className: "ignore-pixels", modifier: "nowrap" } },
-            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" } },
+            { title: cockpit.format_bytes(image.Size), props: { className: "ignore-pixels", modifier: "nowrap" }, sortKey: image.Size },
+            { title: <span className={usedByCount === 0 ? "ct-grey-text" : ""}>{usedByText}</span>, props: { className: "ignore-pixels", modifier: "nowrap" }, sortKey: usedByCount },
             {
                 title: <ImageActions con={user.con}
                                      image={image}
@@ -184,12 +184,12 @@ class Images extends React.Component {
 
     render() {
         const columnTitles = [
-            { title: _("Image"), transforms: [cellWidth(20)] },
-            { title: _("Owner"), props: { className: "ignore-pixels" } },
-            { title: _("Created"), props: { className: "ignore-pixels", width: 15 } },
+            { title: _("Image"), sortable: true, transforms: [cellWidth(20)] },
+            { title: _("Owner"), sortable: true, props: { className: "ignore-pixels" } },
+            { title: _("Created"), sortable: true, props: { className: "ignore-pixels", width: 15 } },
             { title: _("ID"), props: { className: "ignore-pixels" } },
-            { title: _("Disk space"), props: { className: "ignore-pixels" } },
-            { title: _("Used by"), props: { className: "ignore-pixels" } },
+            { title: _("Disk space"), sortable: true, props: { className: "ignore-pixels" } },
+            { title: _("Used by"), sortable: true, props: { className: "ignore-pixels" } },
         ];
         let emptyCaption = _("No images");
         if (this.props.images === null)
@@ -232,6 +232,22 @@ class Images extends React.Component {
 
         const imageRows = filtered.map(id => this.renderRow(this.props.images[id]));
 
+        const sortRows = (rows, direction, idx) => {
+            // Image / Owner / Created / ID / Disk space / Used by
+            const isNumeric = idx === 2 || idx === 4 || idx === 5;
+            const sortedRows = rows.sort((a, b) => {
+                const aitem = a.columns[idx].sortKey ?? a.columns[idx].title;
+                const bitem = b.columns[idx].sortKey ?? b.columns[idx].title;
+
+                if (isNumeric) {
+                    return bitem - aitem;
+                } else {
+                    return aitem.localeCompare(bitem);
+                }
+            });
+            return direction === SortByDirection.asc ? sortedRows : sortedRows.reverse();
+        };
+
         const interim = this.props.images && Object.keys(this.props.images).some(id => {
             // Intermediate image does not have any tags
             if (this.props.images[id].RepoTags && this.props.images[id].RepoTags.length > 0)
@@ -266,7 +282,9 @@ class Images extends React.Component {
                               variant='compact'
                               emptyCaption={emptyCaption}
                               columns={columnTitles}
-                              rows={imageRows} />
+                              rows={imageRows}
+                              sortMethod={sortRows}
+                              sortBy={{ index: 1, direction: SortByDirection.asc }} />
                 {toggleIntermediate}
             </>
         );
