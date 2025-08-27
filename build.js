@@ -70,9 +70,11 @@ const context = await esbuild.context({
         {
             name: 'copy-assets',
             setup(build) {
-                build.onEnd(() => {
-                    fs.copyFileSync('./src/manifest.json', './dist/manifest.json');
-                    fs.copyFileSync('./src/index.html', './dist/index.html');
+                build.onEnd((output, _outputFiles) => {
+                    if (output?.errors.length === 0) {
+                        fs.copyFileSync('./src/manifest.json', './dist/manifest.json');
+                        fs.copyFileSync('./src/index.html', './dist/index.html');
+                    }
                 });
             }
         },
