@@ -1,8 +1,8 @@
 @use "ct-card.scss";
 @use "page.scss";
-@import "global-variables";
+@use "global-variables" as *;
 // For pf-v6-line-clamp
-@import "@patternfly/patternfly/sass-utilities/mixins.scss";
+@use "@patternfly/patternfly/sass-utilities/mixins.scss";
 
 #app .pf-v6-c-card.containers-containers, #app .pf-v6-c-card.containers-images {
     @extend .ct-card;
