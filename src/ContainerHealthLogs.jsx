@@ -19,9 +19,9 @@
 
 import React from 'react';
 
-import { Icon } from '@patternfly/react-core';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core/dist/esm/components/DescriptionList";
+import { Icon } from "@patternfly/react-core/dist/esm/components/Icon";
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { CheckCircleIcon, ErrorCircleOIcon } from "@patternfly/react-icons";
 
