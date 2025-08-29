@@ -1,4 +1,5 @@
 @use "global-variables" as *;
+@use "@patternfly/patternfly/components/Form/form.scss" as pf-form;
 
 // TODO @Venefilyn: This is needed as on mobile without it you won't get any spacing
 // between the right side of the screen - it also creates a width that's wider than
@@ -45,4 +46,47 @@
     button {
       margin-block-end: var(--pf-t--global--spacer--xs);
     }
+}
+
+// HACK: It is not possible to mix vertical and horizontal areas within a form. So lets hack it until it is supported
+// upstream by utilizing the upstream code for the FormSection as well.
+// Issue exists since: 2025-08-29. PF v6.2.3
+// https://github.com/patternfly/patternfly/issues/7770
+.pf-v6-c-form__section {
+  &.pf-m-horizontal {
+    @include pf-form.pf-v6-c-form--m-horizontal {
+      --#{$form}__group-label--PaddingBlockEnd: 0;
+
+      .#{$form}__group {
+        display: grid;
+        grid-template-columns: var(--#{$form}--m-horizontal__group-label--md--GridColumnWidth) var(--#{$form}--m-horizontal__group-control--md--GridColumnWidth);
+        grid-column-gap: var(--#{$form}--m-horizontal__group-label--md--GridColumnGap);
+      }
+
+      .#{$form}__group-label {
+        padding-block-start: var(--#{$form}--m-horizontal__group-label--md--PaddingBlockStart);
+
+        &.pf-m-no-padding-top {
+          --#{$form}--m-horizontal__group-label--md--PaddingBlockStart: var(--#{$form}--m-horizontal__group-label--m-no-padding--md--PaddingBlockStart);
+
+          transform: translateY(var(--#{$form}--m-horizontal__group-label--m-no-padding--md--TranslateY));
+        }
+
+        &.pf-m-info {
+          --#{$form}__group-label--m-info--Gap: var(--#{$form}--m-horizontal__group-label--m-info--Gap);
+
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      .#{$form}__group-label-main {
+        flex-grow: 0;
+      }
+
+      .#{$form}__group-control {
+        grid-column: 2;
+      }
+    }
+  }
 }
