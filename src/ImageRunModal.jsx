@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { Checkbox } from "@patternfly/react-core/dist/esm/components/Checkbox";
 import { Content, ContentVariants } from "@patternfly/react-core/dist/esm/components/Content";
-import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form";
+import { Form, FormGroup, FormSection } from "@patternfly/react-core/dist/esm/components/Form";
 import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/components/FormSelect";
 import { InputGroup, InputGroupText } from "@patternfly/react-core/dist/esm/components/InputGroup";
 import {
@@ -824,222 +824,224 @@ export class ImageRunModal extends React.Component {
                     <FormHelper helperTextInvalid={dialogValues.validationFailed.containerName} />
                 </FormGroup>
                 <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
-                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>} className="pf-v6-c-form pf-m-horizontal">
-                        { this.props.users.length > 1 &&
-                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}
-                                   labelHelp={
-                                       <Popover aria-label={_("Owner help")}
-                                          enableFlip
-                                          bodyContent={
-                                              <>
-                                                  <Content>
-                                                      <Content component={ContentVariants.h4}>{_("System")}</Content>
-                                                      <Content component="ul">
-                                                          <Content component="li">
-                                                              {_("Ideal for running services")}
-                                                          </Content>
-                                                          <Content component="li">
-                                                              {_("Resource limits can be set")}
-                                                          </Content>
-                                                          <Content component="li">
-                                                              {_("Checkpoint and restore support")}
-                                                          </Content>
-                                                          <Content component="li">
-                                                              {_("Ports under 1024 can be mapped")}
-                                                          </Content>
-                                                      </Content>
-                                                  </Content>
-                                                  <Content>
-                                                      <Content component={ContentVariants.h4}>{_("User")}</Content>
-                                                      <Content component="ul">
-                                                          <Content component="li">
-                                                              {_("Ideal for development")}
-                                                          </Content>
-                                                          <Content component="li">
-                                                              {_("Restricted by user account permissions")}
-                                                          </Content>
-                                                      </Content>
-                                                  </Content>
-                                              </>
-                                          }>
-                                           <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
-                                       </Popover>
-                                   }>
-                            { this.props.users.map(user => (
-                                <Radio key={user.name}
-                                       value={user.name}
-                                       label={user.uid === 0 ? _("System") : cockpit.format("$0 $1", _("User:"), user.name)}
-                                       id={"run-image-dialog-owner-" + user.name}
-                                       isChecked={owner === user}
-                                       isDisabled={this.props.pod}
-                                       onChange={this.handleOwnerSelect} />))
-                            }
-                        </FormGroup>
-                        }
-                        <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}
-                          labelHelp={!this.props.image &&
-                              <Popover aria-label={_("Image selection help")}
-                                enableFlip
-                                bodyContent={
-                                    <Flex direction={{ default: 'column' }}>
-                                        <FlexItem>{_("host[:port]/[user]/container[:tag]")}</FlexItem>
-                                        <FlexItem>{cockpit.format(_("Example: $0"), "quay.io/libpod/busybox")}</FlexItem>
-                                        <FlexItem>{cockpit.format(_("Searching: $0"), "quay.io/busybox")}</FlexItem>
-                                    </Flex>
-                                }>
-                                  <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
-                              </Popover>
-                          }
-                        >
-                            <TypeaheadSelect
-                                toggleProps={{ id: 'create-image-image' }}
-                                isScrollable
-                                noOptionsFoundMessage={_("No images found")}
-                                noOptionsAvailableMessage={_("No images found")}
-                                selected={selectedImage}
-                                selectedIsTrusted
-                                placeholder={_("Search string or container location")}
-                                onSelect={this.onImageSelect}
-                                onClearSelection={this.clearImageSelection}
-                                onInputChange={this.debouncedInputChanged}
-                                isDisabled={!!this.props.image}
-                                // We do our own filtering when producing imageListOptions
-                                filterFunction={(_filterValue, options) => options}
-                                selectOptions={imageListOptions.concat(spinnerOptions)}
-                                footer={footer} />
-                        </FormGroup>
-
-                        {(image || localImage) &&
-                        <FormGroup fieldId="run-image-dialog-pull-latest-image">
-                            <Checkbox isChecked={this.state.pullLatestImage} id="run-image-dialog-pull-latest-image"
-                                      onChange={(_event, value) => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
-                            />
-                        </FormGroup>
-                        }
-
-                        {dialogValues.entrypoint &&
-                        <FormGroup fieldId='run-image-dialog-entrypoint' hasNoPaddingTop label={_("Entrypoint")}>
-                            <Content component="p" id="run-image-dialog-entrypoint">{dialogValues.entrypoint}</Content>
-                        </FormGroup>
-                        }
-
-                        <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
-                            <TextInput id='run-image-dialog-command'
-                           value={dialogValues.command || ''}
-                           onChange={(_, value) => this.onValueChanged('command', value)} />
-                        </FormGroup>
-
-                        <FormGroup fieldId="run=image-dialog-tty">
-                            <Checkbox id="run-image-dialog-tty"
-                              isChecked={this.state.hasTTY}
-                              label={_("With terminal")}
-                              onChange={(_event, checked) => this.onValueChanged('hasTTY', checked)} />
-                        </FormGroup>
-
-                        <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
-                            <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-memory-limit">
-                                <Checkbox id="run-image-dialog-memory-limit-checkbox"
-                                  isChecked={this.state.memoryConfigure}
-                                  onChange={(_event, checked) => this.onValueChanged('memoryConfigure', checked)} />
-                                <NumberInput
-                                   value={dialogValues.memory}
-                                   id="run-image-dialog-memory"
-                                   min={0}
-                                   isDisabled={!this.state.memoryConfigure}
-                                   onClick={() => !this.state.memoryConfigure && this.onValueChanged('memoryConfigure', true)}
-                                   onPlus={() => this.onPlusOne('memory')}
-                                   onMinus={() => this.onMinusOne('memory')}
-                                   minusBtnAriaLabel={_("Decrease memory")}
-                                   plusBtnAriaLabel={_("Increase memory")}
-                                   onChange={ev => this.onNumberValue('memory', ev.target.value, 0, true)} />
-                                <FormSelect id='memory-unit-select'
-                                    aria-label={_("Memory unit")}
-                                    value={this.state.memoryUnit}
-                                    isDisabled={!this.state.memoryConfigure}
-                                    className="dialog-run-form-select"
-                                    onChange={(_event, value) => this.onValueChanged('memoryUnit', value)}>
-                                    <FormSelectOption value={units.KB.name} key={units.KB.name} label={_("KB")} />
-                                    <FormSelectOption value={units.MB.name} key={units.MB.name} label={_("MB")} />
-                                    <FormSelectOption value={units.GB.name} key={units.GB.name} label={_("GB")} />
-                                </FormSelect>
-                            </Flex>
-                        </FormGroup>
-
-                        {this.isSystem() &&
-                            <FormGroup
-                              fieldId='run-image-cpu-priority'
-                              label={_("CPU shares")}
-                              labelHelp={
-                                  <Popover aria-label={_("CPU Shares help")}
-                                      enableFlip
-                                      bodyContent={_("CPU shares determine the priority of running containers. Default priority is 1024. A higher number prioritizes this container. A lower number decreases priority.")}>
-                                      <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
-                                  </Popover>
-                              }>
-                                <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
-                                    <Checkbox id="run-image-dialog-cpu-priority-checkbox"
-                                        isChecked={this.state.cpuSharesConfigure}
-                                        onChange={(_event, checked) => this.onValueChanged('cpuSharesConfigure', checked)} />
-                                    <NumberInput
-                                        id="run-image-cpu-priority"
-                                        value={dialogValues.cpuShares}
-                                        onClick={() => !this.state.cpuSharesConfigure && this.onValueChanged('cpuSharesConfigure', true)}
-                                        min={2}
-                                        max={262144}
-                                        isDisabled={!this.state.cpuSharesConfigure}
-                                        onPlus={() => this.onPlusOne('cpuShares')}
-                                        onMinus={() => this.onMinusOne('cpuShares')}
-                                        minusBtnAriaLabel={_("Decrease CPU shares")}
-                                        plusBtnAriaLabel={_("Increase CPU shares")}
-                                        onChange={ev => this.onNumberValue('cpuShares', ev.target.value, 2)} />
-                                </Flex>
-                            </FormGroup>
-                        }
-                        {((userLingeringEnabled && userPodmanRestartAvailable) || (this.isSystem() && podmanRestartAvailable)) &&
-                        <Grid hasGutter md={6} sm={3}>
-                            <GridItem>
-                                <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}
-                          labelHelp={
-                              <Popover aria-label={_("Restart policy help")}
-                                enableFlip
-                                bodyContent={userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
-                                  <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
-                              </Popover>
-                          }
-                                >
-                                    <FormSelect id="run-image-dialog-restart-policy"
-                              aria-label={_("Restart policy help")}
-                              value={dialogValues.restartPolicy}
-                              onChange={(_event, value) => this.onValueChanged('restartPolicy', value)}>
-                                        <FormSelectOption value='no' key='no' label={_("No")} />
-                                        <FormSelectOption value='on-failure' key='on-failure' label={_("On failure")} />
-                                        <FormSelectOption value='always' key='always' label={_("Always")} />
-                                    </FormSelect>
+                    <Tab eventKey={0} title={<TabTitleText>{_("Details")}</TabTitleText>}>
+                        <FormSection className="pf-m-horizontal">
+                            {this.props.users.length > 1 &&
+                                <FormGroup isInline hasNoPaddingTop fieldId='run-image-dialog-owner' label={_("Owner")}
+                                    labelHelp={
+                                        <Popover aria-label={_("Owner help")}
+                                            enableFlip
+                                            bodyContent={
+                                                <>
+                                                    <Content>
+                                                        <Content component={ContentVariants.h4}>{_("System")}</Content>
+                                                        <Content component="ul">
+                                                            <Content component="li">
+                                                                {_("Ideal for running services")}
+                                                            </Content>
+                                                            <Content component="li">
+                                                                {_("Resource limits can be set")}
+                                                            </Content>
+                                                            <Content component="li">
+                                                                {_("Checkpoint and restore support")}
+                                                            </Content>
+                                                            <Content component="li">
+                                                                {_("Ports under 1024 can be mapped")}
+                                                            </Content>
+                                                        </Content>
+                                                    </Content>
+                                                    <Content>
+                                                        <Content component={ContentVariants.h4}>{_("User")}</Content>
+                                                        <Content component="ul">
+                                                            <Content component="li">
+                                                                {_("Ideal for development")}
+                                                            </Content>
+                                                            <Content component="li">
+                                                                {_("Restricted by user account permissions")}
+                                                            </Content>
+                                                        </Content>
+                                                    </Content>
+                                                </>
+                                            }>
+                                            <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
+                                        </Popover>
+                                    }>
+                                    {this.props.users.map(user => (
+                                        <Radio key={user.name}
+                                            value={user.name}
+                                            label={user.uid === 0 ? _("System") : cockpit.format("$0 $1", _("User:"), user.name)}
+                                            id={"run-image-dialog-owner-" + user.name}
+                                            isChecked={owner === user}
+                                            isDisabled={this.props.pod}
+                                            onChange={this.handleOwnerSelect} />))
+                                    }
                                 </FormGroup>
-                            </GridItem>
-                            {dialogValues.restartPolicy === "on-failure" &&
-                                <FormGroup fieldId='run-image-dialog-restart-retries'
-                                  label={_("Maximum retries")}>
-                                    <NumberInput
-                              id="run-image-dialog-restart-retries"
-                              value={dialogValues.restartTries}
-                              min={1}
-                              max={65535}
-                              widthChars={5}
-                              minusBtnAriaLabel={_("Decrease maximum retries")}
-                              plusBtnAriaLabel={_("Increase maximum retries")}
-                              onMinus={() => this.onMinusOne('restartTries')}
-                              onPlus={() => this.onPlusOne('restartTries')}
-                              onChange={ev => this.onNumberValue('restartTries', ev.target.value, 1)}
+                            }
+                            <FormGroup fieldId="create-image-image-select-typeahead" label={_("Image")}
+                                labelHelp={!this.props.image &&
+                                    <Popover aria-label={_("Image selection help")}
+                                        enableFlip
+                                        bodyContent={
+                                            <Flex direction={{ default: 'column' }}>
+                                                <FlexItem>{_("host[:port]/[user]/container[:tag]")}</FlexItem>
+                                                <FlexItem>{cockpit.format(_("Example: $0"), "quay.io/libpod/busybox")}</FlexItem>
+                                                <FlexItem>{cockpit.format(_("Searching: $0"), "quay.io/busybox")}</FlexItem>
+                                            </Flex>
+                                        }>
+                                        <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
+                                    </Popover>
+                                }
+                            >
+                                <TypeaheadSelect
+                                    toggleProps={{ id: 'create-image-image' }}
+                                    isScrollable
+                                    noOptionsFoundMessage={_("No images found")}
+                                    noOptionsAvailableMessage={_("No images found")}
+                                    selected={selectedImage}
+                                    selectedIsTrusted
+                                    placeholder={_("Search string or container location")}
+                                    onSelect={this.onImageSelect}
+                                    onClearSelection={this.clearImageSelection}
+                                    onInputChange={this.debouncedInputChanged}
+                                    isDisabled={!!this.props.image}
+                                    // We do our own filtering when producing imageListOptions
+                                    filterFunction={(_filterValue, options) => options}
+                                    selectOptions={imageListOptions.concat(spinnerOptions)}
+                                    footer={footer} />
+                            </FormGroup>
+
+                            {(image || localImage) &&
+                                <FormGroup fieldId="run-image-dialog-pull-latest-image">
+                                    <Checkbox isChecked={this.state.pullLatestImage} id="run-image-dialog-pull-latest-image"
+                                        onChange={(_event, value) => this.onValueChanged('pullLatestImage', value)} label={_("Pull latest image")}
                                     />
                                 </FormGroup>
                             }
-                        </Grid>
-                        }
-                    </Tab>
-                    <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration" className="pf-v6-c-form">
 
-                        <DynamicListForm id='run-image-dialog-publish'
+                            {dialogValues.entrypoint &&
+                                <FormGroup fieldId='run-image-dialog-entrypoint' hasNoPaddingTop label={_("Entrypoint")}>
+                                    <Content component="p" id="run-image-dialog-entrypoint">{dialogValues.entrypoint}</Content>
+                                </FormGroup>
+                            }
+
+                            <FormGroup fieldId='run-image-dialog-command' label={_("Command")}>
+                                <TextInput id='run-image-dialog-command'
+                                    value={dialogValues.command || ''}
+                                    onChange={(_, value) => this.onValueChanged('command', value)} />
+                            </FormGroup>
+
+                            <FormGroup fieldId="run=image-dialog-tty">
+                                <Checkbox id="run-image-dialog-tty"
+                                    isChecked={this.state.hasTTY}
+                                    label={_("With terminal")}
+                                    onChange={(_event, checked) => this.onValueChanged('hasTTY', checked)} />
+                            </FormGroup>
+
+                            <FormGroup fieldId='run-image-dialog-memory' label={_("Memory limit")}>
+                                <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-memory-limit">
+                                    <Checkbox id="run-image-dialog-memory-limit-checkbox"
+                                        isChecked={this.state.memoryConfigure}
+                                        onChange={(_event, checked) => this.onValueChanged('memoryConfigure', checked)} />
+                                    <NumberInput
+                                        value={dialogValues.memory}
+                                        id="run-image-dialog-memory"
+                                        min={0}
+                                        isDisabled={!this.state.memoryConfigure}
+                                        onClick={() => !this.state.memoryConfigure && this.onValueChanged('memoryConfigure', true)}
+                                        onPlus={() => this.onPlusOne('memory')}
+                                        onMinus={() => this.onMinusOne('memory')}
+                                        minusBtnAriaLabel={_("Decrease memory")}
+                                        plusBtnAriaLabel={_("Increase memory")}
+                                        onChange={ev => this.onNumberValue('memory', ev.target.value, 0, true)} />
+                                    <FormSelect id='memory-unit-select'
+                                        aria-label={_("Memory unit")}
+                                        value={this.state.memoryUnit}
+                                        isDisabled={!this.state.memoryConfigure}
+                                        className="dialog-run-form-select"
+                                        onChange={(_event, value) => this.onValueChanged('memoryUnit', value)}>
+                                        <FormSelectOption value={units.KB.name} key={units.KB.name} label={_("KB")} />
+                                        <FormSelectOption value={units.MB.name} key={units.MB.name} label={_("MB")} />
+                                        <FormSelectOption value={units.GB.name} key={units.GB.name} label={_("GB")} />
+                                    </FormSelect>
+                                </Flex>
+                            </FormGroup>
+
+                            {this.isSystem() &&
+                                <FormGroup
+                                    fieldId='run-image-cpu-priority'
+                                    label={_("CPU shares")}
+                                    labelHelp={
+                                        <Popover aria-label={_("CPU Shares help")}
+                                            enableFlip
+                                            bodyContent={_("CPU shares determine the priority of running containers. Default priority is 1024. A higher number prioritizes this container. A lower number decreases priority.")}>
+                                            <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
+                                        </Popover>
+                                    }>
+                                    <Flex alignItems={{ default: 'alignItemsCenter' }} className="ct-input-group-spacer-sm modal-run-limiter" id="run-image-dialog-cpu-priority">
+                                        <Checkbox id="run-image-dialog-cpu-priority-checkbox"
+                                            isChecked={this.state.cpuSharesConfigure}
+                                            onChange={(_event, checked) => this.onValueChanged('cpuSharesConfigure', checked)} />
+                                        <NumberInput
+                                            id="run-image-cpu-priority"
+                                            value={dialogValues.cpuShares}
+                                            onClick={() => !this.state.cpuSharesConfigure && this.onValueChanged('cpuSharesConfigure', true)}
+                                            min={2}
+                                            max={262144}
+                                            isDisabled={!this.state.cpuSharesConfigure}
+                                            onPlus={() => this.onPlusOne('cpuShares')}
+                                            onMinus={() => this.onMinusOne('cpuShares')}
+                                            minusBtnAriaLabel={_("Decrease CPU shares")}
+                                            plusBtnAriaLabel={_("Increase CPU shares")}
+                                            onChange={ev => this.onNumberValue('cpuShares', ev.target.value, 2)} />
+                                    </Flex>
+                                </FormGroup>
+                            }
+                            {((userLingeringEnabled && userPodmanRestartAvailable) || (this.isSystem() && podmanRestartAvailable)) &&
+                                <Grid hasGutter md={6} sm={3}>
+                                    <GridItem>
+                                        <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}
+                                            labelHelp={
+                                                <Popover aria-label={_("Restart policy help")}
+                                                    enableFlip
+                                                    bodyContent={userLingeringEnabled ? _("Restart policy to follow when containers exit. Using linger for auto-starting containers may not work in some circumstances, such as when ecryptfs, systemd-homed, NFS, or 2FA are used on a user account.") : _("Restart policy to follow when containers exit.")}>
+                                                    <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
+                                                </Popover>
+                                            }
+                                        >
+                                            <FormSelect id="run-image-dialog-restart-policy"
+                                                aria-label={_("Restart policy help")}
+                                                value={dialogValues.restartPolicy}
+                                                onChange={(_event, value) => this.onValueChanged('restartPolicy', value)}>
+                                                <FormSelectOption value='no' key='no' label={_("No")} />
+                                                <FormSelectOption value='on-failure' key='on-failure' label={_("On failure")} />
+                                                <FormSelectOption value='always' key='always' label={_("Always")} />
+                                            </FormSelect>
+                                        </FormGroup>
+                                    </GridItem>
+                                    {dialogValues.restartPolicy === "on-failure" &&
+                                        <FormGroup fieldId='run-image-dialog-restart-retries'
+                                            label={_("Maximum retries")}>
+                                            <NumberInput
+                                                id="run-image-dialog-restart-retries"
+                                                value={dialogValues.restartTries}
+                                                min={1}
+                                                max={65535}
+                                                widthChars={5}
+                                                minusBtnAriaLabel={_("Decrease maximum retries")}
+                                                plusBtnAriaLabel={_("Increase maximum retries")}
+                                                onMinus={() => this.onMinusOne('restartTries')}
+                                                onPlus={() => this.onPlusOne('restartTries')}
+                                                onChange={ev => this.onNumberValue('restartTries', ev.target.value, 1)}
+                                            />
+                                        </FormGroup>
+                                    }
+                                </Grid>
+                            }
+                        </FormSection>
+                    </Tab>
+                    <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration">
+                        <FormSection>
+                            <DynamicListForm id='run-image-dialog-publish'
                                  emptyStateString={_("No ports exposed")}
                                  formclass='publish-port-form'
                                  label={_("Port mapping")}
@@ -1049,7 +1051,7 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('publish', value)}
                                  default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                                  itemcomponent={PublishPort} />
-                        <DynamicListForm id='run-image-dialog-volume'
+                            <DynamicListForm id='run-image-dialog-volume'
                                  emptyStateString={_("No volumes specified")}
                                  formclass='volume-form'
                                  label={_("Volumes")}
@@ -1061,7 +1063,7 @@ export class ImageRunModal extends React.Component {
                                  options={{ selinuxAvailable }}
                                  itemcomponent={Volume} />
 
-                        <DynamicListForm id='run-image-dialog-env'
+                            <DynamicListForm id='run-image-dialog-env'
                                  emptyStateString={_("No environment variables specified")}
                                  formclass='env-form'
                                  label={_("Environment variables")}
@@ -1072,15 +1074,17 @@ export class ImageRunModal extends React.Component {
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
                                  itemcomponent={EnvVar} />
+                        </FormSection>
                     </Tab>
-                    <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck" className="pf-v6-c-form pf-m-horizontal">
-                        <FormGroup fieldId='run-image-dialog-healthcheck-command' label={_("Command")}>
-                            <TextInput id='run-image-dialog-healthcheck-command'
+                    <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck">
+                        <FormSection className="pf-m-horizontal">
+                            <FormGroup fieldId='run-image-dialog-healthcheck-command' label={_("Command")}>
+                                <TextInput id='run-image-dialog-healthcheck-command'
                            value={dialogValues.healthcheck_command || ''}
                            onChange={(_, value) => this.onValueChanged('healthcheck_command', value)} />
-                        </FormGroup>
+                            </FormGroup>
 
-                        <FormGroup fieldId='run-image-healthcheck-interval' label={_("Interval")}
+                            <FormGroup fieldId='run-image-healthcheck-interval' label={_("Interval")}
                               labelHelp={
                                   <Popover aria-label={_("Health check interval help")}
                                       enableFlip
@@ -1088,8 +1092,8 @@ export class ImageRunModal extends React.Component {
                                       <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
-                            <InputGroup>
-                                <NumberInput
+                                <InputGroup>
+                                    <NumberInput
                                         id="run-image-healthcheck-interval"
                                         value={dialogValues.healthcheck_interval}
                                         min={0}
@@ -1100,10 +1104,10 @@ export class ImageRunModal extends React.Component {
                                         onMinus={() => this.onMinusOne('healthcheck_interval')}
                                         onPlus={() => this.onPlusOne('healthcheck_interval')}
                                         onChange={ev => this.onNumberValue('healthcheck_interval', ev.target.value)} />
-                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
-                            </InputGroup>
-                        </FormGroup>
-                        <FormGroup fieldId='run-image-healthcheck-timeout' label={_("Timeout")}
+                                    <InputGroupText isPlain>{_("seconds")}</InputGroupText>
+                                </InputGroup>
+                            </FormGroup>
+                            <FormGroup fieldId='run-image-healthcheck-timeout' label={_("Timeout")}
                               labelHelp={
                                   <Popover aria-label={_("Health check timeout help")}
                                       enableFlip
@@ -1111,8 +1115,8 @@ export class ImageRunModal extends React.Component {
                                       <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
-                            <InputGroup>
-                                <NumberInput
+                                <InputGroup>
+                                    <NumberInput
                                         id="run-image-healthcheck-timeout"
                                         value={dialogValues.healthcheck_timeout}
                                         min={0}
@@ -1123,10 +1127,10 @@ export class ImageRunModal extends React.Component {
                                         onMinus={() => this.onMinusOne('healthcheck_timeout')}
                                         onPlus={() => this.onPlusOne('healthcheck_timeout')}
                                         onChange={ev => this.onNumberValue('healthcheck_timeout', ev.target.value)} />
-                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
-                            </InputGroup>
-                        </FormGroup>
-                        <FormGroup fieldId='run-image-healthcheck-start-period' label={_("Start period")}
+                                    <InputGroupText isPlain>{_("seconds")}</InputGroupText>
+                                </InputGroup>
+                            </FormGroup>
+                            <FormGroup fieldId='run-image-healthcheck-start-period' label={_("Start period")}
                               labelHelp={
                                   <Popover aria-label={_("Health check start period help")}
                                       enableFlip
@@ -1134,8 +1138,8 @@ export class ImageRunModal extends React.Component {
                                       <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
-                            <InputGroup>
-                                <NumberInput
+                                <InputGroup>
+                                    <NumberInput
                                         id="run-image-healthcheck-start-period"
                                         value={dialogValues.healthcheck_start_period}
                                         min={0}
@@ -1146,10 +1150,10 @@ export class ImageRunModal extends React.Component {
                                         onMinus={() => this.onMinusOne('healthcheck_start_period')}
                                         onPlus={() => this.onPlusOne('healthcheck_start_period')}
                                         onChange={ev => this.onNumberValue('healthcheck_start_period', ev.target.value)} />
-                                <InputGroupText isPlain>{_("seconds")}</InputGroupText>
-                            </InputGroup>
-                        </FormGroup>
-                        <FormGroup fieldId='run-image-healthcheck-retries' label={_("Retries")}
+                                    <InputGroupText isPlain>{_("seconds")}</InputGroupText>
+                                </InputGroup>
+                            </FormGroup>
+                            <FormGroup fieldId='run-image-healthcheck-retries' label={_("Retries")}
                               labelHelp={
                                   <Popover aria-label={_("Health check retries help")}
                                       enableFlip
@@ -1157,7 +1161,7 @@ export class ImageRunModal extends React.Component {
                                       <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
-                            <NumberInput
+                                <NumberInput
                                     id="run-image-healthcheck-retries"
                                     value={dialogValues.healthcheck_retries}
                                     min={0}
@@ -1168,9 +1172,9 @@ export class ImageRunModal extends React.Component {
                                     onMinus={() => this.onMinusOne('healthcheck_retries')}
                                     onPlus={() => this.onPlusOne('healthcheck_retries')}
                                     onChange={ev => this.onNumberValue('healthcheck_retries', ev.target.value)} />
-                        </FormGroup>
-                        {version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
-                        <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("When unhealthy") }
+                            </FormGroup>
+                            {version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
+                            <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("When unhealthy") }
                               labelHelp={
                                   <Popover aria-label={_("Health failure check action help")}
                                       enableFlip
@@ -1178,16 +1182,17 @@ export class ImageRunModal extends React.Component {
                                       <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                                   </Popover>
                               }>
-                            {HealthCheckOnFailureActionOrder.map(item =>
-                                <Radio value={item.value}
+                                {HealthCheckOnFailureActionOrder.map(item =>
+                                    <Radio value={item.value}
                                        key={item.value}
                                        label={item.label}
                                        id={`run-image-healthcheck-action-${item.value}`}
                                        isChecked={dialogValues.healthcheck_action === item.value}
                                        onChange={() => this.onValueChanged('healthcheck_action', item.value)} />
-                            )}
-                        </FormGroup>
-                        }
+                                )}
+                            </FormGroup>
+                            }
+                        </FormSection>
                     </Tab>
                 </Tabs>
             </Form>
