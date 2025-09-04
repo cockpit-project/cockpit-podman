@@ -158,7 +158,7 @@ class TestApplication(testlib.MachineCase):
         self.has_cgroupsV2 = not m.image.startswith('rhel-8')
         self.supports_quadlet = m.image not in ["debian-stable", "ubuntu-2204"]
 
-        self.system_images_count = int(self.execute("podman images -n | wc -l", system=True).strip())
+        self.system_images_count = int(m.execute("podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute("podman images -n | wc -l", system=False).strip())
 
         # allow console.error
@@ -276,16 +276,16 @@ class TestApplication(testlib.MachineCase):
     def setupRegistry(self) -> None:
         m = self.machine
 
-        self.execute(f"""
+        m.execute(f"""
             podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}
             podman run -d -p 6000:5000 --name registry_alt --stop-timeout 0 {IMG_REGISTRY}
             podman run -d -p 7000:5000 --name registry_subdomain --stop-timeout 0 {IMG_REGISTRY}
             echo "127.0.0.1 subdomain.local.localhost" >> /etc/hosts
-        """, system=True)
+        """)
 
         # Add local insecure registry into registries conf
         m.write("/etc/containers/registries.conf", REGISTRIES_CONF)
-        self.execute("systemctl stop podman.service", system=True)
+        m.execute("systemctl stop podman.service")
 
     def createQuadlet(self, name: str, podName: str | None = None, containerName: str | None = None,
                       *, auth: bool = False) -> None:
@@ -1696,7 +1696,7 @@ Yaml={name}.yaml
         # A new MAC address should have been generated
         # Fixed in podman 4.4.0 https://github.com/containers/podman/issues/16666
         cmd = "podman inspect --format '{{.NetworkSettings.MacAddress}}' swamped-crate"
-        new_mac_address = self.execute(cmd, system=True).strip()
+        new_mac_address = m.execute(cmd).strip()
         if self.podman_version() >= (4, 4, 0):
             self.assertNotEqual(new_mac_address, mac_address)
         else:
@@ -1755,26 +1755,22 @@ Yaml={name}.yaml
         self._testCreateContainer(auth=False)
 
     def _testCreateContainer(self, *, auth: bool) -> None:
+        m = self.machine
         new_container = 'new-container'
-        self.execute(f"podman run -d --name {new_container} --stop-timeout 0 {IMG_BUSYBOX} touch /latest",
-                     system=True)
-        self.execute(f"podman commit {new_container} newimage", system=True)
-        new_image_sha = self.execute("podman inspect --format '{{.Id}}' newimage", system=True).strip()
+        m.execute(f"podman run -d --name {new_container} --stop-timeout 0 {IMG_BUSYBOX} touch /latest")
+        m.execute(f"podman commit {new_container} newimage")
+        new_image_sha = m.execute("podman inspect --format '{{.Id}}' newimage").strip()
 
         self.setupRegistry()
 
         # Push busybox image to the local registries
-        self.execute(f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox",
-                     system=True)
-        self.execute(f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox",
-                     system=True)
-        self.execute(f"""podman tag {IMG_BUSYBOX} subdomain.local.localhost:7000/my-busybox; \
-                     podman push subdomain.local.localhost:7000/my-busybox""",
-                     system=True)
+        m.execute(f"podman tag {IMG_BUSYBOX} localhost:5000/my-busybox; podman push localhost:5000/my-busybox")
+        m.execute(f"podman tag {IMG_BUSYBOX} localhost:6000/my-busybox; podman push localhost:6000/my-busybox")
+        m.execute(f"""podman tag {IMG_BUSYBOX} subdomain.local.localhost:7000/my-busybox; \
+                     podman push subdomain.local.localhost:7000/my-busybox""")
         # Untag busybox image which duplicates the image we are about to download
-        self.execute(f"""podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox \
-                         subdomain.local.localhost:7000/my-busybox""",
-                     system=True)
+        m.execute(f"""podman rmi -f {IMG_BUSYBOX} localhost:5000/my-busybox localhost:6000/my-busybox \
+                         subdomain.local.localhost:7000/my-busybox""")
 
         self.login(system=auth)
 
@@ -1847,9 +1843,9 @@ Yaml={name}.yaml
         # Now that we have downloaded an image, verify that selecting download latest image
         # downloads the latest image we now push to the registry. Note this image has a /latest file
         # to differentiate it from the other local image.
-        self.execute(f"podman push {new_image_sha} localhost:5000/my-busybox", system=True)
-        self.execute(f"podman push {new_image_sha} localhost:6000/my-busybox", system=True)
-        self.execute(f"podman rmi {new_image_sha}", system=True)
+        m.execute(f"podman push {new_image_sha} localhost:5000/my-busybox")
+        m.execute(f"podman push {new_image_sha} localhost:6000/my-busybox")
+        m.execute(f"podman rmi {new_image_sha}")
 
         container_name = "busybox-latest"
 
@@ -3055,17 +3051,18 @@ Yaml={name}.yaml
             b.wait_not_present(self.getContainerAction('Rename'))
 
     def testMultipleContainers(self) -> None:
+        m = self.machine
         self.login()
 
         # Create 31 containers
         for i in range(31):
-            self.execute(f"podman run -dt --name container{i} --stop-timeout 0 {IMG_BUSYBOX}", system=True)
+            m.execute(f"podman run -dt --name container{i} --stop-timeout 0 {IMG_BUSYBOX}")
 
         self.waitContainerRow("container30")
 
         # Generic cleanup takes too long and timeouts, so remove these container manually one by one
         for i in range(31):
-            self.execute(f"podman rm -f container{i}", system=True)
+            m.execute(f"podman rm -f container{i}")
 
     def testSpecialContainers(self) -> None:
         m = self.machine
@@ -3101,8 +3098,7 @@ Yaml={name}.yaml
             self.waitPodContainer("jellyfin-pod", [{"name": "jellyfin-pod-jellyfin", "image": IMG_BUSYBOX,
                                   "command": "", "state": "Running", "id": containerId}],
                                   system=True)
-            service_container = self.execute("podman ps --all --filter name=.*-service --format {{.Names}}",
-                                             system=True).strip()
+            service_container = m.execute("podman ps --all --filter name=.*-service --format {{.Names}}").strip()
             b.wait_not_present(f"#containers-containers tbody tr[data-row-id=\"{service_container}\"]")
 
     def testCreatePodSystem(self) -> None:
@@ -3217,11 +3213,11 @@ Yaml={name}.yaml
     @testlib.skipImage("passthrough log driver not supported", "ubuntu-2204")
     def testLogErrors(self) -> None:
         b = self.browser
+        m = self.machine
         container_name = "logissue"
         self.login()
 
-        self.execute(f"podman run --log-driver=passthrough --name {container_name} -d {IMG_ALPINE} false </dev/null",
-                     system=False)
+        m.execute(f"podman run --log-driver=passthrough --name {container_name} -d {IMG_ALPINE} false </dev/null")
         self.waitContainerRow(container_name)
         self.toggleExpandedContainer(container_name)
         b.click(".pf-m-expanded button:contains('Logs')")
@@ -3256,10 +3252,10 @@ Yaml={name}.yaml
         # Nginx config simulates behavior of ghcr.io in terms of `podman search` and `podman manifest inspect`
         self.write_file("/etc/nginx/conf.d/default.conf", NGINX_DEFAULT_CONF,
                         post_restore_action="systemctl stop nginx.service; setsebool -P httpd_can_network_connect 0")
-        self.execute("""
+        m.execute("""
             setsebool -P httpd_can_network_connect 1
             systemctl start nginx.service
-        """, system=True)
+        """)
 
         container_name = "localhost:80/my-busybox"
         m.execute(f"""
