@@ -4,7 +4,6 @@
 # "class Browser" and "class MachineCase" for the available API.
 
 import json
-import os
 import re
 import sys
 import time
@@ -3418,10 +3417,7 @@ Yaml={name}.yaml
         b.wait_js_cond('window.location.pathname === "/system/services"')
 
         # Logs page link integration
-        # HACK: Requires
-        # https://github.com/cockpit-project/cockpit/commit/ac0558c7dc5da8f97c7dcc43f3ad9e3d548b5c6b
-        # to land in a release and the TEST_OS_DEFAULT image.
-        if system and "devel" not in os.getenv("TEST_SCENARIO", ""):
+        if system:
             b.go("/podman")
             b.enter_page("/podman")
             b.wait_visible("#app")
