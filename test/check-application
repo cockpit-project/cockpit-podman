@@ -2149,7 +2149,7 @@ Yaml={name}.yaml
 
         self.toggleExpandedContainer(IMG_BUSYBOX)
         if auth:
-            b.assert_pixels('#containers-containers tr.pf-m-expanded',
+            b.assert_pixels('#containers-containers .pf-v6-c-table__expandable-row.pf-m-expanded',
                             "image-details-tab",
                             ignore=['.ignore-pixels', '.container-mac-address'],
                             # MAC Address doesn't use a monospace font so it varies
