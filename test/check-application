@@ -147,15 +147,13 @@ class TestApplication(testlib.MachineCase):
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
 
         # old C bridge sometimes does that; not fixable any more
-        if m.image.startswith('rhel-8') or m.image in ['debian-stable', 'ubuntu-2204']:
+        if m.image.startswith('rhel-8') or m.image in ['ubuntu-2204']:
             self.allow_journal_messages(".*cockpit_http_stream_close: code should not be reached")
 
-        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1008249
-        # Fixed in crun 1.20-1
-        self.has_criu = m.image not in ["debian-stable", "ubuntu-2204", "ubuntu-2404"]
+        self.has_criu = m.image not in ["ubuntu-2204", "ubuntu-2404"]
         self.has_selinux = not any(img in m.image for img in ["arch", "debian", "ubuntu", "suse"])
         self.has_cgroupsV2 = not m.image.startswith('rhel-8')
-        self.supports_quadlet = m.image not in ["debian-stable", "ubuntu-2204"]
+        self.supports_quadlet = m.image not in ["ubuntu-2204"]
 
         self.system_images_count = int(self.execute("podman images -n | wc -l", system=True).strip())
         self.user_images_count = int(self.execute("podman images -n | wc -l", system=False).strip())
@@ -3237,7 +3235,7 @@ Yaml={name}.yaml
 
         if (m.image.startswith("rhel-8") or
                 m.image.startswith("centos-8") or
-                m.image in ["debian-stable", "ubuntu-2204"]) and not m.ws_container:
+                m.image in ["ubuntu-2204"]) and not m.ws_container:
             # C bridge does not understand manifest conditions yet, and still shows the menu
             self.assertIn("Podman", b.text("#host-apps"))
         else:
@@ -3460,12 +3458,12 @@ Yaml={name}.yaml
             self.waitPodRow("media", present=True)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
-    @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
+    @testlib.skipImage("no quadlet support", "ubuntu-2204", "rhel-8-10")
     def testQuadletsSystem(self) -> None:
         self._testQuadlets(system=True)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
-    @testlib.skipImage("no quadlet support", "debian-stable", "ubuntu-2204", "rhel-8-10")
+    @testlib.skipImage("no quadlet support", "ubuntu-2204", "rhel-8-10")
     def testQuadletsUsers(self) -> None:
         self._testQuadlets(system=False)
 
@@ -3582,7 +3580,7 @@ Yaml={name}.yaml
 
         # check quadlet detection
         # old podman versions don't have quadlet support
-        if m.image not in ["rhel-8-10", "ubuntu-2204", "debian-stable"]:
+        if m.image not in ["rhel-8-10", "ubuntu-2204"]:
             ssh['guitar'].execute("podman rm -f --all")
 
             quadlet = """[Container]
