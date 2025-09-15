@@ -619,17 +619,18 @@ class Containers extends React.Component {
         const partitionedContainers = { 'no-pod': [] };
         let filtered = [];
         const unusedContainers = [];
+        const isLoaded = this.props.containers !== null && this.props.pods !== null;
 
         let emptyCaption = _("No containers");
         const emptyCaptionPod = _("No containers in this pod");
-        if (this.props.containers === null || this.props.pods === null)
+        if (!isLoaded)
             emptyCaption = _("Loading...");
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No containers that match the current filter");
         else if (this.props.filter == "running")
             emptyCaption = _("No running containers");
 
-        if (this.props.containers !== null && this.props.pods !== null) {
+        if (isLoaded) {
             filtered = Object.keys(this.props.containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id].State.Status));
 
             if (this.props.ownerFilter !== "all") {
@@ -823,7 +824,7 @@ class Containers extends React.Component {
                 </CardHeader>
                 <CardBody>
                     <Flex direction={{ default: 'column' }}>
-                        {(this.props.containers === null || this.props.pods === null)
+                        {(!isLoaded)
                             ? <ListingTable variant='compact'
                                             aria-label={_("Containers")}
                                             emptyCaption={emptyCaption}
