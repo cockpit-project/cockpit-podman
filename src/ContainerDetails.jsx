@@ -75,10 +75,12 @@ const ContainerDetails = ({ container }) => {
             </FlexItem>
             <FlexItem>
                 <DescriptionList className='container-details-state'>
+                    {container.Created &&
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
                         <DescriptionListDescription><utils.RelativeTime time={container.Created} /></DescriptionListDescription>
                     </DescriptionListGroup>
+                    }
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("State")}</DescriptionListTerm>
                         <DescriptionListDescription>{render_container_state(container)}</DescriptionListDescription>
