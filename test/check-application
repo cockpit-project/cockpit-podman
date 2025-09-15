@@ -288,6 +288,7 @@ class TestApplication(testlib.MachineCase):
                       *, auth: bool = False) -> None:
         pod_option = f'Pod={podName}.pod' if podName else ''
         containername_option = f'ContainerName={containerName}' if containerName else ''
+        stop_timeout = 'StopTimeout=0' if self.machine.image not in ['ubuntu-2404', 'rhel-8-10'] else ''
         quadlet = f"""
 [Unit]
 Description=Podman - {name}
@@ -298,6 +299,7 @@ Image={IMG_BUSYBOX}
 Exec=sleep infinity
 {containername_option}
 {pod_option}
+{stop_timeout}
 
 [Install]
 WantedBy=multi-user.target default.target
