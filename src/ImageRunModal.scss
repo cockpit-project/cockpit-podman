@@ -27,7 +27,7 @@
 @media (min-width: $pf-v6-global--breakpoint--md) {
     .pf-v6-c-form__group.ct-m-horizontal {
         display: grid;
-        grid-column-gap: var(--pf-v6-c-form--m-horizontal__group-label--md--GridColumnGap);
+        column-gap: var(--pf-v6-c-form--m-horizontal__group-label--md--GridColumnGap);
         grid-template-columns: var(--pf-v6-c-form--m-horizontal__group-label--md--GridColumnWidth) var(--pf-v6-c-form--m-horizontal__group-control--md--GridColumnWidth);
     }
 }
@@ -60,7 +60,7 @@
       .#{$form}__group {
         display: grid;
         grid-template-columns: var(--#{$form}--m-horizontal__group-label--md--GridColumnWidth) var(--#{$form}--m-horizontal__group-control--md--GridColumnWidth);
-        grid-column-gap: var(--#{$form}--m-horizontal__group-label--md--GridColumnGap);
+        column-gap: var(--#{$form}--m-horizontal__group-label--md--GridColumnGap);
       }
 
       .#{$form}__group-label {
