@@ -69,7 +69,6 @@ class Application extends React.Component {
             notifications: [],
             version: '1.3.0',
             selinuxAvailable: false,
-            podmanRestartAvailable: false,
             userPodmanRestartAvailable: false,
             userLingeringEnabled: null,
             location: {},
@@ -583,9 +582,6 @@ class Application extends React.Component {
                 .then(() => this.setState({ selinuxAvailable: true }))
                 .catch(() => this.setState({ selinuxAvailable: false }));
 
-        cockpit.spawn(["systemctl", "show", "--value", "-p", "LoadState", "podman-restart"], { environ: ["LC_ALL=C"], error: "ignore" })
-                .then(out => this.setState({ podmanRestartAvailable: out.trim() === "loaded" }));
-
         cockpit.addEventListener("locationchanged", this.onNavigate);
         this.onNavigate();
     }
@@ -757,7 +753,6 @@ class Application extends React.Component {
             cgroupVersion: this.state.cgroupVersion,
             registries: this.state.registries,
             selinuxAvailable: this.state.selinuxAvailable,
-            podmanRestartAvailable: this.state.podmanRestartAvailable,
             userPodmanRestartAvailable: this.state.userPodmanRestartAvailable,
             userLingeringEnabled: this.state.userLingeringEnabled,
             version: this.state.version,
