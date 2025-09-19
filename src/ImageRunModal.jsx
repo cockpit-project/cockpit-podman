@@ -749,7 +749,7 @@ export class ImageRunModal extends React.Component {
 
     render() {
         const Dialogs = this.props.dialogs;
-        const { registries, podmanRestartAvailable, userLingeringEnabled, userPodmanRestartAvailable, selinuxAvailable, version } = this.props.podmanInfo;
+        const { registries, userLingeringEnabled, userPodmanRestartAvailable, selinuxAvailable, version } = this.props.podmanInfo;
         const { image } = this.props;
         const dialogValues = this.state;
         const { activeTabKey, owner, selectedImage } = this.state;
@@ -996,7 +996,7 @@ export class ImageRunModal extends React.Component {
                                     </Flex>
                                 </FormGroup>
                             }
-                            {((userLingeringEnabled && userPodmanRestartAvailable) || (this.isSystem() && podmanRestartAvailable)) &&
+                            {((userLingeringEnabled && userPodmanRestartAvailable) || (this.isSystem())) &&
                                 <Grid hasGutter md={6} sm={3}>
                                     <GridItem>
                                         <FormGroup fieldId='run-image-dialog-restart-policy' label={_("Restart policy")}

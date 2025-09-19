@@ -18,7 +18,6 @@ type PodmanInfoContextType = {
     cgroupVersion: string,
     registries: Registries,
     selinuxAvailable: boolean,
-    podmanRestartAvailable: boolean,
     userPodmanRestartAvailable: boolean,
     userLingeringEnabled: boolean,
     version: string,
