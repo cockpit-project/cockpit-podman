@@ -59,9 +59,9 @@ class Application extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            // currently connected services per user: { con, uid, name, imagesLoaded, containersLoaded, podsLoaded, quadletsLoaded }
+            // currently connected services per user: { con, uid, name, dbus: { client, subscription }, imagesLoaded, containersLoaded, podsLoaded, quadletsLoaded }
             // start with dummy state to wait for initialization
-            users: [{ con: null, uid: 0, name: _("system") }, { con: null, uid: null, name: _("user") }],
+            users: [{ con: null, uid: 0, name: _("system"), dbus: null }, { con: null, uid: null, name: _("user"), dbus: null }],
             images: null,
             containers: null,
             containersFilter: "all",
@@ -588,21 +588,41 @@ class Application extends React.Component {
             options = { bus: "session" };
         }
 
-        const subscribe = (bus) => {
-            bus.subscribe({ interface: "org.freedesktop.systemd1.Manager", member: "Reloading" }, (_path, _iface, _signal, [reloading]) => {
-                console.log('reloading', con.uid, reloading);
+        const subscribe = (client) => {
+            const subscription = client.subscribe({ interface: "org.freedesktop.systemd1.Manager", member: "Reloading" }, (_path, _iface, _signal, [reloading]) => {
                 if (!reloading)
                     this.initQuadlets(con);
             });
+
+            this.setState(prevState => {
+                const users = prevState.users.map(u => u.uid === con.uid ? { ...u, dbus: { client, subscription } } : u);
+                return { users };
+            });
         };
 
-        const bus = cockpit.dbus("org.freedesktop.systemd1", options);
-        bus.call("/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager", "Subscribe", []).then(() => {
-            subscribe(bus);
+        let client = null;
+        const user = this.state.users.find(u => u.uid === con.uid);
+
+        // don't add multiple Reload subscriptions
+        if (user?.dbus?.subscription) {
+            return;
+        }
+
+        if (user?.dbus) {
+            client = user.dbus.client;
+        } else {
+            client = cockpit.dbus("org.freedesktop.systemd1", options);
+        }
+
+        client.call("/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager", "Subscribe", []).then(() => {
+            subscribe(client);
         })
                 .catch(err => {
                     if (err.name === "org.freedesktop.systemd1.AlreadySubscribed") {
-                        subscribe(bus);
+                        subscribe(client);
+                    } else {
+                        client.close();
+                        console.error(`Cannot subscribe systemd reload event for ${con.uid}`);
                     }
                 });
     }
@@ -657,6 +677,13 @@ class Application extends React.Component {
                 .finally(() => {
                     console.log("uid", uid, "podman service closed");
                     this.cleanupAfterService(con);
+                    if (uid === 0) {
+                        const user = this.state.users.find(u => u.uid === 0);
+                        if (user?.dbus) {
+                            user.dbus?.subscription?.remove();
+                            user.dbus?.client?.close();
+                        }
+                    }
                 });
     }
 
@@ -741,6 +768,14 @@ class Application extends React.Component {
 
     componentWillUnmount() {
         cockpit.removeEventListener("locationchanged", this.onNavigate);
+
+        // Cleanup DBus subscriptions
+        this.state.users.forEach(user => {
+            if (user.dbus) {
+                user.dbus.subscription.remove();
+                user.dbus.client.close();
+            }
+        });
     }
 
     onNavigate() {
