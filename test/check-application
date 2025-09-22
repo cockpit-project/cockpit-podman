@@ -214,11 +214,11 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}] {selector}")
 
-    def execute(self, cmd: str, *, system: bool) -> str:
+    def execute(self, cmd: str, *, system: bool, check: bool = True) -> str:
         if system:
-            return self.machine.execute(cmd)
+            return self.machine.execute(cmd, check=check)
         else:
-            return self.admin_s.execute(cmd)
+            return self.admin_s.execute(cmd, check=check)
 
     def login(self, *, system: bool = True) -> None:
         b = self.browser
@@ -258,14 +258,15 @@ class TestApplication(testlib.MachineCase):
         b.click(f"ul.pf-v6-c-menu__list li > button.pod-action-{action.lower()}")
         b.wait_not_present("ul.pf-v6-c-menu__list")
 
-    def getStartTime(self, container: str, *, auth: bool) -> str:
+    def getStartTime(self, container: str, *, auth: bool, check: bool = True) -> str:
         # don't format the raw time strings from the API, force json format
-        out = self.execute("podman inspect --format '{{json .State.StartedAt}}' " + container, system=auth)
+        out = self.execute("podman inspect --format '{{json .State.StartedAt}}' " + container,
+                           system=auth, check=check)
         return out.strip().replace('"', '')
 
-    def waitRestart(self, container: str, old_start: str, *, auth: bool) -> str:
+    def waitRestart(self, container: str, old_start: str, *, auth: bool, check: bool = True) -> str:
         for _ in range(10):
-            new_start = self.getStartTime(container, auth=auth)
+            new_start = self.getStartTime(container, auth=auth, check=check)
             if new_start > old_start:
                 return new_start
             time.sleep(1)
@@ -3372,23 +3373,30 @@ Yaml={name}.yaml
         b.wait(lambda: self.getContainerAttr("quak", "State") == "Running")
 
         b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
-        b.wait_visible(self.getContainerAction('Commit'))
 
-        # Cannot delete a quadlet container, they are managed by .container units
+        # Cannot delete/commit a quadlet container, they are managed by .container units
         b.wait_not_present(self.getContainerAction('Delete'))
-
-        # Lifecycle operations are not available such as Stop/Restart/Pause
-        b.wait_not_present(self.getContainerAction('Stop'))
-        b.wait_not_present(self.getContainerAction('Restart'))
-        b.wait_not_present(self.getContainerAction('Pause'))
+        b.wait_not_present(self.getContainerAction('Commit'))
 
         b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
         b.wait_not_present('.pf-v6-c-menu__item')
 
+        # Can stop/start/restart a container
+        self.performContainerAction("quak", "Stop")
+        b.wait(lambda: self.getContainerAttr("quak", "State") == "Exited")
+        self.performContainerAction("quak", "Start")
+        b.wait(lambda: self.getContainerAttr("quak", "State") == "Running")
+        containerId = self.execute("podman inspect --format '{{.Id}}' quak", system=system).strip()
+        old_start = self.getStartTime("quak", auth=system)
+        data_row_id = ('0-' if system else 'user-') + containerId
+        self.performContainerAction("quak", "Restart")
+        # Wait for it to properly go away before waitRestart, on Ubuntu-2404 restarting is slow.
+        b.wait_not_present(f'#table-no-pod tr[data-row-id="{data_row_id}"]')
+        self.waitRestart("quak", old_start, auth=system, check=False)
+
         # Quadlet pod support was introduced in podman 5.0.0
         if self.podman_version() >= (5, 0, 0):
             podName = "homeassistant"
-            podOwner = "system" if system else "user"
             self.createQuadletPod(podName, auth=system)
             self.createQuadlet("zigbee", containerName="zigbee", podName=podName, auth=system)
             self.waitPodRow(podName, present=True)
@@ -3403,10 +3411,7 @@ Yaml={name}.yaml
             # Quadlet pods are shown as a service group
             b.wait_visible("#table-homeassistant .pf-v6-c-card__header .ct-badge-service:contains('service')")
 
-            # Lifecycle operations are not available such as Start/Restart
-            b.wait_visible(f"#pod-{podName}-{podOwner}-action-toggle:disabled")
-
-            self.execute(f"{systemctl_cmd} stop homeassistant-pod", system=system)
+            self.performPodAction("homeassistant", "system" if system else "user", "Stop")
             self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
                                   "command": "", "state": "Exited", "id": "zigbee.service"}],
                                   system=system)
@@ -3452,6 +3457,11 @@ Yaml={name}.yaml
                                   "command": "sleep infinity", "state": "Running", "id": containerId}],
                                   system=system)
 
+            # Can restart a pod, a pod has no StartedAt so we watch if the container inside it restarts
+            old_start = self.getStartTime("database", auth=system)
+            self.performPodAction("media", "system" if system else "user", "Restart")
+            self.waitRestart("database", old_start, auth=system, check=False)
+
             # Shows filtering on systemd unit
             b.set_input_text('#containers-filter input', 'nothing')
             self.waitContainerRow("database", present=False)
@@ -3473,8 +3483,7 @@ Yaml={name}.yaml
             b.set_input_text('#containers-filter input', '')
 
             # Stopping a container in a pod still shows them in the same pod group
-            self.execute(f"{systemctl_cmd} stop fancydb.service", system=system)
-            # TODO: show command of stopped quadlet
+            self.performContainerAction("database", "Stop")
             self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
                                   "command": "", "state": "Exited", "id": "fancydb.service"}],
                                   system=system)
@@ -3489,13 +3498,19 @@ Yaml={name}.yaml
                                       "command": "sleep infinity", "state": "Running", "id": containerId}],
                                       system=False)
 
-                self.execute("systemctl --user stop immich-pod.service", system=False)
+                self.performPodAction("media", "user", "Stop")
+                inactive_cmd = "systemctl --user is-active immich-pod.service"
+                self.execute(f'until [ $({inactive_cmd}) = inactive ]; do sleep 1; done',
+                             system=False)
+                # data-started-at="2025-10-13T14:21:51.387895622Z"
                 self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
                                       "command": "", "state": "Exited", "id": "fancydb.service"}],
                                       system=False)
 
-                self.execute("systemctl --user start immich-pod.service", system=False)
-                self.execute('until [ $(systemctl --user is-active immich-pod.service) = active ]; do sleep 1; done',
+                # data-row-id="user-fancydb.service"
+                # b.wait_visible('#table-media tr[data-row-id="user-fancydb.service"]')
+                self.performPodAction("media", "user", "Start")
+                self.execute(f'until [ $({inactive_cmd}) = active ]; do sleep 1; done',
                              system=False)
                 b.wait_visible('#pod-media-user-action-toggle')
                 containerId = self.execute("podman inspect --format '{{.Id}}' database", system=False).strip()

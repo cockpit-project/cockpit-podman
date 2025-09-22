@@ -87,12 +87,20 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
                 });
     };
 
+    const stopQuadletContainer = () => {
+        utils.systemctl_spawn(["stop", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0);
+    };
+
     const startContainer = () => {
-        client.postContainer(con, "start", container.Id, {})
-                .catch(ex => {
-                    const error = cockpit.format(_("Failed to start container $0"), container.Name); // not-covered: OS error
-                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                });
+        if (isSystemdService) {
+            utils.systemctl_spawn(["start", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0);
+        } else {
+            client.postContainer(con, "start", container.Id, {})
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to start container $0"), container.Name); // not-covered: OS error
+                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    });
+        }
     };
 
     const resumeContainer = () => {
@@ -129,6 +137,10 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
                 });
     };
 
+    const restartQuadletContainer = () => {
+        utils.systemctl_spawn(["restart", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0);
+    };
+
     const renameContainer = () => {
         if (container.State.Status !== "running") {
             Dialogs.show(<ContainerRenameModal con={con}
@@ -160,10 +172,19 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
 
     const actions = [];
     if (isRunning || isPaused) {
-        // TODO: cockpit-podman currently isn't aware of podman quadlets as they don't keep containers around when stopped, failed or not yet started by default.
-        // Allowing a user to stop or restart a container can result in the container disappearing from the list without a way to start it again. Until cockpit-podman
-        // can list quadlets these actions are disabled.
-        if (!isSystemdService) {
+        // Allow restarting quadlets from the logged in user and superuser
+        if (isSystemdService && [0, null].includes(container.uid)) {
+            actions.push(
+                <DropdownItem key="stop"
+                          onClick={() => stopQuadletContainer()}>
+                    {_("Stop")}
+                </DropdownItem>,
+                <DropdownItem key="restart"
+                          onClick={() => restartQuadletContainer()}>
+                    {_("Restart")}
+                </DropdownItem>,
+            );
+        } else if (!isSystemdService) {
             actions.push(
                 <DropdownItem key="stop"
                           onClick={() => stopContainer()}>
@@ -200,7 +221,7 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
             }
         }
 
-        if (container.uid == 0 && !isPaused) {
+        if (container.uid == 0 && !isPaused && !isSystemdService) {
             if (actions.length > 0)
                 actions.push(<Divider key="separator-0" />);
 
@@ -213,7 +234,7 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
         }
     }
 
-    if (!isRunning && !isPaused && !isSystemdService) {
+    if (!isRunning && !isPaused) {
         actions.push(
             <DropdownItem key="start"
                           onClick={() => startContainer()}>
@@ -238,15 +259,15 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
         }
     }
 
-    actions.push(<Divider key="separator-1" />);
-    actions.push(
-        <DropdownItem key="commit"
-                      onClick={() => commitContainer()}>
-            {_("Commit")}
-        </DropdownItem>
-    );
-
     if (!isSystemdService) {
+        actions.push(<Divider key="separator-1" />);
+        actions.push(
+            <DropdownItem key="commit"
+                          onClick={() => commitContainer()}>
+                {_("Commit")}
+            </DropdownItem>
+        );
+
         actions.push(<Divider key="separator-2" />);
         actions.push(
             <DropdownItem key="delete"
