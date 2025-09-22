@@ -188,3 +188,12 @@ export const validationDebounce = debounce(500, (validationHandler) => validatio
 // FIXME: yes yes, the container config type should be fully spelled out
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const is_systemd_service = (container_config: { [key: string]: any }) => container_config?.Labels?.PODMAN_SYSTEMD_UNIT && !container_config.Labels.PODMAN_SYSTEMD_UNIT.startsWith('podman-compose@');
+
+export const systemctl_spawn = (args: string[], system: boolean = false) => {
+    const systemctl_args = [
+        "systemctl",
+        ...(system ? [] : ["--user"]),
+    ];
+
+    return cockpit.spawn([...systemctl_args, ...args], { superuser: system ? "require" : null, err: "message" });
+};
