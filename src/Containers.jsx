@@ -313,6 +313,7 @@ class Containers extends React.Component {
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
         this.podStats = this.podStats.bind(this);
+        this.filterContainers = this.filterContainers.bind(this);
 
         this.cardRef = React.createRef();
 
@@ -590,19 +591,63 @@ class Containers extends React.Component {
         this.setState({ showPruneUnusedContainersModal: true });
     };
 
-    filterContainersByText = (lcf, id) => {
-        const container = this.props.containers[id];
-        const systemd_unit_match = container.Config?.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) >= 0;
-        const name_match = container.Name.toLowerCase().indexOf(lcf) >= 0;
-        const image_match = container.ImageName.toLowerCase().indexOf(lcf) >= 0;
+    filterContainers = (containers) => {
+        let filtered = [];
+        filtered = Object.keys(containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id].State.Status));
 
-        if (container.Pod) {
-            const pod = this.props.pods[utils.makeKey(container.uid, container.Pod)];
-            const pod_match = pod.Name.toLowerCase().indexOf(lcf) >= 0 || pod.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) >= 0;
-            return name_match || systemd_unit_match || image_match || pod_match;
-        } else {
-            return name_match || systemd_unit_match || image_match;
+        const filter_by_text = (lcf, id) => {
+            const container = containers[id];
+            const systemd_unit_match = container.Config?.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) >= 0;
+            const name_match = container.Name.toLowerCase().indexOf(lcf) >= 0;
+            const image_match = container.ImageName.toLowerCase().indexOf(lcf) >= 0;
+
+            if (container.Pod) {
+                const pod = this.props.pods[utils.makeKey(container.uid, container.Pod)];
+                const pod_match = pod.Name.toLowerCase().indexOf(lcf) >= 0 || pod.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) >= 0;
+                return name_match || systemd_unit_match || image_match || pod_match;
+            } else {
+                return name_match || systemd_unit_match || image_match;
+            }
+        };
+
+        if (this.props.ownerFilter !== "all") {
+            filtered = filtered.filter(id => {
+                if (this.props.ownerFilter === "user")
+                    return containers[id].uid === null;
+                return containers[id].uid === this.props.ownerFilter;
+            });
         }
+
+        if (this.props.textFilter.length > 0) {
+            const lcf = this.props.textFilter.toLowerCase();
+            filtered = filtered.filter(id => filter_by_text(lcf, id));
+        }
+
+        // Remove infra and service containers
+        filtered = filtered.filter(id => !containers[id].IsInfra && !containers[id].IsService);
+
+        const getHealth = id => {
+            const state = containers[id]?.State;
+            return state?.Health?.Status || state?.Healthcheck?.Status;
+        };
+
+        filtered.sort((a, b) => {
+            // Show unhealthy containers first
+            const a_health = getHealth(a);
+            const b_health = getHealth(b);
+            if (a_health !== b_health) {
+                if (a_health === "unhealthy")
+                    return -1;
+                if (b_health === "unhealthy")
+                    return 1;
+            }
+            // User containers are in front of system ones
+            if (containers[a].uid !== containers[b].uid)
+                return (containers[a].uid === 0) ? 1 : -1;
+            return containers[a].Name > containers[b].Name ? 1 : -1;
+        });
+
+        return filtered;
     };
 
     render() {
@@ -617,7 +662,6 @@ class Containers extends React.Component {
         ];
         /** @type Record<string, string[]> */
         const partitionedContainers = { 'no-pod': [] };
-        let filtered = [];
         const unusedContainers = [];
         const isLoaded = this.props.containers !== null && this.props.pods !== null;
 
@@ -631,44 +675,7 @@ class Containers extends React.Component {
             emptyCaption = _("No running containers");
 
         if (isLoaded) {
-            filtered = Object.keys(this.props.containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id].State.Status));
-
-            if (this.props.ownerFilter !== "all") {
-                filtered = filtered.filter(id => {
-                    if (this.props.ownerFilter === "user")
-                        return this.props.containers[id].uid === null;
-                    return this.props.containers[id].uid === this.props.ownerFilter;
-                });
-            }
-
-            if (this.props.textFilter.length > 0) {
-                const lcf = this.props.textFilter.toLowerCase();
-                filtered = filtered.filter(id => this.filterContainersByText(lcf, id));
-            }
-
-            // Remove infra and service containers
-            filtered = filtered.filter(id => !this.props.containers[id].IsInfra && !this.props.containers[id].IsService);
-
-            const getHealth = id => {
-                const state = this.props.containers[id]?.State;
-                return state?.Health?.Status || state?.Healthcheck?.Status;
-            };
-
-            filtered.sort((a, b) => {
-                // Show unhealthy containers first
-                const a_health = getHealth(a);
-                const b_health = getHealth(b);
-                if (a_health !== b_health) {
-                    if (a_health === "unhealthy")
-                        return -1;
-                    if (b_health === "unhealthy")
-                        return 1;
-                }
-                // User containers are in front of system ones
-                if (this.props.containers[a].uid !== this.props.containers[b].uid)
-                    return (this.props.containers[a].uid === 0) ? 1 : -1;
-                return this.props.containers[a].Name > this.props.containers[b].Name ? 1 : -1;
-            });
+            const filtered = this.filterContainers(this.props.containers);
 
             Object.keys(this.props.pods || {}).forEach(pod => { partitionedContainers[pod] = [] });
 
