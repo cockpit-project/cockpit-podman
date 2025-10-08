@@ -145,6 +145,9 @@ class TestApplication(testlib.MachineCase):
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
+        # Ubuntu 22.04 doesn't support user podman-systemd-generator
+        if m.image in ["ubuntu-2204"]:
+            self.allow_journal_messages("Generator directory or unit not found: .* '/run/user/.*")
 
         # old C bridge sometimes does that; not fixable any more
         if m.image.startswith('rhel-8') or m.image in ['ubuntu-2204']:
@@ -3363,8 +3366,10 @@ Yaml={name}.yaml
         self.login(system=system)
 
         service_name = "quak"
+        systemctl_cmd = "systemctl" if system else "systemctl --user"
         self.createQuadlet(service_name, containerName=service_name, auth=system)
         self.waitContainerRow(service_name)
+        b.wait(lambda: self.getContainerAttr("quak", "State") == "Running")
 
         b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
         b.wait_visible(self.getContainerAction('Commit'))
@@ -3401,6 +3406,11 @@ Yaml={name}.yaml
             # Lifecycle operations are not available such as Start/Restart
             b.wait_visible(f"#pod-{podName}-{podOwner}-action-toggle:disabled")
 
+            self.execute(f"{systemctl_cmd} stop homeassistant-pod", system=system)
+            self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
+                                  "command": "", "state": "Exited", "id": "zigbee.service"}],
+                                  system=system)
+
         self.toggleExpandedContainer(service_name)
 
         # Service link integration
@@ -3424,13 +3434,18 @@ Yaml={name}.yaml
             b.wait_js_cond('window.location.pathname === "/system/logs"')
             b.wait_js_cond(f'window.location.hash === "#/?priority=info&_SYSTEMD_UNIT={service_name}.service"')
 
+        b.go("/podman")
+        b.enter_page("/podman")
+
+        # Stopped quadlets are listed as not running
+        self.execute(f"{systemctl_cmd} stop quak.service", system=system)
+        b.wait(lambda: self.getContainerAttr("quak", "State") in NOT_RUNNING)
+
         # Quadlet pod support was introduced in podman 5.0.0
         if self.podman_version() >= (5, 0, 0):
             # Filtering supports services
             self.createQuadletPod("immich", podName="media", auth=system)
             self.createQuadlet("fancydb", containerName="database", podName="immich", auth=system)
-            b.go("/podman")
-            b.enter_page("/podman")
             self.waitPodRow("media", present=True)
             containerId = self.execute("podman inspect --format '{{.Id}}' database", system=system).strip()
             self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
@@ -3454,6 +3469,39 @@ Yaml={name}.yaml
             self.waitPodRow("media", present=False)
             b.set_input_text('#containers-filter input', 'immich-pod.service')
             self.waitPodRow("media", present=True)
+            # Reset filtering
+            b.set_input_text('#containers-filter input', '')
+
+            # Stopping a container in a pod still shows them in the same pod group
+            self.execute(f"{systemctl_cmd} stop fancydb.service", system=system)
+            # TODO: show command of stopped quadlet
+            self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
+                                  "command": "", "state": "Exited", "id": "fancydb.service"}],
+                                  system=system)
+
+            # An identical named pod should not cause confusion in the UI
+            if system:
+                self.createQuadletPod("immich", podName="media", auth=False)
+                self.createQuadlet("fancydb", containerName="database", podName="immich", auth=False)
+                b.wait_visible('#pod-media-user-action-toggle')
+                containerId = self.execute("podman inspect --format '{{.Id}}' database", system=False).strip()
+                self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
+                                      "command": "sleep infinity", "state": "Running", "id": containerId}],
+                                      system=False)
+
+                self.execute("systemctl --user stop immich-pod.service", system=False)
+                self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
+                                      "command": "", "state": "Exited", "id": "fancydb.service"}],
+                                      system=False)
+
+                self.execute("systemctl --user start immich-pod.service", system=False)
+                self.execute('until [ $(systemctl --user is-active immich-pod.service) = active ]; do sleep 1; done',
+                             system=False)
+                b.wait_visible('#pod-media-user-action-toggle')
+                containerId = self.execute("podman inspect --format '{{.Id}}' database", system=False).strip()
+                self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
+                                      "command": "", "state": "Running", "id": containerId}],
+                                      system=False)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "ubuntu-2204", "rhel-8-10")

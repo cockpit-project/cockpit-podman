@@ -28,12 +28,15 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { WithDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
+import { basename } from "cockpit-path";
+import * as python from "python";
 import { superuser } from "superuser";
 
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';
+import detect_quadlets from './detect-quadlets.py';
 import rest from './rest.js';
 import { makeKey, WithPodmanInfo, debug } from './util.js';
 
@@ -56,13 +59,20 @@ class Application extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            // currently connected services per user: { con, uid, name, imagesLoaded, containersLoaded, podsLoaded }
+            // currently connected services per user: { con, uid, name, dbus: { client, subscription }, imagesLoaded, containersLoaded, podsLoaded, quadletsLoaded }
             // start with dummy state to wait for initialization
-            users: [{ con: null, uid: 0, name: _("system") }, { con: null, uid: null, name: _("user") }],
+            users: [{ con: null, uid: 0, name: _("system"), dbus: null }, { con: null, uid: null, name: _("user"), dbus: null }],
             images: null,
             containers: null,
             containersFilter: "all",
             containersStats: {},
+            // Mapping of quadlet containers and pods on the system to show
+            // inactive containers and pods as quadlets are ephemeral and the
+            // container/pod is not kept around when they are stopped.
+            // { "$uid-$name.service": { source_path, name, exec, image, pod  } }
+            quadletContainers: {},
+            // { "$uid-$name-pod.service": { source_path, name } }
+            quadletPods: {},
             textFilter: "",
             ownerFilter: "all",
             dropDownValue: 'Everything',
@@ -459,6 +469,164 @@ class Application extends React.Component {
             this.onOwnerChanged("all");
     }
 
+    // Read information about quadlets from /run/ until podman provides a remote API for this.
+    // https://github.com/containers/podman/issues/27119
+    // Required for cockpit-podman to show inactive quadlets which have no
+    // stopped container/pod associated with them as they are ephemeral.
+    // The state object of the container or pod has just enough properties to mock a real inactive container or pod.
+    async initQuadlets(con) {
+        let path = "/run/systemd/generator";
+        let quadlets = { pods: {}, containers: {} };
+
+        if (con.uid === null) {
+            path = sessionStorage.getItem('XDG_RUNTIME_DIR') + '/systemd/generator';
+        } else if (con.uid !== 0) {
+            // TODO: support loading other users quadlets
+            debug(`unsupported connection ${con.uid} for loading quadlets`);
+            this.setState(prevState => {
+                const users = prevState.users.map(u => u.uid === con.uid ? { ...u, quadletsLoaded: true } : u);
+                return { users };
+            });
+            return;
+        }
+
+        try {
+            const quadlets_str = await python.spawn(detect_quadlets, [path]);
+            quadlets = JSON.parse(quadlets_str);
+        } catch (exc) {
+            console.warn(`error during discovering of quadlets for ${con.uid}`, exc);
+            this.setState(prevState => {
+                const users = prevState.users.map(u => u.uid === con.uid ? { ...u, quadletsLoaded: true } : u);
+                return { users };
+            });
+            return;
+        }
+
+        // { id-service_name: { } }
+        this.setState(prevState => {
+            const podNameServiceMap = {};
+
+            const copyQuadletPods = {};
+            // keep/copy the pods of other users
+            Object.entries(prevState.quadletPods || {}).forEach(([id, container]) => {
+                if (container.uid !== con.uid)
+                    copyQuadletPods[id] = container;
+            });
+
+            for (const key of Object.keys(quadlets.pods)) {
+                const quadlet_pod = quadlets.pods[key];
+                const container_key = makeKey(con.uid, key);
+
+                const pod = {
+                    uid: con.uid,
+                    key: container_key,
+                    Id: container_key,
+                    Status: "Exited",
+                    Name: quadlet_pod.name,
+                    Labels: {
+                        PODMAN_SYSTEMD_UNIT: key,
+                    }
+                };
+                copyQuadletPods[pod.key] = pod;
+
+                // The key is the service name, but that isn't used in reference
+                podNameServiceMap[basename(quadlet_pod.source_path)] = key;
+            }
+
+            const copyQuadletContainers = {};
+            // keep/copy the containers of other users
+            Object.entries(prevState.quadletContainers || {}).forEach(([id, container]) => {
+                if (container.uid !== con.uid)
+                    copyQuadletContainers[id] = container;
+            });
+
+            for (const key of Object.keys(quadlets.containers)) {
+                const quadlet = quadlets.containers[key];
+                const container_key = makeKey(con.uid, key);
+
+                // Mock podman container state
+                const container = {
+                    uid: con.uid,
+                    key: container_key,
+                    Id: key,
+                    IsService: false,
+                    IsInfra: false,
+                    Name: quadlet.name,
+                    ImageName: quadlet.image,
+                    NetworkSettings: {
+                        Ports: [],
+                    },
+                    Mounts: [],
+                    Config: {
+                        Labels: {
+                            PODMAN_SYSTEMD_UNIT: key,
+                        },
+                    },
+                    State: {
+                        Status: 'exited'
+                    }
+                };
+
+                const found_pod = podNameServiceMap[quadlet.pod];
+                if (found_pod) {
+                    container.Pod = found_pod;
+                }
+                copyQuadletContainers[container.key] = container;
+            }
+
+            const users = prevState.users.map(u => u.uid === con.uid ? { ...u, quadletsLoaded: true } : u);
+            return { quadletContainers: copyQuadletContainers, quadletPods: copyQuadletPods, users };
+        });
+    }
+
+    async subscribeDaemonReload(con) {
+        // We don't support subscribing on reload events for "other" users.
+        if (con.uid !== 0 && con.uid !== null) {
+            return;
+        }
+
+        debug('subscribe daemon reload', con);
+
+        const options = con.uid === 0 ? { bus: "system", superuser: "try" } : { bus: "session" };
+        const subscribe = (client) => {
+            const subscription = client.subscribe({ interface: "org.freedesktop.systemd1.Manager", member: "Reloading" }, (_path, _iface, _signal, [reloading]) => {
+                if (!reloading)
+                    this.initQuadlets(con);
+            });
+
+            this.setState(prevState => {
+                const users = prevState.users.map(u => u.uid === con.uid ? { ...u, dbus: { client, subscription } } : u);
+                return { users };
+            });
+        };
+
+        let client = null;
+        const user = this.state.users.find(u => u.uid === con.uid);
+
+        // don't add multiple Reload subscriptions
+        if (user?.dbus?.subscription) {
+            return;
+        }
+
+        if (user?.dbus) {
+            client = user.dbus.client;
+        } else {
+            client = cockpit.dbus("org.freedesktop.systemd1", options);
+        }
+
+        client.call("/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager", "Subscribe", []).then(() => {
+            subscribe(client);
+        })
+                .catch(err => {
+                    if (err.name === "org.freedesktop.systemd1.AlreadySubscribed") {
+                        subscribe(client);
+                    } else {
+                        client.close();
+                        console.error(`Cannot subscribe systemd reload event for ${con.uid}`);
+                    }
+                });
+    }
+
     async init(uid, username) {
         debug("init uid", uid, "name", username);
         const system = uid === 0;
@@ -479,7 +647,7 @@ class Application extends React.Component {
             const reply = await client.getInfo(con);
             this.setState(prevState => {
                 const users = prevState.users.filter(u => u.uid !== uid);
-                users.push({ con, uid, name: username, containersLoaded: false, podsLoaded: false, imagesLoaded: false });
+                users.push({ con, uid, name: username, containersLoaded: false, podsLoaded: false, imagesLoaded: false, quadletsLoaded: false });
                 // keep a nice sort order for dialogs
                 users.sort(compareUser);
                 debug("init uid", uid, "username", username, "new users:", users);
@@ -500,6 +668,8 @@ class Application extends React.Component {
 
         this.updateImages(con);
         this.initContainers(con);
+        this.initQuadlets(con);
+        this.subscribeDaemonReload(con);
         this.updatePods(con);
 
         client.streamEvents(con, message => this.handleEvent(message, con))
@@ -507,6 +677,11 @@ class Application extends React.Component {
                 .finally(() => {
                     console.log("uid", uid, "podman service closed");
                     this.cleanupAfterService(con);
+                    const user = this.state.users.find(u => u.uid === uid);
+                    if (user?.dbus) {
+                        user.dbus?.subscription?.remove();
+                        user.dbus?.client?.close();
+                    }
                 });
     }
 
@@ -588,6 +763,14 @@ class Application extends React.Component {
 
     componentWillUnmount() {
         cockpit.removeEventListener("locationchanged", this.onNavigate);
+
+        // Cleanup DBus subscriptions
+        this.state.users.forEach(user => {
+            if (user?.dbus) {
+                user.dbus?.subscription?.remove();
+                user.dbus?.client?.close();
+            }
+        });
     }
 
     onNavigate() {
@@ -703,6 +886,7 @@ class Application extends React.Component {
         const loadingImages = this.state.users.find(u => u.con && !u.imagesLoaded);
         const loadingContainers = this.state.users.find(u => u.con && !u.containersLoaded);
         const loadingPods = this.state.users.find(u => u.con && !u.podsLoaded);
+        const loadingQuadlets = this.state.users.find(u => u.con && !u.quadletsLoaded);
 
         const imageList = (
             <Images
@@ -732,6 +916,8 @@ class Application extends React.Component {
                 onAddNotification={this.onAddNotification}
                 cgroupVersion={this.state.cgroupVersion}
                 updateContainer={this.updateContainer}
+                quadletContainers={loadingQuadlets ? null : this.state.quadletContainers}
+                quadletPods={loadingQuadlets ? null : this.state.quadletPods}
             />
         );
 
