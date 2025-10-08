@@ -213,7 +213,7 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
         }
     }
 
-    if (!isRunning && !isPaused) {
+    if (!isRunning && !isPaused && !isSystemdService) {
         actions.push(
             <DropdownItem key="start"
                           onClick={() => startContainer()}>
@@ -593,7 +593,7 @@ class Containers extends React.Component {
 
     filterContainers = (containers) => {
         let filtered = [];
-        filtered = Object.keys(containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id].State.Status));
+        filtered = Object.keys(containers).filter(id => !(this.props.filter == "running") || ["running", "restarting"].includes(this.props.containers[id]?.State?.Status));
 
         const filter_by_text = (lcf, id) => {
             const container = containers[id];
@@ -602,7 +602,8 @@ class Containers extends React.Component {
             const image_match = container.ImageName.toLowerCase().indexOf(lcf) >= 0;
 
             if (container.Pod) {
-                const pod = this.props.pods[utils.makeKey(container.uid, container.Pod)];
+                const podKey = utils.makeKey(container.uid, container.Pod);
+                const pod = this.props.pods[podKey] || this.props.quadletPods[podKey];
                 const pod_match = pod.Name.toLowerCase().indexOf(lcf) >= 0 || pod.Labels?.PODMAN_SYSTEMD_UNIT?.toLowerCase().indexOf(lcf) >= 0;
                 return name_match || systemd_unit_match || image_match || pod_match;
             } else {
@@ -663,7 +664,8 @@ class Containers extends React.Component {
         /** @type Record<string, string[]> */
         const partitionedContainers = { 'no-pod': [] };
         const unusedContainers = [];
-        const isLoaded = this.props.containers !== null && this.props.pods !== null;
+        const isLoaded = this.props.containers !== null && this.props.pods !== null && this.props.quadletContainers !== null && this.props.quadletPods !== null;
+        let pods;
 
         let emptyCaption = _("No containers");
         const emptyCaptionPod = _("No containers in this pod");
@@ -676,13 +678,62 @@ class Containers extends React.Component {
 
         if (isLoaded) {
             const filtered = this.filterContainers(this.props.containers);
+            pods = { ...this.props.pods };
+            /**
+             * Mapping of systemd service name to pod ID.
+             * @type Record<string, string>
+             **/
+            const podServiceNameIdMap = {};
 
-            Object.keys(this.props.pods || {}).forEach(pod => { partitionedContainers[pod] = [] });
+            Object.values(this.props.pods).forEach(pod => {
+                const service_name = pod?.Labels?.PODMAN_SYSTEMD_UNIT;
+                if (service_name) {
+                    const key = utils.makeKey(pod.uid, service_name);
+                    podServiceNameIdMap[key] = utils.makeKey(pod.uid, pod.Id);
+                }
+            });
 
+            // Add inactive quadlet pods to the `pods` state
+            Object.keys(this.props.quadletPods).forEach(key => {
+                const values = this.props.quadletPods[key];
+                if (!(utils.makeKey(values.uid, values.Labels.PODMAN_SYSTEMD_UNIT) in podServiceNameIdMap)) {
+                    pods[key] = values;
+                }
+            });
+
+            Object.keys(pods).forEach(pod => { partitionedContainers[pod] = [] });
+
+            // Set of running quadlets ($id-$name.service)
+            const running_quadlets = new Set();
             filtered.forEach(id => {
                 const container = this.props.containers[id];
-                if (container)
+                if (container) {
                     (partitionedContainers[container.Pod ? utils.makeKey(container.uid, container.Pod) : 'no-pod'] || []).push(container);
+                    const service_name = container?.Config?.Labels?.PODMAN_SYSTEMD_UNIT;
+                    if (service_name)
+                        running_quadlets.add(utils.makeKey(container.uid, service_name));
+                }
+            });
+
+            // Combine the podman containers with inactive quadlets, active
+            // quadlets have a running container or pod associated with them
+            const filteredQuadlets = this.filterContainers(this.props.quadletContainers);
+            filteredQuadlets.forEach(id => {
+                if (!running_quadlets.has(id)) {
+                    const cont = this.props.quadletContainers[id];
+                    const podKey = utils.makeKey(cont.uid, cont.Pod);
+                    // Quadlet container with a pod
+                    if (cont.Pod && !(podKey in podServiceNameIdMap)) {
+                        // Containers and pod state aren't updated in sync
+                        if (podKey in partitionedContainers)
+                            partitionedContainers[podKey].push(cont);
+                    // Stopped container but pod is running, find the pod ID via our mapping
+                    } else if (cont.Pod && podKey in podServiceNameIdMap) {
+                        partitionedContainers[podServiceNameIdMap[podKey]].push(cont);
+                    } else {
+                        partitionedContainers['no-pod'].push(cont);
+                    }
+                }
             });
 
             // Append downloading containers
@@ -694,7 +745,7 @@ class Containers extends React.Component {
             Object.keys(partitionedContainers).forEach(section => {
                 const lcf = this.props.textFilter.toLowerCase();
                 if (section != "no-pod") {
-                    const pod = this.props.pods[section];
+                    const pod = pods[section];
                     if ((this.props.filter == "running" && pod.Status != "Running") ||
                         // If nor the pod name nor any container inside the pod fit the filter, hide the whole pod
                         (!partitionedContainers[section].length && (pod.Name.toLowerCase().indexOf(lcf) < 0 ||
@@ -713,7 +764,7 @@ class Containers extends React.Component {
             for (const containerid of Object.keys(this.props.containers)) {
                 const container = this.props.containers[containerid];
                 // Ignore pods and running containers
-                if (!prune_states.includes(container.State.Status) || container.Pod)
+                if (!prune_states.includes(container?.State?.Status) || container.Pod)
                     continue;
 
                 unusedContainers.push({
@@ -845,9 +896,9 @@ class Containers extends React.Component {
                                         else if (b == "no-pod") return 1;
 
                                         // User pods are in front of system ones
-                                        if (this.props.pods[a].uid !== this.props.pods[b].uid)
-                                            return this.props.pods[a].uid === 0 ? 1 : -1;
-                                        return this.props.pods[a].Name > this.props.pods[b].Name ? 1 : -1;
+                                        if (pods[a].uid !== pods[b].uid)
+                                            return pods[a].uid === 0 ? 1 : -1;
+                                        return pods[a].Name > pods[b].Name ? 1 : -1;
                                     })
                                     .map(section => {
                                         const tableProps = {};
@@ -861,7 +912,7 @@ class Containers extends React.Component {
                                         let isPodService = false;
                                         let con;
                                         if (section !== 'no-pod') {
-                                            pod = this.props.pods[section];
+                                            pod = pods[section];
                                             con = this.props.users.find(u => u.uid === pod.uid).con;
                                             tableProps['aria-label'] = cockpit.format("Containers of pod $0", pod.Name);
                                             podStatus = pod.Status;
@@ -890,7 +941,7 @@ class Containers extends React.Component {
                                         );
                                         return (
                                             <Card key={'table-' + section}
-                                             id={'table-' + (section == "no-pod" ? section : this.props.pods[section].Name)}
+                                             id={'table-' + (section == "no-pod" ? section : pods[section].Name)}
                                              isPlain={section == "no-pod"}
                                              className="container-pod"
                                              isClickable
@@ -901,7 +952,7 @@ class Containers extends React.Component {
                                                             <h3 className='pod-name'>{caption}</h3>
                                                             <span>{_("pod")}</span>
                                                             {isPodService && <Badge className='ct-badge-service'>{_("service")}</Badge>}
-                                                            {this.renderPodDetails(this.props.pods[section], podStatus)}
+                                                            {this.renderPodDetails(pods[section], podStatus)}
                                                         </Flex>
                                                     </CardTitle>
                                                 </CardHeader>}
