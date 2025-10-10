@@ -15,6 +15,7 @@ import { useDialogs } from "dialogs.jsx";
 import cockpit from 'cockpit';
 
 import * as client from './client.js';
+import { systemctl_spawn } from './util.js';
 
 const _ = cockpit.gettext;
 
@@ -80,19 +81,28 @@ export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
     const dropdownItems = [];
     // Possible Pod Statuses can be found here https://github.com/containers/podman/blob/main/libpod/define/podstate.go
     if (pod.Status == "Running" || pod.Status == "Paused") {
-        dropdownItems.push(
-            <DropdownItem key="action-stop"
+        dropdownItems.push(<DropdownItem key="action-stop"
                               className="pod-action-stop"
-                              onClick={() =>
-                                  client.postPod(con, "stop", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to stop pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
+                              onClick={() => {
+                                  if (isPodService) {
+                                      systemctl_spawn(["stop", pod.Labels.PODMAN_SYSTEMD_UNIT], con.uid === 0).catch(ex => {
+                                          const error = cockpit.format(_("Failed to stop pod $0"), pod.Name);
+                                          onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                      });
+                                  } else {
+                                      client.postPod(con, "stop", pod.Id, {})
+                                              .catch(ex => {
+                                                  const error = cockpit.format(_("Failed to stop pod $0"), pod.Name);
+                                                  onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              });
+                                  }
+                              }}
                               component="button">
-                {_("Stop")}
-            </DropdownItem>,
-            <DropdownItem key="action-force-stop"
+            {_("Stop")}
+        </DropdownItem>);
+
+        if (!isPodService)
+            dropdownItems.push(<DropdownItem key="action-force-stop"
                               className="pod-action-force-stop"
                               onClick={() =>
                                   client.postPod(con, "stop", pod.Id, { t: 0 })
@@ -102,19 +112,31 @@ export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
                                           })}
                               component="button">
                 {_("Force stop")}
-            </DropdownItem>,
-            <DropdownItem key="action-restart"
+            </DropdownItem>);
+
+        dropdownItems.push(<DropdownItem key="action-restart"
                               className="pod-action-restart"
-                              onClick={() =>
-                                  client.postPod(con, "restart", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to restart pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
+                              onClick={() => {
+                                  if (isPodService) {
+                                      systemctl_spawn(["restart", pod.Labels.PODMAN_SYSTEMD_UNIT], con.uid === 0)
+                                              .catch(ex => {
+                                                  const error = cockpit.format(_("Failed to restart pod $0"), pod.Name);
+                                                  onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              });
+                                  } else {
+                                      client.postPod(con, "restart", pod.Id, {})
+                                              .catch(ex => {
+                                                  const error = cockpit.format(_("Failed to restart pod $0"), pod.Name);
+                                                  onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              });
+                                  }
+                              }}
                               component="button">
-                {_("Restart")}
-            </DropdownItem>,
-            <DropdownItem key="action-force-restart"
+            {_("Restart")}
+        </DropdownItem>);
+
+        if (!isPodService)
+            dropdownItems.push(<DropdownItem key="action-force-restart"
                               className="pod-action-force-restart"
                               onClick={() =>
                                   client.postPod(con, "restart", pod.Id, { t: 0 })
@@ -124,25 +146,32 @@ export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
                                           })}
                               component="button">
                 {_("Force restart")}
-            </DropdownItem>,
-        );
+            </DropdownItem>);
     }
     if (pod.Status == "Created" || pod.Status == "Exited" || pod.Status == "Stopped") {
         dropdownItems.push(
             <DropdownItem key="action-start"
                               className="pod-action-start"
-                              onClick={() =>
-                                  client.postPod(con, "start", pod.Id, {})
-                                          .catch(ex => {
-                                              const error = cockpit.format(_("Failed to start pod $0"), pod.Name);
-                                              onAddNotification({ type: 'danger', error, errorDetail: ex.message });
-                                          })}
+                              onClick={() => {
+                                  if (isPodService) {
+                                      systemctl_spawn(["start", pod.Labels.PODMAN_SYSTEMD_UNIT], con.uid === 0).catch(ex => {
+                                          const error = cockpit.format(_("Failed to start pod $0"), pod.Name);
+                                          onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                      });
+                                  } else {
+                                      client.postPod(con, "start", pod.Id, {})
+                                              .catch(ex => {
+                                                  const error = cockpit.format(_("Failed to start pod $0"), pod.Name);
+                                                  onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                                              });
+                                  }
+                              }}
                               component="button">
                 {_("Start")}
             </DropdownItem>,
         );
     }
-    if (pod.Status == "Paused") {
+    if (pod.Status == "Paused" && !isPodService) {
         dropdownItems.push(
             <DropdownItem key="action-unpause"
                               className="pod-action-unpause"
@@ -157,7 +186,7 @@ export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
             </DropdownItem>,
         );
     }
-    if (pod.Status == "Running") {
+    if (pod.Status == "Running" && !isPodService) {
         dropdownItems.push(
             <DropdownItem key="action-pause"
                               className="pod-action-pause"
@@ -173,19 +202,21 @@ export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
         );
     }
 
-    if (dropdownItems.length > 1) {
-        dropdownItems.push(<Divider key="separator-1" />);
-    }
-    dropdownItems.push(
-        <DropdownItem key="action-delete"
+    if (!isPodService) {
+        if (dropdownItems.length > 1) {
+            dropdownItems.push(<Divider key="separator-1" />);
+        }
+        dropdownItems.push(
+            <DropdownItem key="action-delete"
                           className="pod-action-delete pf-m-danger"
                           onClick={() => {
                               Dialogs.show(<PodDeleteModal con={con} pod={pod} />);
                           }}
                           component="button">
-            {_("Delete")}
-        </DropdownItem>,
-    );
+                {_("Delete")}
+            </DropdownItem>,
+        );
+    }
 
     if (!dropdownItems.length)
         return null;
@@ -195,7 +226,6 @@ export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
             toggleButtonId={"pod-" + pod.Name + (pod.uid === 0 ? "-system" : "-user") + "-action-toggle"}
             position="right"
             dropdownItems={dropdownItems}
-            isDisabled={isPodService}
         />
     );
 };
