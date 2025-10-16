@@ -164,6 +164,11 @@ $(TARFILE): $(DIST_TEST) $(SPEC) packaging/arch/PKGBUILD packaging/debian/change
 		$(COCKPIT_REPO_FILES) $(NODE_MODULES_TEST) $(SPEC) $(TEST_NPMS) \
 		packaging/arch/PKGBUILD packaging/debian/changelog dist/
 
+$(NODE_CACHE): $(NODE_MODULES_TEST)
+	tar --xz $(TAR_ARGS) -cf $@ --exclude .git node_modules
+
+node-cache: $(NODE_CACHE)
+
 # convenience target for developers
 rpm: $(TARFILE)
 	rpmbuild -tb --define "_topdir $(CURDIR)/tmp/rpmbuild" $(TARFILE)
