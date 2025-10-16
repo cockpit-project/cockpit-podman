@@ -29,7 +29,7 @@ else ifneq (,$(or $(findstring coreos,$(TEST_OS)),$(findstring bootc,$(TEST_OS))
 # HACK for ostree images: skip the rpm build/install
 VM_CUSTOMIZE_FLAGS += --run-command 'mkdir -p /usr/local/share/cockpit' --upload dist/:/usr/local/share/cockpit/podman
 else
-VM_CUSTOMIZE_FLAGS += --build $(TARFILE) --script $(CURDIR)/test/vm-ws-package.install
+VM_CUSTOMIZE_FLAGS += --upload $(NODE_CACHE):/var/tmp --build $(TARFILE) --script $(CURDIR)/test/vm-ws-package.install
 endif
 
 # the following scenarios need network access
@@ -177,7 +177,7 @@ rpm: $(TARFILE)
 	rm -r tmp/rpmbuild
 
 # build a VM with locally built distro pkgs installed
-$(VM_IMAGE): $(TARFILE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
+$(VM_IMAGE): $(TARFILE) $(NODE_CACHE) packaging/debian/rules packaging/debian/control packaging/arch/PKGBUILD bots
 	bots/image-customize --verbose --fresh $(VM_CUSTOMIZE_FLAGS) --script $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
