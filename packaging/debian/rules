@@ -1,13 +1,31 @@
 #!/usr/bin/make -f
 
+# Ubuntu 22.04 LTS's node.js version 12 is too old to understand our source, so
+# keep the pre-built dist/ for that release only
+KEEP_DIST = $(filter $(shell . /etc/os-release; echo $${VERSION_ID:-unstable}),22.04)
+
 export PREFIX=/usr
 
 %:
 	dh $@
 
+ifeq ($(KEEP_DIST),)
+override_dh_auto_build:
+	# upstream releases include a pre-built dist/, rebuild it
+	rm -fr dist/
+	# remove mini-node_modules with sizzle
+	rm -fr node_modules
+	# HACK: names for additional tarballs can't contain '_', so we name it just "orig-node"
+	ln -fs node node_modules
+	./build.js
+else
 override_dh_auto_clean:
-	# don't call `make clean`, in a release dist/ is precious
+	# don't call `make clean`, in Ubuntu 22.04 dist/ is precious
+endif
+
+execute_after_dh_auto_clean:
 	rm -f po/LINGUAS
+	if [ -L node_modules ]; then rm node_modules; fi
 
 override_dh_auto_test:
 	# don't call `make check`, these are integration tests
