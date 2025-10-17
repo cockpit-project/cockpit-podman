@@ -849,7 +849,7 @@ class Application extends React.Component {
         // show troubleshoot if no users are available, i.e. all user's podman services failed
         if (this.state.users.length === 0) {
             return (
-                <Page className="no-masthead-sidebar">
+                <Page className="pf-m-no-sidebar">
                     <PageSection hasBodyWrapper={false}>
                         <EmptyState headingLevel="h2" icon={ExclamationCircleIcon} titleText={_("Podman service failed")} variant={EmptyStateVariant.full}>
                             <EmptyStateFooter>
@@ -947,7 +947,7 @@ class Application extends React.Component {
         return (
             <WithPodmanInfo value={contextInfo}>
                 <WithDialogs>
-                    <Page id="overview" key="overview" className="no-masthead-sidebar">
+                    <Page id="overview" key="overview" className="pf-m-no-sidebar">
                         {notificationList}
                         <PageSection hasBodyWrapper={false} className="content-filter"
                         >
