@@ -25,7 +25,6 @@ const packageJson = JSON.parse(fs.readFileSync('package.json'));
 const parser = (await import('argparse')).default.ArgumentParser();
 parser.add_argument('-r', '--rsync', { help: "rsync bundles to ssh target after build", metavar: "HOST" });
 parser.add_argument('-w', '--watch', { action: 'store_true', help: "Enable watch mode", default: process.env.ESBUILD_WATCH === "true" });
-parser.add_argument('-m', '--metafile', { help: "Enable bundle size information file", metavar: "FILE" });
 const args = parser.parse_args();
 
 if (args.rsync)
@@ -60,7 +59,7 @@ const context = await esbuild.context({
     minify: production,
     nodePaths,
     outdir,
-    metafile: !!args.metafile,
+    metafile: true,
     target: ['es2020'],
     plugins: [
         cleanPlugin(),
@@ -96,8 +95,32 @@ const context = await esbuild.context({
 
 try {
     const result = await context.rebuild();
-    if (args.metafile) {
-        fs.writeFileSync(args.metafile, JSON.stringify(result.metafile));
+
+    // skip metafile and runtime module calculation in watch mode
+    if (!args.watch) {
+        fs.writeFileSync('metafile.json', JSON.stringify(result.metafile));
+
+        // Extract bundled npm packages for dependency tracking
+        const bundledPackages = new Set();
+        for (const inputPath of Object.keys(result.metafile.inputs)) {
+            // Match paths like node_modules/package-name/ or node_modules/@scope/package-name/
+            const match = inputPath.match(/^node_modules\/(@[^/]+\/[^/]+|[^/]+)\//);
+            if (match)
+                bundledPackages.add(match[1]);
+        }
+
+        // Look up versions from package-lock.json and output simple format
+        const packageLock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+        const deps = [];
+        for (const pkgName of Array.from(bundledPackages).sort()) {
+            const lockKey = `node_modules/${pkgName}`;
+            const pkgInfo = packageLock.packages?.[lockKey];
+            if (pkgInfo?.version)
+                deps.push(`${pkgName} ${pkgInfo.version}`);
+            else
+                console.error(`Warning: Could not find version for ${pkgName}`);
+        }
+        fs.writeFileSync('runtime-npm-modules.txt', deps.join('\n') + '\n');
     }
 } catch (e) {
     if (!args.watch)
