@@ -102,8 +102,8 @@ po/LINGUAS:
 #
 # Build/Install/dist
 #
-$(SPEC): packaging/$(SPEC).in $(NODE_MODULES_TEST)
-	provides=$$(npm ls --omit dev --package-lock-only --depth=Infinity | grep -Eo '[^[:space:]]+@[^[:space:]]+' | sort -u | sed 's/^/Provides: bundled(npm(/; s/\(.*\)@/\1)) = /'); \
+$(SPEC): packaging/$(SPEC).in $(DIST_TEST)
+	provides=$$(awk '{print "Provides: bundled(npm(" $$1 ")) = " $$2}' runtime-npm-modules.txt); \
 	awk -v p="$$provides" '{gsub(/%{VERSION}/, "$(VERSION)"); gsub(/%{NPM_PROVIDES}/, p)}1' $< > $@
 
 packaging/arch/PKGBUILD: packaging/arch/PKGBUILD.in
@@ -122,6 +122,7 @@ clean:
 	rm -rf dist/
 	rm -f $(SPEC) packaging/arch/PKGBUILD packaging/debian/changelog
 	rm -f po/LINGUAS
+	rm -f metafile.json runtime-npm-modules.txt
 
 install: $(DIST_TEST) po/LINGUAS
 	mkdir -p $(DESTDIR)$(PREFIX)/share/cockpit/$(PACKAGE_NAME)
