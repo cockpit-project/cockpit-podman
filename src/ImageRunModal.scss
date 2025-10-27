@@ -20,6 +20,12 @@
     > .pf-v6-c-select, .pf-v6-c-form-control:not(.pf-v6-c-select__toggle-typeahead) {
       max-inline-size: 10ch;
     }
+
+    // arrow down icon has wrong color in chromium
+    // upstream report: https://github.com/patternfly/patternfly-react/issues/12107
+    #memory-unit-select + .pf-v6-c-form-control__utilities .pf-v6-c-form-control__toggle-icon {
+      color: var(--pf-t--global--icon--color--on-disabled);
+    }
 }
 
 // HACK: A local copy of pf-m-horizontal (as ct-m-horizontal),
