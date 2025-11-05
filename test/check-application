@@ -188,7 +188,7 @@ class TestApplication(testlib.MachineCase):
         return self.execute(cmd, system=auth).strip()
 
     def waitNumImages(self, expected: int) -> None:
-        self.browser.wait_js_func("ph_count_check", "#containers-images table[aria-label='Images'] > tbody", expected)
+        self.browser.wait_count("#containers-images table[aria-label='Images'] > tbody", expected)
 
     def waitNumContainers(self, expected: int, *, auth: bool) -> None:
         if auth and self.machine.ws_container:
@@ -196,7 +196,7 @@ class TestApplication(testlib.MachineCase):
         else:
             extra = 0
 
-        self.browser.wait_js_func("ph_count_check", "#containers-containers tbody", expected + extra)
+        self.browser.wait_count("#containers-containers tbody", expected + extra)
 
     def performContainerAction(self, container: str, cmd: str) -> None:
         b = self.browser
@@ -2488,14 +2488,12 @@ Yaml={name}.yaml
         b.click("#prune-unused-images-button")
 
         if auth:
-            b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li",
+            b.wait_count(".pf-v6-c-modal-box__body .pf-v6-c-list li",
                            (self.user_images_count + self.system_images_count) - leftover_images)
         elif root:
-            b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li",
-                           self.system_images_count - leftover_images)
+            b.wait_count(".pf-v6-c-modal-box__body .pf-v6-c-list li", self.system_images_count - leftover_images)
         else:
-            b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li",
-                           self.user_images_count - leftover_images)
+            b.wait_count(".pf-v6-c-modal-box__body .pf-v6-c-list li", self.user_images_count - leftover_images)
         if auth:
             self.assertTrue(b.get_checked("#deleteImages-system"))
             self.assertTrue(b.get_checked("#deleteImages-admin"))
@@ -2534,7 +2532,7 @@ Yaml={name}.yaml
         expected_images = self.user_images_count + self.system_images_count
         if self.machine.ws_container:
             expected_images -= 1
-        b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li", expected_images)
+        b.wait_count(".pf-v6-c-modal-box__body .pf-v6-c-list li", expected_images)
         # Select user images
         b.click("#deleteImages-admin")
         b.click(".pf-v6-c-modal-box button:contains(Prune)")
@@ -2548,7 +2546,7 @@ Yaml={name}.yaml
         # Pruning again, should delete all system images
         b.click("#image-actions-dropdown")
         b.click("button:contains(Prune unused images)")
-        b.wait_js_func("ph_count_check", ".pf-v6-c-modal-box__body .pf-v6-c-list li",
+        b.wait_count(".pf-v6-c-modal-box__body .pf-v6-c-list li",
                        self.system_images_count - 1 if self.machine.ws_container else self.system_images_count)
         b.click(".pf-v6-c-modal-box button:contains(Prune)")
         self.waitNumImages(1 if self.machine.ws_container else 0)
@@ -2798,7 +2796,7 @@ Yaml={name}.yaml
         failures = int(b.text('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak") + dd'))
         self.assertGreater(failures, 3)
         if auth:
-            b.wait_js_func("ph_count_check", ".pf-m-expanded table[aria-label=Logs] tbody tr", 5)
+            b.wait_count(".pf-m-expanded table[aria-label=Logs] tbody tr", 5)
             b.assert_pixels(".pf-m-expanded .pf-v6-c-table__expandable-row-content",
                             "healthcheck-details",
                             ignore=["thead", "#container-details-healthcheck dt:contains('Failing streak') + dd",
