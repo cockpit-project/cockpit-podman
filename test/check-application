@@ -3,7 +3,6 @@
 # See https://github.com/cockpit-project/cockpit/blob/main/test/common/testlib.py
 # "class Browser" and "class MachineCase" for the available API.
 
-import json
 import re
 import sys
 import time
@@ -1307,9 +1306,9 @@ Yaml={name}.yaml
         # test recognition/deletion of multiple image tags
         second_tag = "localhost/copybox:latest"
         self.execute(f"podman tag localhost:5000/my-busybox {second_tag}", system=False)
-        tag_cmd = "podman inspect --format '{{json .RepoTags }}' localhost:5000/my-busybox"
-        repo_tags = json.loads(self.execute(tag_cmd, system=False))
-        b.click(f"#containers-images tr:contains('{repo_tags[0]}') td.pf-v6-c-table__toggle button")
+        id_cmd = "podman inspect --format '{{ .Id }}' localhost:5000/my-busybox"
+        img_id = self.execute(id_cmd, system=False).strip()
+        b.click(f"#containers-images tr[data-row-id='user-{img_id}'] td.pf-v6-c-table__toggle button")
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", second_tag)
         dialog1.deleteImage(force=True, another=second_tag)
 
