@@ -433,8 +433,7 @@ const ImageActions = ({ con, image, onAddNotification, users, downloadImage }) =
                     e.stopPropagation();
                     runImage();
                 }}
-                size="sm"
-                data-image={image.Id}>
+                size="sm">
             {_("Create container")}
         </Button>
     );
