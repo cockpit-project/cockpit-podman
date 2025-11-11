@@ -213,9 +213,12 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}] {selector}")
 
-    def openCreateContainerDialog(self, image: str, *, system: bool = True) -> None:
+    def getImageSelector(self, image: str, *, system: bool = True) -> str:
         name = f"{'0' if system else 'user'}-{image}"
-        self.browser.click(f'#containers-images tbody tr[data-row-name="{name}"] .ct-container-create')
+        return f'#containers-images tbody tr[data-row-name="{name}"]'
+
+    def openCreateContainerDialog(self, image: str, *, system: bool = True) -> None:
+        self.browser.click(f'{self.getImageSelector(image, system=system)} .ct-container-create')
 
     def execute(self, cmd: str, *, system: bool, check: bool = True) -> str:
         if system:
@@ -2333,7 +2336,7 @@ Yaml={name}.yaml
         self.filter_containers("running")
         id_with_tty = self.execute("podman inspect --format '{{.Id}}' busybox-with-tty", system=auth).strip()
 
-        container_sel = f'#containers-images tbody tr:contains("{IMG_BUSYBOX}")'
+        container_sel = self.getImageSelector(IMG_BUSYBOX_LATEST, system=auth)
         b.click(f'{container_sel} td.pf-v6-c-table__toggle button')
         # running container, just selects it, but leaves "Only running" alone
         b.click(f"{container_sel} + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-with-tty')")  # noqa: E501
@@ -2362,7 +2365,7 @@ Yaml={name}.yaml
 
         self.filter_containers("running")
         b.wait_not_in_text("#containers-containers", "busybox-not-started")
-        container_sel = f"#containers-images tbody tr:contains('{IMG_BUSYBOX}') + tr div.ct-listing-panel-body"
+        container_sel = f"{self.getImageSelector(IMG_BUSYBOX_LATEST, system=auth)} + tr div.ct-listing-panel-body"
         b.click(f"{container_sel} dt:contains('Used by') + dd button:contains('busybox-not-started')")
         b.wait_js_cond(f"window.location.hash === '#{sha}'")
         b.wait_val("#containers-containers-filter", "all")
@@ -2370,8 +2373,9 @@ Yaml={name}.yaml
         # auto-expands container details
         b.wait_in_text("#containers-containers tbody tr:contains('busybox-not-started') + tr", "sleep infinity")
 
-        b.click(f'#containers-images tbody tr:contains("{IMG_ALPINE}") td.pf-v6-c-table__toggle button')
-        b.wait_in_text(f"#containers-images tbody tr:contains('{IMG_ALPINE}') td[data-label='Used by']", 'unused')
+        image_sel = self.getImageSelector(IMG_ALPINE_LATEST, system=auth)
+        b.click(f'{image_sel} td.pf-v6-c-table__toggle button')
+        b.wait_in_text(f"{image_sel} td[data-label='Used by']", 'unused')
 
         b.set_input_text('#containers-filter input', 'foobar')
         b.wait_in_text('#containers-containers .pf-v6-c-empty-state', 'No containers that match the current filter')
