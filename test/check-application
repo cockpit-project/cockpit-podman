@@ -213,6 +213,10 @@ class TestApplication(testlib.MachineCase):
         b = self.browser
         return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}] {selector}")
 
+    def openCreateContainerDialog(self, image: str, *, system: bool = True) -> None:
+        tr_sel = "tr[data-row-id^='0-']" if system else "tr[data-row-id^='user-']"
+        self.browser.click(f'#containers-images tbody {tr_sel}:contains("{image}") .ct-container-create')
+
     def execute(self, cmd: str, *, system: bool, check: bool = True) -> str:
         if system:
             return self.machine.execute(cmd, check=check)
@@ -977,7 +981,7 @@ Yaml={name}.yaml
         self.execute(f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Dockerfile", system=auth)
         IMG_INTERMEDIATE = 'localhost/test-intermediate'
         self.execute(f"podman build -t {IMG_INTERMEDIATE} {tmpdir}", system=auth)
-        b.click(f'#containers-images tbody tr:contains("{IMG_INTERMEDIATE}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_INTERMEDIATE, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
         b.click("#create-image-create-btn")
         b.wait_not_present("div.pf-v6-c-modal-box")
@@ -1006,7 +1010,7 @@ Yaml={name}.yaml
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", "/bin/sh -c /entrypoint")
         b.wait_not_in_text("#containers-images tbody.pf-m-expanded tr .image-details", "Command")
 
-        b.click(f'#containers-images tbody tr:contains("{IMG_ENTRYPOINT}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_ENTRYPOINT, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
         b.set_input_text("#run-image-dialog-name", "no-cmd")
         b.wait_visible("#run-image-dialog-command[value='']")
@@ -1932,7 +1936,7 @@ Yaml={name}.yaml
 
         # Check command in alpine
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_ALPINE}")')
-        b.click(f'#containers-images tbody tr:contains("{IMG_ALPINE}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_ALPINE, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
         # depending on the precise container, this can be /bin/sh or /bin/ash
         cmd = self.execute('podman image inspect --format "{{.Config.Cmd}}" ' + IMG_ALPINE, system=auth)
@@ -1942,7 +1946,7 @@ Yaml={name}.yaml
 
         # Open run image dialog
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
-        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_BUSYBOX, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
         # Inspect and fill modal dialog
@@ -2260,7 +2264,7 @@ Yaml={name}.yaml
         # Create another instance without port publishing
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
         self.toggleExpandedContainer(IMG_BUSYBOX)
-        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_BUSYBOX, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
         b.wait_val("#create-image-image input", IMG_BUSYBOX_LATEST)
@@ -2343,7 +2347,7 @@ Yaml={name}.yaml
         self.filter_containers("all")
         container_name = "busybox-not-started"
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
-        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_BUSYBOX, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
         b.wait_val("#create-image-image input", IMG_BUSYBOX_LATEST)
@@ -2393,7 +2397,7 @@ Yaml={name}.yaml
 
         # create container from user image
         b.wait_in_text("#containers-images", IMG_BUSYBOX)
-        b.click(f"#containers-images tr[data-row-id^='user-']:contains({IMG_BUSYBOX_LATEST}) .ct-container-create")
+        self.openCreateContainerDialog(IMG_BUSYBOX_LATEST, system=False)
         b.wait_visible("#run-image-dialog-owner-admin:checked")
         b.set_input_text("#run-image-dialog-name", "user1")
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
@@ -2401,7 +2405,7 @@ Yaml={name}.yaml
         user1_sha = self.execute("podman inspect --format '{{.Id}}' user1", system=False).strip()
         self.waitContainer(user1_sha, auth=False, owner="admin", state='Running')
 
-        b.click(f"#containers-images tr[data-row-id^='0-']:contains({IMG_BUSYBOX_LATEST}) .ct-container-create")
+        self.openCreateContainerDialog(IMG_BUSYBOX_LATEST)
         b.wait_visible("#run-image-dialog-owner-system:checked")
         b.set_input_text("#run-image-dialog-name", "sys1")
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
@@ -2636,7 +2640,7 @@ Yaml={name}.yaml
         showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
-        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_BUSYBOX, system=False)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
         validateField("#image-name-group", "registry", "Name already in use")
@@ -2684,7 +2688,7 @@ Yaml={name}.yaml
 
         # Test validation JavaScript errors when removing invalid environment entries
         container_name = 'env-var-validation'
-        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_BUSYBOX, system=False)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
         b.set_input_text("#run-image-dialog-name", container_name)
@@ -2720,7 +2724,7 @@ Yaml={name}.yaml
         showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
-        b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+        self.openCreateContainerDialog(IMG_BUSYBOX, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
         b.set_input_text("#run-image-dialog-name", "healthy")
@@ -2806,7 +2810,7 @@ Yaml={name}.yaml
         showImages(b)
 
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
-        b.click('#containers-images tbody tr:contains("busybox:latest") .ct-container-create')
+        self.openCreateContainerDialog(IMG_BUSYBOX_LATEST, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
         # Test the health check action, only supported in podman 4.3 and later.
@@ -2878,7 +2882,7 @@ Yaml={name}.yaml
 
         def create_container(name: str, policy: str | None = None) -> None:
             b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
-            b.click(f'#containers-images tbody tr:contains("{IMG_BUSYBOX}") .ct-container-create')
+            self.openCreateContainerDialog(IMG_BUSYBOX, system=auth)
             b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
             b.set_input_text("#run-image-dialog-name", name)
