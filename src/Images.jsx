@@ -178,6 +178,7 @@ class Images extends React.Component {
             props: {
                 key: image.key,
                 "data-row-id": image.key,
+                "data-row-name": `${image.uid === null ? 'user' : image.uid}-${utils.image_name(image)}`
             },
         };
     }
