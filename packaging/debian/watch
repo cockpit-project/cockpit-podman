@@ -3,3 +3,9 @@ opts="searchmode=plain, \
 filenamemangle=s/.+\/@PACKAGE@-@ANY_VERSION@.tar.gz/@PACKAGE@-$1\.tar\.xz/" \
 https://api.github.com/repos/cockpit-project/@PACKAGE@/releases \
 https://github.com/cockpit-project/@PACKAGE@/releases/download/\d[\.\d]*/@PACKAGE@-@ANY_VERSION@.tar.xz
+
+opts="searchmode=plain, \
+component=node, \
+filenamemangle=s/.+\/@PACKAGE@-node-@ANY_VERSION@.tar.gz/@PACKAGE@-$1\.tar\.xz/" \
+https://api.github.com/repos/cockpit-project/@PACKAGE@/releases \
+https://github.com/cockpit-project/@PACKAGE@/releases/download/\d[\.\d]*/@PACKAGE@-node-@ANY_VERSION@.tar.xz
