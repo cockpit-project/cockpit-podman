@@ -22,7 +22,16 @@ Summary:        Cockpit component for Podman containers
 License:        LGPL-2.1-or-later
 URL:            https://github.com/cockpit-project/cockpit-podman
 
+# distributions which ship nodejs-esbuild can rebuild the bundle during package build
+%if 0%{?fedora} >= 42
+%define rebuild_bundle 1
+%endif
+
 Source0:        https://github.com/cockpit-project/%{name}/releases/download/%{version}/%{name}-%{version}.tar.xz
+%if %{defined rebuild_bundle}
+Source1: https://github.com/cockpit-project/%{name}/releases/download/%{version}/%{name}-node-%{version}.tar.xz
+%endif
+
 BuildArch:      noarch
 %if 0%{?suse_version}
 # Suse's package has a different name
@@ -34,6 +43,10 @@ BuildRequires:  make
 BuildRequires: gettext
 %if 0%{?rhel} && 0%{?rhel} <= 8
 BuildRequires: libappstream-glib-devel
+%endif
+%if %{defined rebuild_bundle}
+BuildRequires: nodejs
+BuildRequires: nodejs-esbuild
 %endif
 
 Requires:       cockpit-bridge
@@ -52,9 +65,19 @@ The Cockpit user interface for Podman containers.
 
 %prep
 %setup -q -n %{name}
+%if %{defined rebuild_bundle}
+%setup -q -D -T -a 1 -n %{name}
+%endif
 
 %build
-# Nothing to build
+%if %{defined rebuild_bundle}
+rm -rf dist
+# HACK: node module packaging is currently broken in Fedora, should be in
+# common location, not major version specific one
+NODE_ENV=production NODE_PATH=$(echo /usr/lib/node_modules_*) ./build.js
+%else
+# Use pre-built bundle on distributions without nodejs-esbuild
+%endif
 
 %install
 %make_install PREFIX=/usr
