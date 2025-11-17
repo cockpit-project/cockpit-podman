@@ -17,7 +17,7 @@ override_dh_auto_build:
 	rm -fr node_modules
 	# HACK: names for additional tarballs can't contain '_', so we name it just "orig-node"
 	ln -fs node node_modules
-	./build.js
+	NODE_ENV=production ./build.js
 else
 override_dh_auto_clean:
 	# don't call `make clean`, in Ubuntu 22.04 dist/ is precious
