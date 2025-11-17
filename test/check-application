@@ -1004,12 +1004,13 @@ Yaml={name}.yaml
 
         # Image without a Command, shows no Command. This is common for podman quadlets
         IMG_ENTRYPOINT = "localhost/test-entrypoint"
+        IMG_ENTRYPOINT_LATEST = f"{IMG_ENTRYPOINT}:latest"
         tmpdir = self.execute("mktemp -d", system=auth).strip()
         self.addCleanup(self.execute, f"rm -r {tmpdir}", system=auth)
         self.execute(f"echo 'FROM {IMG_REGISTRY}\nENTRYPOINT /entrypoint' > {tmpdir}/Dockerfile", system=auth)
         self.execute(f"podman build -t {IMG_ENTRYPOINT} {tmpdir}", system=auth)
 
-        b.click(f"#containers-images tr:contains('{IMG_ENTRYPOINT}') td.pf-v6-c-table__toggle button")
+        b.click(f"{self.getImageSelector(IMG_ENTRYPOINT_LATEST, system=auth)} td.pf-v6-c-table__toggle button")
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", "/bin/sh -c /entrypoint")
         b.wait_not_in_text("#containers-images tbody.pf-m-expanded tr .image-details", "Command")
 
