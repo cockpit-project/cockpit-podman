@@ -3621,13 +3621,15 @@ Yaml={name}.yaml
         self.waitNumImages(1)
 
         # container lifecycle actions
-        self.performContainerAction("example.com/guitar/myimg:latest", "Force stop")
+        image = "example.com/guitar/myimg:latest"
+        self.performContainerAction(image, "Force stop")
         b.wait(lambda: self.getContainerAttr("guitarc1", "State") in NOT_RUNNING)
-        self.performContainerAction("example.com/guitar/myimg:latest", "Start")
+        self.performContainerAction(image, "Start")
         b.wait(lambda: self.getContainerAttr("guitarc1", "State") == "Running")
 
         # container creation/removal
-        b.click('#containers-images tbody tr:contains("example.com/guitar/myimg") .ct-container-create')
+        uid = uids["guitar"]
+        b.click(f'#containers-images tbody tr[data-row-name="{uid}-{image}"] .ct-container-create')
         b.set_input_text("#run-image-dialog-name", "new-guitar")
         b.click("#create-image-create-btn")
         b.wait_not_present("div.pf-v6-c-modal-box")
