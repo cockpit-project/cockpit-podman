@@ -6,7 +6,8 @@
 import re
 import sys
 import time
-from typing import Self, Sequence, TypedDict
+from contextlib import contextmanager
+from typing import Generator, Self, Sequence, TypedDict
 
 import testlib
 from lib.constants import DEFAULT_IDENTITY_PUB_FILE
@@ -196,6 +197,17 @@ class TestApplication(testlib.MachineCase):
             extra = 0
 
         self.browser.wait_count("#containers-containers tbody", expected + extra)
+
+    @contextmanager
+    def withContainerActionMenu(self, container: str) -> Generator[None, None, None]:
+        b = self.browser
+        container_sel = f"#containers-containers tbody tr:contains('{container}')"
+        try:
+            b.click(f"{container_sel} .pf-v6-c-menu-toggle")
+            yield
+        finally:
+            b.click(f"{container_sel} .pf-v6-c-menu-toggle")
+            b.wait_not_present(".pf-v6-c-menu__item")
 
     def performContainerAction(self, container: str, cmd: str) -> None:
         b = self.browser
@@ -1466,14 +1478,11 @@ Yaml={name}.yaml
         container_sha = self.execute("podman inspect --format '{{.Id}}' swamped-crate", system=auth).strip()
         self.waitContainer(container_sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX,
                            state='Exited', owner="system" if auth else "admin")
-        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v6-c-menu-toggle")
-
         if not auth:
             # Checkpoint/restore is not supported on user containers yet - the related buttons should not be shown
             # Check that the restore option is not present
-            b.wait_not_present(self.getContainerAction('Restore'))
-
-        b.click("#containers-containers tbody tr:contains('swamped-crate') .pf-v6-c-menu-toggle")
+            with self.withContainerActionMenu("swamped-crate"):
+                b.wait_not_present(self.getContainerAction('Restore'))
 
         # Start the container
         self.performContainerAction(IMG_BUSYBOX, "Start")
@@ -1560,10 +1569,9 @@ Yaml={name}.yaml
         self.waitContainerRow(IMG_BUSYBOX)
         if not auth:
             # Check that the checkpoint option is not present for rootless
-            b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
-            b.wait_visible(self.getContainerAction('Force stop'))
-            b.wait_not_present(self.getContainerAction('Checkpoint'))
-            b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
+            with self.withContainerActionMenu(IMG_BUSYBOX):
+                b.wait_visible(self.getContainerAction('Force stop'))
+                b.wait_not_present(self.getContainerAction('Checkpoint'))
         # Stop the container
         self.performContainerAction(IMG_BUSYBOX, "Force stop")
 
@@ -1649,9 +1657,8 @@ Yaml={name}.yaml
         b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=True))
 
         # Check that the restore option is not present (i.e. start is a regular button)
-        b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
-        b.wait_not_present(self.getContainerAction('Restore'))
-        b.click(f"#containers-containers tbody tr:contains('{IMG_BUSYBOX}') .pf-v6-c-menu-toggle")
+        with self.withContainerActionMenu(IMG_BUSYBOX):
+            b.wait_not_present(self.getContainerAction('Restore'))
 
         # Start the container
         self.performContainerAction("swamped-crate", "Start")
@@ -3378,14 +3385,10 @@ Yaml={name}.yaml
         self.waitContainerRow(service_name)
         b.wait(lambda: self.getContainerAttr("quak", "State") == "Running")
 
-        b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
-
         # Cannot delete/commit a quadlet container, they are managed by .container units
-        b.wait_not_present(self.getContainerAction('Delete'))
-        b.wait_not_present(self.getContainerAction('Commit'))
-
-        b.click(f"#containers-containers tbody tr:contains('{service_name}') .pf-v6-c-menu-toggle")
-        b.wait_not_present('.pf-v6-c-menu__item')
+        with self.withContainerActionMenu(service_name):
+            b.wait_not_present(self.getContainerAction('Delete'))
+            b.wait_not_present(self.getContainerAction('Commit'))
 
         # Can stop/start/restart a container
         self.performContainerAction("quak", "Stop")
