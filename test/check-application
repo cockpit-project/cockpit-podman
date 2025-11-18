@@ -209,21 +209,25 @@ class TestApplication(testlib.MachineCase):
             b.click(f"{container_sel} .pf-v6-c-menu-toggle")
             b.wait_not_present(".pf-v6-c-menu__item")
 
-    def performContainerAction(self, container: str, cmd: str) -> None:
+    def getContainerSelector(self, container: str, *, system: bool = True) -> str:
+        name = f"{'0' if system else 'user'}-{container}"
+        return f'#containers-containers tbody tr[data-row-name="{name}"]'
+
+    def performContainerAction(self, container: str, cmd: str, *, system: bool = True) -> None:
         b = self.browser
-        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v6-c-menu-toggle")
+        b.click(f"{self.getContainerSelector(container, system=system)} .pf-v6-c-menu-toggle")
         b.click(self.getContainerAction(cmd))
 
     def getContainerAction(self, cmd: str) -> str:
         return f".pf-v6-c-menu__item:contains({cmd})"
 
-    def toggleExpandedContainer(self, container: str) -> None:
+    def toggleExpandedContainer(self, container: str, *, system: bool = True) -> None:
         b = self.browser
-        b.click(f"#containers-containers tbody tr:contains('{container}') .pf-v6-c-table__toggle button")
+        b.click(f"{self.getContainerSelector(container, system=system)} .pf-v6-c-table__toggle button")
 
-    def getContainerAttr(self, container: str, key: str, selector: str = "") -> str:
+    def getContainerAttr(self, container: str, key: str, selector: str = "", *, system: bool = True) -> str:
         b = self.browser
-        return b.text(f"#containers-containers tbody tr:contains('{container}') > td[data-label={key}] {selector}")
+        return b.text(f"{self.getContainerSelector(container, system=system)} > td[data-label={key}] {selector}")
 
     def getImageSelector(self, image: str, *, system: bool = True) -> str:
         name = f"{'0' if system else 'user'}-{image}"
@@ -826,11 +830,11 @@ Yaml={name}.yaml
         self.waitContainer(user_containers["test-sh-user"], auth=False, name='test-sh-user', image=IMG_ALPINE,
                            cmd='sh', state=NOT_RUNNING)
 
-        self.performContainerAction("swamped-crate-user", "Delete")
+        self.performContainerAction("swamped-crate-user", "Delete", system=False)
         self.confirm_modal("Cancel")
 
         if auth:
-            self.performContainerAction("swamped-crate-system", "Delete")
+            self.performContainerAction("swamped-crate-system", "Delete", system=True)
             self.confirm_modal("Cancel")
 
         # Checked order of containers
@@ -852,18 +856,18 @@ Yaml={name}.yaml
 
         # delete running container busybox using force delete
         if auth:
-            self.performContainerAction("swamped-crate-system", "Delete")
+            self.performContainerAction("swamped-crate-system", "Delete", system=True)
             self.confirm_modal("Force delete")
             self.waitContainerRow("swamped-crate-system", present=False)
 
         self.filter_containers("all")
 
-        self.performContainerAction("swamped-crate-user", "Delete")
+        self.performContainerAction("swamped-crate-user", "Delete", system=False)
         self.confirm_modal("Force delete")
         self.waitContainerRow("swamped-crate-user", present=False)
 
         self.waitContainerRow("test-sh-user")
-        self.performContainerAction("test-sh-user", "Delete")
+        self.performContainerAction("test-sh-user", "Delete", system=False)
         self.confirm_modal("Delete")
         b.wait_not_in_text("#containers-containers", "test-sh-user")
 
@@ -912,7 +916,7 @@ Yaml={name}.yaml
         # Rootless don't have this info
         if auth:
             self.execute(f"podman run -dt --name net_check --stop-timeout 0 {IMG_ALPINE}", system=auth)
-            self.toggleExpandedContainer("net_check")
+            self.toggleExpandedContainer("net_check", system=auth)
             b.wait_in_text(".pf-m-expanded .container-details-networking",
                            self.execute("""
                            podman inspect --format '{{.NetworkSettings.Gateway}}' net_check""", system=auth).strip())
@@ -926,7 +930,7 @@ Yaml={name}.yaml
                                         system=auth).strip())
             self.execute("podman stop net_check", system=auth)
             b.wait(lambda: self.execute("podman ps --all | grep -e net_check -e Exited", system=auth))
-            self.toggleExpandedContainer("net_check")
+            self.toggleExpandedContainer("net_check", system=auth)
             sha = self.execute("podman inspect --format '{{.Id}}' net_check", system=auth).strip()
             self.waitContainer(sha, auth=auth, state='Exited')
 
@@ -957,7 +961,7 @@ Yaml={name}.yaml
             b.wait_collected_text("#containers-containers .container-name", "abc" + expected_ws)
             self.execute(f"podman run -d --name doremi --stop-timeout 0 {IMG_REGISTRY} sh", system=False)
             b.wait_collected_text("#containers-containers .container-name", "abcdoremi" + expected_ws)
-            b.wait(lambda: self.getContainerAttr("doremi", "State") in NOT_RUNNING)
+            b.wait(lambda: self.getContainerAttr("doremi", "State", "", system=False) in NOT_RUNNING)
         else:
             b.wait_collected_text("#containers-containers .container-name", "abc")
 
@@ -1003,7 +1007,12 @@ Yaml={name}.yaml
         self.waitContainerRow(IMG_INTERMEDIATE)
 
         # Integration tab should not crash with an intermediate image
-        self.toggleExpandedContainer(IMG_INTERMEDIATE)
+        # podman ps doesn't output the full ID
+        container_name = self.execute("podman ps --filter 'status=created' --format {{.Names}}", system=auth).strip()
+        container_id = self.execute(f"podman inspect --format {{{{.ID}}}} {container_name}", system=auth).strip()
+        uid = '0' if auth else 'user'
+        intermediate_sel = f"#containers-containers tbody tr[data-row-id='{uid}-{container_id}']"
+        b.click(intermediate_sel + " td.pf-v6-c-table__toggle button")
         b.click(".pf-m-expanded button:contains('Integration')")
 
         # Delete intermediate image which is in use
@@ -1035,7 +1044,7 @@ Yaml={name}.yaml
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         b.wait_not_present("div.pf-v6-c-modal-box")
         self.waitContainerRow("no-cmd")
-        self.toggleExpandedContainer("no-cmd")
+        self.toggleExpandedContainer("no-cmd", system=auth)
         b.wait_in_text("#containers-containers tbody tr:contains('no-cmd')", IMG_ENTRYPOINT)
         b.wait_not_in_text("#containers-containers tbody tr:contains('no-cmd')", "Command")
 
@@ -1063,9 +1072,9 @@ Yaml={name}.yaml
 
         self.filter_containers("all")
         self.waitContainerRow("test-sh0")
-        self.toggleExpandedContainer("test-sh0")
+        self.toggleExpandedContainer("test-sh0", system=auth)
 
-        self.performContainerAction("test-sh0", "Commit")
+        self.performContainerAction("test-sh0", "Commit", system=auth)
         b.wait_visible(".pf-v6-c-modal-box")
 
         b.wait_in_text(".pf-v6-c-modal-box__description", "state of the test-sh0 container")
@@ -1101,7 +1110,7 @@ Yaml={name}.yaml
         self.confirm_modal("Cancel")
 
         # Force commit empty container
-        self.performContainerAction("test-sh0", "Commit")
+        self.performContainerAction("test-sh0", "Commit", system=auth)
         b.wait_visible(".pf-v6-c-modal-box")
         # We prefill command
         b.wait_val("#commit-dialog-command", 'sh -c "ls -a"')
@@ -1125,7 +1134,7 @@ Yaml={name}.yaml
         self.assertEqual("[sh -c ls -a]", cmd)
 
         # Commit with name, tag, author and edited command
-        self.performContainerAction("test-sh0", "Commit")
+        self.performContainerAction("test-sh0", "Commit", system=auth)
         b.wait_visible(".pf-v6-c-modal-box")
         b.set_input_text("#commit-dialog-image-name", "newname")
         b.set_input_text("#commit-dialog-image-tag", "24")
@@ -1146,7 +1155,7 @@ Yaml={name}.yaml
 
         # Test commit of running container
         self.execute(f"podman run -d --name test-sh2 --stop-timeout 0 {IMG_BUSYBOX} sleep 1000", system=auth)
-        self.performContainerAction("test-sh2", "Commit")
+        self.performContainerAction("test-sh2", "Commit", system=auth)
         b.wait_visible(".pf-v6-c-modal-box")
         b.set_input_text("#commit-dialog-image-name", "newname")
         self.confirm_modal("Commit")
@@ -1158,7 +1167,7 @@ Yaml={name}.yaml
         # Test commit of running container with pause (also conflicting name through :latest)
         # This only works on rootless with cgroupsv2
         if auth or self.has_cgroupsV2:
-            self.performContainerAction("test-sh2", "Commit")
+            self.performContainerAction("test-sh2", "Commit", system=auth)
             b.wait_visible(".pf-v6-c-modal-box")
             b.set_input_text("#commit-dialog-image-name", "newname")
             b.set_checked("#commit-dialog-pause", val=True)
@@ -1485,7 +1494,7 @@ Yaml={name}.yaml
                 b.wait_not_present(self.getContainerAction('Restore'))
 
         # Start the container
-        self.performContainerAction(IMG_BUSYBOX, "Start")
+        self.performContainerAction("swamped-crate", "Start", system=auth)
 
         self.waitContainer(container_sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX,
                            state='Running', owner="system" if auth else "admin")
@@ -1499,19 +1508,19 @@ Yaml={name}.yaml
         self.waitContainer(picket_fence_sha, auth=auth, name="picket-fence", state="Running")
 
         def get_cpu_usage(sel: str) -> float:
-            cpu = self.getContainerAttr(sel, "CPU")
+            cpu = self.getContainerAttr(sel, "CPU", "", system=auth)
             self.assertIn('%', cpu)
             # If it not a number it will raise ValueError which is what we want to know
             return float(cpu[:-1])
 
         # Check we show usage
-        b.wait(lambda: self.getContainerAttr(IMG_BUSYBOX, "CPU") != "")
-        b.wait(lambda: self.getContainerAttr(IMG_BUSYBOX, "Memory") != "")
-        memory = self.getContainerAttr(IMG_BUSYBOX, "Memory")
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "CPU", "", system=auth) != "")
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "Memory", "", system=auth) != "")
+        memory = self.getContainerAttr("swamped-crate", "Memory", "", system=auth)
         if auth or self.has_cgroupsV2:
             # Wait for CPU usage to settle before saving CPU usage for comparison later
-            b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) < 25)
-            cpu = get_cpu_usage(IMG_BUSYBOX)
+            b.wait(lambda: get_cpu_usage("swamped-crate") < 25)
+            cpu = get_cpu_usage("swamped-crate")
 
             # swamped-crate has no explicit --memory limit
             m = re.match(r'([0-9]+)%([0-9.]+) kB$', memory)
@@ -1527,15 +1536,15 @@ Yaml={name}.yaml
 
             # Test that the CPU value is updated dynamically
             self.execute("podman exec -d swamped-crate sh -c 'dd bs=1024 < /dev/urandom > /dev/null'", system=auth)
-            b.wait(lambda: get_cpu_usage(IMG_BUSYBOX) > cpu)
+            b.wait(lambda: get_cpu_usage("swamped-crate") > cpu)
             self.execute("podman exec swamped-crate sh -c 'pkill dd'", system=auth)
 
             # picket-fence has a memory limit
 
             # Wait for CPU usage to settle before checking the memory usage, on
             # a busy host the awk script takes longer to run.
-            b.wait(lambda: get_cpu_usage(IMG_ALPINE) < 10)
-            memory = self.getContainerAttr(IMG_ALPINE, "Memory")
+            b.wait(lambda: get_cpu_usage("picket-fence") < 10)
+            memory = self.getContainerAttr("picket-fence", "Memory", "", system=auth)
             m = re.match(r'([0-9]+)%([0-9.]+) MB([0-9]+)% of ([0-9.]+) MB limit$', memory)
             assert m is not None, "memory regex did not match"
             self.assertTrue(m, memory)
@@ -1554,14 +1563,14 @@ Yaml={name}.yaml
             self.assertEqual(m.group(4), "419")
         else:
             # No support for CGroupsV2
-            self.assertEqual(self.getContainerAttr(IMG_BUSYBOX, "CPU"), "n/a")
+            self.assertEqual(self.getContainerAttr("picket-fence", "CPU", "", system=auth), "n/a")
             self.assertEqual(memory, "n/a")
 
         # Restart the container; there is no steady state change in the visible UI, so look for
         # a changed data-started-at attribute
         old_start = self.getStartTime("swamped-crate", auth=auth)
         b.wait_in_text(f'#containers-containers tr[data-started-at="{old_start}"]', "swamped-crate")
-        self.performContainerAction(IMG_BUSYBOX, "Force restart")
+        self.performContainerAction("swamped-crate", "Force restart", system=auth)
         new_start = self.waitRestart("swamped-crate", old_start, auth=auth)
         b.wait_in_text(f'#containers-containers tr[data-started-at="{new_start}"]', "swamped-crate")
         self.waitContainer(container_sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX, state='Running')
@@ -1573,22 +1582,22 @@ Yaml={name}.yaml
                 b.wait_visible(self.getContainerAction('Force stop'))
                 b.wait_not_present(self.getContainerAction('Checkpoint'))
         # Stop the container
-        self.performContainerAction(IMG_BUSYBOX, "Force stop")
+        self.performContainerAction("swamped-crate", "Force stop", system=auth)
 
         self.waitContainer(container_sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX)
-        b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
-        b.wait(lambda: self.getContainerAttr("swamped-crate", "CPU") == "")
-        b.wait(lambda: self.getContainerAttr("swamped-crate", "Memory") == "")
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "State", "", system=auth) in NOT_RUNNING)
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "CPU", "", system=auth) == "")
+        b.wait(lambda: self.getContainerAttr("swamped-crate", "Memory", "", system=auth) == "")
 
         # Check that container details are not lost when the container is stopped
-        self.toggleExpandedContainer("swamped-crate")
+        self.toggleExpandedContainer("swamped-crate", system=auth)
         b.click(".pf-m-expanded button:contains('Integration')")
         b.wait_visible(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Environment variables")')
 
         # Check that console reconnects when container starts
         b.click(".pf-m-expanded button:contains('Console')")
         b.wait_text(".pf-m-expanded .pf-v6-c-empty-state", "Container is not running")
-        self.performContainerAction("swamped-crate", "Start")
+        self.performContainerAction("swamped-crate", "Start", system=auth)
         b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
         b.focus(".pf-m-expanded .xterm-helper-textarea")
         b.input_text("clear")
@@ -1599,21 +1608,21 @@ Yaml={name}.yaml
         b.key("Enter")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
-        self.performContainerAction("swamped-crate", "Stop")
+        self.performContainerAction("swamped-crate", "Stop", system=auth)
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
         sha = self.execute("podman inspect --format '{{.Id}}' swamped-crate", system=auth).strip()
         self.waitContainer(sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX, state=NOT_RUNNING)
-        self.performContainerAction("swamped-crate", "Start")
+        self.performContainerAction("swamped-crate", "Start", system=auth)
         self.waitContainer(sha, auth=auth, state='Running')
         b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
         b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
 
         # Check that logs reconnect when container starts
         b.click(".pf-m-expanded button:contains('Logs')")
-        self.performContainerAction("swamped-crate", "Stop")
+        self.performContainerAction("swamped-crate", "Stop", system=auth)
         self.waitContainer(sha, auth=auth, state=NOT_RUNNING)
         b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected")
-        self.performContainerAction("swamped-crate", "Start")
+        self.performContainerAction("swamped-crate", "Start", system=auth)
         b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected123")
 
     def testCheckpointRestore(self) -> None:
@@ -1631,7 +1640,7 @@ Yaml={name}.yaml
             b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate", system=True))
 
             # Checkpoint the container
-            self.performContainerAction(IMG_BUSYBOX, "Checkpoint")
+            self.performContainerAction("swamped-crate", "Checkpoint", system=True)
             b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', val=True)
             b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', val=True)
             b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
@@ -1661,15 +1670,15 @@ Yaml={name}.yaml
             b.wait_not_present(self.getContainerAction('Restore'))
 
         # Start the container
-        self.performContainerAction("swamped-crate", "Start")
+        self.performContainerAction("swamped-crate", "Start", system=True)
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
-        self.toggleExpandedContainer("swamped-crate")
+        self.toggleExpandedContainer("swamped-crate", system=True)
         b.wait_visible(".pf-m-expanded button:contains('Details')")
         b.wait_not_present(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint")')
 
         # Checkpoint the container
-        self.performContainerAction("swamped-crate", "Checkpoint")
+        self.performContainerAction("swamped-crate", "Checkpoint", system=True)
         b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', val=True)
         b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', val=True)
         b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
@@ -1702,7 +1711,7 @@ Yaml={name}.yaml
 
         # Restore the container
         self.waitContainerRow("swamped-crate")
-        self.performContainerAction("swamped-crate", "Restore")
+        self.performContainerAction("swamped-crate", "Restore", system=True)
         b.set_checked('.pf-v6-c-modal-box input#restore-dialog-keep', val=True)
         b.set_checked('.pf-v6-c-modal-box input#restore-dialog-tcpEstablished', val=True)
         b.set_checked('.pf-v6-c-modal-box input#restore-dialog-ignoreStaticIP', val=True)
@@ -1721,7 +1730,7 @@ Yaml={name}.yaml
 
         # Checkpoint the container without stopping
         self.waitContainerRow("swamped-crate")
-        self.performContainerAction("swamped-crate", "Checkpoint")
+        self.performContainerAction("swamped-crate", "Checkpoint", system=True)
         b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-leaveRunning', val=True)
         b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
         b.wait_not_present('.modal_dialog')
@@ -1731,7 +1740,7 @@ Yaml={name}.yaml
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
 
         # Restore the container
-        self.performContainerAction("swamped-crate", "Restore")
+        self.performContainerAction("swamped-crate", "Restore", system=True)
         b.click('.pf-v6-c-modal-box button:contains(Restore)')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
@@ -1854,7 +1863,7 @@ Yaml={name}.yaml
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         sel = " span:not(.downloading)"
-        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
+        b.wait(lambda: self.getContainerAttr(container_name, "State", sel, system=auth) in 'Running')
         self.execute(f"podman exec {container_name} test ! -e /latest", system=auth)
 
         # Now that we have downloaded an image, verify that selecting download latest image
@@ -1888,7 +1897,7 @@ Yaml={name}.yaml
         # Create Container, image is pulled and should end up being "running"
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
         sel = " span:not(.downloading)"
-        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
+        b.wait(lambda: self.getContainerAttr(container_name, "State", sel, system=auth) in 'Running')
         # Verify that the latest file exists
         output = self.execute(f"podman exec {container_name} ls -lh /latest", system=auth).strip()
         self.assertNotIn("No such file or directory", output)
@@ -1921,7 +1930,7 @@ Yaml={name}.yaml
             b.click(f'.pf-v6-c-menu__item:contains("{IMG_BUSYBOX_LATEST}")')
 
             b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
-            b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in 'Running')
+            b.wait(lambda: self.getContainerAttr(container_name, "State", sel, system=False) in 'Running')
 
     def testRunImageSystem(self) -> None:
         self._testRunImage(auth=True)
@@ -2161,7 +2170,7 @@ Yaml={name}.yaml
 
         b.wait(lambda: "3" in self.execute("podman logs busybox-with-tty", system=auth))
 
-        self.toggleExpandedContainer(IMG_BUSYBOX)
+        self.toggleExpandedContainer("busybox-with-tty", system=auth)
         if auth:
             b.assert_pixels('#containers-containers .pf-v6-c-table__expandable-row.pf-m-expanded',
                             "image-details-tab",
@@ -2274,7 +2283,7 @@ Yaml={name}.yaml
 
         # Create another instance without port publishing
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
-        self.toggleExpandedContainer(IMG_BUSYBOX)
+        self.toggleExpandedContainer("busybox-with-tty", system=auth)
         self.openCreateContainerDialog(IMG_BUSYBOX_LATEST, system=auth)
         b.wait_visible('div.pf-v6-c-modal-box header:contains("Create container")')
 
@@ -2292,10 +2301,9 @@ Yaml={name}.yaml
         b.wait_not_present("div.pf-v6-c-modal-box")
 
         self.waitContainerRow("busybox-without-publish")
-        self.toggleExpandedContainer("busybox-without-publish")
-        b.wait_not_present("""
-            #containers-containers tbody tr:contains("busybox-without-publish") + tr dt:contains("Ports")
-        """)
+        self.toggleExpandedContainer("busybox-without-publish", system=auth)
+        container_sel = self.getContainerSelector("busybox-without-publish", system=auth)
+        b.wait_not_present(f'{container_sel} + tr dt:contains("Ports")')
 
         # Rootless only works with CGroupsV2
         if auth or self.has_cgroupsV2:
@@ -2595,9 +2603,9 @@ Yaml={name}.yaml
         # Create containers for the opposite of what we are, admin or super admin
         if auth:
             self.execute(f"podman run --name adminnotrunning -tid {IMG_BUSYBOX} sh 'exit 1'", system=False)
-            b.wait(lambda: self.getContainerAttr("adminnotrunning", "State") in NOT_RUNNING)
+            b.wait(lambda: self.getContainerAttr("adminnotrunning", "State", "", system=False) in NOT_RUNNING)
             self.execute(f"podman run --name adminrunning -tid {IMG_BUSYBOX} sh -c 'sleep infinity'", system=False)
-            b.wait(lambda: self.getContainerAttr("adminrunning", "State") == "Running")
+            b.wait(lambda: self.getContainerAttr("adminrunning", "State", "", system=False) == "Running")
 
         b.click("#containers-actions-dropdown")
         b.click("button:contains(Prune unused containers)")
@@ -2762,7 +2770,7 @@ Yaml={name}.yaml
         healthy_sha = self.execute("podman inspect --format '{{.Id}}' healthy", system=auth).strip()
         self.waitContainer(healthy_sha, auth=auth, state='RunningHealthy')
 
-        self.toggleExpandedContainer("healthy")
+        self.toggleExpandedContainer("healthy", system=auth)
         b.click(".pf-m-expanded button:contains('Health check')")
 
         b.wait_in_text('#container-details-healthcheck dt:contains("Command") + dd', 'true')
@@ -2790,7 +2798,7 @@ Yaml={name}.yaml
         b.wait_visible(".ct-listing-panel-body tbody:nth-of-type(2) svg.green")
         b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(3)")
 
-        self.toggleExpandedContainer("healthy")
+        self.toggleExpandedContainer("healthy", system=auth)
 
         self.execute(f"podman run --name sick -dt --health-cmd false --health-interval 5s {IMG_BUSYBOX}", system=auth)
         self.waitContainerRow("sick")
@@ -2802,7 +2810,7 @@ Yaml={name}.yaml
             expected_ws = "ws"
         b.wait_collected_text("#containers-containers .container-name", "healthysick" + expected_ws)
 
-        self.toggleExpandedContainer("sick")
+        self.toggleExpandedContainer("sick", system=auth)
         b.click(".pf-m-expanded button:contains('Health check')")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(1)")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(4)")
@@ -2818,7 +2826,7 @@ Yaml={name}.yaml
                                     "td[data-label='Started at']"],
                             skip_layouts=["rtl"])
 
-        self.toggleExpandedContainer("sick")
+        self.toggleExpandedContainer("sick", system=auth)
         showImages(b)
 
         b.wait_visible('#containers-images td[data-label="Image"]:contains("busybox:latest")')
@@ -2844,15 +2852,17 @@ Yaml={name}.yaml
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
 
         self.waitContainerRow(containername)
-        self.toggleExpandedContainer(containername)
-        b.wait(lambda: self.getContainerAttr(containername, "State") == "RunningHealthy")
+        self.toggleExpandedContainer(containername, system=auth)
+        b.wait(lambda: self.getContainerAttr(containername, "State", "", system=auth) == "RunningHealthy")
         b.click(".pf-m-expanded button:contains('Health check')")
         b.wait_in_text('.pf-m-expanded #container-details-healthcheck dt:contains("When unhealthy") + dd',
                        'Force stop')
         # Removing the file should kill the container
         status = self.execute(f"podman exec {containername} rm -f /healthy", system=auth).strip()
         b.wait(lambda: self.getContainerAttr(containername,
-                                             "State", "span:not(.ct-badge-container-unhealthy)") in NOT_RUNNING)
+                                             "State",
+                                             "span:not(.ct-badge-container-unhealthy)",
+                                             system=auth) in NOT_RUNNING)
         status = self.execute(f"podman inspect --format '{{{{.State.Health.Status}}}}' {containername}",
                               system=auth).strip()
         self.assertEqual(status, "unhealthy")
@@ -2988,9 +2998,9 @@ Yaml={name}.yaml
         self.login(system=auth)
 
         self.waitContainerRow(container_name)
-        self.toggleExpandedContainer(container_name)
+        self.toggleExpandedContainer(container_name, system=auth)
         b.wait_not_present(self.getContainerAction('Resume'))
-        self.performContainerAction(container_name, "Pause")
+        self.performContainerAction(container_name, "Pause", system=auth)
 
         # show all containers and check status
         self.filter_containers('all')
@@ -2999,10 +3009,10 @@ Yaml={name}.yaml
         b.click(".pf-m-expanded button:contains('Integration')")
         b.wait_visible(f'#containers-containers tr:contains("{IMG_ALPINE}") dt:contains("Environment variables")')
 
-        b.wait(lambda: self.getContainerAttr(container_name, "State") == "Paused")
+        b.wait(lambda: self.getContainerAttr(container_name, "State", "", system=auth) == "Paused")
         b.wait_not_present(self.getContainerAction('Pause'))
-        self.performContainerAction(container_name, "Resume")
-        b.wait(lambda: self.getContainerAttr(container_name, "State") == "Running")
+        self.performContainerAction(container_name, "Resume", system=auth)
+        b.wait(lambda: self.getContainerAttr(container_name, "State", "", system=auth) == "Running")
 
     def testRenameContainerSystem(self) -> None:
         self._testRenameContainer(auth=True)
@@ -3021,8 +3031,8 @@ Yaml={name}.yaml
         self.filter_containers('all')
 
         self.waitContainerRow(container_name)
-        self.toggleExpandedContainer(container_name)
-        self.performContainerAction(container_name, "Rename")
+        self.toggleExpandedContainer(container_name, system=auth)
+        self.performContainerAction(container_name, "Rename", system=auth)
 
         # the container name should be in the "Rename container" header
         b.wait_in_text("#pf-modal-part-1", container_name)
@@ -3040,8 +3050,8 @@ Yaml={name}.yaml
         self.waitContainerRow(container_name_new)
 
         # rename using the enter key
-        self.toggleExpandedContainer(container_name_new)
-        self.performContainerAction(container_name_new, "Rename")
+        self.toggleExpandedContainer(container_name_new, system=auth)
+        self.performContainerAction(container_name_new, "Rename", system=auth)
 
         container_name_new = "rename-new-enter"
         b.set_input_text("#rename-dialog-container-name", "")
@@ -3200,7 +3210,7 @@ Yaml={name}.yaml
                                 "command": "sleep 500", "state": "Running", "id": containerId}],
                               system=auth)
 
-        self.toggleExpandedContainer(container_name)
+        self.toggleExpandedContainer(container_name, system=auth)
         b.click(".pf-m-expanded button:contains('Integration')")
         if self.machine.image not in ["ubuntu-2204"]:
             b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Volumes") + dd',
@@ -3305,7 +3315,7 @@ Yaml={name}.yaml
 
         # Wait for download to finish
         sel = "span:not(.downloading)"
-        b.wait(lambda: self.getContainerAttr(container_name, "State", sel) in "Created")
+        b.wait(lambda: self.getContainerAttr("new-busybox", "State", sel) in "Created")
 
         checkImage(b, f"{container_name}:latest", "system")
 
@@ -3356,7 +3366,7 @@ Yaml={name}.yaml
             self.waitNumContainers(2, auth=True)
             b.wait_text("#containers-containers tbody:nth-of-type(1) .container-name", "sys1")
             b.wait_text("#containers-containers tbody:nth-of-type(2) .container-name", "user1")
-            b.wait(lambda: self.getContainerAttr("user1", "State") == "Running")
+            b.wait(lambda: self.getContainerAttr("user1", "State", "", system=False) == "Running")
             b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
 
             b.reload()
@@ -3364,16 +3374,16 @@ Yaml={name}.yaml
             b.wait_visible("#app")
 
         # system events still work
-        self.performContainerAction(IMG_BUSYBOX, "Force stop")
+        self.performContainerAction("sys1", "Force stop")
         b.wait(lambda: self.getContainerAttr("sys1", "State") in NOT_RUNNING)
-        self.performContainerAction(IMG_BUSYBOX, "Start")
+        self.performContainerAction("sys1", "Start")
         b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
 
         # user events still work
-        self.performContainerAction(IMG_ALPINE, "Force stop")
-        b.wait(lambda: self.getContainerAttr("user1", "State") in NOT_RUNNING)
-        self.performContainerAction(IMG_ALPINE, "Start")
-        b.wait(lambda: self.getContainerAttr("sys1", "State") == "Running")
+        self.performContainerAction("user1", "Force stop", system=False)
+        b.wait(lambda: self.getContainerAttr("user1", "State", "", system=False) in NOT_RUNNING)
+        self.performContainerAction("user1", "Start", system=False)
+        b.wait(lambda: self.getContainerAttr("sys1", "State", "") == "Running")
 
     def _testQuadlets(self, *, system: bool = False) -> None:
         b = self.browser
@@ -3383,7 +3393,7 @@ Yaml={name}.yaml
         systemctl_cmd = "systemctl" if system else "systemctl --user"
         self.createQuadlet(service_name, containerName=service_name, auth=system)
         self.waitContainerRow(service_name)
-        b.wait(lambda: self.getContainerAttr("quak", "State") == "Running")
+        b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Running")
 
         # Cannot delete/commit a quadlet container, they are managed by .container units
         with self.withContainerActionMenu(service_name):
@@ -3391,14 +3401,14 @@ Yaml={name}.yaml
             b.wait_not_present(self.getContainerAction('Commit'))
 
         # Can stop/start/restart a container
-        self.performContainerAction("quak", "Stop")
-        b.wait(lambda: self.getContainerAttr("quak", "State") == "Exited")
-        self.performContainerAction("quak", "Start")
-        b.wait(lambda: self.getContainerAttr("quak", "State") == "Running")
+        self.performContainerAction("quak", "Stop", system=system)
+        b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Exited")
+        self.performContainerAction("quak", "Start", system=system)
+        b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Running")
         containerId = self.execute("podman inspect --format '{{.Id}}' quak", system=system).strip()
         old_start = self.getStartTime("quak", auth=system)
         data_row_id = ('0-' if system else 'user-') + containerId
-        self.performContainerAction("quak", "Restart")
+        self.performContainerAction("quak", "Restart", system=system)
         # Wait for it to properly go away before waitRestart, on Ubuntu-2404 restarting is slow.
         b.wait_not_present(f'#table-no-pod tr[data-row-id="{data_row_id}"]')
         self.waitRestart("quak", old_start, auth=system, check=False)
@@ -3425,7 +3435,7 @@ Yaml={name}.yaml
                                   "command": "", "state": "Exited", "id": "zigbee.service"}],
                                   system=system)
 
-        self.toggleExpandedContainer(service_name)
+        self.toggleExpandedContainer(service_name, system=system)
 
         # Service link integration
         b.click(f"#containers-containers tbody tr:contains('{service_name}') button:contains({service_name}.service)")
@@ -3453,7 +3463,7 @@ Yaml={name}.yaml
 
         # Stopped quadlets are listed as not running
         self.execute(f"{systemctl_cmd} stop quak.service", system=system)
-        b.wait(lambda: self.getContainerAttr("quak", "State") in NOT_RUNNING)
+        b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) in NOT_RUNNING)
 
         # Quadlet pod support was introduced in podman 5.0.0
         if self.podman_version() >= (5, 0, 0):
@@ -3492,7 +3502,7 @@ Yaml={name}.yaml
             b.set_input_text('#containers-filter input', '')
 
             # Stopping a container in a pod still shows them in the same pod group
-            self.performContainerAction("database", "Stop")
+            self.performContainerAction("database", "Stop", system=system)
             self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
                                   "command": "", "state": "Exited", "id": "fancydb.service"}],
                                   system=system)
@@ -3620,21 +3630,28 @@ Yaml={name}.yaml
         self.waitNumContainers(1, auth=False)
         self.waitNumImages(1)
 
+        def performContainerAction(container: str, uid: str, cmd: str) -> None:
+            b.click(f"#containers-containers tr[data-row-name='{uid}-{container}'] .pf-v6-c-menu-toggle")
+            b.click(self.getContainerAction(cmd))
+
+        def getContainerAttr(container: str, uid: str, key: str) -> str:
+            return b.text(f"#containers-containers tr[data-row-name='{uid}-{container}'] td[data-label={key}]")
+
         # container lifecycle actions
-        image = "example.com/guitar/myimg:latest"
-        self.performContainerAction(image, "Force stop")
-        b.wait(lambda: self.getContainerAttr("guitarc1", "State") in NOT_RUNNING)
-        self.performContainerAction(image, "Start")
-        b.wait(lambda: self.getContainerAttr("guitarc1", "State") == "Running")
+        uid = uids["guitar"]
+        performContainerAction("guitarc1", uid, "Force stop")
+        b.wait(lambda: getContainerAttr("guitarc1", uid, "State") in NOT_RUNNING)
+        performContainerAction("guitarc1", uid, "Start")
+        b.wait(lambda: getContainerAttr("guitarc1", uid, "State") == "Running")
 
         # container creation/removal
-        uid = uids["guitar"]
+        image = "example.com/guitar/myimg:latest"
         b.click(f'#containers-images tbody tr[data-row-name="{uid}-{image}"] .ct-container-create')
         b.set_input_text("#run-image-dialog-name", "new-guitar")
         b.click("#create-image-create-btn")
         b.wait_not_present("div.pf-v6-c-modal-box")
         self.waitContainerRow("new-guitar")
-        self.performContainerAction("new-guitar", "Delete")
+        performContainerAction("new-guitar", uid, "Delete")
         b.click(".pf-v6-c-modal-box button:contains(Delete)")
         self.waitContainerRow("new-guitar", present=False)
 
@@ -3673,7 +3690,8 @@ ContainerName=guitarq1
 
             # No systemd service link is shown for quadlets from other users as
             # the services page doesn't support anything except the logged in/admin/root user.
-            self.toggleExpandedContainer("guitarq1")
+            b.click(f"#containers-containers tr[data-row-name='{uid}-guitarq1'] .pf-v6-c-table__toggle button")
+
             sel = "#containers-containers tbody tr:contains('guitarq1')"
             b.wait_in_text(f"{sel} + tr", "sleep infinity")
             b.wait_not_in_text(f"{sel} + tr", "systemd service")
