@@ -506,6 +506,7 @@ class Containers extends React.Component {
                 key: container.key,
                 "data-row-id": container.key,
                 "data-started-at": container.State?.StartedAt,
+                "data-row-name": `${container.uid === null ? 'user' : container.uid}-${container.Name}`
             },
         };
     }
