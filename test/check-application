@@ -3428,7 +3428,7 @@ Yaml={name}.yaml
             b.wait_not_present(".create-container-in-pod")
 
             # Quadlet pods are shown as a service group
-            b.wait_visible("#table-homeassistant .pf-v6-c-card__header .ct-badge-service:contains('service')")
+            b.wait_text("#table-homeassistant .pf-v6-c-card__header .ct-badge-service", "service")
 
             self.performPodAction("homeassistant", "system" if system else "user", "Stop")
             self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
