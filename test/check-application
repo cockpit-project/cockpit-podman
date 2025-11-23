@@ -199,9 +199,9 @@ class TestApplication(testlib.MachineCase):
         self.browser.wait_count("#containers-containers tbody", expected + extra)
 
     @contextmanager
-    def withContainerActionMenu(self, container: str) -> Generator[None, None, None]:
+    def withContainerActionMenu(self, container: str, *, system: bool = True) -> Generator[None, None, None]:
         b = self.browser
-        container_sel = f"#containers-containers tbody tr:contains('{container}')"
+        container_sel = self.getContainerSelector(container, system=system)
         try:
             b.click(f"{container_sel} .pf-v6-c-menu-toggle")
             yield
@@ -1490,7 +1490,7 @@ Yaml={name}.yaml
         if not auth:
             # Checkpoint/restore is not supported on user containers yet - the related buttons should not be shown
             # Check that the restore option is not present
-            with self.withContainerActionMenu("swamped-crate"):
+            with self.withContainerActionMenu("swamped-crate", system=auth):
                 b.wait_not_present(self.getContainerAction('Restore'))
 
         # Start the container
@@ -1578,7 +1578,7 @@ Yaml={name}.yaml
         self.waitContainerRow(IMG_BUSYBOX)
         if not auth:
             # Check that the checkpoint option is not present for rootless
-            with self.withContainerActionMenu(IMG_BUSYBOX):
+            with self.withContainerActionMenu("swamped-crate", system=auth):
                 b.wait_visible(self.getContainerAction('Force stop'))
                 b.wait_not_present(self.getContainerAction('Checkpoint'))
         # Stop the container
@@ -1666,7 +1666,7 @@ Yaml={name}.yaml
         b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=True))
 
         # Check that the restore option is not present (i.e. start is a regular button)
-        with self.withContainerActionMenu(IMG_BUSYBOX):
+        with self.withContainerActionMenu("swamped-crate", system=True):
             b.wait_not_present(self.getContainerAction('Restore'))
 
         # Start the container
@@ -3396,7 +3396,7 @@ Yaml={name}.yaml
         b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Running")
 
         # Cannot delete/commit a quadlet container, they are managed by .container units
-        with self.withContainerActionMenu(service_name):
+        with self.withContainerActionMenu(service_name, system=system):
             b.wait_not_present(self.getContainerAction('Delete'))
             b.wait_not_present(self.getContainerAction('Commit'))
 
