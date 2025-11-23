@@ -12,9 +12,6 @@ if [ -e .git ]; then
     tools/node-modules checkout
     # disable detection of affected tests; testing takes too long as there is no parallelization
     mv .git dot-git
-else
-    # upstream tarballs ship test dependencies; print version for debugging
-    grep '"version"' node_modules/sizzle/package.json
 fi
 
 . /run/host/usr/lib/os-release
