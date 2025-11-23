@@ -1675,7 +1675,8 @@ Yaml={name}.yaml
 
         self.toggleExpandedContainer("swamped-crate", system=True)
         b.wait_visible(".pf-m-expanded button:contains('Details')")
-        b.wait_not_present(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint")')
+        container_sel = self.getContainerSelector("swamped-crate", system=True)
+        b.wait_not_present(f"{container_sel} + tr .container-latest-checkpoint")
 
         # Checkpoint the container
         self.performContainerAction("swamped-crate", "Checkpoint", system=True)
@@ -1689,10 +1690,7 @@ Yaml={name}.yaml
         if self.has_criu:
             try:
                 b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
-                b.wait_text(
-                    f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Latest checkpoint") + dd',
-                    'less than a minute ago'
-                )
+                b.wait_text(f"{container_sel} + tr .container-latest-checkpoint", "less than a minute ago")
             except testlib.Error:
                 # dump.log may help with debugging criu failures
                 attachment = self.label() + "-dump.log"

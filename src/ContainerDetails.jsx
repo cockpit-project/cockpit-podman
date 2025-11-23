@@ -87,7 +87,7 @@ const ContainerDetails = ({ container }) => {
                     </DescriptionListGroup>
                     {container.State?.Checkpointed && <DescriptionListGroup>
                         <DescriptionListTerm>{_("Latest checkpoint")}</DescriptionListTerm>
-                        <DescriptionListDescription><utils.RelativeTime time={container.State.CheckpointedAt} /></DescriptionListDescription>
+                        <DescriptionListDescription className="container-latest-checkpoint"><utils.RelativeTime time={container.State.CheckpointedAt} /></DescriptionListDescription>
                     </DescriptionListGroup>}
                 </DescriptionList>
             </FlexItem>
