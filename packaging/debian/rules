@@ -13,8 +13,6 @@ ifeq ($(KEEP_DIST),)
 override_dh_auto_build:
 	# upstream releases include a pre-built dist/, rebuild it
 	rm -fr dist/
-	# remove mini-node_modules with sizzle
-	rm -fr node_modules
 	# HACK: names for additional tarballs can't contain '_', so we name it just "orig-node"
 	ln -fs node node_modules
 	NODE_ENV=production ./build.js
