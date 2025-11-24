@@ -3687,9 +3687,9 @@ ContainerName=guitarq1
 
             # No systemd service link is shown for quadlets from other users as
             # the services page doesn't support anything except the logged in/admin/root user.
-            b.click(f"#containers-containers tr[data-row-name='{uid}-guitarq1'] .pf-v6-c-table__toggle button")
+            sel = f"#containers-containers tbody tr[data-row-name='{uid}-guitarq1']"
+            b.click(f"{sel} .pf-v6-c-table__toggle button")
 
-            sel = "#containers-containers tbody tr:contains('guitarq1')"
             b.wait_in_text(f"{sel} + tr", "sleep infinity")
             b.wait_not_in_text(f"{sel} + tr", "systemd service")
 
