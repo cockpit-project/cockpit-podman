@@ -1377,8 +1377,9 @@ Yaml={name}.yaml
             """).strip()
             self.execute(f"podman build -t {image_name} {temp_dir}", system=auth)
 
-        def getImageSize(image_name: str) -> float:
-            return float(b.text(f"tr:contains('{image_name}') td[data-label='Disk space']").replace(' MB', ''))
+        def getImageSize(image_name: str, *, system: bool = True) -> float:
+            image_sel = self.getImageSelector(image_name, system=system)
+            return float(b.text(f"{image_sel} td[data-label='Disk space']").replace(' MB', ''))
 
         image1 = "localhost:5000/test-image:1"
 
@@ -1402,7 +1403,7 @@ Yaml={name}.yaml
 
         # assert that the new image is bigger, the initial image as 1MB, the
         # new one 50MB.
-        b.wait(lambda: getImageSize(image1) > 40)
+        b.wait(lambda: getImageSize(image1, system=True) > 40)
 
         image1_update_sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {image1}", system=True).strip()
         self.assertNotEqual(image1_sha, image1_update_sha)
@@ -1449,8 +1450,8 @@ Yaml={name}.yaml
         b.wait_not_present(f"#containers-images tbody tr[data-row-id=\"user-{image2_sha}\"]".lower())
 
         # assert the image size changed
-        b.wait(lambda: getImageSize(image1) > 20)
-        b.wait(lambda: getImageSize(image2) > 40)
+        b.wait(lambda: getImageSize(image1, system=False) > 20)
+        b.wait(lambda: getImageSize(image2, system=False) > 40)
 
         # after pulling the two test-images, we now have two <none>:<none> intermediate images
         # pulling all images ignores them
