@@ -2349,7 +2349,7 @@ Yaml={name}.yaml
         container_sel = self.getImageSelector(IMG_BUSYBOX_LATEST, system=auth)
         b.click(f'{container_sel} td.pf-v6-c-table__toggle button')
         # running container, just selects it, but leaves "Only running" alone
-        b.click(f"{container_sel} + tr div.ct-listing-panel-body dt:contains('Used by') + dd button:contains('busybox-with-tty')")  # noqa: E501
+        b.click(f"{container_sel} + tr div.ct-listing-panel-body button:contains('busybox-with-tty')")
         b.wait_js_cond('window.location.hash === "#' + id_with_tty + '"')
         b.wait_val("#containers-containers-filter", "running")
         # FIXME: expanding running container details does not actually work right now
@@ -2376,7 +2376,7 @@ Yaml={name}.yaml
         self.filter_containers("running")
         b.wait_not_in_text("#containers-containers", "busybox-not-started")
         container_sel = f"{self.getImageSelector(IMG_BUSYBOX_LATEST, system=auth)} + tr div.ct-listing-panel-body"
-        b.click(f"{container_sel} dt:contains('Used by') + dd button:contains('busybox-not-started')")
+        b.click(f"{container_sel} button:contains('busybox-not-started')")
         b.wait_js_cond(f"window.location.hash === '#{sha}'")
         b.wait_val("#containers-containers-filter", "all")
         b.wait_in_text("#containers-containers", "busybox-not-started")
