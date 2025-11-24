@@ -1230,7 +1230,7 @@ Yaml={name}.yaml
 
             def expectDownloadErrorForNonExistingTag(self) -> Self:
                 title = f"Danger alert:Failed to download image localhost:5000/{self.imageName}:{self.imageTag}"
-                b.wait_visible(f'h4.pf-v6-c-alert__title:contains("{title}")')
+                b.wait_in_text('h4.pf-v6-c-alert__title', title)
 
                 return self
 
@@ -2524,9 +2524,9 @@ Yaml={name}.yaml
         else:
             self.waitNumImages(leftover_images)
             # Two images removed, one in use kept
-            b.wait_not_present(f"#containers-images:contains('{IMG_BUSYBOX}')")
-            b.wait_not_present(f"#containers-images:contains('{IMG_REGISTRY}')")
-            b.wait_visible(f"#containers-images:contains('{IMG_ALPINE}')")
+            b.wait_not_in_text("#containers-images", IMG_BUSYBOX)
+            b.wait_not_in_text("#containers-images", IMG_REGISTRY)
+            b.wait_in_text("#containers-images", IMG_ALPINE)
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
