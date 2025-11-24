@@ -1593,7 +1593,7 @@ Yaml={name}.yaml
         # Check that container details are not lost when the container is stopped
         self.toggleExpandedContainer("swamped-crate", system=auth)
         b.click(".pf-m-expanded button:contains('Integration')")
-        b.wait_visible(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Environment variables")')
+        b.wait_in_text("#containers-containers tbody.pf-m-expanded", "Environment variables")
 
         # Check that console reconnects when container starts
         b.click(".pf-m-expanded button:contains('Console')")
@@ -3001,7 +3001,7 @@ Yaml={name}.yaml
 
         # Check that container details are not lost when the container is paused
         b.click(".pf-m-expanded button:contains('Integration')")
-        b.wait_visible(f'#containers-containers tr:contains("{IMG_ALPINE}") dt:contains("Environment variables")')
+        b.wait_in_text(f"{self.getContainerSelector(container_name, system=auth)} + tr", "Environment variables")
 
         b.wait(lambda: self.getContainerAttr(container_name, "State", "", system=auth) == "Paused")
         b.wait_not_present(self.getContainerAction('Pause'))
