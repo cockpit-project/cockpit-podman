@@ -989,7 +989,7 @@ Yaml={name}.yaml
         b.wait_not_present(".pf-v6-c-modal-box")
 
         # Delete intermediate images
-        intermediate_image_sel = "#containers-images tbody:last-child:contains('<none>:<none>')"
+        intermediate_image_sel = self.getImageSelector("<none>:<none>", system=auth)
         b.click(".listing-action button:contains('Show intermediate images')")
         clickDeleteImage(intermediate_image_sel)
         self.confirm_modal("Delete")
