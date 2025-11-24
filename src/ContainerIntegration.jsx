@@ -148,15 +148,15 @@ const ContainerIntegration = ({ container, localImages }) => {
         <DescriptionList isAutoColumnWidths columnModifier={{ md: '3Col' }} className='container-integration'>
             {ports && <DescriptionListGroup>
                 <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
-                <DescriptionListDescription>{ports}</DescriptionListDescription>
+                <DescriptionListDescription className="container-integration-ports">{ports}</DescriptionListDescription>
             </DescriptionListGroup>}
             {volumes && <DescriptionListGroup>
                 <DescriptionListTerm>{_("Volumes")}</DescriptionListTerm>
-                <DescriptionListDescription>{volumes}</DescriptionListDescription>
+                <DescriptionListDescription className="container-integration-volumes">{volumes}</DescriptionListDescription>
             </DescriptionListGroup>}
             {env && <DescriptionListGroup>
                 <DescriptionListTerm>{_("Environment variables")}</DescriptionListTerm>
-                <DescriptionListDescription>{env}</DescriptionListDescription>
+                <DescriptionListDescription className="container-integration-envs">{env}</DescriptionListDescription>
             </DescriptionListGroup>}
         </DescriptionList>
     );
