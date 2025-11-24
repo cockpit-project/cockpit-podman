@@ -61,31 +61,31 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
                         </DescriptionListGroup>
                         <DescriptionListGroup>
                             <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
-                            <DescriptionListDescription>{utils.quote_cmdline(healthCheck.Test)}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-command">{utils.quote_cmdline(healthCheck.Test)}</DescriptionListDescription>
                         </DescriptionListGroup>
                         {healthCheck.Interval && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Interval")}</DescriptionListTerm>
-                            <DescriptionListDescription>{format_nanoseconds(healthCheck.Interval)}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-interval">{format_nanoseconds(healthCheck.Interval)}</DescriptionListDescription>
                         </DescriptionListGroup>}
                         {healthCheck.Retries && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Retries")}</DescriptionListTerm>
-                            <DescriptionListDescription>{healthCheck.Retries}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-retries">{healthCheck.Retries}</DescriptionListDescription>
                         </DescriptionListGroup>}
                         {healthCheck.StartPeriod && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Start period")}</DescriptionListTerm>
-                            <DescriptionListDescription>{format_nanoseconds(healthCheck.StartPeriod)}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-start-period">{format_nanoseconds(healthCheck.StartPeriod)}</DescriptionListDescription>
                         </DescriptionListGroup>}
                         {healthCheck.Timeout && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Timeout")}</DescriptionListTerm>
-                            <DescriptionListDescription>{format_nanoseconds(healthCheck.Timeout)}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-timeout">{format_nanoseconds(healthCheck.Timeout)}</DescriptionListDescription>
                         </DescriptionListGroup>}
                         {container.Config?.HealthcheckOnFailureAction && <DescriptionListGroup>
                             <DescriptionListTerm>{_("When unhealthy")}</DescriptionListTerm>
-                            <DescriptionListDescription>{HealthcheckOnFailureActionText[container.Config.HealthcheckOnFailureAction]}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-when-unhealthy">{HealthcheckOnFailureActionText[container.Config.HealthcheckOnFailureAction]}</DescriptionListDescription>
                         </DescriptionListGroup>}
                         {healthState.FailingStreak && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Failing streak")}</DescriptionListTerm>
-                            <DescriptionListDescription>{healthState.FailingStreak}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-failing-streak">{healthState.FailingStreak}</DescriptionListDescription>
                         </DescriptionListGroup>}
                     </DescriptionList>
                 </FlexItem>
