@@ -2767,14 +2767,14 @@ Yaml={name}.yaml
         self.toggleExpandedContainer("healthy", system=auth)
         b.click(".pf-m-expanded button:contains('Health check')")
 
-        b.wait_in_text('#container-details-healthcheck dt:contains("Command") + dd', 'true')
-        b.wait_in_text('#container-details-healthcheck dt:contains("Interval") + dd', '325 seconds')
-        b.wait_in_text('#container-details-healthcheck dt:contains("Retries") + dd', '2')
-        b.wait_in_text('#container-details-healthcheck dt:contains("Timeout") + dd', '35 seconds')
-        b.wait_in_text('#container-details-healthcheck dt:contains("Start period") + dd', '5 seconds')
-        b.wait_not_present('#container-details-healthcheck dt:contains("Failing streak")')
+        b.wait_in_text('#container-details-healthcheck .healthcheck-command', 'true')
+        b.wait_in_text('#container-details-healthcheck .healthcheck-interval', '325 seconds')
+        b.wait_in_text('#container-details-healthcheck .healthcheck-retries', '2')
+        b.wait_in_text('#container-details-healthcheck .healthcheck-timeout', '35 seconds')
+        b.wait_in_text('#container-details-healthcheck .healthcheck-start-period', '5 seconds')
+        b.wait_not_present('#container-details-healthcheck .healthcheck-failing-streak')
         if self.podman_version() >= (4, 3, 0):
-            b.wait_in_text('#container-details-healthcheck dt:contains("When unhealthy") + dd', 'No action')
+            b.wait_in_text('#container-details-healthcheck .healthcheck-when-unhealthy', 'No action')
 
         # format changed in podman 5.1, adds StartInterval (https://github.com/containers/podman/pull/22334)
         self.assertIn(self.execute("podman inspect --format '{{.Config.Healthcheck}}' healthy", system=auth).strip(),
@@ -2809,14 +2809,14 @@ Yaml={name}.yaml
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(1)")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(4)")
         b.wait_visible(".pf-m-expanded .ct-listing-panel-body tbody:nth-of-type(2) svg.red")
-        b.wait_visible('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak")')
-        failures = int(b.text('.pf-m-expanded #container-details-healthcheck dt:contains("Failing streak") + dd'))
+        b.wait_in_text('.pf-m-expanded #container-details-healthcheck', 'Failing streak')
+        failures = int(b.text('.pf-m-expanded #container-details-healthcheck .healthcheck-failing-streak'))
         self.assertGreater(failures, 3)
         if auth:
             b.wait_count(".pf-m-expanded table[aria-label=Logs] tbody tr", 5)
             b.assert_pixels(".pf-m-expanded .pf-v6-c-table__expandable-row-content",
                             "healthcheck-details",
-                            ignore=["thead", "#container-details-healthcheck dt:contains('Failing streak') + dd",
+                            ignore=["thead", "#container-details-healthcheck .healthcheck-failing-streak",
                                     "td[data-label='Started at']"],
                             skip_layouts=["rtl"])
 
@@ -2849,7 +2849,7 @@ Yaml={name}.yaml
         self.toggleExpandedContainer(containername, system=auth)
         b.wait(lambda: self.getContainerAttr(containername, "State", "", system=auth) == "RunningHealthy")
         b.click(".pf-m-expanded button:contains('Health check')")
-        b.wait_in_text('.pf-m-expanded #container-details-healthcheck dt:contains("When unhealthy") + dd',
+        b.wait_in_text('.pf-m-expanded #container-details-healthcheck .healthcheck-when-unhealthy',
                        'Force stop')
         # Removing the file should kill the container
         status = self.execute(f"podman exec {containername} rm -f /healthy", system=auth).strip()
