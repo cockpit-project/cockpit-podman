@@ -19,7 +19,7 @@ jobs:
           sudo apt install -y --no-install-recommends npm make gettext appstream
 
       - name: Clone source repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: src
 
@@ -27,7 +27,7 @@ jobs:
         run: make -C src po/podman.pot
 
       - name: Clone weblate repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: weblate
           repository: ${{ github.repository }}-weblate
