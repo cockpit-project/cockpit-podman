@@ -2183,18 +2183,13 @@ Yaml={name}.yaml
 
         b.click(".pf-m-expanded button:contains('Integration')")
 
-        b.wait_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Ports") + dd',
-                       '0.0.0.0:6000 \u2192 5000/tcp')
-        b.wait_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Ports") + dd',
-                       '127.0.0.1:6001 \u2192 5001/udp')
-        b.wait_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Ports") + dd',
-                       '127.0.0.2:')
-        b.wait_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Ports") + dd',
-                       ' \u2192 8001/tcp')
-        b.wait_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Ports") + dd',
-                       '0.0.0.0:4000-4003 \u2192 4000-4003/tcp')
-        b.wait_not_in_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Ports") + dd',
-                           '7001/tcp')
+        ports_sel = f'{container_sel} + tr .container-integration-ports'
+        b.wait_in_text(ports_sel, '0.0.0.0:6000 \u2192 5000/tcp')
+        b.wait_in_text(ports_sel, '127.0.0.1:6001 \u2192 5001/udp')
+        b.wait_in_text(ports_sel, '127.0.0.2:')
+        b.wait_in_text(ports_sel, ' \u2192 8001/tcp')
+        b.wait_in_text(ports_sel, '0.0.0.0:4000-4003 \u2192 4000-4003/tcp')
+        b.wait_not_in_text(ports_sel, '7001/tcp')
 
         ports = self.execute("podman inspect --format '{{.NetworkSettings.Ports}}' busybox-with-tty", system=auth)
         self.assertRegex(ports, r'5000/tcp:\[{(0.0.0.0)? 6000}\]')
@@ -2204,7 +2199,7 @@ Yaml={name}.yaml
         self.assertIn('9001/tcp:[{127.0.0.2 ', ports)
         self.assertNotIn('7001/tcp', ports)
 
-        env_select = f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Environment variables") + dd'
+        env_select = f'{container_sel} + tr .container-integration-envs'
         b.wait_in_text(env_select, 'APPLE=ORANGE')
         b.wait_in_text(env_select, 'PEAR=BANANA')
         b.wait_in_text(env_select, 'RHUBARB=STRAWBERRY')
@@ -2238,7 +2233,7 @@ Yaml={name}.yaml
         self.assertIn('PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', env)
         self.assertNotIn('MELON=GRAPE', env)
 
-        vol_select = f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Volumes") + dd'
+        vol_select = f'{container_sel} + tr .container-integration-volumes'
         b.wait_in_text(vol_select, f"{rodir} \u2192 /tmp/ro")
         b.wait_in_text(vol_select, f"{rwdir} \u2194 /tmp/rw")
 
@@ -3210,18 +3205,19 @@ Yaml={name}.yaml
                               system=auth)
 
         self.toggleExpandedContainer(container_name, system=auth)
+        container_sel = self.getContainerSelector(container_name, system=auth)
         b.click(".pf-m-expanded button:contains('Integration')")
         if self.machine.image not in ["ubuntu-2204"]:
-            b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Volumes") + dd',
+            b.wait_in_text(f'{container_sel} + tr .container-integration-volumes',
                            f"{rodir} \u2194 /tmp/ro")
-            b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Volumes") + dd',
+            b.wait_in_text(f'{container_sel} + tr .container-integration-volumes',
                            f"{rwdir} \u2194 /tmp/rw")
 
-        b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Ports") + dd',
+        b.wait_in_text(f'{container_sel} + tr .container-integration-ports',
                        '0.0.0.0:6000 \u2192 5000/tcp')
-        b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Ports") + dd',
+        b.wait_in_text(f'{container_sel} + tr .container-integration-ports',
                        '127.0.0.1:6001 \u2192 5001/udp')
-        b.wait_in_text('#containers-containers tr:contains("alpine") dt:contains("Ports") + dd',
+        b.wait_in_text(f'{container_sel} + tr .container-integration-ports',
                        ' \u2192 9001/tcp')
 
         # Create pod as admin
