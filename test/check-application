@@ -2381,7 +2381,7 @@ Yaml={name}.yaml
         b.wait_val("#containers-containers-filter", "all")
         b.wait_in_text("#containers-containers", "busybox-not-started")
         # auto-expands container details
-        b.wait_in_text("#containers-containers tbody tr:contains('busybox-not-started') + tr", "sleep infinity")
+        b.wait_in_text(f"{self.getContainerSelector('busybox-not-started', system=auth)} + tr", "sleep infinity")
 
         image_sel = self.getImageSelector(IMG_ALPINE_LATEST, system=auth)
         b.click(f'{image_sel} td.pf-v6-c-table__toggle button')
@@ -3433,7 +3433,9 @@ Yaml={name}.yaml
         self.toggleExpandedContainer(service_name, system=system)
 
         # Service link integration
-        b.click(f"#containers-containers tbody tr:contains('{service_name}') button:contains({service_name}.service)")
+        container_sel = self.getContainerSelector(service_name, system=system)
+        b.wait_text(f"{container_sel} + tr .container-details-basic button", f"View {service_name}.service")
+        b.click(f"{container_sel} + tr .container-details-basic button")
         b.switch_to_top()
         if system:
             b.wait_js_cond(f'window.location.hash === "#/{service_name}.service"')
