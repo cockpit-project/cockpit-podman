@@ -78,7 +78,7 @@ const ContainerDetails = ({ container }) => {
                     {container.Created &&
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Created")}</DescriptionListTerm>
-                        <DescriptionListDescription><utils.RelativeTime time={container.Created} /></DescriptionListDescription>
+                        <DescriptionListDescription className="container-created"><utils.RelativeTime time={container.Created} /></DescriptionListDescription>
                     </DescriptionListGroup>
                     }
                     <DescriptionListGroup>

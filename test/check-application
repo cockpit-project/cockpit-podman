@@ -2177,8 +2177,8 @@ Yaml={name}.yaml
                             mock={'.container-mac-address': 'ce:39:71:68:e1:ba'},
                             skip_layouts=["rtl", "mobile"])
 
-        b.wait_text(f'#containers-containers tr:contains("{IMG_BUSYBOX}") dt:contains("Created") + dd',
-                    'less than a minute ago')
+        container_sel = self.getContainerSelector("busybox-with-tty", system=auth)
+        b.wait_text(f'{container_sel} + tr .container-created', 'less than a minute ago')
 
         b.click(".pf-m-expanded button:contains('Integration')")
 
