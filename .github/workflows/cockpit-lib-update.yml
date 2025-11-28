@@ -2,15 +2,14 @@ name: cockpit-lib-update
 on:
   schedule:
     - cron: '0 2 * * 4'
-  # can be run manually on https://github.com/cockpit-project/starter-kit/actions
+  # can be run manually on https://github.com/cockpit-project/cockpit-podman/actions
   workflow_dispatch:
 jobs:
   cockpit-lib-update:
-    environment: self
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-      statuses: write
+      contents: write
     steps:
       - name: Set up dependencies
         run: |
@@ -24,8 +23,6 @@ jobs:
 
       - name: Clone repository
         uses: actions/checkout@v6
-        with:
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Run cockpit-lib-update
         run: |
