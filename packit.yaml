@@ -8,8 +8,14 @@ downstream_package_name: cockpit-podman
 copy_upstream_release_description: true
 
 actions:
-  post-upstream-clone: make cockpit-podman.spec
-  create-archive: make dist
+  post-upstream-clone:
+    - make node-cache dist
+
+  fix-spec-file:
+    # our locally built tarballs are not on the upstream releases page, point to the local files
+    sed -i 's|^\(Source[0-9]*:\s*\).*\/|\1|' cockpit-podman.spec
+
+  get-current-version: make print-version
 
 srpm_build_deps:
   - jq
@@ -43,9 +49,9 @@ jobs:
       post-upstream-clone: make cockpit-podman.spec
       # HACK: tarball for releases (copr_build, koji, etc.), copying spec's Source0; this
       # really should be the default, see https://github.com/packit/packit-service/issues/1505
-      create-archive:
+      fix-spec-file:
         - sh -exc "curl -L -O https://github.com/cockpit-project/cockpit-podman/releases/download/${PACKIT_PROJECT_VERSION}/${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
-        - sh -exc "ls ${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
+        - sh -exc "curl -L -O https://github.com/cockpit-project/cockpit-files/releases/download/${PACKIT_PROJECT_VERSION}/cockpit-files-node-${PACKIT_PROJECT_VERSION}.tar.xz"
 
   - job: copr_build
     trigger: commit
