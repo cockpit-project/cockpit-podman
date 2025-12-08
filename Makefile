@@ -56,6 +56,7 @@ COCKPIT_REPO_FILES = \
 	pkg/lib \
 	test/common \
 	tools/node-modules \
+	tools/build-debian-copyright \
 	$(NULL)
 
 COCKPIT_REPO_URL = https://github.com/cockpit-project/cockpit.git
@@ -113,7 +114,7 @@ packaging/debian/changelog: packaging/debian/changelog.in
 	sed 's/VERSION/$(VERSION)/' $< > $@
 
 packaging/debian/copyright: packaging/debian/copyright.template $(NODE_CACHE)
-	packaging/build-debian-copyright $(NODE_CACHE) > $@
+	tools/build-debian-copyright $< $(NODE_CACHE) > $@
 
 $(DIST_TEST): $(COCKPIT_REPO_STAMP) $(shell find src/ -type f) package.json build.js
 	$(MAKE) package-lock.json && NODE_ENV=$(NODE_ENV) ./build.js
