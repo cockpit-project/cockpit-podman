@@ -219,7 +219,7 @@ class TestApplication(testlib.MachineCase):
         b.click(self.getContainerAction(cmd))
 
     def getContainerAction(self, cmd: str) -> str:
-        return f".pf-v6-c-menu__item:contains({cmd})"
+        return f".pf-v6-c-menu__item:contains('{cmd}')"
 
     def toggleExpandedContainer(self, container: str, *, system: bool = True) -> None:
         b = self.browser
@@ -486,7 +486,7 @@ Yaml={name}.yaml
         self.waitRestart("test-pod-1-system", old_start, auth=True)
 
         self.performPodAction("pod-1", "system", "Delete")
-        b.click(".pf-v6-c-modal-box button:contains(Delete)")
+        b.click(".pf-v6-c-modal-box button:contains('Delete')")
         # Alert should be shown, that running pods need to be force deleted.
         b.wait_in_text(".pf-v6-c-modal-box__body .pf-v6-c-list", "test-pod-1-system")
         b.click(".pf-v6-c-modal-box button:contains('Force delete')")
@@ -552,10 +552,10 @@ Yaml={name}.yaml
 
         # Also user selection in image download should not be visible
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Download new image)")
+        b.click("button:contains('Download new image')")
 
         b.wait_text('div.pf-v6-c-modal-box header', 'Search for an image')
-        b.wait_visible("div.pf-v6-c-modal-box footer button:contains(Download):disabled")
+        b.wait_visible("div.pf-v6-c-modal-box footer button:contains('Download'):disabled")
         b.wait_not_present("#as-user")
         b.click(".pf-v6-c-modal-box button:contains('Cancel')")
         b.wait_not_present('div.pf-v6-c-modal-box')
@@ -575,9 +575,9 @@ Yaml={name}.yaml
 
         # Also user selection in image download should be visible
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Download new image)")
+        b.click("button:contains('Download new image')")
         b.wait_in_text('div.pf-v6-c-modal-box header', 'Search for an image')
-        b.wait_visible("div.pf-v6-c-modal-box footer button:contains(Download):disabled")
+        b.wait_visible("div.pf-v6-c-modal-box footer button:contains('Download'):disabled")
         b.wait_visible("#as-user")
         b.click(".pf-v6-c-modal-box button:contains('Cancel')")
         b.wait_not_present('div.pf-v6-c-modal-box')
@@ -619,7 +619,7 @@ Yaml={name}.yaml
 
         # Setting a new image will still keep the old command and not prefill it
         b.click("#create-image-image input")
-        b.click(f'button.pf-v6-c-menu__item:contains({IMG_ALPINE})')
+        b.click(f'button.pf-v6-c-menu__item:contains("{IMG_ALPINE}")')
         b.wait_visible("#run-image-dialog-pull-latest-image")
         b.wait_val("#run-image-dialog-command", '/etc/docker/registry/config.yaml')
         b.click(".pf-v6-c-modal-box button:contains('Cancel')")
@@ -1080,9 +1080,9 @@ Yaml={name}.yaml
         b.wait_in_text(".pf-v6-c-modal-box__description", "state of the test-sh0 container")
 
         # Empty name yields warning
-        b.click("button:contains(Commit)")
+        b.click("button:contains('Commit')")
         b.wait_text("#commit-dialog-image-name-helper", "Image name is required")
-        b.wait_visible("button:contains(Commit):disabled")
+        b.wait_visible("button:contains('Commit'):disabled")
         b.wait_visible("button:contains('Force commit')")
         # Warning should be cleaned when updating name
         b.set_input_text("#commit-dialog-image-name", "foobar")
@@ -1091,9 +1091,9 @@ Yaml={name}.yaml
 
         # Existing name yields warning
         b.set_input_text("#commit-dialog-image-name", IMG_ALPINE)
-        b.click("button:contains(Commit)")
+        b.click("button:contains('Commit')")
         b.wait_text("#commit-dialog-image-name-helper", "Image name is not unique")
-        b.wait_visible("button:contains(Commit):disabled")
+        b.wait_visible("button:contains('Commit'):disabled")
         b.wait_visible("button:contains('Force commit')")
         # Warning should be cleaned when updating tag
         b.set_input_text("#commit-dialog-image-tag", "foobar")
@@ -1102,7 +1102,7 @@ Yaml={name}.yaml
 
         # Check failing commit
         b.set_input_text("#commit-dialog-image-name", "TEST")
-        b.click("button:contains(Commit)")
+        b.click("button:contains('Commit')")
         b.wait_in_text(".pf-v6-c-alert", "Failed to commit container test-sh0")
         b.wait_in_text(".pf-v6-c-alert", "repository name must be lowercase")
 
@@ -1116,7 +1116,7 @@ Yaml={name}.yaml
         b.wait_val("#commit-dialog-command", 'sh -c "ls -a"')
         # Test docker format
         b.set_checked("#commit-dialog-docker", val=True)
-        b.click("button:contains(Commit)")
+        b.click("button:contains('Commit')")
         self.confirm_modal("Force commit")
 
         # don't use waitNumImages() here, as we want to include anonymous images
@@ -1171,7 +1171,7 @@ Yaml={name}.yaml
             b.wait_visible(".pf-v6-c-modal-box")
             b.set_input_text("#commit-dialog-image-name", "newname")
             b.set_checked("#commit-dialog-pause", val=True)
-            b.click("button:contains(Commit)")
+            b.click("button:contains('Commit')")
             self.confirm_modal("Force commit")
             waitImageCount(self.user_images_count + 4)
 
@@ -1203,9 +1203,9 @@ Yaml={name}.yaml
             def openDialog(self) -> Self:
                 # Open get new image modal
                 b.click("#image-actions-dropdown")
-                b.click("button:contains(Download new image)")
+                b.click("button:contains('Download new image')")
                 b.wait_text('div.pf-v6-c-modal-box header', 'Search for an image')
-                b.wait_visible("div.pf-v6-c-modal-box footer button:contains(Download):disabled")
+                b.wait_visible("div.pf-v6-c-modal-box footer button:contains('Download'):disabled")
 
                 return self
 
@@ -1222,8 +1222,8 @@ Yaml={name}.yaml
 
             def selectImageAndDownload(self) -> Self:
                 # Select and download the self.imageName image
-                b.click(f".pf-v6-c-data-list .image-name:contains({self.imageName})")
-                b.click("div.pf-v6-c-modal-box footer button:contains(Download)")
+                b.click(f".pf-v6-c-data-list .image-name:contains('{self.imageName}')")
+                b.click("div.pf-v6-c-modal-box footer button:contains('Download')")
                 b.wait_not_present("div.pf-v6-c-modal-box")
 
                 return self
@@ -1235,7 +1235,7 @@ Yaml={name}.yaml
                 return self
 
             def expectSearchErrorForNotExistingImage(self) -> Self:
-                b.wait_visible(f".pf-v6-c-modal-box__body:contains(No results for {self.imageName})")
+                b.wait_visible(f".pf-v6-c-modal-box__body:contains('No results for {self.imageName}')")
                 b.click(".pf-v6-c-modal-box button.btn-cancel")
                 b.wait_not_present(".pf-v6-c-modal-box__body")
 
@@ -1304,7 +1304,7 @@ Yaml={name}.yaml
 
         # Test registries
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Download new image)")
+        b.click("button:contains('Download new image')")
         b.wait_text('div.pf-v6-c-modal-box header', 'Search for an image')
         b.wait_visible("#image-search-modal-owner-admin")
         # HACK: Sometimes the value is not shown fully. FIXME
@@ -1442,7 +1442,7 @@ Yaml={name}.yaml
 
         b.wait_in_text("#containers-images", f"{self.user_images_count + 2} images")
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Pull all images)")
+        b.click("button:contains('Pull all images')")
         b.wait_in_text("div.download-in-progress", "Pulling")
         b.wait_not_present("div.download-in-progress")
         b.wait_not_present('.pf-v6-c-alert__title')
@@ -1457,7 +1457,7 @@ Yaml={name}.yaml
         # pulling all images ignores them
         b.wait_in_text("#containers-images", f"{self.user_images_count + 4} images")
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Pull all images)")
+        b.click("button:contains('Pull all images')")
         b.wait_in_text("div.download-in-progress", "Pulling")
         b.wait_not_present("div.download-in-progress")
         b.wait_not_present('.pf-v6-c-alert__title')
@@ -1644,7 +1644,7 @@ Yaml={name}.yaml
             self.performContainerAction("swamped-crate", "Checkpoint", system=True)
             b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', val=True)
             b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', val=True)
-            b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
+            b.click('.pf-v6-c-modal-box button:contains("Checkpoint")')
             b.wait_not_present('.modal_dialog')
 
             def criu_alert() -> bool:
@@ -1683,7 +1683,7 @@ Yaml={name}.yaml
         self.performContainerAction("swamped-crate", "Checkpoint", system=True)
         b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', val=True)
         b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', val=True)
-        b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
+        b.click('.pf-v6-c-modal-box button:contains("Checkpoint")')
 
         with b.wait_timeout(300):
             b.wait_not_present(".pf-v6-c-modal-box")
@@ -1715,7 +1715,7 @@ Yaml={name}.yaml
         b.set_checked('.pf-v6-c-modal-box input#restore-dialog-tcpEstablished', val=True)
         b.set_checked('.pf-v6-c-modal-box input#restore-dialog-ignoreStaticIP', val=True)
         b.set_checked('.pf-v6-c-modal-box input#restore-dialog-ignoreStaticMAC', val=True)
-        b.click('.pf-v6-c-modal-box button:contains(Restore)')
+        b.click('.pf-v6-c-modal-box button:contains("Restore")')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
         # A new MAC address should have been generated
@@ -1731,7 +1731,7 @@ Yaml={name}.yaml
         self.waitContainerRow("swamped-crate")
         self.performContainerAction("swamped-crate", "Checkpoint", system=True)
         b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-leaveRunning', val=True)
-        b.click('.pf-v6-c-modal-box button:contains(Checkpoint)')
+        b.click('.pf-v6-c-modal-box button:contains("Checkpoint")')
         b.wait_not_present('.modal_dialog')
 
         # Stop the container
@@ -1740,7 +1740,7 @@ Yaml={name}.yaml
 
         # Restore the container
         self.performContainerAction("swamped-crate", "Restore", system=True)
-        b.click('.pf-v6-c-modal-box button:contains(Restore)')
+        b.click('.pf-v6-c-modal-box button:contains("Restore")')
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
     def testFailingPodmanService(self) -> None:
@@ -2430,9 +2430,9 @@ Yaml={name}.yaml
     def check_content(self, kind: str, present: list[str], not_present: list[str]) -> None:
         b = self.browser
         for item in present:
-            b.wait_visible(f'#containers-{kind} tbody tr:first-child:contains({item})')
+            b.wait_visible(f'#containers-{kind} tbody tr:first-child:contains("{item}")')
         for item in not_present:
-            b.wait_not_present(f'#containers-{kind} tbody tr:first-child:contains({item})')
+            b.wait_not_present(f'#containers-{kind} tbody tr:first-child:contains("{item}")')
 
     def check_containers(self, present: list[str], not_present: list[str]) -> None:
         self.check_content("containers", present, not_present)
@@ -2473,8 +2473,8 @@ Yaml={name}.yaml
     def confirm_modal(self, text: str) -> None:
         """Wait for the pop up window and click the button with text"""
         b = self.browser
-        b.click(f".pf-v6-c-modal-box footer button:contains({text})")
-        b.wait_not_present(f".pf-v6-c-modal-box footer button:contains({text})")
+        b.click(f".pf-v6-c-modal-box footer button:contains('{text}')")
+        b.wait_not_present(f".pf-v6-c-modal-box footer button:contains('{text}')")
 
     def testPruneUnusedImagesSystem(self) -> None:
         self._testPruneUnusedImagesSystem(auth=True)
@@ -2515,7 +2515,7 @@ Yaml={name}.yaml
             self.assertTrue(b.get_checked("#deleteImages-system"))
             self.assertTrue(b.get_checked("#deleteImages-admin"))
             b.assert_pixels('.pf-v6-c-modal-box', "prune-modal", skip_layouts=["rtl", "mobile"])
-        b.click(".pf-v6-c-modal-box button:contains(Prune)")
+        b.click(".pf-v6-c-modal-box button:contains('Prune')")
 
         # When being superuser, admin images are also removed
         if auth:
@@ -2530,7 +2530,7 @@ Yaml={name}.yaml
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
-        b.wait_visible(".pf-m-disabled.pf-v6-c-menu__list-item:contains(Prune unused images)")
+        b.wait_visible(".pf-m-disabled.pf-v6-c-menu__list-item:contains('Prune unused images')")
 
     def testPruneUnusedImagesSystemSelections(self) -> None:
         """ Test the prune unused images selection options"""
@@ -2538,12 +2538,12 @@ Yaml={name}.yaml
         self.login(system=True)
 
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Prune unused images)")
+        b.click("button:contains('Prune unused images')")
 
         # Deselect both
         b.click("#deleteImages-system")
         b.click("#deleteImages-admin")
-        b.wait_visible(".pf-v6-c-modal-box button:contains(Prune):disabled")
+        b.wait_visible(".pf-v6-c-modal-box button:contains('Prune'):disabled")
 
         # Admin / user images are selected
         expected_images = self.user_images_count + self.system_images_count
@@ -2552,7 +2552,7 @@ Yaml={name}.yaml
         b.wait_count(".pf-v6-c-modal-box__body .pf-v6-c-list li", expected_images)
         # Select user images
         b.click("#deleteImages-admin")
-        b.click(".pf-v6-c-modal-box button:contains(Prune)")
+        b.click(".pf-v6-c-modal-box button:contains('Prune')")
 
         # System images are left over
         self.waitNumImages(self.system_images_count)
@@ -2562,15 +2562,15 @@ Yaml={name}.yaml
 
         # Pruning again, should delete all system images
         b.click("#image-actions-dropdown")
-        b.click("button:contains(Prune unused images)")
+        b.click("button:contains('Prune unused images')")
         b.wait_count(".pf-v6-c-modal-box__body .pf-v6-c-list li",
                        self.system_images_count - 1 if self.machine.ws_container else self.system_images_count)
-        b.click(".pf-v6-c-modal-box button:contains(Prune)")
+        b.click(".pf-v6-c-modal-box button:contains('Prune')")
         self.waitNumImages(1 if self.machine.ws_container else 0)
 
         # Prune button should now be disabled
         b.click("#image-actions-dropdown")
-        b.wait_visible(".pf-v6-c-menu__list-item.pf-m-disabled:contains(Prune unused images)")
+        b.wait_visible(".pf-v6-c-menu__list-item.pf-m-disabled:contains('Prune unused images')")
 
     def testPruneUnusedContainersSystem(self) -> None:
         self._testPruneUnusedContainersSystem(auth=True)
@@ -2602,7 +2602,7 @@ Yaml={name}.yaml
             b.wait(lambda: self.getContainerAttr("adminrunning", "State", "", system=False) == "Running")
 
         b.click("#containers-actions-dropdown")
-        b.click("button:contains(Prune unused containers)")
+        b.click("button:contains('Prune unused containers')")
 
         if auth:
             b.wait_in_text(".pf-v6-c-modal-box__body tbody:nth-of-type(1) td[data-label=Name]", "adminnotrunning")
@@ -2610,7 +2610,7 @@ Yaml={name}.yaml
         else:
             b.wait_in_text(".pf-v6-c-modal-box__body tbody td[data-label=Name]", "notrunning")
 
-        b.click(".pf-v6-c-modal-box button:contains(Prune)")
+        b.click(".pf-v6-c-modal-box button:contains('Prune')")
         b.wait_not_present(".pf-v6-c-modal-box__body")
 
         if auth:
@@ -3305,7 +3305,7 @@ Yaml={name}.yaml
         b.set_input_text("#create-image-image input", container_name)
         b.wait_text(".pf-v6-c-menu__item:not([disabled])", container_name)
         # Select image and create a container
-        b.click(f".pf-v6-c-menu__item:contains({container_name})")
+        b.click(f".pf-v6-c-menu__item:contains('{container_name}')")
         b.click("#create-image-create-btn")
 
         # Wait for download to finish
@@ -3334,7 +3334,7 @@ Yaml={name}.yaml
         b.click('button.pf-v6-c-toggle-group__button:contains("All")')
         b.wait_text(".pf-v6-c-menu__item:not([disabled])", container_name + ":nosearch-tag")
         b.wait_js_cond("document.querySelectorAll('.pf-v6-c-menu__item:not([disabled])').length === 1")
-        b.click(f"button.pf-v6-c-menu__item:contains({container_name + ":nosearch-tag"})")
+        b.click(f"button.pf-v6-c-menu__item:contains('{container_name + ":nosearch-tag"}')")
         b.click("#create-image-create-btn")
 
         # Wait for download to finish
@@ -3450,7 +3450,7 @@ Yaml={name}.yaml
             b.wait_visible("#app")
 
             b.click(".pf-m-expanded button:contains('Logs')")
-            b.click(f"#containers-containers tbody button:contains(View {service_name}.service logs)")
+            b.click(f"#containers-containers tbody button:contains('View {service_name}.service logs')")
             b.switch_to_top()
             b.wait_js_cond('window.location.pathname === "/system/logs"')
             b.wait_js_cond(f'window.location.hash === "#/?priority=info&_SYSTEMD_UNIT={service_name}.service"')
@@ -3649,7 +3649,7 @@ Yaml={name}.yaml
         b.wait_not_present("div.pf-v6-c-modal-box")
         self.waitContainerRow("new-guitar")
         performContainerAction("new-guitar", uid, "Delete")
-        b.click(".pf-v6-c-modal-box button:contains(Delete)")
+        b.click(".pf-v6-c-modal-box button:contains('Delete')")
         self.waitContainerRow("new-guitar", present=False)
 
         # switch user via URL
