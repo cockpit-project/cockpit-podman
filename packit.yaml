@@ -50,8 +50,8 @@ jobs:
       # HACK: tarball for releases (copr_build, koji, etc.), copying spec's Source0; this
       # really should be the default, see https://github.com/packit/packit-service/issues/1505
       fix-spec-file:
-        - sh -exc "curl -L --fail -O https://github.com/cockpit-project/cockpit-podman/releases/download/${PACKIT_PROJECT_VERSION}/${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
-        - sh -exc "curl -L --fail -O https://github.com/cockpit-project/cockpit-files/releases/download/${PACKIT_PROJECT_VERSION}/cockpit-files-node-${PACKIT_PROJECT_VERSION}.tar.xz"
+        - sh -exc "curl -L --fail -O https://github.com/cockpit-project/${PACKIT_UPSTREAM_PACKAGE_NAME}/releases/download/${PACKIT_PROJECT_VERSION}/${PACKIT_PROJECT_NAME_VERSION}.tar.xz"
+        - sh -exc "curl -L --fail -O https://github.com/cockpit-project/${PACKIT_UPSTREAM_PACKAGE_NAME}/releases/download/${PACKIT_PROJECT_VERSION}/${PACKIT_UPSTREAM_PACKAGE_NAME}-node-${PACKIT_PROJECT_VERSION}.tar.xz"
 
   - job: copr_build
     trigger: commit
