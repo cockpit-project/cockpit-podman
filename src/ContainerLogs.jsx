@@ -35,6 +35,8 @@ import "./ContainerTerminal.css";
 
 const _ = cockpit.gettext;
 
+const LOGS_MAX_SIZE = 1000;
+
 class ContainerLogs extends React.Component {
     constructor(props) {
         super(props);
@@ -51,7 +53,8 @@ class ContainerLogs extends React.Component {
             disableStdin: true,
             fontSize: 12,
             fontFamily: 'Menlo, Monaco, Consolas, monospace',
-            screenReaderMode: true
+            screenReaderMode: true,
+            scrollback: LOGS_MAX_SIZE,
         });
         this.view._core.cursorHidden = true;
         this.view.write(_("Loading logs..."));
@@ -115,7 +118,7 @@ class ContainerLogs extends React.Component {
 
         const connection = rest.connect(this.props.uid);
         connection.monitor(client.VERSION + "libpod/containers/" + this.props.containerId +
-                           "/logs?follow=true&stdout=true&stderr=true",
+                           `/logs?follow=true&stdout=true&stderr=true&tail=${LOGS_MAX_SIZE}`,
                            this.onStreamMessage, true)
                 .then(this.onStreamClose)
                 .catch(e => {
