@@ -35,6 +35,7 @@ import "./ContainerTerminal.css";
 
 const _ = cockpit.gettext;
 
+// Default xterm.js scrollback size https://xtermjs.org/docs/api/terminal/interfaces/iterminaloptions/#optional-scrollback
 const LOGS_MAX_SIZE = 1000;
 
 class ContainerLogs extends React.Component {
