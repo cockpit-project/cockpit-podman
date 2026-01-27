@@ -44,6 +44,7 @@ BuildRequires: libappstream-glib-devel
 %endif
 %if %{defined rebuild_bundle}
 BuildRequires: nodejs
+BuildRequires: %{_bindir}/node
 BuildRequires: nodejs-esbuild
 %endif
 
