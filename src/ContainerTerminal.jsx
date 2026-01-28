@@ -19,7 +19,7 @@
 
 import React from 'react';
 
-import { CanvasAddon } from '@xterm/addon-canvas';
+import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from "@xterm/xterm";
 import PropTypes from 'prop-types';
 
@@ -176,7 +176,7 @@ class ContainerTerminal extends React.Component {
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
             this.term.open(this.terminalRef.current);
-            this.term.loadAddon(new CanvasAddon());
+            this.term.loadAddon(new WebglAddon());
             this.setState({ opened: true });
 
             this.term.onData((data) => {

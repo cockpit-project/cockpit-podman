@@ -18,6 +18,7 @@ import { KebabDropdown } from "cockpit-components-dropdown.jsx";
 import { useDialogs, DialogsContext } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
+import { EmptyStatePanel } from "cockpit-components-empty-state.tsx";
 import { ListingPanel } from 'cockpit-components-listing-panel';
 import { ListingTable } from "cockpit-components-table";
 import * as machine_info from 'machine-info';
@@ -338,6 +339,11 @@ class Containers extends React.Component {
 
         this.cardRef = React.createRef();
 
+        // Check if WebGL2 is available
+        // Only checking if WebGL2RenderingContext is defined is not sufficient, in Firefox tests it is defined
+        // as WebGL is enabled but it is not available in headless mode.
+        this.webglAvailable = !!document.createElement("canvas").getContext("webgl2");
+
         onDownloadContainer = onDownloadContainer.bind(this);
         onDownloadContainerFinished = onDownloadContainerFinished.bind(this);
 
@@ -471,22 +477,36 @@ class Containers extends React.Component {
                     renderer: ContainerIntegration,
                     data: { container, localImages }
                 });
-                tabs.push({
-                    name: _("Logs"),
-                    renderer: ContainerLogs,
-                    data: {
-                        containerId: container.Id,
-                        containerStatus: container.State.Status,
-                        width: this.state.width,
-                        uid: container.uid,
-                        systemd_unit: container.Config?.Labels?.PODMAN_SYSTEMD_UNIT,
-                    }
-                });
-                tabs.push({
-                    name: _("Console"),
-                    renderer: ContainerTerminal,
-                    data: { con: user.con, containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid, tty }
-                });
+                if (this.webglAvailable) {
+                    tabs.push({
+                        name: _("Logs"),
+                        renderer: ContainerLogs,
+                        data: {
+                            containerId: container.Id,
+                            containerStatus: container.State.Status,
+                            width: this.state.width,
+                            uid: container.uid,
+                            systemd_unit: container.Config?.Labels?.PODMAN_SYSTEMD_UNIT,
+                        }
+                    });
+                    tabs.push({
+                        name: _("Console"),
+                        renderer: ContainerTerminal,
+                        data: { con: user.con, containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid, tty }
+                    });
+                } else {
+                    const emptyStateData = { title: _("Terminal not available"), paragraph: _("This browser does not support WebGL2.") };
+                    tabs.push({
+                        name: _("Logs"),
+                        renderer: EmptyStatePanel,
+                        data: emptyStateData,
+                    });
+                    tabs.push({
+                        name: _("Console"),
+                        renderer: EmptyStatePanel,
+                        data: emptyStateData,
+                    });
+                }
             }
         }
 

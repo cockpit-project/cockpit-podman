@@ -1597,34 +1597,39 @@ Yaml={name}.yaml
 
         # Check that console reconnects when container starts
         b.click(".pf-m-expanded button:contains('Console')")
-        b.wait_text(".pf-m-expanded .pf-v6-c-empty-state", "Container is not running")
         self.performContainerAction("swamped-crate", "Start", system=auth)
-        b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
-        b.focus(".pf-m-expanded .xterm-helper-textarea")
-        b.input_text("clear")
-        b.key("Enter")
-        b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree", "clear")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.input_text('echo hello')
-        b.key("Enter")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
-        self.performContainerAction("swamped-crate", "Stop", system=auth)
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
-        sha = self.execute("podman inspect --format '{{.Id}}' swamped-crate", system=auth).strip()
-        self.waitContainer(sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX, state=NOT_RUNNING)
-        self.performContainerAction("swamped-crate", "Start", system=auth)
-        self.waitContainer(sha, auth=auth, state='Running')
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
+        # WebGL2 is not supported in firefox headless mode
+        if b.browser != "firefox":
+            b.wait_text(".pf-m-expanded .pf-v6-c-empty-state", "Container is not running")
+            b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
+            b.focus(".pf-m-expanded .xterm-helper-textarea")
+            b.input_text("clear")
+            b.key("Enter")
+            b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree", "clear")
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+            b.input_text('echo hello')
+            b.key("Enter")
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
+            self.performContainerAction("swamped-crate", "Stop", system=auth)
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ #  disconnected ")
+            sha = self.execute("podman inspect --format '{{.Id}}' swamped-crate", system=auth).strip()
+            self.waitContainer(sha, auth=auth, name='swamped-crate', image=IMG_BUSYBOX, state=NOT_RUNNING)
+            self.performContainerAction("swamped-crate", "Start", system=auth)
+            self.waitContainer(sha, auth=auth, state='Running')
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+            b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
 
-        # Check that logs reconnect when container starts
-        b.click(".pf-m-expanded button:contains('Logs')")
-        self.performContainerAction("swamped-crate", "Stop", system=auth)
-        self.waitContainer(sha, auth=auth, state=NOT_RUNNING)
-        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected")
-        self.performContainerAction("swamped-crate", "Start", system=auth)
-        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected123")
+            # Check that logs reconnect when container starts
+            b.click(".pf-m-expanded button:contains('Logs')")
+            self.performContainerAction("swamped-crate", "Stop", system=auth)
+            self.waitContainer(sha, auth=auth, state=NOT_RUNNING)
+            b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected")
+            self.performContainerAction("swamped-crate", "Start", system=auth)
+            b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "Streaming disconnected123")
+        else:
+            # check that empty state is shown instead of terminal
+            b.wait_in_text(".pf-m-expanded .pf-v6-c-empty-state", "Terminal not available")
 
     def testCheckpointRestore(self) -> None:
         m = self.machine
@@ -2263,17 +2268,19 @@ Yaml={name}.yaml
 
         b.wait_not_present("button:contains('Health check logs')")
         b.click(".pf-m-expanded button:contains('Logs')")
-        b.wait_text(".pf-m-expanded .container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
 
-        # firefox optimizes these out when not visible
-        b.eval_js("""
-            document.querySelector('.pf-m-expanded .container-logs .xterm-accessibility-tree').scrollIntoView()
-        """)
-        b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "6")
+        # WebGL2 is not supported in firefox headless mode
+        if b.browser != "firefox":
+            b.wait_text(".pf-m-expanded .container-logs .xterm-accessibility-tree > div:nth-child(1)", "1")
+            b.eval_js("""
+                document.querySelector('.pf-m-expanded .container-logs .xterm-accessibility-tree').scrollIntoView()
+            """)
+            b.wait_in_text(".pf-m-expanded .container-logs .xterm-accessibility-tree", "6")
 
-        b.click(".pf-m-expanded button:contains('Console')")
-        b.wait(lambda:
-               get_int(b.text(".pf-m-expanded .container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
+            b.click(".pf-m-expanded button:contains('Console')")
+            b.wait(lambda:
+                   get_int(
+                    b.text(".pf-m-expanded .container-terminal .xterm-accessibility-tree > div:nth-child(3)")) > 7)
 
         # Create another instance without port publishing
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
@@ -2310,17 +2317,19 @@ Yaml={name}.yaml
         b.set_val("#containers-containers-filter", "all")
 
         b.click(".pf-m-expanded button:contains('Console')")
-        b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
-        b.focus(".pf-m-expanded .xterm-helper-textarea")
-        b.input_text("clear")
-        b.key("Enter")
-        b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree", "clear")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
-        b.input_text("echo hello")
-        b.key("Enter")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
-        b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
+        # WebGL2 is not supported in firefox headless mode
+        if b.browser != "firefox":
+            b.wait_in_text(".pf-m-expanded .xterm-accessibility-tree", "/ # ")
+            b.focus(".pf-m-expanded .xterm-helper-textarea")
+            b.input_text("clear")
+            b.key("Enter")
+            b.wait_not_in_text(".pf-m-expanded .xterm-accessibility-tree", "clear")
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # ")
+            b.input_text("echo hello")
+            b.key("Enter")
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(2)", "hello")
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(3)", "/ # ")
+            b.wait_text(".pf-m-expanded .xterm-accessibility-tree > div:nth-child(1)", "/ # echo hello")
 
         b.go("#/?name=tty")
         self.check_containers(["busybox-with-tty"], ["busybox-without-publish"])
@@ -3231,6 +3240,7 @@ Yaml={name}.yaml
             b.set_val("#containers-containers-filter", "all")
             self.waitPodContainer(pod_name, [])
 
+    @testlib.skipBrowser("WebGL2 is not supported in firefox headless mode", "firefox")
     @testlib.skipImage("passthrough log driver not supported", "ubuntu-2204")
     def testLogErrors(self) -> None:
         b = self.browser
