@@ -321,6 +321,25 @@ const ContainerOverActions = ({ handlePruneUnusedContainers, unusedContainers })
     return <KebabDropdown toggleButtonId="containers-actions-dropdown" position="right" dropdownItems={actions} />;
 };
 
+const ContainerTerminalWrapper = ({ webglAvailable, child, service_button = false, ...props }) => {
+    const ChildComponent = child;
+    const { systemd_unit, uid } = props;
+
+    return (
+        <>
+            {webglAvailable
+                ? <ChildComponent {...props} />
+                : <EmptyStatePanel title={_("Terminal not available")} paragraph={_("This browser does not support WebGL2.")} />}
+
+            {service_button && uid === 0 && systemd_unit &&
+                <Button variant="link" isInline className="pf-v6-u-mt-sm" onClick={
+                    () => cockpit.jump(`/system/logs/#/?priority=info&_SYSTEMD_UNIT=${systemd_unit}`)}>
+                    {cockpit.format(_("View $0 logs"), systemd_unit)}
+                </Button>}
+        </>
+    );
+};
+
 class Containers extends React.Component {
     static contextType = DialogsContext;
 
@@ -477,36 +496,34 @@ class Containers extends React.Component {
                     renderer: ContainerIntegration,
                     data: { container, localImages }
                 });
-                if (this.webglAvailable) {
-                    tabs.push({
-                        name: _("Logs"),
-                        renderer: ContainerLogs,
-                        data: {
-                            containerId: container.Id,
-                            containerStatus: container.State.Status,
-                            width: this.state.width,
-                            uid: container.uid,
-                            systemd_unit: container.Config?.Labels?.PODMAN_SYSTEMD_UNIT,
-                        }
-                    });
-                    tabs.push({
-                        name: _("Console"),
-                        renderer: ContainerTerminal,
-                        data: { con: user.con, containerId: container.Id, containerStatus: container.State.Status, width: this.state.width, uid: container.uid, tty }
-                    });
-                } else {
-                    const emptyStateData = { title: _("Terminal not available"), paragraph: _("This browser does not support WebGL2.") };
-                    tabs.push({
-                        name: _("Logs"),
-                        renderer: EmptyStatePanel,
-                        data: emptyStateData,
-                    });
-                    tabs.push({
-                        name: _("Console"),
-                        renderer: EmptyStatePanel,
-                        data: emptyStateData,
-                    });
-                }
+                tabs.push({
+                    name: _("Logs"),
+                    renderer: ContainerTerminalWrapper,
+                    data: {
+                        containerId: container.Id,
+                        containerStatus: container.State.Status,
+                        width: this.state.width,
+                        uid: container.uid,
+                        systemd_unit: container.Config?.Labels?.PODMAN_SYSTEMD_UNIT,
+                        webglAvailable: this.webglAvailable,
+                        child: ContainerLogs,
+                        service_button: true,
+                    }
+                });
+                tabs.push({
+                    name: _("Console"),
+                    renderer: ContainerTerminalWrapper,
+                    data: {
+                        con: user.con,
+                        containerId: container.Id,
+                        containerStatus: container.State.Status,
+                        width: this.state.width,
+                        uid: container.uid,
+                        tty,
+                        webglAvailable: this.webglAvailable,
+                        child: ContainerTerminal,
+                    }
+                });
             }
         }
 
