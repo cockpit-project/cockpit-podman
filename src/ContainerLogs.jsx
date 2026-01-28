@@ -21,7 +21,7 @@ import React from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
-import { CanvasAddon } from '@xterm/addon-canvas';
+import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from "@xterm/xterm";
 import PropTypes from 'prop-types';
 
@@ -112,7 +112,7 @@ class ContainerLogs extends React.Component {
         // Show the terminal. Once it was shown, do not show it again but reuse the previous one
         if (!this.state.opened) {
             this.view.open(this.logRef.current);
-            this.view.loadAddon(new CanvasAddon());
+            this.view.loadAddon(new WebglAddon());
             this.setState({ opened: true });
         }
         this.resize(this.props.width);
