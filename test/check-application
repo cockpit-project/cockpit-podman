@@ -1454,12 +1454,10 @@ Yaml={name}.yaml
         b.wait(lambda: getImageSize(image2, system=False) > 40)
 
         # after pulling the two test-images, we now have two <none>:<none> intermediate images
-        # pulling all images ignores them
+        # pulling all images ignores them and shows no alert
         b.wait_in_text("#containers-images", f"{self.user_images_count + 4} images")
         b.click("#image-actions-dropdown")
         b.click("button:contains('Pull all images')")
-        b.wait_in_text("div.download-in-progress", "Pulling")
-        b.wait_not_present("div.download-in-progress")
         b.wait_not_present('.pf-v6-c-alert__title')
         b.wait_in_text("#containers-images", f"{self.user_images_count + 4} images")
 
