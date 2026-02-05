@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
 import React, { useContext } from "react";
 
 import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
