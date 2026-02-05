@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
 import React, { useState, useEffect } from 'react';
 
 import cockpit from 'cockpit';

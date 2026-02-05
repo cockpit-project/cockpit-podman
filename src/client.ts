@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
 import type { JsonObject, JsonValue } from "cockpit";
 
 import type { Connection, MonitorCallback } from "./rest.ts";
