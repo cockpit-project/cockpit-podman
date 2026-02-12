@@ -137,16 +137,16 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=m.identity_file)
 
         # Enable user service as well; copy our images (except cockpit/ws) from system
-        self.admin_s.execute("""
+        self.execute("""
             systemctl --user stop podman.service
             for img in $(ls /var/lib/test-images/*.tar | grep -v cockpitws); do podman load < "$img"; done
-            """)
-        self.addCleanup(self.admin_s.execute, """
+            """, system=False)
+        self.addCleanup(self.execute, """
             systemctl --user stop podman.service podman.socket
             podman system reset --force
-            """)
-        self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
-        self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
+            """, system=False)
+        self.addCleanup(self.execute, "podman rm --force --time 0 --all", system=False)
+        self.addCleanup(self.execute, "podman pod rm --force --time 0 --all", system=False)
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
