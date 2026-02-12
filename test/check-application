@@ -3130,6 +3130,26 @@ Yaml={name}.yaml
             service_container = m.execute("podman ps --all --filter name=.*-service --format {{.Names}}").strip()
             b.wait_not_present(f"#containers-containers tbody tr[data-row-id=\"{service_container}\"]")
 
+        # opencontainer annotations https://specs.opencontainers.org/image-spec/annotations/
+        label_image = "localhost/label-image:latest"
+        tmpdir = self.execute("mktemp -d", system=True).strip()
+        self.execute(f"echo 'FROM {IMG_REGISTRY}\nRUN ls' > {tmpdir}/Containerfile", system=True)
+        doc_label = "--label org.opencontainers.image.documentation='https://cockpit-project.org'"
+        desc_label = "--label org.opencontainers.image.description='The Cockpit container running cockpit-ws'"
+        version_label = "--label org.opencontainers.image.version='355'"
+        m.execute(f"""podman build -t {label_image} {doc_label} {desc_label} {version_label} {tmpdir}""")
+        checkImage(b, label_image, "system")
+        img_id = m.execute(f"podman inspect --format '{{{{ .Id }}}}' {label_image}").strip()
+        b.click(f"#containers-images tr[data-row-id='0-{img_id}'] td.pf-v6-c-table__toggle button")
+        b.wait_text("#containers-images tbody.pf-m-expanded tr .image-details [data-label='version']", "355")
+        b.wait_text("#containers-images tbody.pf-m-expanded tr .image-details [data-label='description']",
+                    "The Cockpit container running cockpit-ws")
+        self.assertEqual(b.attr(
+                            "#containers-images tbody.pf-m-expanded tr .image-details [data-label='documentation'] a",
+                            "href"
+                         ),
+                         "https://cockpit-project.org")
+
     def testCreatePodSystem(self) -> None:
         self._createPod(auth=True)
 
