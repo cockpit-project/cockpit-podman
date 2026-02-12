@@ -46,8 +46,8 @@ updates:
       - dependency-name: "*react*"
         update-types: ["version-update:semver-major"]
 
-      # @xterm/addon-canvas is deprecated and requires xterm/xterm 5.x.x
-      - dependency-name: "@xterm/*"
+      # The plugins we use didn't work with anything after 8 at some point
+      - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
