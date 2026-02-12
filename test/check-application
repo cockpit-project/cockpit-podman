@@ -3410,6 +3410,9 @@ Yaml={name}.yaml
         # Can stop/start/restart a container
         self.performContainerAction("quak", "Stop", system=system)
         b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Exited")
+        # Shows Command when exited
+        b.wait_in_text(f"tr[data-row-id='{'0' if system else 'user'}-quak.service'] small:last-child",
+                       "sleep infinity")
         self.performContainerAction("quak", "Start", system=system)
         b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Running")
         containerId = self.execute("podman inspect --format '{{.Id}}' quak", system=system).strip()
