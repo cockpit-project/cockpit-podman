@@ -1334,8 +1334,8 @@ Yaml={name}.yaml
             .expectDownloadSuccess()
         # test recognition/deletion of multiple image tags
         second_tag = "localhost/copybox:latest"
-        self.execute(f"podman tag localhost:5000/my-busybox {second_tag}", system=False)
         b.click(f"#containers-images tr[data-row-id='user-{dialog1.imageSha}'] td.pf-v6-c-table__toggle button")
+        self.execute(f"podman tag localhost:5000/my-busybox {second_tag}", system=False)
         b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", second_tag)
         dialog1.deleteImage(force=True, another=second_tag)
 
