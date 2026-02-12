@@ -251,6 +251,7 @@ class TestApplication(testlib.MachineCase):
                     unit = f'user-{uuid.uuid4()}'
                     m.execute(f"{sd_run_admin} --unit={unit} /bin/sh -ec '{cmd}'")
                     m.execute(f"until {sd_run_admin} is-active {unit}; do sleep 1; done")
+                    self.addCleanup(m.execute, f"{sd_run_admin} stop {unit}")
                     return ""
                 else:
                     return m.execute(f"{sd_run_admin} --quiet --collect --pipe --wait /bin/sh -ec '{cmd}'",
