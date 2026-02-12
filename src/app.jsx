@@ -554,6 +554,10 @@ class Application extends React.Component {
                     }
                 };
 
+                if (quadlet.exec) {
+                    container.Config.Cmd = quadlet.exec;
+                }
+
                 const found_pod = podNameServiceMap[quadlet.pod];
                 if (found_pod) {
                     container.Pod = found_pod;

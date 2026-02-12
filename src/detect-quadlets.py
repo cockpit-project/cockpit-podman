@@ -15,10 +15,11 @@ Detect quadlet containers/pods on the system
 
 import json
 import os
+import shlex
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, Optional
+from typing import DefaultDict, Dict, List, Optional, Union
 
 
 def get_name(service_name: str, name: Optional[str]) -> str:
@@ -29,7 +30,7 @@ def get_name(service_name: str, name: Optional[str]) -> str:
 
 
 def main(generator_dir: Path) -> None:
-    containers: DefaultDict[str, Dict[str, Optional[str]]] = defaultdict(dict)
+    containers: DefaultDict[str, Dict[str, Union[Optional[str], List[str]]]] = defaultdict(dict)
     pods: DefaultDict[str, Dict[str, Optional[str]]] = defaultdict(dict)
 
     try:
@@ -63,7 +64,7 @@ def main(generator_dir: Path) -> None:
                     name = value
                     continue
                 elif key == "Exec":
-                    cmd = value
+                    cmd = shlex.split(value)
                     continue
                 elif key == "Image":
                     image = value
