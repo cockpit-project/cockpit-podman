@@ -280,7 +280,7 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
         );
     }
 
-    return <KebabDropdown position="right" dropdownItems={actions} isDisabled={isDownloading} />;
+    return <KebabDropdown position="right" dropdownItems={actions} isDisabled={isDownloading || actions.length === 0} />;
 };
 
 export let onDownloadContainer = function funcOnDownloadContainer(container) {

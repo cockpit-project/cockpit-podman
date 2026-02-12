@@ -3696,6 +3696,8 @@ ContainerName=guitarq1
             b.wait_text("#containers-containers .container-name", "guitarq1")
             b.wait_text("#containers-containers [data-label='Owner']", "user: guitar")
             b.wait_visible("#containers-containers .ct-badge-service")
+            # Dropdown menu is disabled as no lifecycle actions are supported
+            b.wait_visible("#containers-containers td.pf-v6-c-table__action button:disabled")
 
             # No systemd service link is shown for quadlets from other users as
             # the services page doesn't support anything except the logged in/admin/root user.
