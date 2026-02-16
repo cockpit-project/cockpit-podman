@@ -6,6 +6,7 @@
 import re
 import sys
 import time
+import uuid
 from contextlib import contextmanager
 from typing import Generator, Self, Sequence, TypedDict
 
@@ -125,23 +126,23 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=m.identity_file)
 
         # Enable user service as well; copy our images (except cockpit/ws) from system
-        self.admin_s.execute("""
+        self.execute("""
             systemctl --user stop podman.service
             for img in $(ls /var/lib/test-images/*.tar | grep -v cockpitws); do podman load < "$img"; done
-            """)
-        self.addCleanup(self.admin_s.execute, """
+            """, system=False)
+        self.addCleanup(self.execute, """
             systemctl --user stop podman.service podman.socket
             podman system reset --force
-            """)
+            """, system=False)
         # HACK: system reset has 10s timeout, make that faster with an extra `stop`
         # https://github.com/containers/podman/issues/21874
         # Ubuntu 22.04 has old podman that does not know about rm --time
         if m.image == 'ubuntu-2204':
             self.addCleanup(self.admin_s.execute, "podman rm --force --all", timeout=300)
             self.addCleanup(self.admin_s.execute, "podman pod rm --force --all", timeout=300)
-        else:
-            self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
-            self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
+        else:  # Needed for podman < 5.0.0
+            self.addCleanup(self.execute, "podman rm --force --time 0 --all", system=False)
+            self.addCleanup(self.execute, "podman pod rm --force --time 0 --all", system=False)
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
@@ -236,11 +237,25 @@ class TestApplication(testlib.MachineCase):
     def openCreateContainerDialog(self, image: str, *, system: bool = True) -> None:
         self.browser.click(f'{self.getImageSelector(image, system=system)} .ct-container-create')
 
-    def execute(self, cmd: str, *, system: bool, check: bool = True) -> str:
+    def execute(self, cmd: str, *, system: bool, check: bool = True, background: bool = False) -> str:
+        m = self.machine
         if system:
-            return self.machine.execute(cmd, check=check)
+            return m.execute(cmd, check=check)
         else:
-            return self.admin_s.execute(cmd, check=check)
+            # RHEL 8.10 systemd does not support --machine=admin@ for local sessions
+            if m.image == "rhel-8-10":
+                return self.admin_s.execute(cmd, check=check)
+            else:
+                sd_run_admin = "systemd-run --user --machine=admin@"
+                if background:
+                    unit = f'user-{uuid.uuid4()}'
+                    m.execute(f"{sd_run_admin} --unit={unit} /bin/sh -ec '{cmd}'")
+                    m.execute(f"until {sd_run_admin} is-active {unit}; do sleep 1; done")
+                    self.addCleanup(m.execute, f"{sd_run_admin} stop {unit}")
+                    return ""
+                else:
+                    return m.execute(f"{sd_run_admin} --quiet --collect --pipe --wait /bin/sh -ec '{cmd}'",
+                                     check=check)
 
     def login(self, *, system: bool = True) -> None:
         b = self.browser
@@ -745,14 +760,15 @@ Yaml={name}.yaml
 
         if auth:
             # Run two containers as system (first exits immediately)
-            self.execute(f"podman run -d --name test-sh-system --stop-timeout 0 {IMG_ALPINE} sh", system=auth)
+            self.execute(f"podman run -d --name test-sh-system --stop-timeout 0 {IMG_ALPINE} sh", system=auth,
+                         background=True)
             self.execute(f"podman run -d --name swamped-crate-system --stop-timeout 0 {IMG_BUSYBOX} sleep 1000",
-                         system=auth)
+                         system=auth, background=True)
 
         # Run two containers as admin (first exits immediately)
         self.execute(f"podman run -d --name test-sh-user --stop-timeout 0 {IMG_ALPINE} sh", system=False)
         self.execute(f"podman run -d --name swamped-crate-user --stop-timeout 0 {IMG_BUSYBOX} sleep 1000",
-                     system=False)
+                     system=False, background=True)
 
         # Test owner filtering
         if auth:
@@ -915,7 +931,8 @@ Yaml={name}.yaml
         # Check that we correctly show networking information
         # Rootless don't have this info
         if auth:
-            self.execute(f"podman run -dt --name net_check --stop-timeout 0 {IMG_ALPINE}", system=auth)
+            self.execute(f"podman run -dt --name net_check --stop-timeout 0 {IMG_ALPINE}", system=auth,
+                         background=True)
             self.toggleExpandedContainer("net_check", system=auth)
             b.wait_in_text(".pf-m-expanded .container-details-networking",
                            self.execute("""
@@ -935,7 +952,8 @@ Yaml={name}.yaml
             self.waitContainer(sha, auth=auth, state='Exited')
 
         # delete image alpine that has been used by a container
-        self.execute(f"podman run -d --name test-sh4 --stop-timeout 0 {IMG_ALPINE} sh", system=auth)
+        self.execute(f"podman run -d --name test-sh4 --stop-timeout 0 {IMG_ALPINE} sh", system=auth,
+                     background=True)
         # our pixel test expects both containers to be in state "Exited"
         sha = self.execute("podman inspect --format '{{.Id}}' test-sh4", system=auth).strip()
         self.waitContainer(sha, auth=auth, name="test-sh4", state='Exited')
@@ -951,15 +969,19 @@ Yaml={name}.yaml
         b.wait_not_present(alpine_sel)
 
         b.wait_collected_text("#containers-containers .container-name", expected_ws)
-        self.execute(f"podman run -d --name c --stop-timeout 0 {IMG_REGISTRY} sh", system=auth)
+        self.execute(f"podman run -d --name c --stop-timeout 0 {IMG_REGISTRY} sh", system=auth,
+                     background=True)
         b.wait_collected_text("#containers-containers .container-name", "c" + expected_ws)
-        self.execute(f"podman run -d --name a --stop-timeout 0 {IMG_REGISTRY} sh", system=auth)
+        self.execute(f"podman run -d --name a --stop-timeout 0 {IMG_REGISTRY} sh", system=auth,
+                     background=True)
         b.wait_collected_text("#containers-containers .container-name", "ac" + expected_ws)
 
-        self.execute(f"podman run -d --name b --stop-timeout 0 {IMG_REGISTRY} sh", system=False)
+        self.execute(f"podman run -d --name b --stop-timeout 0 {IMG_REGISTRY} sh", system=False,
+                     background=True)
         if auth:
             b.wait_collected_text("#containers-containers .container-name", "abc" + expected_ws)
-            self.execute(f"podman run -d --name doremi --stop-timeout 0 {IMG_REGISTRY} sh", system=False)
+            self.execute(f"podman run -d --name doremi --stop-timeout 0 {IMG_REGISTRY} sh", system=False,
+                         background=True)
             b.wait_collected_text("#containers-containers .container-name", "abcdoremi" + expected_ws)
             b.wait(lambda: self.getContainerAttr("doremi", "State", "", system=False) in NOT_RUNNING)
         else:
@@ -1068,7 +1090,8 @@ Yaml={name}.yaml
         self.login(system=auth)
 
         # run a container (will exit immediately) and test the display of commit modal
-        self.execute(f"podman run -d --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'", system=auth)
+        self.execute(f"podman run -d --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'", system=auth,
+                     background=True)
 
         self.filter_containers("all")
         self.waitContainerRow("test-sh0")
@@ -1154,7 +1177,8 @@ Yaml={name}.yaml
                       self.execute("podman inspect --format '{{.ManifestType}}' newname:24", system=auth).strip())
 
         # Test commit of running container
-        self.execute(f"podman run -d --name test-sh2 --stop-timeout 0 {IMG_BUSYBOX} sleep 1000", system=auth)
+        self.execute(f"podman run -d --name test-sh2 --stop-timeout 0 {IMG_BUSYBOX} sleep 1000", system=auth,
+                     background=True)
         self.performContainerAction("test-sh2", "Commit", system=auth)
         b.wait_visible(".pf-v6-c-modal-box")
         b.set_input_text("#commit-dialog-image-name", "newname")
@@ -1481,7 +1505,7 @@ Yaml={name}.yaml
         # run a container
         self.execute(f"""
                 podman run -d --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh -c 'echo 123; sleep infinity';
-                podman stop swamped-crate""", system=auth)
+                podman stop swamped-crate""", system=auth, background=True)
         b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=auth))
 
         b.wait_visible("#containers-containers")
@@ -1504,7 +1528,7 @@ Yaml={name}.yaml
         self.execute(
             f"podman run -d --name picket-fence --memory 400m --stop-timeout 0 {IMG_ALPINE} "
             """awk 'BEGIN { y = sprintf("%300000000s",""); system("sleep infinity") }'""",
-            system=auth)
+            system=auth, background=True)
         picket_fence_sha = self.execute("podman inspect --format '{{.Id}}' picket-fence", system=auth).strip()
         self.waitContainer(picket_fence_sha, auth=auth, name="picket-fence", state="Running")
 
@@ -1642,7 +1666,8 @@ Yaml={name}.yaml
             # On cgroupsv1 systems just check that we get expected error messages
 
             # Run a container
-            self.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh", system=True)
+            self.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh", system=True,
+                         background=True)
             b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate", system=True))
 
             # Checkpoint the container
@@ -1668,7 +1693,7 @@ Yaml={name}.yaml
         self.execute(f"""
             podman run -dit --mac-address {mac_address} --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh;
             podman stop swamped-crate
-        """, system=True)
+        """, system=True, background=True)
         b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=True))
 
         # Check that the restore option is not present (i.e. start is a regular button)
@@ -2509,7 +2534,8 @@ Yaml={name}.yaml
             leftover_images += 1
 
         # By default we have 3 unused images, start one.
-        self.execute(f"podman run -d --name used_image --stop-timeout 0 {IMG_ALPINE} sh", system=auth or root)
+        self.execute(f"podman run -d --name used_image --stop-timeout 0 {IMG_ALPINE} sh", system=auth or root,
+                     background=True)
         b.click("#image-actions-dropdown")
         b.click("#prune-unused-images-button")
 
@@ -2659,7 +2685,8 @@ Yaml={name}.yaml
         container_name = 'portused'
 
         # Start a podman container which uses a port
-        self.execute(f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}", system=False)
+        self.execute(f"podman run -d -p 5000:5000 --name registry --stop-timeout 0 {IMG_REGISTRY}", system=False,
+                     background=True)
         showImages(b)
 
         b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
@@ -2997,7 +3024,8 @@ Yaml={name}.yaml
         b = self.browser
         container_name = "pauseresume"
 
-        self.execute(f"podman run -dt --name {container_name} --stop-timeout 0 {IMG_ALPINE}", system=auth)
+        self.execute(f"podman run -dt --name {container_name} --stop-timeout 0 {IMG_ALPINE}", system=auth,
+                     background=True)
         self.login(system=auth)
 
         self.waitContainerRow(container_name)
@@ -3207,7 +3235,8 @@ Yaml={name}.yaml
 
         container_name = 'test-pod-1-system' if auth else 'test-pod-1'
         cmd = f"podman run -d --pod {pod_name} --name {container_name} --stop-timeout 0 {IMG_ALPINE} sleep 500"
-        containerId = self.execute(cmd, system=auth).strip()
+        self.execute(cmd, system=auth, background=True)
+        containerId = self.execute(f"podman inspect --format '{{{{.Id}}}}' {container_name}", system=auth).strip()
         self.waitPodContainer(pod_name,
                               [{"name": container_name, "image": IMG_ALPINE,
                                 "command": "sleep 500", "state": "Running", "id": containerId}],
@@ -3363,8 +3392,10 @@ Yaml={name}.yaml
         # reloading the page reconnects to the podman services; make sure this works reliably
         b = self.browser
 
-        self.execute(f"podman run -d --name sys1 --stop-timeout 0 {IMG_BUSYBOX} sleep infinity", system=True)
-        self.execute(f"podman run -d --name user1 --stop-timeout 0 {IMG_ALPINE} sleep infinity", system=False)
+        self.execute(f"podman run -d --name sys1 --stop-timeout 0 {IMG_BUSYBOX} sleep infinity", system=True,
+                     background=True)
+        self.execute(f"podman run -d --name user1 --stop-timeout 0 {IMG_ALPINE} sleep infinity", system=False,
+                     background=True)
         self.login()
 
         for _ in range(10):
@@ -3585,8 +3616,10 @@ Yaml={name}.yaml
             """)
 
         # add a system and admin user container into the mix
-        self.execute(f"podman run -d --name sysc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity", system=True)
-        self.execute(f"podman run -d --name adminc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity", system=False)
+        self.execute(f"podman run -d --name sysc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity", system=True,
+                     background=True)
+        self.execute(f"podman run -d --name adminc1 --stop-timeout=0 {IMG_BUSYBOX} sleep infinity", system=False,
+                     background=True)
 
         self.login_and_go("/podman")
         b.wait_visible("#app")
