@@ -1068,7 +1068,7 @@ Yaml={name}.yaml
         self.login(system=auth)
 
         # run a container (will exit immediately) and test the display of commit modal
-        self.execute(f"podman run -d --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'", system=auth)
+        self.execute(f"podman run --name test-sh0 --stop-timeout 0 {IMG_ALPINE} sh -c 'ls -a'", system=auth)
 
         self.filter_containers("all")
         self.waitContainerRow("test-sh0")
