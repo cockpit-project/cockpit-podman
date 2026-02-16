@@ -125,14 +125,14 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=m.identity_file)
 
         # Enable user service as well; copy our images (except cockpit/ws) from system
-        self.admin_s.execute("""
+        self.execute("""
             systemctl --user stop podman.service
             for img in $(ls /var/lib/test-images/*.tar | grep -v cockpitws); do podman load < "$img"; done
-            """)
-        self.addCleanup(self.admin_s.execute, """
+            """, system=False)
+        self.addCleanup(self.execute, """
             systemctl --user stop podman.service podman.socket
             podman system reset --force
-            """)
+            """, system=False)
         # HACK: system reset has 10s timeout, make that faster with an extra `stop`
         # https://github.com/containers/podman/issues/21874
         # Ubuntu 22.04 has old podman that does not know about rm --time
@@ -140,8 +140,8 @@ class TestApplication(testlib.MachineCase):
             self.addCleanup(self.admin_s.execute, "podman rm --force --all", timeout=300)
             self.addCleanup(self.admin_s.execute, "podman pod rm --force --all", timeout=300)
         else:
-            self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
-            self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
+            self.addCleanup(self.execute, "podman rm --force --time 0 --all", system=False)
+            self.addCleanup(self.execute, "podman pod rm --force --time 0 --all", system=False)
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
