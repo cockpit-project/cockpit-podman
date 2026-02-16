@@ -1642,8 +1642,8 @@ Yaml={name}.yaml
             # On cgroupsv1 systems just check that we get expected error messages
 
             # Run a container
-            self.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh", system=True)
-            b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate", system=True))
+            m.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh")
+            b.wait(lambda: m.execute("podman ps --all | grep -e swamped-crate"))
 
             # Checkpoint the container
             self.performContainerAction("swamped-crate", "Checkpoint", system=True)
@@ -1665,10 +1665,10 @@ Yaml={name}.yaml
 
         # Run a container
         mac_address = '92:d0:c6:0a:29:38'
-        self.execute(f"""
+        m.execute(f"""
             podman run -dit --mac-address {mac_address} --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh;
             podman stop swamped-crate
-        """, system=True)
+        """)
         b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=True))
 
         # Check that the restore option is not present (i.e. start is a regular button)
