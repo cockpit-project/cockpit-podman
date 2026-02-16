@@ -242,6 +242,39 @@ class TestApplication(testlib.MachineCase):
         else:
             return self.admin_s.execute(cmd, check=check)
 
+    def run_container(self, name: str, options: list[str], image: str, args: list[str],
+                      *, system: bool = False) -> None:
+        """ Run a container in the background"""
+        m = self.machine
+        sd_run: list[str] = []
+        sd_run_cleanup: list[str] = []
+
+        # machinectl shell with podman keeps a tty open if we don't background
+        if m.image == "rhel-8-10":
+            options.append("-d")
+
+        run_cmd = ["/usr/bin/podman", "run", "--stop-timeout", "0", "--name", name, *options, image, *args]
+
+        # RHEL 8.10 systemd does not support --machine=admin@ for local sessions
+        if m.image == "rhel-8-10":
+            sd_run.extend(["machinectl", "shell", "--quiet"])
+            if system is False:
+                sd_run.extend(["admin@"])
+            else:
+                sd_run.extend(["root@"])
+        else:
+            sd_run.extend(["systemd-run", "--quiet", "--unit", name])
+            sd_run_cleanup = ["systemctl"]
+            if system is False:
+                sd_run.extend(["--user", "--machine=admin@"])
+                sd_run_cleanup.extend(["--user", "--machine=admin@"])
+            sd_run_cleanup.extend(["stop", name])
+
+        sd_run.extend(run_cmd)
+        m.execute(sd_run)
+        if len(sd_run_cleanup) != 0:
+            self.addCleanup(m.execute, sd_run_cleanup)
+
     def login(self, *, system: bool = True) -> None:
         b = self.browser
         self.login_and_go("/podman", superuser=system)
@@ -2997,7 +3030,7 @@ Yaml={name}.yaml
         b = self.browser
         container_name = "pauseresume"
 
-        self.execute(f"podman run -dt --name {container_name} --stop-timeout 0 {IMG_ALPINE}", system=auth)
+        self.run_container(container_name, ["-t"], IMG_ALPINE, [], system=auth)
         self.login(system=auth)
 
         self.waitContainerRow(container_name)
