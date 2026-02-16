@@ -4,6 +4,7 @@
 # "class Browser" and "class MachineCase" for the available API.
 
 import re
+import shlex
 import sys
 import time
 from contextlib import contextmanager
@@ -241,6 +242,44 @@ class TestApplication(testlib.MachineCase):
             return self.machine.execute(cmd, check=check)
         else:
             return self.admin_s.execute(cmd, check=check)
+
+    def run_container(self, name: str, options: list[str], image: str, args: list[str],
+                      *, system: bool = False) -> None:
+        """ Run a container in the background"""
+        m = self.machine
+        sd_run: list[str] = []
+        sd_run_cleanup: list[str] = []
+
+        # machinectl shell with podman keeps a tty open if we don't background
+        if m.image == "rhel-8-10":
+            options.append("-d")
+
+        run_cmd = ["/usr/bin/podman", "run", "--stop-timeout", "0", "--name", name, *options, image, *args]
+
+        # RHEL 8.10 systemd does not support --machine=admin@ for local sessions
+        if m.image == "rhel-8-10":
+            sd_run.extend(["machinectl", "shell", "--quiet"])
+            if system is False:
+                sd_run.extend(["admin@"])
+            else:
+                sd_run.extend(["root@"])
+
+            self.addCleanup(m.execute, ["/usr/bin/podman", "stop", name])
+        else:
+            sd_run.extend(["systemd-run", "--quiet", "--unit", name,
+                           "-p", f"ExecStop=/usr/bin/podman stop {name}"])
+            sd_run_cleanup = ["systemctl"]
+            if system is False:
+                sd_run.extend(["--user", "--machine=admin@"])
+                sd_run_cleanup.extend(["--user", "--machine=admin@"])
+
+            if len(sd_run_cleanup) != 0:
+                is_active_cmd = shlex.join([*sd_run_cleanup, "is-active", name])
+                stop_cmd = shlex.join([*sd_run_cleanup, "stop", name])
+                self.addCleanup(m.execute, f"! {is_active_cmd} || {stop_cmd}")
+
+        sd_run.extend(run_cmd)
+        m.execute(sd_run)
 
     def login(self, *, system: bool = True) -> None:
         b = self.browser
@@ -2999,7 +3038,7 @@ Yaml={name}.yaml
         b = self.browser
         container_name = "pauseresume"
 
-        self.execute(f"podman run -dt --name {container_name} --stop-timeout 0 {IMG_ALPINE}", system=auth)
+        self.run_container(container_name, ["-t"], IMG_ALPINE, [], system=auth)
         self.login(system=auth)
 
         self.waitContainerRow(container_name)
@@ -3018,6 +3057,7 @@ Yaml={name}.yaml
         b.wait_not_present(self.getContainerAction('Pause'))
         self.performContainerAction(container_name, "Resume", system=auth)
         b.wait(lambda: self.getContainerAttr(container_name, "State", "", system=auth) == "Running")
+        testlib.sit()
 
     def testRenameContainerSystem(self) -> None:
         self._testRenameContainer(auth=True)
