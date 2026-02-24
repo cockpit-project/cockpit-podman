@@ -907,20 +907,20 @@ class Application extends React.Component {
         if (this.state.users.find(u => u.con === null && (u.uid === 0 || u.uid === null))) // not initialized yet
             return null;
 
-        let imageContainerList = {};
+        let imageContainerMap = {};
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
                 const container = this.state.containers[c];
                 const imageKey = makeKey(container.uid, container.Image);
-                if (!imageContainerList[imageKey])
-                    imageContainerList[imageKey] = [];
-                imageContainerList[imageKey].push({
+                if (!imageContainerMap[imageKey])
+                    imageContainerMap[imageKey] = [];
+                imageContainerMap[imageKey].push({
                     container,
                     stats: this.state.containersStats[makeKey(container.uid, container.Id)],
                 });
             });
         } else
-            imageContainerList = null;
+            imageContainerMap = null;
 
         const loadingImages = this.state.users.find(u => u.con && !u.imagesLoaded);
         const loadingContainers = this.state.users.find(u => u.con && !u.containersLoaded);
@@ -932,7 +932,7 @@ class Application extends React.Component {
             <Images
                 key="imageList"
                 images={loadingImages ? null : this.state.images}
-                imageContainerList={imageContainerList}
+                imageContainerList={imageContainerMap}
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
