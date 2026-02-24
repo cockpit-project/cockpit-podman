@@ -936,7 +936,7 @@ class Containers extends React.Component {
         };
 
         const card = (
-            <Card id="containers-containers" className="containers-containers">
+            <Card ref={this.cardRef} id="containers-containers" className="containers-containers">
                 <CardHeader actions={{ actions: filterRunning }}>
                     <CardTitle><Content component={ContentVariants.h1}>{_("Containers")}</Content></CardTitle>
                 </CardHeader>
@@ -1036,7 +1036,7 @@ class Containers extends React.Component {
             </Card>
         );
 
-        return <div ref={this.cardRef}>{card}</div>;
+        return card;
     }
 }
 
