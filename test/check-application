@@ -233,6 +233,10 @@ class TestApplication(testlib.MachineCase):
         name = f"{'0' if system else 'user'}-{image}"
         return f'#containers-images tbody tr[data-row-name="{name}"]'
 
+    def getVolumeSelector(self, volume: str, *, system: bool = True) -> str:
+        name = f"{'0' if system else 'user'}-{volume}"
+        return f'#containers-volumes tbody tr[data-row-name="{name}"]'
+
     def openCreateContainerDialog(self, image: str, *, system: bool = True) -> None:
         self.browser.click(f'{self.getImageSelector(image, system=system)} .ct-container-create')
 
@@ -3738,6 +3742,45 @@ ContainerName=guitarq1
 
             b.wait_in_text(f"{sel} + tr", "sleep infinity")
             b.wait_not_in_text(f"{sel} + tr", "systemd service")
+
+    def _testVolumes(self, *, system: bool = False) -> None:
+        b = self.browser
+        volume_name = "nextcloud-data"
+        unused_volume = "unused"
+
+        def showVolumes() -> None:
+            if b.attr("#containers-volumes .pf-v6-c-expandable-section__toggle button", "aria-expanded") == 'false':
+                b.click("#containers-volumes .pf-v6-c-expandable-section__toggle button")
+
+        self.execute(f"podman volume create {volume_name}", system=system)
+        self.execute(f"podman volume create {unused_volume}", system=system)
+        self.execute(f"podman run -d --name nextcloud --stop-timeout 0 --volume {volume_name}:/data {IMG_ALPINE} sh",
+                     system=system)
+
+        self.login()
+        b.wait_in_text("#containers-volumes", "2 volumes total")
+        showVolumes()
+
+        unused_sel = self.getVolumeSelector(unused_volume, system=system)
+        b.wait_in_text(f"{unused_sel} td[data-label='Used by']", 'unused')
+        # TODO: helper for $currentuser
+        b.wait_in_text(f"{unused_sel} td[data-label='Owner']", 'system' if system else 'admin')
+
+        nextcloud_sel = self.getVolumeSelector(volume_name, system=system)
+        b.wait_in_text(f"{nextcloud_sel} td[data-label='Used by']", '1 container')
+
+        # Delete unused volume
+        b.click(f"{unused_sel} td.content-action button")
+        b.click(".pf-v6-c-menu button.btn-delete")
+        b.wait_text(".pf-v6-c-modal-box__title-text", "Delete unused volume?")
+        self.confirm_modal("Delete volume")
+        b.wait_not_present(unused_sel)
+
+    def testVolumesUser(self) -> None:
+        self._testVolumes(system=False)
+
+    def testVolumesSystem(self) -> None:
+        self._testVolumes(system=True)
 
 
 if __name__ == '__main__':
