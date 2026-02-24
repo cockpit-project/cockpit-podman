@@ -195,7 +195,7 @@ class Images extends React.Component {
         ];
         let emptyCaption = _("No images");
         if (this.props.images === null)
-            emptyCaption = "Loading...";
+            emptyCaption = _("Loading...");
         else if (this.props.textFilter.length > 0)
             emptyCaption = _("No images that match the current filter");
 
