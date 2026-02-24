@@ -201,7 +201,6 @@ class Application extends React.Component {
     initVolumes(con) {
         return client.getVolumes(con)
                 .then(volumesList => {
-                    console.log(volumesList);
                     this.setState(prevState => {
                         const copyVolumes = {};
                         Object.entries(prevState.volumes || {}).forEach(([id, volume]) => {
@@ -445,7 +444,6 @@ class Application extends React.Component {
     }
 
     handleVolumeEvent(event, con) {
-        console.log(event, con);
         switch (event.Action) {
         case 'create':
             this.initVolumes(con);
@@ -908,6 +906,7 @@ class Application extends React.Component {
             return null;
 
         let imageContainerMap = {};
+        let volumeContainerMap = {};
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
                 const container = this.state.containers[c];
@@ -918,9 +917,22 @@ class Application extends React.Component {
                     container,
                     stats: this.state.containersStats[makeKey(container.uid, container.Id)],
                 });
+
+                for (const mount of (container.Mounts || [])) {
+                    if (mount.Type != "volume")
+                        continue;
+
+                    const volumeKey = makeKey(container.uid, mount.Name);
+                    if (!volumeContainerMap[volumeKey])
+                        volumeContainerMap[volumeKey] = [];
+
+                    volumeContainerMap[volumeKey].push(volumeKey);
+                }
             });
-        } else
+        } else {
             imageContainerMap = null;
+            volumeContainerMap = null;
+        }
 
         const loadingImages = this.state.users.find(u => u.con && !u.imagesLoaded);
         const loadingContainers = this.state.users.find(u => u.con && !u.containersLoaded);
@@ -968,6 +980,7 @@ class Application extends React.Component {
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
                 volumes={loadingVolumes ? null : this.state.volumes}
+                volumeContainerMap={volumeContainerMap}
             />
         );
 
