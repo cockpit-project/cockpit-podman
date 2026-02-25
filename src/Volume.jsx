@@ -35,11 +35,11 @@ export const Volume = ({ id, item, onChange, idx, removeitem, _additem, options,
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-4-col-on-md"
-                id={id + "-host-path-group"}
+                id={`${id}-host-path-group`}
                 label={_("Host path")}
-                fieldId={id + "-host-path"}
+                fieldId={`${id}-host-path`}
             >
-                <FileAutoComplete id={id + "-host-path"}
+                <FileAutoComplete id={`${id}-host-path`}
                     value={item.hostPath || ''}
                     onChange={value => {
                         utils.validationClear(validationFailed, "hostPath", onValidationChange);
@@ -49,12 +49,12 @@ export const Volume = ({ id, item, onChange, idx, removeitem, _additem, options,
                 <FormHelper helperTextInvalid={validationFailed?.hostPath} />
             </FormGroup>
             <FormGroup className="pf-m-3-col-on-md"
-                id={id + "-container-path-group"}
+                id={`${id}-container-path-group`}
                 label={_("Container path")}
-                fieldId={id + "-container-path"}
+                fieldId={`${id}-container-path`}
                 isRequired
             >
-                <TextInput id={id + "-container-path"}
+                <TextInput id={`${id}-container-path`}
                     value={item.containerPath || ''}
                     validated={validationFailed?.containerPath ? "error" : "default"}
                     onChange={(_event, value) => {
@@ -64,15 +64,15 @@ export const Volume = ({ id, item, onChange, idx, removeitem, _additem, options,
                     }} />
                 <FormHelper helperTextInvalid={validationFailed?.containerPath} />
             </FormGroup>
-            <FormGroup className="pf-m-2-col-on-md" label={_("Mode")} fieldId={id + "-mode"}>
-                <Checkbox id={id + "-mode"}
+            <FormGroup className="pf-m-2-col-on-md" label={_("Mode")} fieldId={`${id}-mode`}>
+                <Checkbox id={`${id}-mode`}
                     label={_("Writable")}
                     isChecked={item.mode == "rw"}
                     onChange={(_event, value) => onChange(idx, 'mode', value ? "rw" : "ro")} />
             </FormGroup>
             { options?.selinuxAvailable &&
-            <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={id + "-selinux"}>
-                <FormSelect id={id + "-selinux"} className='pf-v6-c-form-control'
+            <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={`${id}-selinux`}>
+                <FormSelect id={`${id}-selinux`} className='pf-v6-c-form-control'
                             value={item.selinux}
                             onChange={(_event, value) => onChange(idx, 'selinux', value)}>
                     <FormSelectOption value='' key='' label={_("No label")} />
@@ -83,7 +83,7 @@ export const Volume = ({ id, item, onChange, idx, removeitem, _additem, options,
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='plain'
                     className="btn-close"
-                    id={id + "-btn-close"}
+                    id={`${id}-btn-close`}
                     aria-label={_("Remove item")}
                     size="sm"
                     icon={<TrashIcon />}

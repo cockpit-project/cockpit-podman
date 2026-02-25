@@ -107,7 +107,7 @@ export const ImageDeleteModal = ({ con, imageWillDelete, onAddNotification }) =>
                             body={
                                 repoTags.map(x => (
                                     <Checkbox isChecked={checkedTags.indexOf(x) > -1}
-                                                id={"delete-" + x}
+                                                id={`delete-${x}`}
                                                 aria-label={x}
                                                 key={x}
                                                 label={x}

@@ -28,7 +28,7 @@ function ImageOptions({ images, checked, user, handleChange, name, showCheckbox 
     if (shownImages.length === 0) {
         return null;
     }
-    const listNameId = "list-" + name;
+    const listNameId = `list-${name}`;
 
     return (
         <Flex flex={{ default: 'column' }}>
@@ -94,7 +94,7 @@ const PruneUnusedImagesModal = ({ close, unusedImages, onAddNotification, users 
                     {unusedOwners.map(user => (
                         <ImageOptions key={user.name}
                                       images={unusedImages.filter(image => image.uid === user.uid)}
-                                      name={"deleteImages-" + user.name}
+                                      name={`deleteImages-${user.name}`}
                                       checked={deleteOwners.some(u => u.uid === user.uid)}
                                       handleChange={checked => onCheckChange(user, checked)}
                                       showCheckbox={showCheckboxes}

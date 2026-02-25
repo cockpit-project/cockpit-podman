@@ -50,7 +50,7 @@ const ContainerDetails = ({ container }) => {
                         <DescriptionListTerm>{_("systemd service")}</DescriptionListTerm>
                         <DescriptionListDescription>
                             <Button variant="link" isInline onClick={
-                                () => cockpit.jump(`/system/services#/${container.Config?.Labels?.PODMAN_SYSTEMD_UNIT}` + (container.uid === null ? "?owner=user" : ""))}>
+                                () => cockpit.jump(`/system/services#/${container.Config?.Labels?.PODMAN_SYSTEMD_UNIT}${container.uid === null ? "?owner=user" : ""}`)}>
                                 {cockpit.format(_("View $0"), container.Config?.Labels?.PODMAN_SYSTEMD_UNIT)}
                             </Button>
                         </DescriptionListDescription>

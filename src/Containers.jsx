@@ -404,7 +404,7 @@ class Containers extends React.Component {
         if (containerStats && status === "running") {
             // container.HostConfig.Memory (0 by default), containerStats.MemUsage
             if (containerStats.CPU != undefined)
-                proc = <div className="ct-numeric-column">{containerStats.CPU.toFixed(2) + "%"}</div>;
+                proc = <div className="ct-numeric-column">{`${containerStats.CPU.toFixed(2)}%`}</div>;
             if (Number.isInteger(containerStats.MemUsage) && this.state.memTotal) {
                 // the primary view is how much of the host's memory a container uses, for comparability
                 const mem_pct = Math.round(containerStats.MemUsage / this.state.memTotal * 100);
@@ -442,7 +442,7 @@ class Containers extends React.Component {
             </div>
         );
 
-        let containerStateClass = "ct-badge-container-" + status.toLowerCase();
+        let containerStateClass = `ct-badge-container-${status.toLowerCase()}`;
         if (container.isDownloading)
             containerStateClass += " downloading";
 
@@ -452,7 +452,7 @@ class Containers extends React.Component {
         if (healthcheck) {
             localized_health = localize_health(healthcheck);
             if (localized_health)
-                state.push(<Badge key={healthcheck} isRead className={"ct-badge-container-" + healthcheck}>{localized_health}</Badge>);
+                state.push(<Badge key={healthcheck} isRead className={`ct-badge-container-${healthcheck}`}>{localized_health}</Badge>);
         }
 
         const user = this.props.users.find(user => user.uid === container.uid);
@@ -984,7 +984,7 @@ class Containers extends React.Component {
 
                                         const actions = caption && (
                                             <>
-                                                <Badge isRead className={"ct-badge-pod-" + podStatus.toLowerCase()}>{_(podStatus)}</Badge>
+                                                <Badge isRead className={`ct-badge-pod-${podStatus.toLowerCase()}`}>{_(podStatus)}</Badge>
                                                 {!isPodService &&
                                                 <Button variant="secondary"
                                                         className="create-container-in-pod"
@@ -1000,8 +1000,8 @@ class Containers extends React.Component {
                                             </>
                                         );
                                         return (
-                                            <Card key={'table-' + section}
-                                             id={'table-' + (section == "no-pod" ? section : pods[section].Name)}
+                                            <Card key={`table-${section}`}
+                                             id={`table-${section == "no-pod" ? section : pods[section].Name}`}
                                              isPlain={section == "no-pod"}
                                              className="container-pod"
                                              isClickable

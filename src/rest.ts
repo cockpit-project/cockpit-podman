@@ -37,7 +37,7 @@ function getAddress(uid: Uid): { path: string, superuser?: cockpit.ChannelOption
         // FIXME: make this async and call cockpit.user()
         const xrd = sessionStorage.getItem('XDG_RUNTIME_DIR');
         if (xrd)
-            return { path: xrd + "/podman/podman.sock" };
+            return { path: `${xrd}/podman/podman.sock` };
         console.warn("$XDG_RUNTIME_DIR is not present. Cannot use user service.");
         return { path: "" };
     }
@@ -166,7 +166,7 @@ function connect(uid: Uid): Connection {
             // the initial message is the HTTP status response
             ch.addEventListener("message", onHTTPMessage);
 
-            ch.send(encoder.encode("GET " + path + " HTTP/1.0\r\nContent-Length: 0\r\n\r\n"));
+            ch.send(encoder.encode(`GET ${path} HTTP/1.0\r\nContent-Length: 0\r\n\r\n`));
         });
     }
 

@@ -173,7 +173,7 @@ export const PodCreateModal = ({ users }) => {
                         <Radio key={user.name}
                             value={user.name}
                             label={user.uid === 0 ? _("System") : cockpit.format("$0 $1", _("User:"), user.name)}
-                            id={"create-pod-dialog-owner-" + user.name }
+                            id={`create-pod-dialog-owner-${user.name}` }
                             isChecked={owner === user}
                             onChange={() => setOwner(user)} />))
                     }

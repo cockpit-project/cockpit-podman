@@ -60,12 +60,12 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-6-col-on-md"
-                id={id + "-key-group"}
+                id={`${id}-key-group`}
                 label={_("Key")}
-                fieldId={id + "-key-address"}
+                fieldId={`${id}-key-address`}
                 isRequired
             >
-                <TextInput id={id + "-key"}
+                <TextInput id={`${id}-key`}
                        value={item.envKey || ''}
                        validated={validationFailed?.envKey ? "error" : "default"}
                        onChange={(_event, value) => {
@@ -76,11 +76,11 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
                 <FormHelper helperTextInvalid={validationFailed?.envKey} />
             </FormGroup>
             <FormGroup className="pf-m-6-col-on-md"
-                id={id + "-value-group"}
+                id={`${id}-value-group`}
                 label={_("Value")}
-                fieldId={id + "-value-address"}
+                fieldId={`${id}-value-address`}
             >
-                <TextInput id={id + "-value"}
+                <TextInput id={`${id}-value`}
                        value={item.envValue || ''}
                        validated={validationFailed?.envValue ? "error" : "default"}
                        onChange={(_event, value) => {
@@ -93,7 +93,7 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='plain'
                     className="btn-close"
-                    id={id + "-btn-close"}
+                    id={`${id}-btn-close`}
                     size="sm"
                     aria-label={_("Remove item")}
                     icon={<TrashIcon />}
