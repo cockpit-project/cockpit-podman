@@ -72,7 +72,7 @@ export class ImageRunModal extends React.Component {
         super(props);
 
         let command = "";
-        if (this.props.image && this.props.image.Command) {
+        if (this.props.image?.Command) {
             command = utils.quote_cmdline(this.props.image.Command);
         }
 
@@ -661,7 +661,7 @@ export class ImageRunModal extends React.Component {
                         .filter(val => val) // Filter out empty/undefined properties
                         .length > 0; // If one field has error, the whole group (dynamicList) is invalid
             }
-            return validation && validation.some(rowHasError);
+            return validation?.some(rowHasError);
         }
         // If at least one group is invalid, then the whole form is invalid
         return checkGroup(validationFailed.publish, this.state.publish) ||
@@ -761,7 +761,7 @@ export class ImageRunModal extends React.Component {
         }
 
         const localImage = this.state.image || (selectedImage && this.props.localImages.some(img => img.Id === selectedImage.Id));
-        const podmanRegistries = registries && registries.search ? registries.search : utils.fallbackRegistries;
+        const podmanRegistries = registries?.search ? registries.search : utils.fallbackRegistries;
 
         // Add the search component
         const footer = (
