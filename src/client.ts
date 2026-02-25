@@ -16,7 +16,7 @@ const podmanJson = (con: Connection, name: string, method: string, args: JsonObj
             .then(reply => JSON.parse(reply));
 
 export const streamEvents = (con: Connection, callback: MonitorCallback) =>
-    con.monitor(VERSION + "libpod/events", callback);
+    con.monitor(`${VERSION}libpod/events`, callback);
 
 export function getInfo(con: Connection): Promise<JsonObject> {
     return new Promise((resolve, reject) => {
@@ -31,30 +31,30 @@ export function getInfo(con: Connection): Promise<JsonObject> {
 export const getContainers = (con: Connection) => podmanJson(con, "libpod/containers/json", "GET", { all: true });
 
 export const streamContainerStats = (con: Connection, callback: MonitorCallback) =>
-    con.monitor(VERSION + "libpod/containers/stats", callback);
+    con.monitor(`${VERSION}libpod/containers/stats`, callback);
 
 export function inspectContainer(con: Connection, id: string) {
     const options = {
         size: false // set true to display filesystem usage
     };
-    return podmanJson(con, "libpod/containers/" + id + "/json", "GET", options);
+    return podmanJson(con, `libpod/containers/${id}/json`, "GET", options);
 }
 
-export const delContainer = (con: Connection, id: string, force: boolean) => podmanCall(con, "libpod/containers/" + id, "DELETE", { force });
+export const delContainer = (con: Connection, id: string, force: boolean) => podmanCall(con, `libpod/containers/${id}`, "DELETE", { force });
 
-export const renameContainer = (con: Connection, id: string, config: JsonObject) => podmanCall(con, "libpod/containers/" + id + "/rename", "POST", config);
+export const renameContainer = (con: Connection, id: string, config: JsonObject) => podmanCall(con, `libpod/containers/${id}/rename`, "POST", config);
 
 export const createContainer = (con: Connection, config: JsonObject) => podmanJson(con, "libpod/containers/create", "POST", {}, JSON.stringify(config));
 
 export const commitContainer = (con: Connection, commitData: JsonObject) => podmanCall(con, "libpod/commit", "POST", commitData);
 
-export const postContainer = (con: Connection, action: string, id: string, args: JsonObject) => podmanCall(con, "libpod/containers/" + id + "/" + action, "POST", args);
+export const postContainer = (con: Connection, action: string, id: string, args: JsonObject) => podmanCall(con, `libpod/containers/${id}/${action}`, "POST", args);
 
-export const runHealthcheck = (con: Connection, id: string) => podmanCall(con, "libpod/containers/" + id + "/healthcheck", "GET", {});
+export const runHealthcheck = (con: Connection, id: string) => podmanCall(con, `libpod/containers/${id}/healthcheck`, "GET", {});
 
-export const postPod = (con: Connection, action: string, id: string, args: JsonObject) => podmanCall(con, "libpod/pods/" + id + "/" + action, "POST", args);
+export const postPod = (con: Connection, action: string, id: string, args: JsonObject) => podmanCall(con, `libpod/pods/${id}/${action}`, "POST", args);
 
-export const delPod = (con: Connection, id: string, force: boolean) => podmanCall(con, "libpod/pods/" + id, "DELETE", { force });
+export const delPod = (con: Connection, id: string, force: boolean) => podmanCall(con, `libpod/pods/${id}`, "DELETE", { force });
 
 export const createPod = (con: Connection, config: JsonObject) => podmanCall(con, "libpod/pods/create", "POST", {}, JSON.stringify(config));
 
@@ -67,7 +67,7 @@ export function execContainer(con: Connection, id: string) {
         Cmd: ["/bin/sh"],
     };
 
-    return podmanJson(con, "libpod/containers/" + id + "/exec", "POST", {}, JSON.stringify(args));
+    return podmanJson(con, `libpod/containers/${id}/exec`, "POST", {}, JSON.stringify(args));
 }
 
 export function resizeContainersTTY(con: Connection, id: string, exec: boolean, width: number, height: number) {
@@ -80,7 +80,7 @@ export function resizeContainersTTY(con: Connection, id: string, exec: boolean, 
     if (!exec)
         point = "exec/";
 
-    return podmanCall(con, "libpod/" + point + id + "/resize", "POST", args);
+    return podmanCall(con, `libpod/${point}${id}/resize`, "POST", args);
 }
 
 function parseImageInfo(info: JsonObject): JsonObject {
@@ -109,7 +109,7 @@ export function getImages(con: Connection, id?: string) {
 
                 for (const image of reply as JsonObject[]) {
                     images[image.Id as string] = image;
-                    promises.push(podmanJson(con, "libpod/images/" + image.Id + "/json", "GET", {}));
+                    promises.push(podmanJson(con, `libpod/images/${image.Id}/json`, "GET", {}));
                 }
 
                 return Promise.all(promises)
@@ -131,9 +131,9 @@ export function getPods(con: Connection, id?: string) {
     return podmanJson(con, "libpod/pods/json", "GET", options);
 }
 
-export const delImage = (con: Connection, id: string, force: boolean) => podmanJson(con, "libpod/images/" + id, "DELETE", { force });
+export const delImage = (con: Connection, id: string, force: boolean) => podmanJson(con, `libpod/images/${id}`, "DELETE", { force });
 
-export const untagImage = (con: Connection, id: string, repo: string, tag: string) => podmanCall(con, "libpod/images/" + id + "/untag", "POST", { repo, tag });
+export const untagImage = (con: Connection, id: string, repo: string, tag: string) => podmanCall(con, `libpod/images/${id}/untag`, "POST", { repo, tag });
 
 export function pullImage(con: Connection, reference: string) {
     return new Promise<void>((resolve, reject) => {
@@ -158,6 +158,6 @@ export const pruneUnusedImages = (con: Connection) => podmanJson(con, "libpod/im
 
 export const imageHistory = (con: Connection, id: string) => podmanJson(con, `libpod/images/${id}/history`, "GET", {});
 
-export const imageExists = (con: Connection, id: string) => podmanCall(con, "libpod/images/" + id + "/exists", "GET", {});
+export const imageExists = (con: Connection, id: string) => podmanCall(con, `libpod/images/${id}/exists`, "GET", {});
 
-export const containerExists = (con: Connection, id: string) => podmanCall(con, "libpod/containers/" + id + "/exists", "GET", {});
+export const containerExists = (con: Connection, id: string) => podmanCall(con, `libpod/containers/${id}/exists`, "GET", {});

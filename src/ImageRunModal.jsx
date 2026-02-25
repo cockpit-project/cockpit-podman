@@ -422,7 +422,7 @@ export class ImageRunModal extends React.Component {
         // Try to get specified image manifest
         searches.push(this.activeConnection.call({
             method: "GET",
-            path: client.VERSION + "libpod/manifests/" + value + "/json",
+            path: `${client.VERSION}libpod/manifests/${value}/json`,
             body: "",
         }));
 
@@ -436,7 +436,7 @@ export class ImageRunModal extends React.Component {
             if ((reg_search && reg_search.length !== 0) || value.includes('/')) {
                 searches.push(this.activeConnection.call({
                     method: "GET",
-                    path: client.VERSION + "libpod/images/search",
+                    path: `${client.VERSION}libpod/images/search`,
                     body: "",
                     params: {
                         term: value,
@@ -446,10 +446,10 @@ export class ImageRunModal extends React.Component {
                 searches.push(...utils.fallbackRegistries.map(registry =>
                     this.activeConnection.call({
                         method: "GET",
-                        path: client.VERSION + "libpod/images/search",
+                        path: `${client.VERSION}libpod/images/search`,
                         body: "",
                         params: {
-                            term: registry + "/" + value
+                            term: `${registry}/${value}`
                         }
                     })));
             }
@@ -481,7 +481,7 @@ export class ImageRunModal extends React.Component {
                             // Add Tag if it's there
                             image.toString = function imageToString() {
                                 if (this.Tag) {
-                                    return this.Name + ':' + this.Tag;
+                                    return `${this.Name}:${this.Tag}`;
                                 }
                                 return this.Name;
                             };
@@ -628,7 +628,7 @@ export class ImageRunModal extends React.Component {
     truncateRegistryDomain = (domain) => {
         const parts = domain.split('.');
         if (parts.length > 2) {
-            return parts[parts.length - 2] + "." + parts[parts.length - 1];
+            return `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
         }
         return domain;
     };
@@ -871,7 +871,7 @@ export class ImageRunModal extends React.Component {
                                         <Radio key={user.name}
                                             value={user.name}
                                             label={user.uid === 0 ? _("System") : cockpit.format("$0 $1", _("User:"), user.name)}
-                                            id={"run-image-dialog-owner-" + user.name}
+                                            id={`run-image-dialog-owner-${user.name}`}
                                             isChecked={owner === user}
                                             isDisabled={this.props.pod}
                                             onChange={this.handleOwnerSelect} />))

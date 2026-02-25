@@ -28,7 +28,7 @@ const ImageUsedBy = ({ containers, showAll }) => {
                                     isInline
                                     onClick={() => {
                                         const loc = document.location.toString().split('#')[0];
-                                        document.location = loc + '#' + container.Id;
+                                        document.location = `${loc}#${container.Id}`;
 
                                         if (!isRunning)
                                             showAll();

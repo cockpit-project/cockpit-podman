@@ -74,10 +74,10 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
         }
 
         const searches = queryRegistries.map(rr => {
-            const registry = rr.length < 1 || rr[rr.length - 1] === "/" ? rr : rr + "/";
+            const registry = rr.length < 1 || rr[rr.length - 1] === "/" ? rr : `${rr}/`;
             return activeConnection.call({
                 method: "GET",
-                path: client.VERSION + "libpod/images/search",
+                path: `${client.VERSION}libpod/images/search`,
                 body: "",
                 params: {
                     term: registry + imageIdentifier
@@ -149,7 +149,7 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
                             <Radio key={u.name}
                                    value={u.name}
                                    label={u.name}
-                                   id={"image-search-modal-owner-" + u.name}
+                                   id={`image-search-modal-owner-${u.name}`}
                                    onChange={onToggleUser}
                                    isChecked={u === user} />))
                         }
@@ -185,11 +185,11 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
                     />}
                     {imageList.length > 0 &&
                     <DataList isCompact
-                              selectedDataListItemId={"image-list-item-" + selected}
+                              selectedDataListItemId={`image-list-item-${selected}`}
                               onSelectDataListItem={(_, key) => setSelected(key.split('-').slice(-1)[0])}>
                         {imageList.map((image, iter) => {
                             return (
-                                <DataListItem id={"image-list-item-" + iter} key={iter}>
+                                <DataListItem id={`image-list-item-${iter}`} key={iter}>
                                     <DataListItemRow>
                                         <DataListItemCells
                                                   dataListCells={[

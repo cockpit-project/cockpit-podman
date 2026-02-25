@@ -41,9 +41,9 @@ const ContainerCommitModal = ({ con, container, localImages }) => {
             return;
         }
 
-        let full_name = imageName + ":" + (tag !== "" ? tag : "latest");
+        let full_name = `${imageName}:${tag !== "" ? tag : "latest"}`;
         if (full_name.indexOf("/") < 0)
-            full_name = "localhost/" + full_name;
+            full_name = `localhost/${full_name}`;
 
         if (!force && localImages?.some(image => image.uid === container.uid && image.Name === full_name)) {
             setNameError(_("Image name is not unique"));
@@ -52,7 +52,7 @@ const ContainerCommitModal = ({ con, container, localImages }) => {
 
         function quote(word) {
             word = word.replace(/"/g, '\\"');
-            return '"' + word + '"';
+            return `"${word}"`;
         }
 
         const commitData = {};
@@ -72,7 +72,7 @@ const ContainerCommitModal = ({ con, container, localImages }) => {
             let cmdData = "";
             const words = utils.unquote_cmdline(command.trim());
             const cmdStr = words.map(quote).join(", ");
-            cmdData = "CMD [" + cmdStr + "]";
+            cmdData = `CMD [${cmdStr}]`;
             commitData.changes.push(cmdData);
         }
 

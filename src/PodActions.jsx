@@ -222,7 +222,7 @@ export const PodActions = ({ con, onAddNotification, pod, isPodService }) => {
 
     return (
         <KebabDropdown
-            toggleButtonId={"pod-" + pod.Name + (pod.uid === 0 ? "-system" : "-user") + "-action-toggle"}
+            toggleButtonId={`pod-${pod.Name}${pod.uid === 0 ? "-system" : "-user"}-action-toggle`}
             position="right"
             dropdownItems={dropdownItems}
         />

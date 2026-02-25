@@ -53,9 +53,9 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-5-col-on-md"
-                id={id + "-ip-address-group"}
+                id={`${id}-ip-address-group`}
                 label={_("IP address")}
-                fieldId={id + "-ip-address"}
+                fieldId={`${id}-ip-address`}
                 labelHelp={
                     <Popover aria-label={_("IP address help")}
                         enableFlip
@@ -63,7 +63,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                         <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                     </Popover>
                 }>
-                <TextInput id={id + "-ip-address"}
+                <TextInput id={`${id}-ip-address`}
                         value={item.IP || ''}
                         validated={validationFailed?.IP ? "error" : "default"}
                         onChange={(_event, value) => {
@@ -74,9 +74,9 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                 <FormHelper helperTextInvalid={validationFailed?.IP} />
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
-                    id={id + "-host-port-group"}
+                    id={`${id}-host-port-group`}
                     label={_("Host port")}
-                    fieldId={id + "-host-port"}
+                    fieldId={`${id}-host-port`}
                     labelHelp={
                         <Popover aria-label={_("Host port help")}
                             enableFlip
@@ -84,7 +84,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                             <Button variant="plain" hasNoPadding aria-label="More info" icon={<OutlinedQuestionCircleIcon />} />
                         </Popover>
                     }>
-                <TextInput id={id + "-host-port"}
+                <TextInput id={`${id}-host-port`}
                             type='number'
                             step={1}
                             min={1}
@@ -99,10 +99,10 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
                 <FormHelper helperTextInvalid={validationFailed?.hostPort} />
             </FormGroup>
             <FormGroup className="pf-m-3-col-on-md"
-                        id={id + "-container-port-group"}
+                        id={`${id}-container-port-group`}
                         label={_("Container port")}
-                        fieldId={id + "-container-port"} isRequired>
-                <TextInput id={id + "-container-port"}
+                        fieldId={`${id}-container-port`} isRequired>
+                <TextInput id={`${id}-container-port`}
                             type='number'
                             step={1}
                             min={1}
@@ -118,9 +118,9 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
             </FormGroup>
             <FormGroup className="pf-m-2-col-on-md"
                         label={_("Protocol")}
-                        fieldId={id + "-protocol"}>
+                        fieldId={`${id}-protocol`}>
                 <FormSelect className='pf-v6-c-form-control container-port-protocol'
-                            id={id + "-protocol"}
+                            id={`${id}-protocol`}
                             value={item.protocol}
                             onChange={(_event, value) => onChange(idx, 'protocol', value)}>
                     <FormSelectOption value='tcp' key='tcp' label={_("TCP")} />
@@ -130,7 +130,7 @@ export const PublishPort = ({ id, item, onChange, idx, removeitem, _itemCount, v
             <FormGroup className="pf-m-1-col-on-md remove-button-group">
                 <Button variant='plain'
                             className="btn-close"
-                            id={id + "-btn-close"}
+                            id={`${id}-btn-close`}
                             size="sm"
                             aria-label={_("Remove item")}
                             icon={<TrashIcon />}

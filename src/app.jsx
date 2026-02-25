@@ -466,7 +466,7 @@ class Application extends React.Component {
         let quadlets = { pods: {}, containers: {} };
 
         if (con.uid === null) {
-            path = sessionStorage.getItem('XDG_RUNTIME_DIR') + '/systemd/generator';
+            path = `${sessionStorage.getItem('XDG_RUNTIME_DIR')}/systemd/generator`;
         } else if (con.uid !== 0) {
             // TODO: support loading other users quadlets
             debug(`unsupported connection ${con.uid} for loading quadlets`);
@@ -632,7 +632,7 @@ class Application extends React.Component {
                 ...(system ? [] : ["--user"]),
                 "start", "podman.socket"
             ];
-            const environ = is_other_user ? ["XDG_RUNTIME_DIR=/run/user/" + uid] : [];
+            const environ = is_other_user ? [`XDG_RUNTIME_DIR=/run/user/${uid}`] : [];
             await cockpit.spawn(start_args, { superuser: uid === null ? null : "require", err: "message", environ });
             con = rest.connect(uid);
             const reply = await client.getInfo(con);

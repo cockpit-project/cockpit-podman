@@ -95,7 +95,7 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
                           columns={[_("Last 5 runs"), _("Started at")]}
                           rows={
                               logs.map(log => {
-                                  const id = "hc" + log.Start + container.Id;
+                                  const id = `hc${log.Start}${container.Id}`;
                                   return {
                                       expandedContent: log.Output ? <pre>{log.Output}</pre> : null,
                                       columns: [

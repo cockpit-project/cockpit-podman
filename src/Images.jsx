@@ -49,7 +49,7 @@ class Images extends React.Component {
     downloadImage(imageName, imageTag, con) {
         let pullImageId = imageName;
         if (imageTag)
-            pullImageId += ":" + imageTag;
+            pullImageId += `:${imageTag}`;
 
         this.setState(previous => ({ imageDownloadInProgress: [...previous.imageDownloadInProgress, imageName] }));
         client.pullImage(con, pullImageId)
@@ -428,7 +428,7 @@ const ImageActions = ({ con, image, onAddNotification, users, downloadImage }) =
     };
 
     const runImageAction = (
-        <Button key={image.Id + "create"}
+        <Button key={`${image.Id}create`}
                 className="ct-container-create show-only-when-wide"
                 variant='secondary'
                 onClick={ e => {
@@ -441,18 +441,18 @@ const ImageActions = ({ con, image, onAddNotification, users, downloadImage }) =
     );
 
     const dropdownActions = [
-        <DropdownItem key={image.Id + "create-menu"}
+        <DropdownItem key={`${image.Id}create-menu`}
                     component="button"
                     className="show-only-when-narrow"
                     onClick={runImage}>
             {_("Create container")}
         </DropdownItem>,
-        <DropdownItem key={image.Id + "pull"}
+        <DropdownItem key={`${image.Id}pull`}
             component="button"
             onClick={pullImage}>
             {_("Pull")}
         </DropdownItem>,
-        <DropdownItem key={image.Id + "delete"}
+        <DropdownItem key={`${image.Id}delete`}
                     component="button"
                     className="pf-m-danger btn-delete"
                     onClick={removeImage}>
