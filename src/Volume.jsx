@@ -70,7 +70,7 @@ export const Volume = ({ id, item, onChange, idx, removeitem, _additem, options,
                     isChecked={item.mode == "rw"}
                     onChange={(_event, value) => onChange(idx, 'mode', value ? "rw" : "ro")} />
             </FormGroup>
-            { options && options.selinuxAvailable &&
+            { options?.selinuxAvailable &&
             <FormGroup className="pf-m-3-col-on-md" label={_("SELinux")} fieldId={id + "-selinux"}>
                 <FormSelect id={id + "-selinux"} className='pf-v6-c-form-control'
                             value={item.selinux}
