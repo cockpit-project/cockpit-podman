@@ -311,7 +311,7 @@ class TestApplication(testlib.MachineCase):
         m.execute("systemctl stop podman.service")
 
     def createQuadlet(self, name: str, podName: str | None = None, containerName: str | None = None,
-                      *, auth: bool = False) -> None:
+                      *, auth: bool = False, autostart: bool = True) -> None:
         pod_option = f'Pod={podName}.pod' if podName else ''
         containername_option = f'ContainerName={containerName}' if containerName else ''
         stop_timeout = 'StopTimeout=0' if self.machine.image not in ['ubuntu-2404', 'rhel-8-10'] else ''
@@ -338,8 +338,10 @@ WantedBy=multi-user.target default.target
         systemctl_cmd = "systemctl" if auth else "systemctl --user"
         self.addCleanup(self.execute, f"{systemctl_cmd} daemon-reload", system=auth)
         self.write_file(service_file, quadlet)
-        self.addCleanup(self.execute, f"{systemctl_cmd} stop {name}.service", system=auth)
-        self.execute(f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {name}.service", system=auth)
+        self.execute(f"{systemctl_cmd} daemon-reload", system=auth)
+        if autostart:
+            self.addCleanup(self.execute, f"{systemctl_cmd} stop {name}.service", system=auth)
+            self.execute(f"{systemctl_cmd} start {name}.service", system=auth)
 
     def createQuadletPod(self, name: str, podName: str | None = None, *, auth: bool = False) -> None:
         podName = podName if podName else name
@@ -3564,6 +3566,17 @@ Yaml={name}.yaml
                 self.waitPodContainer("media", [{"name": "database", "image": IMG_BUSYBOX,
                                       "command": "", "state": "Running", "id": containerId}],
                                       system=False)
+
+        # Quadlet templates are not supported on Ubuntu 2404.
+        if self.machine.image != "ubuntu-2404":
+            # Quadlet template does not show but an instance of it does.
+            self.createQuadlet("hostapd@", containerName=None, auth=system, autostart=False)
+            self.execute(f"{systemctl_cmd} start hostapd@test", system=system)
+            self.waitContainerRow("systemd-hostapd_test")
+            self.waitContainerRow("systemd-hostapd@", present=False)
+            self.performContainerAction("systemd-hostapd_test", "Stop", system=system)
+            self.execute(f'until [ $({systemctl_cmd} is-active systemd-hostapd_test) = inactive ]; do sleep 1; done',
+                        system=system)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "ubuntu-2204", "rhel-8-10")

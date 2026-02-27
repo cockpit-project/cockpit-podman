@@ -40,7 +40,8 @@ def main(generator_dir: Path) -> None:
         sys.exit(2)
 
     for entry in entries:
-        if not entry.name.endswith('.service'):
+        # Ignore non service and service template files
+        if not entry.name.endswith('.service') or entry.name.endswith('@.service'):
             continue
 
         with open(generator_dir / entry.name, 'r') as fp:
