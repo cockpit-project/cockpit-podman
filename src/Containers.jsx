@@ -90,12 +90,21 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
     };
 
     const stopQuadletContainer = () => {
-        utils.systemctl_spawn(["stop", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0);
+        utils.systemctl_spawn(["stop", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0)
+
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to stop quadlet $0"), container.Name); // not-covered: OS error
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
     };
 
     const startContainer = () => {
         if (isSystemdService) {
-            utils.systemctl_spawn(["start", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0);
+            utils.systemctl_spawn(["start", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0)
+                    .catch(ex => {
+                        const error = cockpit.format(_("Failed to start quadlet $0"), container.Name); // not-covered: OS error
+                        onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                    });
         } else {
             client.postContainer(con, "start", container.Id, {})
                     .catch(ex => {
@@ -140,7 +149,11 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
     };
 
     const restartQuadletContainer = () => {
-        utils.systemctl_spawn(["restart", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0);
+        utils.systemctl_spawn(["restart", container.Config.Labels.PODMAN_SYSTEMD_UNIT], container.uid === 0)
+                .catch(ex => {
+                    const error = cockpit.format(_("Failed to restart quadlet $0"), container.Name); // not-covered: OS error
+                    onAddNotification({ type: 'danger', error, errorDetail: ex.message });
+                });
     };
 
     const renameContainer = () => {
