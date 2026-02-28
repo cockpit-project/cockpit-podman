@@ -3556,8 +3556,6 @@ Yaml={name}.yaml
                                       "command": "", "state": "Exited", "id": "fancydb.service"}],
                                       system=False)
 
-                # data-row-id="user-fancydb.service"
-                # b.wait_visible('#table-media tr[data-row-id="user-fancydb.service"]')
                 self.performPodAction("media", "user", "Start")
                 self.execute(f'until [ $({inactive_cmd}) = active ]; do sleep 1; done',
                              system=False)
