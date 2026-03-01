@@ -3728,6 +3728,21 @@ ContainerName=guitarq1
             b.wait_in_text(f"{sel} + tr", "sleep infinity")
             b.wait_not_in_text(f"{sel} + tr", "systemd service")
 
+    def _testVolumes(self, *, system: bool = False):
+        volume_name = "nextcloud-data"
+
+        self.execute(f"podman volume create {volume_name}", system=system)
+        self.execute(f"podman run -d --name nextcloud --stop-timeout 0 --volume {volume_name}:/data {IMG_ALPINE} sh",
+                     system=system)
+
+        self.login()
+
+    def testVolumesUser(self):
+        self._testVolumes(system=False)
+
+    def testVolumesSystem(self):
+        self._testVolumes(system=True)
+
 
 if __name__ == '__main__':
     testlib.test_main()

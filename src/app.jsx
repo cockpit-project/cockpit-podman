@@ -22,6 +22,7 @@ import { superuser } from "superuser";
 import ContainerHeader from './ContainerHeader.jsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
+import Volumes from './Volumes.jsx';
 import * as client from './client.js';
 import detect_quadlets from './detect-quadlets.py';
 import rest from './rest.js';
@@ -46,7 +47,7 @@ class Application extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            // currently connected services per user: { con, uid, name, dbus: { client, subscription }, imagesLoaded, containersLoaded, podsLoaded, quadletsLoaded }
+            // currently connected services per user: { con, uid, name, dbus: { client, subscription }, imagesLoaded, containersLoaded, podsLoaded, quadletsLoaded, volumesLoaded }
             // start with dummy state to wait for initialization
             users: [{ con: null, uid: 0, name: _("system"), dbus: null }, { con: null, uid: null, name: _("user"), dbus: null }],
             images: null,
@@ -60,6 +61,7 @@ class Application extends React.Component {
             quadletContainers: {},
             // { "$uid-$name-pod.service": { source_path, name } }
             quadletPods: {},
+            volumes: null,
             textFilter: "",
             ownerFilter: "all",
             dropDownValue: 'Everything',
@@ -194,6 +196,29 @@ class Application extends React.Component {
                     this.updateContainerStats(con);
                 })
                 .catch(e => console.warn("initContainers uid", con.uid, "getContainers failed:", e.toString()));
+    }
+
+    initVolumes(con) {
+        return client.getVolumes(con)
+                .then(volumesList => {
+                    this.setState(prevState => {
+                        const copyVolumes = {};
+                        Object.entries(prevState.volumes || {}).forEach(([id, volume]) => {
+                            if (volume.uid !== con.uid)
+                                copyVolumes[id] = volume;
+                        });
+
+                        for (const volume of volumesList || []) {
+                            volume.uid = con.uid;
+                            volume.key = makeKey(con.uid, volume.Name);
+                            copyVolumes[volume.key] = volume;
+                        }
+
+                        const users = prevState.users.map(u => u.uid === con.uid ? { ...u, volumesLoaded: true } : u);
+                        return { volumes: copyVolumes, users };
+                    });
+                })
+                .catch(ex => console.warn("Failed to fetch volumes for uid", con.uid, ":", JSON.stringify(ex)));
     }
 
     updateImages(con) {
@@ -418,6 +443,23 @@ class Application extends React.Component {
         }
     }
 
+    handleVolumeEvent(event, con) {
+        switch (event.Action) {
+        case 'create':
+            this.initVolumes(con);
+            break;
+        case 'remove':
+            this.setState(prevState => {
+                const volumes = { ...prevState.volumes };
+                delete volumes[makeKey(con.uid, event.Actor.Attributes.name)];
+                return { volumes };
+            });
+            break;
+        default:
+            console.warn('Unhandled event type ', event.Type, event.Action);
+        }
+    }
+
     handleEvent(event, con) {
         switch (event.Type) {
         case 'container':
@@ -428,6 +470,9 @@ class Application extends React.Component {
             break;
         case 'pod':
             this.handlePodEvent(event, con);
+            break;
+        case 'volume':
+            this.handleVolumeEvent(event, con);
             break;
         default:
             console.warn('Unhandled event type ', event.Type);
@@ -638,7 +683,7 @@ class Application extends React.Component {
             const reply = await client.getInfo(con);
             this.setState(prevState => {
                 const users = prevState.users.filter(u => u.uid !== uid);
-                users.push({ con, uid, name: username, containersLoaded: false, podsLoaded: false, imagesLoaded: false, quadletsLoaded: false });
+                users.push({ con, uid, name: username, containersLoaded: false, podsLoaded: false, imagesLoaded: false, quadletsLoaded: false, volumesLoaded: false });
                 // keep a nice sort order for dialogs
                 users.sort(compareUser);
                 debug("init uid", uid, "username", username, "new users:", users);
@@ -660,6 +705,7 @@ class Application extends React.Component {
         this.updateImages(con);
         this.initContainers(con);
         this.initQuadlets(con);
+        this.initVolumes(con);
         this.subscribeDaemonReload(con);
         this.updatePods(con);
 
@@ -859,31 +905,46 @@ class Application extends React.Component {
         if (this.state.users.find(u => u.con === null && (u.uid === 0 || u.uid === null))) // not initialized yet
             return null;
 
-        let imageContainerList = {};
+        let imageContainerMap = {};
+        let volumeContainerMap = {};
         if (this.state.containers !== null) {
             Object.keys(this.state.containers).forEach(c => {
                 const container = this.state.containers[c];
                 const imageKey = makeKey(container.uid, container.Image);
-                if (!imageContainerList[imageKey])
-                    imageContainerList[imageKey] = [];
-                imageContainerList[imageKey].push({
+                if (!imageContainerMap[imageKey])
+                    imageContainerMap[imageKey] = [];
+                imageContainerMap[imageKey].push({
                     container,
                     stats: this.state.containersStats[makeKey(container.uid, container.Id)],
                 });
+
+                for (const mount of (container.Mounts || [])) {
+                    if (mount.Type != "volume")
+                        continue;
+
+                    const volumeKey = makeKey(container.uid, mount.Name);
+                    if (!volumeContainerMap[volumeKey])
+                        volumeContainerMap[volumeKey] = [];
+
+                    volumeContainerMap[volumeKey].push(volumeKey);
+                }
             });
-        } else
-            imageContainerList = null;
+        } else {
+            imageContainerMap = null;
+            volumeContainerMap = null;
+        }
 
         const loadingImages = this.state.users.find(u => u.con && !u.imagesLoaded);
         const loadingContainers = this.state.users.find(u => u.con && !u.containersLoaded);
         const loadingPods = this.state.users.find(u => u.con && !u.podsLoaded);
         const loadingQuadlets = this.state.users.find(u => u.con && !u.quadletsLoaded);
+        const loadingVolumes = this.state.users.find(u => u.con && !u.volumesLoaded);
 
         const imageList = (
             <Images
                 key="imageList"
                 images={loadingImages ? null : this.state.images}
-                imageContainerList={imageContainerList}
+                imageContainerList={imageContainerMap}
                 onAddNotification={this.onAddNotification}
                 textFilter={this.state.textFilter}
                 ownerFilter={this.state.ownerFilter}
@@ -909,6 +970,17 @@ class Application extends React.Component {
                 updateContainer={this.updateContainer}
                 quadletContainers={loadingQuadlets ? null : this.state.quadletContainers}
                 quadletPods={loadingQuadlets ? null : this.state.quadletPods}
+            />
+        );
+
+        const volumeList = (
+            <Volumes
+                key="volumeList"
+                users={this.state.users}
+                textFilter={this.state.textFilter}
+                ownerFilter={this.state.ownerFilter}
+                volumes={loadingVolumes ? null : this.state.volumes}
+                volumeContainerMap={volumeContainerMap}
             />
         );
 
@@ -953,6 +1025,7 @@ class Application extends React.Component {
                         <PageSection hasBodyWrapper={false} className='ct-pagesection-mobile'>
                             <Stack hasGutter>
                                 {imageList}
+                                {volumeList}
                                 {containerList}
                             </Stack>
                         </PageSection>
