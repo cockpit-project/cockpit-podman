@@ -8,7 +8,6 @@ import React from 'react';
 
 import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from "@xterm/xterm";
-import PropTypes from 'prop-types';
 
 import cockpit from 'cockpit';
 import { EmptyStatePanel } from "cockpit-components-empty-state.tsx";
@@ -258,14 +257,5 @@ class ContainerTerminal extends React.Component {
         );
     }
 }
-
-ContainerTerminal.propTypes = {
-    con: PropTypes.object.isRequired,
-    containerId: PropTypes.string.isRequired,
-    containerStatus: PropTypes.string.isRequired,
-    width: PropTypes.number.isRequired,
-    uid: PropTypes.number,
-    tty: PropTypes.bool,
-};
 
 export default ContainerTerminal;
