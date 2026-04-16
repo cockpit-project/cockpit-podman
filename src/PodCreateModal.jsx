@@ -15,7 +15,7 @@ import * as dockerNames from 'docker-names';
 import cockpit from 'cockpit';
 import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
 
-import { ErrorNotification } from './Notification.jsx';
+import { ErrorNotification } from './Notification.tsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { Volume } from './Volume.jsx';
 import * as client from './client.js';
