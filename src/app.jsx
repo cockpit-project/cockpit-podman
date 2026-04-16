@@ -19,7 +19,7 @@ import { basename } from "cockpit-path";
 import * as python from "python";
 import { superuser } from "superuser";
 
-import ContainerHeader from './ContainerHeader.jsx';
+import ContainerHeader from './ContainerHeader.tsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
 import * as client from './client.js';

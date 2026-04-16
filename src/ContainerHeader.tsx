@@ -8,7 +8,21 @@ import { Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core/dis
 import cockpit from 'cockpit';
 const _ = cockpit.gettext;
 
-const ContainerHeader = ({ users, ownerFilter, handleOwnerChanged, textFilter, handleFilterChanged }) => {
+// TODO: move to app.tsx when ported to TypeScript
+interface User {
+    name: string;
+    uid: number | null;
+}
+
+interface ContainerHeaderProps {
+    users: User[];
+    ownerFilter: string;
+    handleOwnerChanged: (value: string) => void;
+    textFilter: string;
+    handleFilterChanged: (value: string) => void;
+}
+
+const ContainerHeader = ({ users, ownerFilter, handleOwnerChanged, textFilter, handleFilterChanged }: ContainerHeaderProps) => {
     return (
         <Toolbar inset={{ sm: 'insetSm', default: 'insetNone' }}>
             <ToolbarContent alignItems='baseline'>
