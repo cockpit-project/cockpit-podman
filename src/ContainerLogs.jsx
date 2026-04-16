@@ -9,7 +9,6 @@ import React from 'react';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from "@xterm/xterm";
-import PropTypes from 'prop-types';
 
 import cockpit from 'cockpit';
 import { EmptyStatePanel } from "cockpit-components-empty-state.tsx";
@@ -163,11 +162,5 @@ class ContainerLogs extends React.Component {
         return element;
     }
 }
-
-ContainerLogs.propTypes = {
-    containerId: PropTypes.string.isRequired,
-    uid: PropTypes.number,
-    width: PropTypes.number.isRequired,
-};
 
 export default ContainerLogs;
