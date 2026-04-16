@@ -31,7 +31,7 @@ import { TypeaheadSelect } from 'cockpit-components-typeahead-select';
 
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
 import { EnvVar, validateEnvVar } from './Env.jsx';
-import { ErrorNotification } from './Notification.jsx';
+import { ErrorNotification } from './Notification.tsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { validateVolume, Volume } from './Volume.jsx';
 import * as client from './client.js';

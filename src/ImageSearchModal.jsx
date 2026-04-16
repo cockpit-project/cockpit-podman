@@ -17,7 +17,7 @@ import { useDialogs } from "dialogs.jsx";
 import cockpit from 'cockpit';
 import { EmptyStatePanel } from "cockpit-components-empty-state.tsx";
 
-import { ErrorNotification } from './Notification.jsx';
+import { ErrorNotification } from './Notification.tsx';
 import * as client from './client.js';
 import rest from './rest.js';
 import { fallbackRegistries, usePodmanInfo } from './util.js';

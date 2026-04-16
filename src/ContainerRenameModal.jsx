@@ -12,7 +12,7 @@ import { useDialogs } from "dialogs.jsx";
 
 import cockpit from 'cockpit';
 
-import { ErrorNotification } from './Notification.jsx';
+import { ErrorNotification } from './Notification.tsx';
 import * as client from './client.js';
 import * as utils from './util.js';
 
