@@ -133,30 +133,19 @@ class TestApplication(testlib.MachineCase):
             systemctl --user stop podman.service podman.socket
             podman system reset --force
             """)
-        # HACK: system reset has 10s timeout, make that faster with an extra `stop`
-        # https://github.com/containers/podman/issues/21874
-        # Ubuntu 22.04 has old podman that does not know about rm --time
-        if m.image == 'ubuntu-2204':
-            self.addCleanup(self.admin_s.execute, "podman rm --force --all", timeout=300)
-            self.addCleanup(self.admin_s.execute, "podman pod rm --force --all", timeout=300)
-        else:
-            self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
-            self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
+        self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
+        self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
-        # Ubuntu 22.04 doesn't support user podman-systemd-generator
-        if m.image in ["ubuntu-2204"]:
-            self.allow_journal_messages("Generator directory or unit not found: .* '/run/user/.*")
 
         # old C bridge sometimes does that; not fixable any more
-        if m.image.startswith('rhel-8') or m.image in ['ubuntu-2204']:
+        if m.image.startswith('rhel-8'):
             self.allow_journal_messages(".*cockpit_http_stream_close: code should not be reached")
 
-        self.has_criu = m.image not in ["ubuntu-2204", "ubuntu-2404"]
+        self.has_criu = m.image not in ["ubuntu-2404"]
         self.has_selinux = not any(img in m.image for img in ["arch", "debian", "ubuntu", "suse"])
         self.has_cgroupsV2 = not m.image.startswith('rhel-8')
-        self.supports_quadlet = m.image not in ["ubuntu-2204"]
 
         self.system_images_count = int(m.execute("podman images -n | wc -l").strip())
         self.user_images_count = int(self.execute("podman images -n | wc -l", system=False).strip())
@@ -1361,7 +1350,6 @@ Yaml={name}.yaml
 
     def testPullImage(self) -> None:
         b = self.browser
-        m = self.machine
 
         self.setupRegistry()
 
@@ -1433,12 +1421,6 @@ Yaml={name}.yaml
         # build image which we try to pull
         buildImage(image2, 10, auth=False)
         image2_sha = self.execute(f"podman inspect --format '{{{{.Id}}}}' {image2}", system=False).strip()
-
-        # Ubuntu has an old podman which ships with a k8s image
-        if m.image == "ubuntu-2204":
-            self.execute("podman rmi k8s.gcr.io/pause:3.5", system=False)
-            self.user_images_count -= 1
-            b.wait_not_in_text("#containers-images", "pause")
 
         b.wait_in_text("#containers-images", f"{self.user_images_count + 2} images")
         b.click("#image-actions-dropdown")
@@ -1840,13 +1822,9 @@ Yaml={name}.yaml
             b.assert_pixels(".pf-v6-c-modal-box", "image-select", skip_layouts=["rtl"])
 
         # Test filter with a subdomain.
-        # HACK: podman 3.3.4 returns invalid search results for this registry, the index is shortened to
-        # only "local.localhost:7000", resulting in this invalid search result:
-        # { "Index": "local.localhost:7000", "Name": "subdomain.local.localhost:7000/my-busybox" }
-        if self.machine.image != "ubuntu-2204":
-            b.click('.pf-v6-c-toggle-group__text:contains("local.localhost")')
-            b.set_input_text("#create-image-image input", "my-busybox", blur=False)
-            b.wait_text(".pf-v6-c-menu__item:not([disabled])", "subdomain.local.localhost:7000/my-busybox")
+        b.click('.pf-v6-c-toggle-group__text:contains("local.localhost")')
+        b.set_input_text("#create-image-image input", "my-busybox", blur=False)
+        b.wait_text(".pf-v6-c-menu__item:not([disabled])", "subdomain.local.localhost:7000/my-busybox")
 
         # Local registry
         b.click('button.pf-v6-c-toggle-group__button:contains("localhost:5000")')
@@ -2404,10 +2382,7 @@ Yaml={name}.yaml
         b.click('#containers-filter button[aria-label="Reset"]')
 
         if not auth or not self.machine.ws_container:  # don't kill ws container
-            # Ubuntu 22.04 has old podman that does not know about --time
-            if m.image != 'ubuntu-2204':
-                # Remove all containers first as it is not possible to set --time 0 to rmi command
-                self.execute("podman rm --all --force --time 0", system=auth)
+            self.execute("podman rm --all --force --time 0", system=auth)
             self.execute("podman rmi -af", system=auth)
             b.wait_in_text('#containers-containers .pf-v6-c-empty-state', 'No containers')
             b.set_val("#containers-containers-filter", "running")
@@ -2796,9 +2771,6 @@ Yaml={name}.yaml
         b.wait_visible(".ct-listing-panel-body tbody:nth-of-type(1) svg.green")
         b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(2)")
 
-        # Trigger run manually, adds one more healthy run
-        if self.machine.image == "ubuntu-2204":
-            time.sleep(5)  # wait a bit, otherwise the request might be ignored
         b.click(".ct-listing-panel-body button:contains('Run health check')")
         b.wait_visible(".ct-listing-panel-body tbody:nth-of-type(2) svg.green")
         b.wait_not_present(".ct-listing-panel-body tbody:nth-of-type(3)")
@@ -2878,9 +2850,6 @@ Yaml={name}.yaml
     def testHealthcheckUser(self) -> None:
         self._testHealthcheck(auth=False)
 
-    # Ubuntu 2204 lacks user systemd units
-    # https://github.com/containers/podman/commit/9312d458b4254b48e331d1ae40cb2f6d0fec9bd0
-    @testlib.skipImage("podman-restart not available for user", "ubuntu-2204")
     def testPodmanRestartEnabledUser(self) -> None:
         self._testPodmanRestartEnabled(auth=False)
 
@@ -3072,14 +3041,13 @@ Yaml={name}.yaml
         self.waitContainerRow(container_name_new)
 
         # service containers cannot be renamed
-        if self.supports_quadlet:
-            # HACK https://issues.redhat.com/browse/RHEL-5870
-            if self.machine.image == "rhel-8-10" and not auth:
-                return
-            service_name = "quadlet"
-            self.createQuadlet(service_name, containerName=service_name, auth=auth)
-            self.waitContainerRow(service_name)
-            b.wait_not_present(self.getContainerAction('Rename'))
+        # HACK https://issues.redhat.com/browse/RHEL-5870
+        if self.machine.image == "rhel-8-10" and not auth:
+            return
+        service_name = "quadlet"
+        self.createQuadlet(service_name, containerName=service_name, auth=auth)
+        self.waitContainerRow(service_name)
+        b.wait_not_present(self.getContainerAction('Rename'))
 
     def testMultipleContainers(self) -> None:
         m = self.machine
@@ -3116,21 +3084,20 @@ Yaml={name}.yaml
         b.wait_visible(container_1_sel + " .ct-badge-toolbox:contains('toolbox')")
         b.wait_visible(container_2_sel + " .ct-badge-distrobox:contains('distrobox')")
 
-        if self.supports_quadlet:
-            self.createQuadlet("container_3", containerName="container_3", auth=True)
-            container_3_id = m.execute("podman container inspect --format '{{.Id}}' container_3").strip()
-            self.waitContainerRow('container_3')
-            container_3_sel = f"#containers-containers tbody tr[data-row-id=\"0-{container_3_id}\"]"
-            b.wait_visible(container_3_sel + " .ct-badge-service:contains('service')")
+        self.createQuadlet("container_3", containerName="container_3", auth=True)
+        container_3_id = m.execute("podman container inspect --format '{{.Id}}' container_3").strip()
+        self.waitContainerRow('container_3')
+        container_3_sel = f"#containers-containers tbody tr[data-row-id=\"0-{container_3_id}\"]"
+        b.wait_visible(container_3_sel + " .ct-badge-service:contains('service')")
 
-            # Kube container, check that *-service container is hidden
-            self.createKubeDeployment("jellyfin", auth=True)
-            containerId = self.execute("podman inspect --format '{{.Id}}' jellyfin-pod-jellyfin", system=True).strip()
-            self.waitPodContainer("jellyfin-pod", [{"name": "jellyfin-pod-jellyfin", "image": IMG_BUSYBOX,
-                                  "command": "", "state": "Running", "id": containerId}],
-                                  system=True)
-            service_container = m.execute("podman ps --all --filter name=.*-service --format {{.Names}}").strip()
-            b.wait_not_present(f"#containers-containers tbody tr[data-row-id=\"{service_container}\"]")
+        # Kube container, check that *-service container is hidden
+        self.createKubeDeployment("jellyfin", auth=True)
+        containerId = self.execute("podman inspect --format '{{.Id}}' jellyfin-pod-jellyfin", system=True).strip()
+        self.waitPodContainer("jellyfin-pod", [{"name": "jellyfin-pod-jellyfin", "image": IMG_BUSYBOX,
+                              "command": "", "state": "Running", "id": containerId}],
+                              system=True)
+        service_container = m.execute("podman ps --all --filter name=.*-service --format {{.Names}}").strip()
+        b.wait_not_present(f"#containers-containers tbody tr[data-row-id=\"{service_container}\"]")
 
         # opencontainer annotations https://specs.opencontainers.org/image-spec/annotations/
         label_image = "localhost/label-image:latest"
@@ -3199,23 +3166,22 @@ Yaml={name}.yaml
         b.set_input_text('#create-pod-dialog-publish-3-container-port', '9001')
 
         # Volumes
-        if self.machine.image not in ["ubuntu-2204"]:
-            b.click('.volume-form .btn-add')
-            rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
-            m.execute(f"chown admin:admin {rodir}")
-            m.execute(f"chown admin:admin {rwdir}")
+        b.click('.volume-form .btn-add')
+        rodir, rwdir = m.execute("mktemp; mktemp").split('\n')[:2]
+        m.execute(f"chown admin:admin {rodir}")
+        m.execute(f"chown admin:admin {rwdir}")
 
-            if self.has_selinux:
-                b.set_val('#create-pod-dialog-volume-0-selinux', "z")
-            else:
-                b.wait_not_present('#create-pod-dialog-volume-0-selinux')
+        if self.has_selinux:
+            b.set_val('#create-pod-dialog-volume-0-selinux', "z")
+        else:
+            b.wait_not_present('#create-pod-dialog-volume-0-selinux')
 
-            b.set_file_autocomplete_val("#create-pod-dialog-volume-0", rodir)
-            b.set_input_text('#create-pod-dialog-volume-0-container-path', '/tmp/ro')
-            b.click('.volume-form .btn-add')
+        b.set_file_autocomplete_val("#create-pod-dialog-volume-0", rodir)
+        b.set_input_text('#create-pod-dialog-volume-0-container-path', '/tmp/ro')
+        b.click('.volume-form .btn-add')
 
-            b.set_file_autocomplete_val("#create-pod-dialog-volume-1", rwdir)
-            b.set_input_text('#create-pod-dialog-volume-1-container-path', '/tmp/rw')
+        b.set_file_autocomplete_val("#create-pod-dialog-volume-1", rwdir)
+        b.set_input_text('#create-pod-dialog-volume-1-container-path', '/tmp/rw')
 
         if auth:
             b.assert_pixels(".pf-v6-c-modal-box",
@@ -3238,11 +3204,10 @@ Yaml={name}.yaml
         self.toggleExpandedContainer(container_name, system=auth)
         container_sel = self.getContainerSelector(container_name, system=auth)
         b.click(".pf-m-expanded button:contains('Integration')")
-        if self.machine.image not in ["ubuntu-2204"]:
-            b.wait_in_text(f'{container_sel} + tr .container-integration-volumes',
-                           f"{rodir} \u2194 /tmp/ro")
-            b.wait_in_text(f'{container_sel} + tr .container-integration-volumes',
-                           f"{rwdir} \u2194 /tmp/rw")
+        b.wait_in_text(f'{container_sel} + tr .container-integration-volumes',
+                       f"{rodir} \u2194 /tmp/ro")
+        b.wait_in_text(f'{container_sel} + tr .container-integration-volumes',
+                       f"{rwdir} \u2194 /tmp/rw")
 
         b.wait_in_text(f'{container_sel} + tr .container-integration-ports',
                        '0.0.0.0:6000 \u2192 5000/tcp')
@@ -3263,7 +3228,6 @@ Yaml={name}.yaml
             self.waitPodContainer(pod_name, [])
 
     @testlib.skipBrowser("WebGL2 is not supported in firefox headless mode", "firefox")
-    @testlib.skipImage("passthrough log driver not supported", "ubuntu-2204")
     def testLogErrors(self) -> None:
         b = self.browser
         m = self.machine
@@ -3286,8 +3250,7 @@ Yaml={name}.yaml
         b.wait_in_text("#host-apps .pf-m-current", "Overview")
 
         if (m.image.startswith("rhel-8") or
-                m.image.startswith("centos-8") or
-                m.image in ["ubuntu-2204"]) and not m.ws_container:
+                m.image.startswith("centos-8")) and not m.ws_container:
             # C bridge does not understand manifest conditions yet, and still shows the menu
             self.assertIn("Podman", b.text("#host-apps"))
         else:
@@ -3380,7 +3343,7 @@ Yaml={name}.yaml
         b.wait_text("button.pf-v6-c-menu__item:not([disabled])", "localhost:5000/my-busybox:search-tag")
         b.wait_js_cond("document.querySelectorAll('.pf-v6-c-menu__item:not([disabled])').length === 1")
 
-    @testlib.skipImage("page does not survive this with the C bridge", "ubuntu-2204", "rhel-8-*")
+    @testlib.skipImage("page does not survive this with the C bridge", "rhel-8-*")
     def testReconnectStability(self) -> None:
         # reloading the page reconnects to the podman services; make sure this works reliably
         b = self.browser
@@ -3579,12 +3542,12 @@ Yaml={name}.yaml
                         system=system)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
-    @testlib.skipImage("no quadlet support", "ubuntu-2204", "rhel-8-10")
+    @testlib.skipImage("no quadlet support", "rhel-8-10")
     def testQuadletsSystem(self) -> None:
         self._testQuadlets(system=True)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
-    @testlib.skipImage("no quadlet support", "ubuntu-2204", "rhel-8-10")
+    @testlib.skipImage("no quadlet support", "rhel-8-10")
     def testQuadletsUsers(self) -> None:
         self._testQuadlets(system=False)
 
@@ -3710,7 +3673,7 @@ Yaml={name}.yaml
 
         # check quadlet detection
         # old podman versions don't have quadlet support
-        if m.image not in ["rhel-8-10", "ubuntu-2204"]:
+        if m.image not in ["rhel-8-10"]:
             ssh['guitar'].execute("podman rm -f --all")
 
             quadlet = """[Container]
