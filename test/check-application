@@ -1519,11 +1519,11 @@ Yaml={name}.yaml
         # Check we show usage
         b.wait(lambda: self.getContainerAttr("swamped-crate", "CPU", "", system=auth) != "")
         b.wait(lambda: self.getContainerAttr("swamped-crate", "Memory", "", system=auth) != "")
-        memory = self.getContainerAttr("swamped-crate", "Memory", "", system=auth)
         if auth or self.has_cgroupsV2:
             # Wait for CPU usage to settle before saving CPU usage for comparison later
             b.wait(lambda: get_cpu_usage("swamped-crate") < 25)
             cpu = get_cpu_usage("swamped-crate")
+            memory = self.getContainerAttr("swamped-crate", "Memory", "", system=auth)
 
             # swamped-crate has no explicit --memory limit
             m = re.match(r'([0-9]+)%([0-9.]+) kB$', memory)
@@ -1566,6 +1566,7 @@ Yaml={name}.yaml
             self.assertEqual(m.group(4), "419")
         else:
             # No support for CGroupsV2
+            memory = self.getContainerAttr("swamped-crate", "Memory", "", system=auth)
             self.assertEqual(self.getContainerAttr("picket-fence", "CPU", "", system=auth), "n/a")
             self.assertEqual(memory, "n/a")
 
