@@ -4,7 +4,7 @@
 
 set -eu
 
-export RUN_TESTS_OPTIONS=--track-naughties
+export RUN_TESTS_OPTIONS="--track-naughties --trace --verbose"
 
 TEST_SCENARIO=${TEST_SCENARIO:-}
 [ "${TEST_SCENARIO}" = "${TEST_SCENARIO##firefox}" ] || export TEST_BROWSER=firefox
