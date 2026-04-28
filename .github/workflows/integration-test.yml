@@ -1,0 +1,56 @@
+name: Test
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # TODO: read from bots test map
+        test_os:
+          - centos-9-bootc
+          - fedora-43
+
+    steps:
+      - name: Set up /dev/kvm
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm --settle
+          ls -l /dev/kvm
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Start tasks container
+        run: |
+          podman run -d --rm --name tasks \
+            --user github \
+            --init \
+            --device /dev/kvm \
+            --shm-size=512m \
+            --env TEST_OS=${{ matrix.test_os }} \
+            --env HOME=/tmp/home \
+            -v ${{ github.workspace }}:/workspace:U \
+            -w /workspace \
+            $(< .cockpit-ci/container) sh -c 'sleep infinity'
+
+      - name: Create home dir
+        run: podman exec tasks mkdir -p /tmp/home
+
+      # https://github.blog/2022-04-12-git-security-vulnerability-announced/
+      - name: Pacify git's permission check
+        run: podman exec tasks git config --global --add safe.directory /workspace
+
+      - name: Build package and test VM
+        run: podman exec tasks make prepare-check
+
+      - name: Run integration tests
+        run: podman exec tasks make check
