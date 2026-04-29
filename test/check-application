@@ -177,6 +177,22 @@ class TestApplication(testlib.MachineCase):
                 self.execute('for c in $(podman ps -aq); do echo "---- $c ----" >&2; podman logs $c >&2; done',
                              system=auth)
 
+        # HACK: avoid failing tests on oopses when cleaning up containers below
+        if self.browser.have_test_api():
+            self.browser.switch_to_top()
+            if self.browser.is_present("#toggle-menu"):
+                self.browser.logout()
+
+        # Stop user containers; testlib's _terminate_sessions() kills the users, but this is cleaner
+        # https://lore.kernel.org/regressions/afHNg2VX2jy9bW7y@piware.de/T/#u
+        self.machine.execute("""
+            cd /tmp
+            for u in $(loginctl --no-legend list-users | awk '{ if ($2 != "root") print $1 }'); do
+                username=$(id -nu $u)
+                runuser -u $username -- env XDG_RUNTIME_DIR=/run/user/$u podman rm -f -t0 --all || true
+            done
+            """)
+
         super().tearDown()
 
     def podman_version(self) -> tuple[int, ...]:
