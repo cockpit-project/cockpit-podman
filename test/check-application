@@ -177,6 +177,35 @@ class TestApplication(testlib.MachineCase):
                 self.execute('for c in $(podman ps -aq); do echo "---- $c ----" >&2; podman logs $c >&2; done',
                              system=auth)
 
+        # cockpit-podman crashes when sessions are terminated
+        # while it is open, so let's log out here.
+        # TODO - find and fix those crashes
+        if self.browser.have_test_api():
+            self.browser.switch_to_top()
+            if self.browser.is_present("#toggle-menu"):
+                self.browser.logout()
+
+        # Gently bring down the admin session. This usually gets stuck
+        # on "conmon" and some "sleep" in a container and we could
+        # just wait for that to timeout and systemd to kill them
+        # forcefully. But we can help a bit by killing those processes
+        # early with SIGKILL.
+        #
+        # The session termination code in super.tearDown() is quite
+        # agressive with shooting "pkill -9" at all processes and that
+        # seems to upset something somewhere to the point where a
+        # number of processes owned by "admin" end up in a permanent
+        # "<defunct>" state, with some versions of the kernel,
+        # sometimes, which in turn somehow gets PID 1 stuck.
+
+        self.machine.execute("""
+        set -x; for u in $(loginctl --no-legend list-users  | awk '{ if ($2 != "root") print $1 }'); do
+            loginctl terminate-user $u      # kick off the termination
+            pkill -9 -u $u conmon || true   # help it a bit
+            pkill -9 -u $u sleep || true
+            systemctl stop user@$u.service  # wait for it to finish
+        done""", timeout=300)
+
         super().tearDown()
 
     def podman_version(self) -> tuple[int, ...]:
