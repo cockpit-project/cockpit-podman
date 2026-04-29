@@ -137,16 +137,16 @@ class TestApplication(testlib.MachineCase):
                                                     identity_file=m.identity_file)
 
         # Enable user service as well; copy our images (except cockpit/ws) from system
-        self.admin_s.execute("""
+        self.execute("""
             systemctl --user stop podman.service
             for img in $(ls /var/lib/test-images/*.tar | grep -v cockpitws); do podman load < "$img"; done
-            """)
-        self.addCleanup(self.admin_s.execute, """
+            """, system=False)
+        self.addCleanup(self.execute, """
             systemctl --user stop podman.service podman.socket
             podman system reset --force
-            """)
-        self.addCleanup(self.admin_s.execute, "podman rm --force --time 0 --all")
-        self.addCleanup(self.admin_s.execute, "podman pod rm --force --time 0 --all")
+            """, system=False)
+        self.addCleanup(self.execute, "podman rm --force --time 0 --all", system=False)
+        self.addCleanup(self.execute, "podman pod rm --force --time 0 --all", system=False)
 
         self.allow_journal_messages("/run.*/podman/podman: couldn't connect.*")
         self.allow_journal_messages(".*/run.*/podman/podman.*Connection reset by peer")
@@ -1639,8 +1639,8 @@ Yaml={name}.yaml
             # On cgroupsv1 systems just check that we get expected error messages
 
             # Run a container
-            self.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh", system=True)
-            b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate", system=True))
+            m.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh")
+            b.wait(lambda: m.execute("podman ps --all | grep -e swamped-crate"))
 
             # Checkpoint the container
             self.performContainerAction("swamped-crate", "Checkpoint", system=True)
@@ -1662,10 +1662,10 @@ Yaml={name}.yaml
 
         # Run a container
         mac_address = '92:d0:c6:0a:29:38'
-        self.execute(f"""
+        m.execute(f"""
             podman run -dit --mac-address {mac_address} --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh;
             podman stop swamped-crate
-        """, system=True)
+        """)
         b.wait(lambda: self.execute("podman ps --all | grep -e swamped-crate -e Exited", system=True))
 
         # Check that the restore option is not present (i.e. start is a regular button)
