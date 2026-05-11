@@ -3148,6 +3148,19 @@ Yaml={name}.yaml
                             "href"
                          ),
                          "https://cockpit-project.org")
+        b.click(f"#containers-images tr[data-row-id='0-{img_id}'] td.pf-v6-c-table__toggle button")
+        b.wait_not_present("#containers-images tbody.pf-m-expanded tr .image-details [data-label='description']")
+
+        # External links can't execute JavaScript
+        doc_label = "--label org.opencontainers.image.documentation='javascript:alert(document.cookie)'"
+        version_label = "--label org.opencontainers.image.version='666'"
+        malicious_image = "localhost/invalid-url-image:latest"
+        m.execute(f"""podman build -t {malicious_image} {doc_label} {version_label} {tmpdir}""")
+        checkImage(b, malicious_image, "system")
+        img_id = m.execute(f"podman inspect --format '{{{{ .Id }}}}' {malicious_image}").strip()
+        b.click(f"#containers-images tr[data-row-id='0-{img_id}'] td.pf-v6-c-table__toggle button")
+        b.wait_text("#containers-images tbody.pf-m-expanded tr .image-details [data-label='version']", "666")
+        b.wait_not_present("#containers-images tbody.pf-m-expanded tr .image-details [data-label='documentation'] a")
 
     def testCreatePodSystem(self) -> None:
         self._createPod(auth=True)

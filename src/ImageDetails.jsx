@@ -11,6 +11,15 @@ import * as utils from './util.js';
 
 const _ = cockpit.gettext;
 
+const isSafeUrl = (url) => {
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol.startsWith('http');
+    } catch {
+        return false;
+    }
+};
+
 const ImageDetails = ({ containers, image, showAll }) => {
     const labels = image?.Labels;
 
@@ -32,11 +41,11 @@ const ImageDetails = ({ containers, image, showAll }) => {
                 <DescriptionListDescription data-label="version">{imageVersion}</DescriptionListDescription>
             </DescriptionListGroup>
             }
-            {imageDocumentation &&
+            {imageDocumentation && isSafeUrl(imageDocumentation) &&
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("Links")}</DescriptionListTerm>
                 <DescriptionListDescription data-label="documentation">
-                    <Button variant="link" isInline component="a" href={imageDocumentation} target="_blank noreferrer">
+                    <Button variant="link" isInline component="a" href={imageDocumentation} target="_blank" rel="noopener noreferrer">
                         {_("Documentation")}
                     </Button>
                 </DescriptionListDescription>
