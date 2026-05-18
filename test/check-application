@@ -1738,13 +1738,9 @@ Yaml={name}.yaml
         b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in 'Running')
 
         # A new MAC address should have been generated
-        # Fixed in podman 4.4.0 https://github.com/containers/podman/issues/16666
         cmd = "podman inspect --format '{{.NetworkSettings.MacAddress}}' swamped-crate"
         new_mac_address = m.execute(cmd).strip()
-        if self.podman_version() >= (4, 4, 0):
-            self.assertNotEqual(new_mac_address, mac_address)
-        else:
-            self.assertEqual(new_mac_address, mac_address)
+        self.assertNotEqual(new_mac_address, mac_address)
 
         # Checkpoint the container without stopping
         self.waitContainerRow("swamped-crate")
