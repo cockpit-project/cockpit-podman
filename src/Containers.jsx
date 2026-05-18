@@ -159,8 +159,7 @@ const ContainerActions = ({ con, container, onAddNotification, localImages, upda
     const renameContainer = () => {
         if (container.State.Status !== "running") {
             Dialogs.show(<ContainerRenameModal con={con}
-                                               container={container}
-                                               updateContainer={updateContainer} />);
+                                               container={container} />);
         }
     };
 
