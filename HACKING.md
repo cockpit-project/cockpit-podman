@@ -113,3 +113,38 @@ request against a cockpit-podman pull request directly, but this can be
 achieved by using the packit copr build from the Cockpit pull request:
 
     ./bots/tests-trigger fedora-42/copr/packit/cockpit-project-cockpit-$prid
+
+# Debugging tips
+
+Snippet collection for interactive testing or writing podman/upstream bug reproducers.
+
+ * Run a tiny container:
+
+   This is useful for exercising the podman API/CLI without taking much resources, and without needing any other setup:
+
+   ```sh
+   podman run -d --rm --name test docker.io/busybox sleep infinity
+   ```
+
+  * [API](https://docs.podman.io/en/stable/_static/api.html) access with `curl`:
+
+    ```sh
+    systemctl start podman.socket
+
+    # list all containers
+    curl --unix-socket /run/podman/podman.sock http://nothing/v3.4.0/libpod/containers/json
+
+    # create container similar to above
+    curl --unix-socket /run/podman/podman.sock --json '{"image": "docker.io/busybox", "name": "c1",  "command": ["sleep", "infinity"], "remove": true}' http://nothing/v3.4.0/libpod/containers/create
+
+    # get container info
+    curl --unix-socket /run/podman/podman.sock http://none/v3.4.0/libpod/containers/c1/json
+
+    # rename container to "c2":
+    curl --unix-socket /run/podman/podman.sock -XPOST 'http://none/v3.4.0/libpod/containers/c1/rename?name=c2'
+
+    # error message: repository name must be lowercase
+    curl --unix-socket /run/podman/podman.sock -XPOST 'http://none/v3.4.0/libpod/commit?container=c2&repo=localhost/FOO'
+    ```
+
+    When doing this as user, the socket is `$XDG_RUNTIME_DIR/podman/podman.socket`.
