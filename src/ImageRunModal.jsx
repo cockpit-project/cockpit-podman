@@ -750,7 +750,7 @@ export class ImageRunModal extends React.Component {
 
     render() {
         const Dialogs = this.props.dialogs;
-        const { registries, userLingeringEnabled, userPodmanRestartAvailable, selinuxAvailable, version } = this.props.podmanInfo;
+        const { registries, userLingeringEnabled, userPodmanRestartAvailable, selinuxAvailable } = this.props.podmanInfo;
         const { image } = this.props;
         const dialogValues = this.state;
         const { activeTabKey, owner, selectedImage } = this.state;
@@ -1174,7 +1174,6 @@ export class ImageRunModal extends React.Component {
                                     onPlus={() => this.onPlusOne('healthcheck_retries')}
                                     onChange={ev => this.onNumberValue('healthcheck_retries', ev.target.value)} />
                             </FormGroup>
-                            {version.localeCompare("4.3", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
                             <FormGroup isInline hasNoPaddingTop fieldId='run-image-healthcheck-action' label={_("When unhealthy") }
                               labelHelp={
                                   <Popover aria-label={_("Health failure check action help")}
@@ -1192,7 +1191,6 @@ export class ImageRunModal extends React.Component {
                                        onChange={() => this.onValueChanged('healthcheck_action', item.value)} />
                                 )}
                             </FormGroup>
-                            }
                         </FormSection>
                     </Tab>
                 </Tabs>
