@@ -687,7 +687,7 @@ class Application extends React.Component {
                 return;
             }
 
-            cockpit.script("echo $XDG_RUNTIME_DIR")
+            cockpit.spawn(["printenv", "XDG_RUNTIME_DIR"])
                     .then(xrd => {
                         sessionStorage.setItem('XDG_RUNTIME_DIR', xrd.trim());
                         this.init(null, user.name || _("User"));
