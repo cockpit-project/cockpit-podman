@@ -24,7 +24,7 @@ import * as utils from './util.js';
 const _ = cockpit.gettext;
 
 export const PodCreateModal = ({ users }) => {
-    const { version, selinuxAvailable } = utils.usePodmanInfo();
+    const { selinuxAvailable } = utils.usePodmanInfo();
     const [podName, setPodName] = useState(dockerNames.getRandomName());
     const [publish, setPublish] = useState([]);
     const [volumes, setVolumes] = useState([]);
@@ -190,17 +190,15 @@ export const PodCreateModal = ({ users }) => {
                         default={{ IP: null, containerPort: null, hostPort: null, protocol: 'tcp' }}
                         itemcomponent={PublishPort} />
 
-            {version.localeCompare("4", undefined, { numeric: true, sensitivity: 'base' }) >= 0 &&
-                <DynamicListForm id='create-pod-dialog-volume'
-                            emptyStateString={_("No volumes specified")}
-                            formclass='volume-form'
-                            label={_("Volumes")}
-                            actionLabel={_("Add volume")}
-                            onChange={value => setVolumes(value)}
-                            default={{ containerPath: null, hostPath: null, mode: 'rw' }}
-                            options={{ selinuxAvailable }}
-                            itemcomponent={Volume} />
-            }
+            <DynamicListForm id='create-pod-dialog-volume'
+                        emptyStateString={_("No volumes specified")}
+                        formclass='volume-form'
+                        label={_("Volumes")}
+                        actionLabel={_("Add volume")}
+                        onChange={value => setVolumes(value)}
+                        default={{ containerPath: null, hostPath: null, mode: 'rw' }}
+                        options={{ selinuxAvailable }}
+                        itemcomponent={Volume} />
 
         </Form>
     );
