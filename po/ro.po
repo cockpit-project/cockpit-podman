@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-12 05:54+0000\n"
+"POT-Creation-Date: 2026-05-17 06:03+0000\n"
 "PO-Revision-Date: 2026-03-16 21:58+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <https://translate.fedoraproject.org/projects/"
@@ -72,7 +72,7 @@ msgstr "Acțiunea de efectuat odată ce containerul trece într-o stare nedorit�
 msgid "Actions"
 msgstr "Acțiuni"
 
-#: src/ImageRunModal.jsx:1049 src/PodCreateModal.jsx:186
+#: src/PodCreateModal.jsx:186 src/ImageRunModal.jsx:1049
 msgid "Add port mapping"
 msgstr "Adaugă corespondența de porturi"
 
@@ -80,12 +80,12 @@ msgstr "Adaugă corespondența de porturi"
 msgid "Add variable"
 msgstr "Adaugă variabilă"
 
-#: src/ImageRunModal.jsx:1059 src/PodCreateModal.jsx:198
+#: src/PodCreateModal.jsx:198 src/ImageRunModal.jsx:1059
 msgid "Add volume"
 msgstr "Adaugă volum"
 
-#: src/ImageRunModal.jsx:769 src/ContainerHeader.tsx:39 src/Containers.jsx:900
-#: src/ImageDeleteModal.jsx:105
+#: src/ContainerHeader.tsx:39 src/ImageDeleteModal.jsx:105
+#: src/Containers.jsx:900 src/ImageRunModal.jsx:769
 msgid "All"
 msgstr "Toate"
 
@@ -127,12 +127,13 @@ msgstr ""
 "Prioritatea implicită este 1024. O valoare mai mare acordă prioritate "
 "acestui container. O valoare mai mică reduce prioritatea."
 
-#: src/ContainerCommitModal.jsx:167 src/ContainerRenameModal.jsx:107
-#: src/ImageSearchModal.jsx:226 src/ImageRunModal.jsx:1231
-#: src/ContainerRestoreModal.jsx:73 src/PruneUnusedImagesModal.jsx:113
-#: src/PruneUnusedContainersModal.jsx:112 src/ContainerCheckpointModal.jsx:67
-#: src/PodCreateModal.jsx:225 src/PodActions.jsx:72 src/ForceRemoveModal.jsx:34
-#: src/ImageDeleteModal.jsx:126 src/ContainerDeleteModal.jsx:44
+#: src/PruneUnusedContainersModal.jsx:112 src/PodActions.jsx:72
+#: src/ContainerDeleteModal.jsx:44 src/ContainerCheckpointModal.jsx:67
+#: src/ContainerRenameModal.jsx:107 src/ContainerCommitModal.jsx:167
+#: src/ImageDeleteModal.jsx:126 src/PodCreateModal.jsx:225
+#: src/ContainerRestoreModal.jsx:73 src/ImageSearchModal.jsx:226
+#: src/ImageRunModal.jsx:1231 src/PruneUnusedImagesModal.jsx:113
+#: src/ForceRemoveModal.jsx:34
 msgid "Cancel"
 msgstr "Anulează"
 
@@ -168,9 +169,9 @@ msgstr "Proiectul Cockpit"
 msgid "Cockpit component for Podman containers"
 msgstr "Componentă Cockpit pentru containerele Podman"
 
-#: src/ContainerCommitModal.jsx:117 src/ImageRunModal.jsx:928
-#: src/ImageRunModal.jsx:1082 src/ContainerDetails.jsx:44
-#: src/ImageDetails.jsx:47 src/ContainerHealthLogs.jsx:50
+#: src/ImageDetails.jsx:56 src/ContainerCommitModal.jsx:117
+#: src/ContainerDetails.jsx:44 src/ImageRunModal.jsx:928
+#: src/ImageRunModal.jsx:1082 src/ContainerHealthLogs.jsx:50
 msgid "Command"
 msgstr "Comandă"
 
@@ -238,7 +239,7 @@ msgstr "Portul containerului nu trebuie să fie gol"
 msgid "Containers"
 msgstr "Containere"
 
-#: src/ImageRunModal.jsx:1228 src/PodCreateModal.jsx:222
+#: src/PodCreateModal.jsx:222 src/ImageRunModal.jsx:1228
 msgid "Create"
 msgstr "Creează"
 
@@ -250,8 +251,8 @@ msgstr "Creează o nouă imagine pe baza stării actuale a containerului $0."
 msgid "Create and run"
 msgstr "Creează și execută"
 
-#: src/ImageRunModal.jsx:1217 src/Images.jsx:439 src/Images.jsx:448
-#: src/Containers.jsx:917
+#: src/Containers.jsx:917 src/ImageRunModal.jsx:1217 src/Images.jsx:439
+#: src/Images.jsx:448
 msgid "Create container"
 msgstr "Creează container"
 
@@ -267,8 +268,9 @@ msgstr "Creează container în capsulă „pod”"
 msgid "Create pod"
 msgstr "Creează capsulă „pod”"
 
-#: src/util.tsx:41 src/util.tsx:44 src/PruneUnusedContainersModal.jsx:69
-#: src/ContainerDetails.jsx:81 src/Images.jsx:191 src/ImageHistory.jsx:34
+#: src/PruneUnusedContainersModal.jsx:69 src/ImageHistory.jsx:34
+#: src/ContainerDetails.jsx:81 src/util.tsx:41 src/util.tsx:44
+#: src/Images.jsx:191
 msgid "Created"
 msgstr "Creat"
 
@@ -304,8 +306,8 @@ msgstr "Reduce perioada de pornire"
 msgid "Decrease timeout"
 msgstr "Reduce timpul de așteptare"
 
-#: src/Images.jsx:459 src/Containers.jsx:291 src/PodActions.jsx:68
-#: src/PodActions.jsx:215 src/ContainerDeleteModal.jsx:43
+#: src/PodActions.jsx:68 src/PodActions.jsx:215 src/ContainerDeleteModal.jsx:43
+#: src/Containers.jsx:291 src/Images.jsx:459
 msgid "Delete"
 msgstr "Șterge"
 
@@ -313,7 +315,7 @@ msgstr "Șterge"
 msgid "Delete $0 image?"
 msgstr "Ștergeți imaginea $0?"
 
-#: src/ForceRemoveModal.jsx:22 src/ContainerDeleteModal.jsx:36
+#: src/ContainerDeleteModal.jsx:36 src/ForceRemoveModal.jsx:22
 msgid "Delete $0?"
 msgstr "Ștergeți $0?"
 
@@ -350,11 +352,11 @@ msgstr ""
 msgid "Deleting this pod will remove the following containers:"
 msgstr "Ștergerea acestei capsule „pod” va elimina următoarele containere:"
 
-#: src/ImageDetails.jsx:25
+#: src/ImageDetails.jsx:34
 msgid "Description"
 msgstr "Descriere"
 
-#: src/ImageRunModal.jsx:828 src/Images.jsx:161 src/Containers.jsx:502
+#: src/Containers.jsx:502 src/ImageRunModal.jsx:828 src/Images.jsx:161
 msgid "Details"
 msgstr "Detalii"
 
@@ -369,7 +371,7 @@ msgstr ""
 "Formatul Docker este util atunci când se partajează imaginea cu Docker sau "
 "Moby Engine"
 
-#: src/ImageDetails.jsx:40
+#: src/ImageDetails.jsx:49
 msgid "Documentation"
 msgstr "Documentație"
 
@@ -385,7 +387,7 @@ msgstr "Descărcați o imagine nouă"
 msgid "Empty pod $0 will be permanently removed."
 msgstr "Capsula goală $0 va fi eliminată definitiv."
 
-#: src/ImageRunModal.jsx:923 src/ImageDetails.jsx:53
+#: src/ImageDetails.jsx:62 src/ImageRunModal.jsx:923
 msgid "Entrypoint"
 msgstr "Punct de intrare"
 
@@ -413,7 +415,7 @@ msgstr "Exemplu: Numele dvs. <numele_dvs@example.com>"
 msgid "Example: $0"
 msgstr "Exemplu: $0"
 
-#: src/util.tsx:41 src/util.tsx:44 src/ContainerDetails.jsx:18
+#: src/ContainerDetails.jsx:18 src/util.tsx:41 src/util.tsx:44
 msgid "Exited"
 msgstr "Terminat"
 
@@ -565,11 +567,11 @@ msgstr "Forțează ștergerea"
 msgid "Force delete pod $0?"
 msgstr "Forțați ștergerea capsulei „pod” $0?"
 
-#: src/Containers.jsx:218 src/PodActions.jsx:160
+#: src/PodActions.jsx:160 src/Containers.jsx:218
 msgid "Force restart"
 msgstr "Forțează repornirea"
 
-#: src/ImageRunModal.jsx:65 src/Containers.jsx:210 src/PodActions.jsx:145
+#: src/PodActions.jsx:145 src/Containers.jsx:210 src/ImageRunModal.jsx:65
 #: src/ContainerHealthLogs.jsx:32
 msgid "Force stop"
 msgstr "Forțează oprirea"
@@ -582,7 +584,7 @@ msgstr "Go"
 msgid "Gateway"
 msgstr "Poartă de acces"
 
-#: src/ImageRunModal.jsx:1080 src/Containers.jsx:546
+#: src/Containers.jsx:546 src/ImageRunModal.jsx:1080
 msgid "Health check"
 msgstr "Verificarea stării de funcționare"
 
@@ -640,7 +642,7 @@ msgstr "Ajutor pentru portul gazdă"
 msgid "ID"
 msgstr "ID"
 
-#: src/ContainerDetails.jsx:64 src/PublishPort.jsx:57
+#: src/PublishPort.jsx:57 src/ContainerDetails.jsx:64
 msgid "IP address"
 msgstr "Adresă IP"
 
@@ -680,7 +682,7 @@ msgstr "Ignoră adresa IP dacă este definită static"
 msgid "Ignore MAC address if set statically"
 msgstr "Ignoră adresa MAC dacă este definită static"
 
-#: src/ImageRunModal.jsx:881 src/ContainerDetails.jsx:39 src/Images.jsx:189
+#: src/ContainerDetails.jsx:39 src/ImageRunModal.jsx:881 src/Images.jsx:189
 msgid "Image"
 msgstr "Imagine"
 
@@ -728,7 +730,7 @@ msgstr "Mărește perioada de pornire"
 msgid "Increase timeout"
 msgstr "Mărește timpul de așteptare"
 
-#: src/ImageRunModal.jsx:1043 src/Containers.jsx:509
+#: src/Containers.jsx:509 src/ImageRunModal.jsx:1043
 msgid "Integration"
 msgstr "Integrare"
 
@@ -752,7 +754,7 @@ msgstr ""
 msgid "KB"
 msgstr "Ko"
 
-#: src/ContainerRestoreModal.jsx:52 src/ContainerCheckpointModal.jsx:49
+#: src/ContainerCheckpointModal.jsx:49 src/ContainerRestoreModal.jsx:52
 msgid "Keep all temporary checkpoint files"
 msgstr "Păstrează toate fișierele temporare ale punctelor de control"
 
@@ -784,11 +786,11 @@ msgstr "Ultimul punct de control"
 msgid "Leave running after writing checkpoint to disk"
 msgstr "Lasă rularea să continue după scrierea punctului de control pe disc"
 
-#: src/ImageDetails.jsx:37
+#: src/ImageDetails.jsx:46
 msgid "Links"
 msgstr "Legături"
 
-#: src/ContainerIntegration.jsx:135 src/ImageHistory.jsx:60
+#: src/ImageHistory.jsx:60 src/ContainerIntegration.jsx:135
 msgid "Loading details..."
 msgstr "Se încarcă detaliile..."
 
@@ -796,7 +798,7 @@ msgstr "Se încarcă detaliile..."
 msgid "Loading logs..."
 msgstr "Se încarcă jurnalele..."
 
-#: src/ImageUsedBy.jsx:15 src/Images.jsx:198 src/Containers.jsx:746
+#: src/Containers.jsx:746 src/Images.jsx:198 src/ImageUsedBy.jsx:15
 msgid "Loading..."
 msgstr "Se încarcă…"
 
@@ -850,8 +852,8 @@ msgstr ""
 msgid "Must be a valid IP address"
 msgstr "Trebuie să fie o adresă IP validă"
 
-#: src/ImageRunModal.jsx:810 src/PruneUnusedContainersModal.jsx:68
-#: src/PodCreateModal.jsx:153
+#: src/PruneUnusedContainersModal.jsx:68 src/PodCreateModal.jsx:153
+#: src/ImageRunModal.jsx:810
 msgid "Name"
 msgstr "Nume"
 
@@ -912,7 +914,7 @@ msgstr "Nu există imagini care să corespundă filtrului actual"
 msgid "No label"
 msgstr "Fără etichetă"
 
-#: src/ImageRunModal.jsx:1046 src/PodCreateModal.jsx:183
+#: src/PodCreateModal.jsx:183 src/ImageRunModal.jsx:1046
 msgid "No ports exposed"
 msgstr "Nu există porturi expuse"
 
@@ -924,7 +926,7 @@ msgstr "Nu s-au găsit rezultate pentru $0"
 msgid "No running containers"
 msgstr "Nu există containere în execuție"
 
-#: src/ImageRunModal.jsx:1056 src/PodCreateModal.jsx:195
+#: src/PodCreateModal.jsx:195 src/ImageRunModal.jsx:1056
 msgid "No volumes specified"
 msgstr "Nu s-au specificat volume"
 
@@ -940,9 +942,9 @@ msgstr "Doar cele în execuție"
 msgid "Options"
 msgstr "Opțiuni"
 
-#: src/ImageSearchModal.jsx:147 src/ImageRunModal.jsx:831
 #: src/PruneUnusedContainersModal.jsx:75 src/ContainerHeader.tsx:32
-#: src/Images.jsx:190 src/Containers.jsx:731 src/PodCreateModal.jsx:171
+#: src/Containers.jsx:731 src/PodCreateModal.jsx:171
+#: src/ImageSearchModal.jsx:147 src/ImageRunModal.jsx:831 src/Images.jsx:190
 msgid "Owner"
 msgstr "Proprietar"
 
@@ -961,7 +963,7 @@ msgstr ""
 "Lipiți una sau mai multe linii de perechi cheie=valoare în orice câmp pentru "
 "importul în bloc"
 
-#: src/Containers.jsx:226 src/PodActions.jsx:199
+#: src/PodActions.jsx:199 src/Containers.jsx:226
 msgid "Pause"
 msgstr "Pauză"
 
@@ -993,11 +995,11 @@ msgstr "Containere Podman"
 msgid "Podman service failed"
 msgstr "Serviciul Podman a eșuat"
 
-#: src/ImageRunModal.jsx:1048 src/PodCreateModal.jsx:185
+#: src/PodCreateModal.jsx:185 src/ImageRunModal.jsx:1048
 msgid "Port mapping"
 msgstr "Corespondența de porturi"
 
-#: src/ContainerIntegration.jsx:151 src/ImageDetails.jsx:71
+#: src/ImageDetails.jsx:80 src/ContainerIntegration.jsx:151
 msgid "Ports"
 msgstr "Porturi"
 
@@ -1013,7 +1015,7 @@ msgstr "Privat"
 msgid "Protocol"
 msgstr "Protocol"
 
-#: src/PruneUnusedImagesModal.jsx:111 src/PruneUnusedContainersModal.jsx:110
+#: src/PruneUnusedContainersModal.jsx:110 src/PruneUnusedImagesModal.jsx:111
 msgid "Prune"
 msgstr "Eliminare"
 
@@ -1058,7 +1060,7 @@ msgstr "Acces numai-pentru-citire"
 msgid "Read-write access"
 msgstr "Acces numai-pentru-scriere"
 
-#: src/Volume.jsx:87 src/PublishPort.jsx:135 src/Env.jsx:98
+#: src/Env.jsx:98 src/Volume.jsx:87 src/PublishPort.jsx:135
 msgid "Remove item"
 msgstr "Elimină elementul"
 
@@ -1082,8 +1084,8 @@ msgstr "Redenumește containerul $0"
 msgid "Resource limits can be set"
 msgstr "Se pot stabili limite pentru resurse"
 
-#: src/util.tsx:41 src/ImageRunModal.jsx:63 src/Containers.jsx:199
-#: src/Containers.jsx:214 src/PodActions.jsx:152 src/ContainerHealthLogs.jsx:30
+#: src/PodActions.jsx:152 src/Containers.jsx:199 src/Containers.jsx:214
+#: src/util.tsx:41 src/ImageRunModal.jsx:63 src/ContainerHealthLogs.jsx:30
 msgid "Restart"
 msgstr "Repornește"
 
@@ -1110,7 +1112,7 @@ msgstr ""
 "putea să nu funcționeze în anumite circumstanțe, cum ar fi atunci când se "
 "utilizează ecryptfs, systemd-homed, NFS sau 2FA pe un cont de utilizator."
 
-#: src/ContainerRestoreModal.jsx:69 src/Containers.jsx:267
+#: src/Containers.jsx:267 src/ContainerRestoreModal.jsx:69
 msgid "Restore"
 msgstr "Restaurare"
 
@@ -1126,7 +1128,7 @@ msgstr "Restaurează cu conexiunile TCP stabilite"
 msgid "Restricted by user account permissions"
 msgstr "Restricționat de permisiunile contului de utilizator"
 
-#: src/Containers.jsx:233 src/PodActions.jsx:184
+#: src/PodActions.jsx:184 src/Containers.jsx:233
 msgid "Resume"
 msgstr "Reluare"
 
@@ -1206,7 +1208,7 @@ msgstr "Afișează mai mult"
 msgid "Size"
 msgstr "Dimensiune"
 
-#: src/Containers.jsx:256 src/PodActions.jsx:169
+#: src/PodActions.jsx:169 src/Containers.jsx:256
 msgid "Start"
 msgstr "Pornire"
 
@@ -1222,7 +1224,7 @@ msgstr "Începeți să tastați pentru a căuta imagini."
 msgid "Started at"
 msgstr "A început la"
 
-#: src/ContainerDetails.jsx:86 src/Containers.jsx:734
+#: src/Containers.jsx:734 src/ContainerDetails.jsx:86
 msgid "State"
 msgstr "Stare"
 
@@ -1230,8 +1232,8 @@ msgstr "Stare"
 msgid "Status"
 msgstr "Starea"
 
-#: src/ImageRunModal.jsx:64 src/Containers.jsx:195 src/Containers.jsx:206
-#: src/PodActions.jsx:137 src/ContainerHealthLogs.jsx:31
+#: src/PodActions.jsx:137 src/Containers.jsx:195 src/Containers.jsx:206
+#: src/ImageRunModal.jsx:64 src/ContainerHealthLogs.jsx:31
 msgid "Stop"
 msgstr "Stop"
 
@@ -1243,8 +1245,8 @@ msgstr "Oprit"
 msgid "Support preserving established TCP connections"
 msgstr "Suport pentru menținerea conexiunilor TCP stabilite"
 
-#: src/ImageRunModal.jsx:838 src/ImageRunModal.jsx:873
-#: src/PodCreateModal.jsx:175
+#: src/PodCreateModal.jsx:175 src/ImageRunModal.jsx:838
+#: src/ImageRunModal.jsx:873
 msgid "System"
 msgstr "Sistem"
 
@@ -1256,7 +1258,7 @@ msgstr "TCP"
 msgid "Tag"
 msgstr "Eticheta"
 
-#: src/ImageDetails.jsx:59
+#: src/ImageDetails.jsx:68
 msgid "Tags"
 msgstr "Etichete"
 
@@ -1333,7 +1335,7 @@ msgstr "În funcțiune de:"
 msgid "Use legacy Docker format"
 msgstr "Utilizează formatul Docker vechi"
 
-#: src/ImageDetails.jsx:65 src/Images.jsx:194
+#: src/ImageDetails.jsx:74 src/Images.jsx:194
 msgid "Used by"
 msgstr "Utilizat de"
 
@@ -1341,7 +1343,7 @@ msgstr "Utilizat de"
 msgid "User"
 msgstr "Utilizator"
 
-#: src/ImageRunModal.jsx:873 src/PodCreateModal.jsx:175
+#: src/PodCreateModal.jsx:175 src/ImageRunModal.jsx:873
 msgid "User:"
 msgstr "Utilizator:"
 
@@ -1349,7 +1351,7 @@ msgstr "Utilizator:"
 msgid "Value"
 msgstr "Valoarea"
 
-#: src/ImageDetails.jsx:31
+#: src/ImageDetails.jsx:40
 msgid "Version"
 msgstr "Versiunea"
 
@@ -1361,8 +1363,8 @@ msgstr "Vizualizare $0"
 msgid "View $0 logs"
 msgstr "Vizualizare $0 jurnale"
 
-#: src/ImageRunModal.jsx:1058 src/ContainerIntegration.jsx:155
-#: src/PodCreateModal.jsx:197
+#: src/PodCreateModal.jsx:197 src/ImageRunModal.jsx:1058
+#: src/ContainerIntegration.jsx:155
 msgid "Volumes"
 msgstr "Volume"
 
@@ -1435,8 +1437,8 @@ msgstr "secunde"
 msgid "service"
 msgstr "serviciu"
 
-#: src/PruneUnusedContainersModal.jsx:35 src/app.jsx:51 src/app.jsx:680
-#: src/Images.jsx:145 src/Containers.jsx:477
+#: src/PruneUnusedContainersModal.jsx:35 src/Containers.jsx:477
+#: src/Images.jsx:145 src/app.jsx:51 src/app.jsx:680
 msgid "system"
 msgstr "sistem"
 
@@ -1452,8 +1454,8 @@ msgstr "neutilizat"
 msgid "user"
 msgstr "utilizator"
 
-#: src/PruneUnusedContainersModal.jsx:35 src/Images.jsx:145
-#: src/Containers.jsx:477
+#: src/PruneUnusedContainersModal.jsx:35 src/Containers.jsx:477
+#: src/Images.jsx:145
 msgid "user:"
 msgstr "utilizator:"
 
