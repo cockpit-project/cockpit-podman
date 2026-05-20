@@ -177,6 +177,8 @@ class TestApplication(testlib.MachineCase):
                 self.execute('for c in $(podman ps -aq); do echo "---- $c ----" >&2; podman logs $c >&2; done',
                              system=auth)
 
+        super().tearDown()
+
         # HACK: avoid failing tests on oopses when cleaning up containers below
         if self.browser.have_test_api():
             self.browser.switch_to_top()
@@ -192,8 +194,6 @@ class TestApplication(testlib.MachineCase):
                 runuser -u $username -- env XDG_RUNTIME_DIR=/run/user/$u podman rm -f -t0 --all || true
             done
             """)
-
-        super().tearDown()
 
     def podman_version(self) -> tuple[int, ...]:
         version = self.execute("podman -v", system=False).strip().split(' ')[-1]
