@@ -27,8 +27,7 @@ const ImageUsedBy = ({ containers, showAll }) => {
                             <Button variant="link"
                                     isInline
                                     onClick={() => {
-                                        const loc = document.location.toString().split('#')[0];
-                                        document.location = `${loc}#${container.Id}`;
+                                        cockpit.location.go('#' + container.Id);
 
                                         if (!isRunning)
                                             showAll();
