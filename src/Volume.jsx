@@ -8,10 +8,10 @@ import { FormSelect, FormSelectOption } from "@patternfly/react-core/dist/esm/co
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
 import { Grid } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { TrashIcon } from '@patternfly/react-icons';
+import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 import { FormHelper } from "cockpit-components-form-helper.jsx";
 
 import cockpit from 'cockpit';
-import { FileAutoComplete } from 'cockpit-components-file-autocomplete.jsx';
 
 import * as utils from './util.js';
 

@@ -21,12 +21,12 @@ import { Bullseye } from "@patternfly/react-core/dist/esm/layouts/Bullseye/index
 import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid";
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
+import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
 import { FormHelper } from "cockpit-components-form-helper.jsx";
 import * as dockerNames from 'docker-names';
 import { debounce } from 'throttle-debounce';
 
 import cockpit from 'cockpit';
-import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
 import { TypeaheadSelect } from 'cockpit-components-typeahead-select';
 
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
