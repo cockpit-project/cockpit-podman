@@ -8,12 +8,12 @@ import {
 } from '@patternfly/react-core/dist/esm/components/Modal';
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio";
 import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput";
+import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
 import { FormHelper } from 'cockpit-components-form-helper.jsx';
 import { useDialogs } from "dialogs.jsx";
 import * as dockerNames from 'docker-names';
 
 import cockpit from 'cockpit';
-import { DynamicListForm } from 'cockpit-components-dynamic-list.jsx';
 
 import { ErrorNotification } from './Notification.tsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
