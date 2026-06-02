@@ -5,10 +5,10 @@ containers](https://podman.io/).
 
 ## Technologies
 
- - cockpit-podman communicates to podman through its [REST API](https://podman.readthedocs.io/en/latest/_static/api.html).
+ - cockpit-podman communicates to podman through its [REST API](https://docs.podman.io/en/latest/_static/api.html).
 
  - This project is based on the [Cockpit Starter Kit](https://github.com/cockpit-project/starter-kit).
-   See [Starter Kit Intro](http://cockpit-project.org/blog/cockpit-starter-kit.html) for details.
+   See [Starter Kit Intro](https://cockpit-project.org/blog/cockpit-starter-kit.html) for details.
 
 # Development dependencies
 
