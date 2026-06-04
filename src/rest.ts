@@ -67,6 +67,7 @@ export type MonitorCallbackRaw = (data: Uint8Array) => void;
 export type MonitorCallback = MonitorCallbackJson | MonitorCallbackRaw;
 
 // type predicate helper for narrowing which monitor callback is being used
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function isReturnRaw(return_raw: boolean, callback: MonitorCallback): callback is MonitorCallbackRaw {
     return return_raw;
 }
