@@ -19,6 +19,7 @@ import { ImageDeleteModal } from './ImageDeleteModal.jsx';
 import ImageDetails from './ImageDetails.jsx';
 import ImageHistory from './ImageHistory.jsx';
 import { ImageRunModal } from './ImageRunModal.jsx';
+import { ImageSearchDialogOpener } from './ImageSearchDialogOpener.jsx';
 import { ImageSearchModal } from './ImageSearchModal.jsx';
 import PruneUnusedImagesModal from './PruneUnusedImagesModal.jsx';
 import * as client from './client.js';
@@ -306,35 +307,40 @@ class Images extends React.Component {
         );
 
         return (
-            <Card id="containers-images" key="images" className="containers-images">
-                <CardHeader>
-                    <Flex flexWrap={{ default: 'nowrap' }} className="pf-v6-u-w-100">
-                        <FlexItem grow={{ default: 'grow' }}>
-                            <Flex>
-                                <CardTitle>
-                                    <Content component={ContentVariants.h1} className="containers-images-title">{_("Images")}</Content>
-                                </CardTitle>
-                                <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-t--global--spacer--xs)" }}>{imageTitleStats}</Flex>
-                            </Flex>
-                        </FlexItem>
-                        <FlexItem>
-                            <ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog}
+            <>
+                <ImageSearchDialogOpener
+                    downloadImage={this.downloadImage}
+                    users={this.props.users}
+                />
+                <Card id="containers-images" key="images" className="containers-images">
+                    <CardHeader>
+                        <Flex flexWrap={{ default: 'nowrap' }} className="pf-v6-u-w-100">
+                            <FlexItem grow={{ default: 'grow' }}>
+                                <Flex>
+                                    <CardTitle>
+                                        <Content component={ContentVariants.h1} className="containers-images-title">{_("Images")}</Content>
+                                    </CardTitle>
+                                    <Flex className="ignore-pixels" style={{ rowGap: "var(--pf-t--global--spacer--xs)" }}>{imageTitleStats}</Flex>
+                                </Flex>
+                            </FlexItem>
+                            <FlexItem>
+                                <ImageOverActions handleDownloadNewImage={this.onOpenNewImagesDialog}
                                               handlePullAllImages={this.onPullAllImages}
                                               handlePruneUsedImages={this.onOpenPruneUnusedImagesDialog}
                                               unusedImages={unusedImages} />
-                        </FlexItem>
-                    </Flex>
-                </CardHeader>
-                <CardBody>
-                    {this.props.images && Object.keys(this.props.images).length
-                        ? <ExpandableSection toggleText={this.state.isExpanded ? _("Hide images") : _("Show images")}
+                            </FlexItem>
+                        </Flex>
+                    </CardHeader>
+                    <CardBody>
+                        {this.props.images && Object.keys(this.props.images).length
+                            ? <ExpandableSection toggleText={this.state.isExpanded ? _("Hide images") : _("Show images")}
                                              onToggle={() => this.setState(prevState => ({ isExpanded: !prevState.isExpanded }))}
                                              isExpanded={this.state.isExpanded}>
-                            {cardBody}
-                        </ExpandableSection>
-                        : cardBody}
-                </CardBody>
-                {/* The PruneUnusedImagesModal dialog needs to keep
+                                {cardBody}
+                            </ExpandableSection>
+                            : cardBody}
+                    </CardBody>
+                    {/* The PruneUnusedImagesModal dialog needs to keep
                   * its list of unused images in sync with reality at
                   * all times since the API call will delete whatever
                   * is unused at the exact time of call, and the
@@ -342,17 +348,18 @@ class Images extends React.Component {
                   * unused images at that time.  Thus, we can't use
                   * Dialog.show for it but include it here in the
                   * DOM. */}
-                { this.state.showPruneUnusedImagesModal &&
+                    { this.state.showPruneUnusedImagesModal &&
                     <PruneUnusedImagesModal
                     close={() => this.setState({ showPruneUnusedImagesModal: false })}
                     unusedImages={unusedImages}
                     onAddNotification={this.props.onAddNotification}
                     users={this.props.users} />
-                }
-                {this.state.imageDownloadInProgress.length > 0 && <CardFooter>
-                    <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress.join(', ')}... </div>
-                </CardFooter>}
-            </Card>
+                    }
+                    {this.state.imageDownloadInProgress.length > 0 && <CardFooter>
+                        <div className='download-in-progress'> {_("Pulling")} {this.state.imageDownloadInProgress.join(', ')}... </div>
+                    </CardFooter>}
+                </Card>
+            </>
         );
     }
 }
