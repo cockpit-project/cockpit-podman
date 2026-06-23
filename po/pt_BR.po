@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-07 06:49+0000\n"
+"POT-Creation-Date: 2026-06-20 06:47+0000\n"
 "PO-Revision-Date: 2026-03-10 07:58+0000\n"
 "Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
 "Language-Team: Portuguese (Brazil) <https://translate.fedoraproject.org/"
@@ -62,7 +62,7 @@ msgstr "Ação a ser tomada quando o contêiner passa para um estado não ínteg
 msgid "Actions"
 msgstr "Ações"
 
-#: src/ImageRunModal.jsx:1049 src/PodCreateModal.jsx:186
+#: src/PodCreateModal.jsx:186 src/ImageRunModal.jsx:1049
 msgid "Add port mapping"
 msgstr "Adicionar mapeamento de porta"
 
@@ -70,12 +70,12 @@ msgstr "Adicionar mapeamento de porta"
 msgid "Add variable"
 msgstr "Adicionar variável"
 
-#: src/ImageRunModal.jsx:1059 src/PodCreateModal.jsx:197
+#: src/PodCreateModal.jsx:197 src/ImageRunModal.jsx:1059
 msgid "Add volume"
 msgstr "Adicionar volume"
 
-#: src/ContainerHeader.tsx:39 src/ImageRunModal.jsx:769
-#: src/ImageDeleteModal.jsx:105 src/Containers.jsx:899
+#: src/ContainerHeader.tsx:39 src/Containers.jsx:899 src/ImageRunModal.jsx:769
+#: src/ImageDeleteModal.jsx:105
 msgid "All"
 msgstr "Todos"
 
@@ -117,13 +117,13 @@ msgstr ""
 "A prioridade padrão é 1024. Um número maior prioriza este contêiner. Um "
 "número menor diminui a prioridade."
 
-#: src/ForceRemoveModal.jsx:34 src/ImageSearchModal.jsx:226
-#: src/ContainerDeleteModal.jsx:44 src/PruneUnusedImagesModal.jsx:113
-#: src/ContainerCommitModal.jsx:167 src/PodActions.jsx:72
-#: src/ImageRunModal.jsx:1229 src/PruneUnusedContainersModal.jsx:112
-#: src/ImageDeleteModal.jsx:126 src/ContainerRenameModal.jsx:100
-#: src/ContainerCheckpointModal.jsx:67 src/PodCreateModal.jsx:223
-#: src/ContainerRestoreModal.jsx:73
+#: src/PodCreateModal.jsx:223 src/ContainerCommitModal.jsx:167
+#: src/PruneUnusedContainersModal.jsx:112 src/ContainerCheckpointModal.jsx:67
+#: src/ContainerRenameModal.jsx:100 src/ForceRemoveModal.jsx:34
+#: src/ContainerRestoreModal.jsx:73 src/ContainerDeleteModal.jsx:44
+#: src/ImageSearchModal.jsx:226 src/ImageRunModal.jsx:1229
+#: src/PodActions.jsx:72 src/PruneUnusedImagesModal.jsx:113
+#: src/ImageDeleteModal.jsx:126
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -159,9 +159,9 @@ msgstr "Projeto Cockpit"
 msgid "Cockpit component for Podman containers"
 msgstr "Componente Cockpit para contêineres Podman"
 
-#: src/ContainerDetails.jsx:44 src/ContainerHealthLogs.jsx:50
-#: src/ContainerCommitModal.jsx:117 src/ImageRunModal.jsx:928
-#: src/ImageRunModal.jsx:1082 src/ImageDetails.jsx:56
+#: src/ContainerCommitModal.jsx:117 src/ImageDetails.jsx:56
+#: src/ContainerHealthLogs.jsx:50 src/ImageRunModal.jsx:928
+#: src/ImageRunModal.jsx:1082 src/ContainerDetails.jsx:44
 msgid "Command"
 msgstr "Comando"
 
@@ -229,7 +229,7 @@ msgstr "A porta do contêiner não pode estar vazia"
 msgid "Containers"
 msgstr "Contêineres"
 
-#: src/ImageRunModal.jsx:1226 src/PodCreateModal.jsx:220
+#: src/PodCreateModal.jsx:220 src/ImageRunModal.jsx:1226
 msgid "Create"
 msgstr "Criar"
 
@@ -241,8 +241,8 @@ msgstr "Crie uma nova imagem com base no estado atual do contêiner $0."
 msgid "Create and run"
 msgstr "Criar e executar"
 
-#: src/ImageRunModal.jsx:1215 src/Containers.jsx:916 src/Images.jsx:439
-#: src/Images.jsx:448
+#: src/Containers.jsx:916 src/Images.jsx:439 src/Images.jsx:448
+#: src/ImageRunModal.jsx:1215
 msgid "Create container"
 msgstr "Criar contêiner"
 
@@ -258,8 +258,8 @@ msgstr "Criar contêiner no pod"
 msgid "Create pod"
 msgstr "Criar pod"
 
-#: src/ContainerDetails.jsx:81 src/PruneUnusedContainersModal.jsx:69
-#: src/util.tsx:41 src/util.tsx:44 src/ImageHistory.jsx:34 src/Images.jsx:191
+#: src/PruneUnusedContainersModal.jsx:69 src/util.tsx:41 src/util.tsx:44
+#: src/ImageHistory.jsx:34 src/Images.jsx:191 src/ContainerDetails.jsx:81
 msgid "Created"
 msgstr "Criado"
 
@@ -295,8 +295,8 @@ msgstr "Diminuir o período de início"
 msgid "Decrease timeout"
 msgstr "Diminuir o tempo limite"
 
-#: src/ContainerDeleteModal.jsx:43 src/PodActions.jsx:68 src/PodActions.jsx:215
-#: src/Containers.jsx:290 src/Images.jsx:459
+#: src/Containers.jsx:290 src/ContainerDeleteModal.jsx:43 src/Images.jsx:459
+#: src/PodActions.jsx:68 src/PodActions.jsx:215
 msgid "Delete"
 msgstr "Excluir"
 
@@ -345,7 +345,7 @@ msgstr "Excluir este pod irá remover os seguintes contêineres:"
 msgid "Description"
 msgstr "Descrição"
 
-#: src/ImageRunModal.jsx:828 src/Containers.jsx:501 src/Images.jsx:161
+#: src/Containers.jsx:501 src/Images.jsx:161 src/ImageRunModal.jsx:828
 msgid "Details"
 msgstr "Detalhes"
 
@@ -375,11 +375,11 @@ msgstr "Baixar nova imagem"
 msgid "Empty pod $0 will be permanently removed."
 msgstr "O pod vazio $0 será removido permanentemente."
 
-#: src/ImageRunModal.jsx:923 src/ImageDetails.jsx:62
+#: src/ImageDetails.jsx:62 src/ImageRunModal.jsx:923
 msgid "Entrypoint"
 msgstr "Ponto de entrada"
 
-#: src/ImageRunModal.jsx:1070 src/ContainerIntegration.jsx:159
+#: src/ContainerIntegration.jsx:159 src/ImageRunModal.jsx:1070
 msgid "Environment variables"
 msgstr "Variáveis de ambiente"
 
@@ -403,7 +403,7 @@ msgstr "Exemplo, Seu Nome <seunome@example.com>"
 msgid "Example: $0"
 msgstr "Exemplo: $0"
 
-#: src/ContainerDetails.jsx:18 src/util.tsx:41 src/util.tsx:44
+#: src/util.tsx:41 src/util.tsx:44 src/ContainerDetails.jsx:18
 msgid "Exited"
 msgstr "Encerrado"
 
@@ -555,12 +555,12 @@ msgstr "Forçar exclusão"
 msgid "Force delete pod $0?"
 msgstr "Forçar exclusão do pod $0?"
 
-#: src/PodActions.jsx:160 src/Containers.jsx:217
+#: src/Containers.jsx:217 src/PodActions.jsx:160
 msgid "Force restart"
 msgstr "Forçar reinicialização"
 
-#: src/ContainerHealthLogs.jsx:32 src/PodActions.jsx:145
-#: src/ImageRunModal.jsx:65 src/Containers.jsx:209
+#: src/ContainerHealthLogs.jsx:32 src/Containers.jsx:209
+#: src/ImageRunModal.jsx:65 src/PodActions.jsx:145
 msgid "Force stop"
 msgstr "Forçar parada"
 
@@ -572,7 +572,7 @@ msgstr "GB"
 msgid "Gateway"
 msgstr "Gateway"
 
-#: src/ImageRunModal.jsx:1080 src/Containers.jsx:545
+#: src/Containers.jsx:545 src/ImageRunModal.jsx:1080
 msgid "Health check"
 msgstr "Verificação de integridade"
 
@@ -624,11 +624,11 @@ msgstr "Porta do host"
 msgid "Host port help"
 msgstr "Ajuda sobre o caminho do host"
 
-#: src/ContainerDetails.jsx:35 src/Images.jsx:192
+#: src/Images.jsx:192 src/ContainerDetails.jsx:35
 msgid "ID"
 msgstr "ID"
 
-#: src/ContainerDetails.jsx:64 src/PublishPort.jsx:57
+#: src/PublishPort.jsx:57 src/ContainerDetails.jsx:64
 msgid "IP address"
 msgstr "Endereço IP"
 
@@ -668,7 +668,7 @@ msgstr "Ignorar endereço IP se definido estaticamente"
 msgid "Ignore MAC address if set statically"
 msgstr "Ignorar endereço MAC se definido estaticamente"
 
-#: src/ContainerDetails.jsx:39 src/ImageRunModal.jsx:881 src/Images.jsx:189
+#: src/Images.jsx:189 src/ImageRunModal.jsx:881 src/ContainerDetails.jsx:39
 msgid "Image"
 msgstr "Imagem"
 
@@ -716,7 +716,7 @@ msgstr "Aumentar o período de início"
 msgid "Increase timeout"
 msgstr "Aumentar o tempo limite"
 
-#: src/ImageRunModal.jsx:1043 src/Containers.jsx:508
+#: src/Containers.jsx:508 src/ImageRunModal.jsx:1043
 msgid "Integration"
 msgstr "Integração"
 
@@ -728,7 +728,7 @@ msgstr "Intervalo"
 msgid "Interval how often health check is run."
 msgstr "Intervalo com que frequência a verificação de integridade é executada."
 
-#: src/ContainerRenameModal.jsx:36 src/PodCreateModal.jsx:122
+#: src/PodCreateModal.jsx:122 src/ContainerRenameModal.jsx:36
 msgid ""
 "Invalid characters. Name can only contain letters, numbers, and certain "
 "punctuation (_ . -)."
@@ -784,7 +784,7 @@ msgstr "Carregando detalhes..."
 msgid "Loading logs..."
 msgstr "Carregando logs..."
 
-#: src/ImageUsedBy.jsx:15 src/Containers.jsx:745 src/Images.jsx:198
+#: src/Containers.jsx:745 src/ImageUsedBy.jsx:15 src/Images.jsx:198
 msgid "Loading..."
 msgstr "Carregando..."
 
@@ -838,8 +838,8 @@ msgstr ""
 msgid "Must be a valid IP address"
 msgstr "Deve ser um endereço IP válido"
 
-#: src/ImageRunModal.jsx:810 src/PruneUnusedContainersModal.jsx:68
-#: src/PodCreateModal.jsx:153
+#: src/PodCreateModal.jsx:153 src/PruneUnusedContainersModal.jsx:68
+#: src/ImageRunModal.jsx:810
 msgid "Name"
 msgstr "Nome"
 
@@ -900,7 +900,7 @@ msgstr "Nenhuma imagem corresponde ao filtro atual"
 msgid "No label"
 msgstr "Nenhum rótulo"
 
-#: src/ImageRunModal.jsx:1046 src/PodCreateModal.jsx:183
+#: src/PodCreateModal.jsx:183 src/ImageRunModal.jsx:1046
 msgid "No ports exposed"
 msgstr "Nenhuma porta exposta"
 
@@ -912,7 +912,7 @@ msgstr "Nenhum resultado para $0"
 msgid "No running containers"
 msgstr "Nenhum contêiner em execução"
 
-#: src/ImageRunModal.jsx:1056 src/PodCreateModal.jsx:194
+#: src/PodCreateModal.jsx:194 src/ImageRunModal.jsx:1056
 msgid "No volumes specified"
 msgstr "Nenhum volume especificado"
 
@@ -928,9 +928,9 @@ msgstr "Somente em execução"
 msgid "Options"
 msgstr "Opções"
 
-#: src/ImageSearchModal.jsx:147 src/ContainerHeader.tsx:32
-#: src/ImageRunModal.jsx:831 src/PruneUnusedContainersModal.jsx:75
-#: src/PodCreateModal.jsx:171 src/Containers.jsx:730 src/Images.jsx:190
+#: src/PodCreateModal.jsx:171 src/PruneUnusedContainersModal.jsx:75
+#: src/ContainerHeader.tsx:32 src/Containers.jsx:730
+#: src/ImageSearchModal.jsx:147 src/Images.jsx:190 src/ImageRunModal.jsx:831
 msgid "Owner"
 msgstr "Proprietário"
 
@@ -949,7 +949,7 @@ msgstr ""
 "Cole uma ou mais linhas de pares chave=valor em qualquer campo para "
 "importação em massa"
 
-#: src/PodActions.jsx:199 src/Containers.jsx:225
+#: src/Containers.jsx:225 src/PodActions.jsx:199
 msgid "Pause"
 msgstr "Pausar"
 
@@ -981,11 +981,11 @@ msgstr "Contêineres do Podman"
 msgid "Podman service failed"
 msgstr "Serviço do Podman falhou"
 
-#: src/ImageRunModal.jsx:1048 src/PodCreateModal.jsx:185
+#: src/PodCreateModal.jsx:185 src/ImageRunModal.jsx:1048
 msgid "Port mapping"
 msgstr "Mapeamento de porta"
 
-#: src/ContainerIntegration.jsx:151 src/ImageDetails.jsx:80
+#: src/ImageDetails.jsx:80 src/ContainerIntegration.jsx:151
 msgid "Ports"
 msgstr "Portas"
 
@@ -1001,7 +1001,7 @@ msgstr "Privado"
 msgid "Protocol"
 msgstr "Protocolo"
 
-#: src/PruneUnusedImagesModal.jsx:111 src/PruneUnusedContainersModal.jsx:110
+#: src/PruneUnusedContainersModal.jsx:110 src/PruneUnusedImagesModal.jsx:111
 msgid "Prune"
 msgstr "Expurgar"
 
@@ -1009,7 +1009,7 @@ msgstr "Expurgar"
 msgid "Prune unused containers"
 msgstr "Expurgar contêineres não usados"
 
-#: src/PruneUnusedImagesModal.jsx:91 src/Images.jsx:385
+#: src/Images.jsx:385 src/PruneUnusedImagesModal.jsx:91
 msgid "Prune unused images"
 msgstr "Expurgar imagens não usadas"
 
@@ -1046,7 +1046,7 @@ msgstr "Acesso somente leitura"
 msgid "Read-write access"
 msgstr "Acesso leitura e gravação"
 
-#: src/Env.jsx:98 src/PublishPort.jsx:135 src/Volume.jsx:87
+#: src/Env.jsx:98 src/Volume.jsx:87 src/PublishPort.jsx:135
 msgid "Remove item"
 msgstr "Remover item"
 
@@ -1070,9 +1070,8 @@ msgstr "Renomear contêiner $0"
 msgid "Resource limits can be set"
 msgstr "Limites de recursos podem ser definidos"
 
-#: src/ContainerHealthLogs.jsx:30 src/PodActions.jsx:152
-#: src/ImageRunModal.jsx:63 src/util.tsx:41 src/Containers.jsx:198
-#: src/Containers.jsx:213
+#: src/util.tsx:41 src/ContainerHealthLogs.jsx:30 src/Containers.jsx:198
+#: src/Containers.jsx:213 src/ImageRunModal.jsx:63 src/PodActions.jsx:152
 msgid "Restart"
 msgstr "Reiniciar"
 
@@ -1100,7 +1099,7 @@ msgstr ""
 "não funcionar em algumas circunstâncias, como quando ecryptfs, systemd-"
 "homed, NFS ou 2FA são usados em uma conta de usuário."
 
-#: src/Containers.jsx:266 src/ContainerRestoreModal.jsx:69
+#: src/ContainerRestoreModal.jsx:69 src/Containers.jsx:266
 msgid "Restore"
 msgstr "Restaurar"
 
@@ -1116,7 +1115,7 @@ msgstr "Restaurar com conexões TCP estabelecidas"
 msgid "Restricted by user account permissions"
 msgstr "Restrito pelas permissões da conta do usuário"
 
-#: src/PodActions.jsx:184 src/Containers.jsx:232
+#: src/Containers.jsx:232 src/PodActions.jsx:184
 msgid "Resume"
 msgstr "Continuar"
 
@@ -1132,7 +1131,7 @@ msgstr "Tente outro termo."
 msgid "Run health check"
 msgstr "Executar verificação de integridade"
 
-#: src/ImageUsedBy.jsx:37 src/util.tsx:41 src/util.tsx:44
+#: src/util.tsx:41 src/util.tsx:44 src/ImageUsedBy.jsx:37
 msgid "Running"
 msgstr "Em execução"
 
@@ -1188,7 +1187,7 @@ msgstr "Mostrar imagens intermediárias"
 msgid "Show less"
 msgstr "Mostrar menos"
 
-#: src/PruneUnusedImagesModal.jsx:55 src/ContainerIntegration.jsx:124
+#: src/ContainerIntegration.jsx:124 src/PruneUnusedImagesModal.jsx:55
 msgid "Show more"
 msgstr "Mostrar mais"
 
@@ -1196,7 +1195,7 @@ msgstr "Mostrar mais"
 msgid "Size"
 msgstr "Tamanho"
 
-#: src/PodActions.jsx:169 src/Containers.jsx:255
+#: src/Containers.jsx:255 src/PodActions.jsx:169
 msgid "Start"
 msgstr "Iniciar"
 
@@ -1212,7 +1211,7 @@ msgstr "Comece a digitar para procurar por imagens."
 msgid "Started at"
 msgstr "Iniciado em"
 
-#: src/ContainerDetails.jsx:86 src/Containers.jsx:733
+#: src/Containers.jsx:733 src/ContainerDetails.jsx:86
 msgid "State"
 msgstr "Estado"
 
@@ -1220,8 +1219,8 @@ msgstr "Estado"
 msgid "Status"
 msgstr "Estado"
 
-#: src/ContainerHealthLogs.jsx:31 src/PodActions.jsx:137
-#: src/ImageRunModal.jsx:64 src/Containers.jsx:194 src/Containers.jsx:205
+#: src/ContainerHealthLogs.jsx:31 src/Containers.jsx:194 src/Containers.jsx:205
+#: src/ImageRunModal.jsx:64 src/PodActions.jsx:137
 msgid "Stop"
 msgstr "Parar"
 
@@ -1233,8 +1232,8 @@ msgstr "Parado"
 msgid "Support preserving established TCP connections"
 msgstr "Adicionar suporte à preservação de conexões TCP estabelecidas"
 
-#: src/ImageRunModal.jsx:838 src/ImageRunModal.jsx:873
-#: src/PodCreateModal.jsx:175
+#: src/PodCreateModal.jsx:175 src/ImageRunModal.jsx:838
+#: src/ImageRunModal.jsx:873
 msgid "System"
 msgstr "Sistema"
 
@@ -1242,7 +1241,7 @@ msgstr "Sistema"
 msgid "TCP"
 msgstr "TCP"
 
-#: src/ImageSearchModal.jsx:213 src/ContainerCommitModal.jsx:103
+#: src/ContainerCommitModal.jsx:103 src/ImageSearchModal.jsx:213
 msgid "Tag"
 msgstr "Etiqueta"
 
@@ -1323,7 +1322,7 @@ msgstr "Ligado desde:"
 msgid "Use legacy Docker format"
 msgstr "Usar formato legado do Docker"
 
-#: src/Images.jsx:194 src/ImageDetails.jsx:74
+#: src/ImageDetails.jsx:74 src/Images.jsx:194
 msgid "Used by"
 msgstr "Usado por"
 
@@ -1331,7 +1330,7 @@ msgstr "Usado por"
 msgid "User"
 msgstr "Usuário"
 
-#: src/ImageRunModal.jsx:873 src/PodCreateModal.jsx:175
+#: src/PodCreateModal.jsx:175 src/ImageRunModal.jsx:873
 msgid "User:"
 msgstr "Usuário:"
 
@@ -1351,8 +1350,8 @@ msgstr "Ver $0"
 msgid "View $0 logs"
 msgstr "Ver logs de $0"
 
-#: src/ImageRunModal.jsx:1058 src/ContainerIntegration.jsx:155
-#: src/PodCreateModal.jsx:196
+#: src/PodCreateModal.jsx:196 src/ContainerIntegration.jsx:155
+#: src/ImageRunModal.jsx:1058
 msgid "Volumes"
 msgstr "Volumes"
 
@@ -1425,8 +1424,8 @@ msgstr "segundos"
 msgid "service"
 msgstr "serviço"
 
-#: src/app.jsx:51 src/app.jsx:680 src/PruneUnusedContainersModal.jsx:35
-#: src/Containers.jsx:476 src/Images.jsx:145
+#: src/PruneUnusedContainersModal.jsx:35 src/Containers.jsx:476 src/app.jsx:51
+#: src/app.jsx:680 src/Images.jsx:145
 msgid "system"
 msgstr "sistema"
 
