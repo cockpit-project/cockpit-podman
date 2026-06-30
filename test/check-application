@@ -70,6 +70,7 @@ class ContainerList(TypedDict):
     state: list[str] | str
 
 
+
 def showImages(browser: testlib.Browser) -> None:
     if browser.attr("#containers-images .pf-v6-c-expandable-section__toggle button", "aria-expanded") == 'false':
         browser.click("#containers-images .pf-v6-c-expandable-section__toggle button")
