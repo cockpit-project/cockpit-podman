@@ -1254,6 +1254,12 @@ Yaml={name}.yaml
 
                 return self
 
+            def dismissNotification(self) -> Self:
+                b.click('.pf-v6-c-alert-group.pf-m-toast .pf-v6-c-alert .pf-v6-c-alert__action button')
+                b.wait_not_present('.pf-v6-c-alert-group.pf-m-toast .pf-v6-c-alert')
+
+                return self
+
             def expectSearchErrorForNotExistingImage(self) -> Self:
                 b.wait_visible(f".pf-v6-c-modal-box__body:contains('No results for {self.imageName}')")
                 b.click(".pf-v6-c-modal-box button.btn-cancel")
@@ -1375,7 +1381,8 @@ Yaml={name}.yaml
         dialog.openDialog() \
               .fillDialog() \
               .selectImageAndDownload() \
-              .expectDownloadErrorForNonExistingTag()
+              .expectDownloadErrorForNonExistingTag() \
+              .dismissNotification()
 
     def testPullImage(self) -> None:
         b = self.browser

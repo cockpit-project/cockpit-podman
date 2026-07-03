@@ -83,24 +83,21 @@ class Application extends React.Component {
     }
 
     onAddNotification(notification) {
-        notification.index = this.state.notifications.length;
-
-        this.setState(prevState => ({
-            notifications: [
-                ...prevState.notifications,
-                notification
-            ]
-        }));
+        this.setState(prevState => {
+            notification.index = prevState.notifications.length;
+            return {
+                notifications: [
+                    ...prevState.notifications,
+                    notification
+                ]
+            };
+        });
     }
 
     onDismissNotification(notificationIndex) {
-        const notificationsArray = this.state.notifications.concat();
-        const index = notificationsArray.findIndex(current => current.index == notificationIndex);
-
-        if (index !== -1) {
-            notificationsArray.splice(index, 1);
-            this.setState({ notifications: notificationsArray });
-        }
+        this.setState(prevState => ({
+            notifications: prevState.notifications.filter(current => current.index != notificationIndex)
+        }));
     }
 
     updateUrl(options) {
