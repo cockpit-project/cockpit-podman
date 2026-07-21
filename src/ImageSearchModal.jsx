@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import { DataList, DataListCell, DataListItem, DataListItemCells, DataListItemRow } from "@patternfly/react-core/dist/esm/components/DataList";
@@ -26,13 +26,25 @@ import './ImageSearchModal.css';
 
 const _ = cockpit.gettext;
 
-export const ImageSearchModal = ({ downloadImage, users }) => {
+export const ImageSearchModal = ({ downloadImage, users, initialSearchTerm = "", initialRegistry = "", initialOwner = "user", initialTag = "latest", onExternalClose }) => {
+    // Determine initial user based on initialOwner parameter
+    const getInitialUser = () => {
+        if (!users || users.length === 0) return users?.[0] || null;
+
+        if (initialOwner === 'system') {
+            return users.find(u => u.uid === 0) || users[0];
+        } else if (initialOwner === 'user') {
+            return users.find(u => u.uid === null) || users[0];
+        }
+        return users[0];
+    };
+
     const [searchInProgress, setSearchInProgress] = useState(false);
     const [searchFinished, setSearchFinished] = useState(false);
     const [imageIdentifier, setImageIdentifier] = useState('');
     const [imageList, setImageList] = useState([]);
     const [imageTag, setImageTag] = useState("");
-    const [user, setUser] = useState(users[0]);
+    const [user, setUser] = useState(getInitialUser);
     const [selectedRegistry, setSelectedRegistry] = useState("");
     const [selected, setSelected] = useState("");
     const [dialogError, setDialogError] = useState("");
@@ -45,21 +57,45 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
     // Registries to use for searching
     const searchRegistries = registries?.search && registries.search.length !== 0 ? registries.search : fallbackRegistries;
 
+    // Handle initial search from URL parameters
+    useEffect(() => {
+        // Set initial tag
+        if (initialTag) {
+            setImageTag(initialTag);
+        }
+
+        // Set initial search - guard against null user
+        if (initialSearchTerm && user) {
+            setImageIdentifier(initialSearchTerm);
+            if (initialRegistry) {
+                setSelectedRegistry(initialRegistry);
+            }
+            // Pass initialSearchTerm directly to avoid race condition with setState
+            onSearchTriggered(initialRegistry || "", true, initialSearchTerm);
+        }
+        // Intentionally only run on mount - component is re-mounted via key when props change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Don't use on selectedRegistry state variable for finding out the
     // registry to search in as with useState we can only call something after a
     // state update with useEffect but as onSearchTriggered also changes state we
     // can't use that so instead we pass the selected registry.
-    const onSearchTriggered = (searchRegistry = "", forceSearch = false) => {
+    // searchTerm parameter allows passing the search term directly to avoid race conditions with setState
+    const onSearchTriggered = (searchRegistry = "", forceSearch = false, searchTerm = null) => {
         // When search re-triggers close any existing active connection
         activeConnection = rest.connect(user.uid);
         if (activeConnection)
             activeConnection.close();
         setSearchFinished(false);
 
+        // Use provided searchTerm or fall back to imageIdentifier state
+        const termToSearch = searchTerm !== null ? searchTerm : imageIdentifier;
+
         // Do not call the SearchImage API if the input string  is not at least 2 chars,
         // unless Enter is pressed, which should force start the search.
         // The comparison was done considering the fact that we miss always one letter due to delayed setState
-        if (imageIdentifier.length < 2 && !forceSearch)
+        if (termToSearch.length < 2 && !forceSearch)
             return;
 
         setSearchInProgress(true);
@@ -69,7 +105,7 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
             queryRegistries = [searchRegistry];
         }
         // if a user searches for `docker.io/cockpit` let podman search in the user specified registry.
-        if (imageIdentifier.includes('/')) {
+        if (termToSearch.includes('/')) {
             queryRegistries = [""];
         }
 
@@ -80,7 +116,7 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
                 path: `${client.VERSION}libpod/images/search`,
                 body: "",
                 params: {
-                    term: registry + imageIdentifier
+                    term: registry + termToSearch
                 }
             });
         });
@@ -124,13 +160,20 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
         const selectedImageName = imageList[selected].Name;
         if (activeConnection)
             activeConnection.close();
-        Dialogs.close();
+        // Use onExternalClose if provided (URL-based rendering), otherwise use Dialogs.close (modal rendering)
+        if (onExternalClose) {
+            onExternalClose();
+        } else {
+            Dialogs.close();
+        }
         downloadImage(selectedImageName, imageTag, user.con);
     };
 
     const handleClose = () => {
         if (activeConnection)
             activeConnection.close();
+        if (onExternalClose)
+            onExternalClose();
         Dialogs.close();
     };
 
@@ -151,7 +194,7 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
                                    label={u.name}
                                    id={`image-search-modal-owner-${u.name}`}
                                    onChange={onToggleUser}
-                                   isChecked={u === user} />))
+                                   isChecked={u.uid === user?.uid} />))
                         }
                     </FormGroup>}
                     <Flex spaceItems={{ default: 'inlineFlex', modifier: 'spaceItemsXl' }}>
@@ -219,7 +262,7 @@ export const ImageSearchModal = ({ downloadImage, users }) => {
                                onChange={(_event, value) => setImageTag(value)} />
                     </FormGroup>
                 </Form>
-                <Button variant='primary' isDisabled={selected === ""} onClick={onDownloadClicked}>
+                <Button variant='primary' isDisabled={selected === "" || !user} onClick={onDownloadClicked}>
                     {_("Download")}
                 </Button>
                 <Button variant='link' className='btn-cancel' onClick={handleClose}>

@@ -773,6 +773,10 @@ class Application extends React.Component {
                 if (options.container) {
                     this.onContainerFilterChanged(options.container);
                 }
+                // Skip owner parameter processing when action=download-image (it's for the dialog, not the filter)
+                if (options.action === 'download-image') {
+                    return;
+                }
                 if (["all", undefined].includes(options.owner)) {
                     // disconnect all non-standard users
                     this.setState(prevState => ({
