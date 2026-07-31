@@ -393,6 +393,33 @@ class Containers extends React.Component {
         window.removeEventListener('resize', this.onWindowResize);
     }
 
+    createPod() {
+        const Dialogs = this.context;
+        Dialogs.show(<PodCreateModal
+            users={this.props.users}
+            onAddNotification={this.props.onAddNotification} />);
+    }
+
+    createContainer(nonIntermediateImages, inPod) {
+        const Dialogs = this.context;
+        if (nonIntermediateImages)
+            Dialogs.show(
+                <utils.PodmanInfoContext.Consumer>
+                    {(podmanInfo) => (
+                        <DialogsContext.Consumer>
+                            {(Dialogs) => (
+                                <ImageRunModal users={this.props.users}
+                                               localImages={nonIntermediateImages}
+                                               pod={inPod}
+                                               onAddNotification={this.props.onAddNotification}
+                                               podmanInfo={podmanInfo}
+                                               dialogs={Dialogs} />
+                            )}
+                        </DialogsContext.Consumer>
+                    )}
+                </utils.PodmanInfoContext.Consumer>);
+    }
+
     renderRow(containersStats, container, localImages) {
         const containerStats = containersStats[container.key];
         const image = container.ImageName;
@@ -724,7 +751,6 @@ class Containers extends React.Component {
     };
 
     render() {
-        const Dialogs = this.context;
         const columnTitles = [
             { title: _("Container"), transforms: [cellWidth(20)], sortable: true },
             { title: _("Owner"), sortable: true },
@@ -863,31 +889,6 @@ class Containers extends React.Component {
             nonIntermediateImages = localImages.filter(img => img.Index !== "");
         }
 
-        const createContainer = (inPod) => {
-            if (nonIntermediateImages)
-                Dialogs.show(
-                    <utils.PodmanInfoContext.Consumer>
-                        {(podmanInfo) => (
-                            <DialogsContext.Consumer>
-                                {(Dialogs) => (
-                                    <ImageRunModal users={this.props.users}
-                                                   localImages={nonIntermediateImages}
-                                                   pod={inPod}
-                                                   onAddNotification={this.props.onAddNotification}
-                                                   podmanInfo={podmanInfo}
-                                                   dialogs={Dialogs} />
-                                )}
-                            </DialogsContext.Consumer>
-                        )}
-                    </utils.PodmanInfoContext.Consumer>);
-        };
-
-        const createPod = () => {
-            Dialogs.show(<PodCreateModal
-                users={this.props.users}
-                onAddNotification={this.props.onAddNotification} />);
-        };
-
         const filterRunning = (
             <Toolbar>
                 <ToolbarContent className="containers-containers-toolbarcontent">
@@ -904,7 +905,7 @@ class Containers extends React.Component {
                     <ToolbarItem>
                         <Button variant="secondary" key="create-new-pod-action"
                                 id="containers-containers-create-pod-btn"
-                                onClick={() => createPod()}>
+                                onClick={() => this.createPod()}>
                             {_("Create pod")}
                         </Button>
                     </ToolbarItem>
@@ -912,7 +913,7 @@ class Containers extends React.Component {
                         <Button variant="primary" key="get-new-image-action"
                                 id="containers-containers-create-container-btn"
                                 isDisabled={nonIntermediateImages === null}
-                                onClick={() => createContainer(null)}>
+                                onClick={() => this.createContainer(nonIntermediateImages, null)}>
                             {_("Create container")}
                         </Button>
                     </ToolbarItem>
@@ -1001,7 +1002,7 @@ class Containers extends React.Component {
                                                 <Button variant="secondary"
                                                         className="create-container-in-pod"
                                                         isDisabled={nonIntermediateImages === null}
-                                                        onClick={() => createContainer(this.props.pods[section])}>
+                                                        onClick={() => this.createContainer(nonIntermediateImages, this.props.pods[section])}>
                                                     {_("Create container in pod")}
                                                 </Button>}
                                                 <PodActions con={con}
