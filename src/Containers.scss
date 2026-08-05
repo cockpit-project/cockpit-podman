@@ -72,6 +72,16 @@
     }
 }
 
+#container-details-healthcheck {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5rem, max-content));
+
+    /* Prevent long command strings from inflating max-content beyond screen bounds */
+    .pf-v6-c-description-list__group {
+        min-width: 0;
+        word-break: break-word;
+    }
+}
 
 /* Upstream issue https://github.com/patternfly/patternfly/pull/7396
  * Will be fixed in PF v6.2.0
