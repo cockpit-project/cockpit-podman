@@ -430,7 +430,7 @@ Yaml={name}.yaml
         if not self.machine.ws_container:
             b.wait_in_text("#containers-containers", "No running containers")
 
-        # Run a pods as system
+        # Run a pods as system!!
         self.machine.execute("podman pod create --infra=false --name pod-1")
 
         self.waitPodRow("pod-1", present=False)
