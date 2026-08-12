@@ -155,7 +155,6 @@ class TestApplication(testlib.MachineCase):
         if m.image.startswith('rhel-8'):
             self.allow_journal_messages(".*cockpit_http_stream_close: code should not be reached")
 
-        self.has_criu = m.image not in ["ubuntu-2404"]
         self.has_selinux = not any(img in m.image for img in ["arch", "debian", "ubuntu", "suse"])
         self.has_cgroupsV2 = not m.image.startswith('rhel-8')
 
@@ -316,7 +315,7 @@ class TestApplication(testlib.MachineCase):
                       *, auth: bool = False, autostart: bool = True) -> None:
         pod_option = f'Pod={podName}.pod' if podName else ''
         containername_option = f'ContainerName={containerName}' if containerName else ''
-        stop_timeout = 'StopTimeout=0' if self.machine.image not in ['ubuntu-2404', 'rhel-8-10'] else ''
+        stop_timeout = 'StopTimeout=0' if self.machine.image not in ['rhel-8-10'] else ''
         quadlet = f"""
 [Unit]
 Description=Podman - {name}
@@ -1643,31 +1642,6 @@ Yaml={name}.yaml
         self.login()
         self.filter_containers('all')
 
-        if not self.has_criu:
-            # On cgroupsv1 systems just check that we get expected error messages
-
-            # Run a container
-            m.execute(f"podman run -dit --name swamped-crate --stop-timeout 0 {IMG_BUSYBOX} sh")
-            b.wait(lambda: m.execute("podman ps --all | grep -e swamped-crate"))
-
-            # Checkpoint the container
-            self.performContainerAction("swamped-crate", "Checkpoint", system=True)
-            b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-keep', val=True)
-            b.set_checked('.pf-v6-c-modal-box input#checkpoint-dialog-tcpEstablished', val=True)
-            b.click('.pf-v6-c-modal-box button:contains("Checkpoint")')
-            b.wait_not_present('.modal_dialog')
-
-            def criu_alert() -> bool:
-                text = b.text(".pf-v6-c-alert.pf-m-danger > .pf-v6-c-alert__description").lower()
-                errors = [
-                    "configured runtime does not support checkpoint/restore",
-                    "checkpoint/restore requires at least criu",
-                    "failed to check for criu",
-                ]
-                return any(error in text for error in errors)
-            b.wait(criu_alert)
-            return
-
         # Run a container
         mac_address = '92:d0:c6:0a:29:38'
         m.execute(f"""
@@ -1698,25 +1672,18 @@ Yaml={name}.yaml
         with b.wait_timeout(300):
             b.wait_not_present(".pf-v6-c-modal-box")
 
-        if self.has_criu:
-            try:
-                b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
-                b.wait_text(f"{container_sel} + tr .container-latest-checkpoint", "less than a minute ago")
-            except testlib.Error:
-                # dump.log may help with debugging criu failures
-                attachment = self.label() + "-dump.log"
-                dump_log = m.execute("find /var/lib/containers -name dump.log").strip()
-                m.download(dump_log, attachment, ".")
-                # Dump the dump to the test log, for naughty pattern matching. It's not big.
-                print(open(attachment).read())
-                testlib.attach(attachment, move=True)
-                raise
-        else:
-            # expect proper error message
-            b.wait_in_text(".pf-v6-c-alert.pf-m-danger", "Failed to checkpoint container swamped-crate")
-            b.wait(lambda: "checkpoint/restore requires at least criu" in
-                   b.text(".pf-v6-c-alert.pf-m-danger > .pf-v6-c-alert__description").lower())
-            return
+        try:
+            b.wait(lambda: self.getContainerAttr("swamped-crate", "State") in NOT_RUNNING)
+            b.wait_text(f"{container_sel} + tr .container-latest-checkpoint", "less than a minute ago")
+        except testlib.Error:
+            # dump.log may help with debugging criu failures
+            attachment = self.label() + "-dump.log"
+            dump_log = m.execute("find /var/lib/containers -name dump.log").strip()
+            m.download(dump_log, attachment, ".")
+            # Dump the dump to the test log, for naughty pattern matching. It's not big.
+            print(open(attachment).read())
+            testlib.attach(attachment, move=True)
+            raise
 
         # Restore the container
         self.waitContainerRow("swamped-crate")
@@ -3421,7 +3388,7 @@ Yaml={name}.yaml
         old_start = self.getStartTime("quak", auth=system)
         data_row_id = ('0-' if system else 'user-') + containerId
         self.performContainerAction("quak", "Restart", system=system)
-        # Wait for it to properly go away before waitRestart, on Ubuntu-2404 restarting is slow.
+        # Wait for it to properly go away before waitRestart.
         b.wait_not_present(f'#table-no-pod tr[data-row-id="{data_row_id}"]')
         self.waitRestart("quak", old_start, auth=system, check=False)
 
@@ -3549,16 +3516,14 @@ Yaml={name}.yaml
                                       "command": "", "state": "Running", "id": containerId}],
                                       system=False)
 
-        # Quadlet templates are not supported on Ubuntu 2404.
-        if self.machine.image != "ubuntu-2404":
-            # Quadlet template does not show but an instance of it does.
-            self.createQuadlet("hostapd@", containerName=None, auth=system, autostart=False)
-            self.execute(f"{systemctl_cmd} start hostapd@test", system=system)
-            self.waitContainerRow("systemd-hostapd_test")
-            self.waitContainerRow("systemd-hostapd@", present=False)
-            self.performContainerAction("systemd-hostapd_test", "Stop", system=system)
-            self.execute(f'until [ $({systemctl_cmd} is-active systemd-hostapd_test) = inactive ]; do sleep 1; done',
-                        system=system)
+        # Quadlet template does not show but an instance of it does.
+        self.createQuadlet("hostapd@", containerName=None, auth=system, autostart=False)
+        self.execute(f"{systemctl_cmd} start hostapd@test", system=system)
+        self.waitContainerRow("systemd-hostapd_test")
+        self.waitContainerRow("systemd-hostapd@", present=False)
+        self.performContainerAction("systemd-hostapd_test", "Stop", system=system)
+        self.execute(f'until [ $({systemctl_cmd} is-active systemd-hostapd_test) = inactive ]; do sleep 1; done',
+                    system=system)
 
     # HACK: quadlets broken on RHEL-8 https://issues.redhat.com/browse/RHEL-5870
     @testlib.skipImage("no quadlet support", "rhel-8-10")
