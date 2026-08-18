@@ -35,6 +35,7 @@ export function validateEnvVar(env, key) {
 const handleEnvValue = (key, value, idx, onChange, additem, _itemCount, companionField) => {
     // Allow the input of KEY=VALUE separated value pairs for bulk import only if the other
     // field is not empty.
+    console.log("ENV", key, JSON.stringify(value), JSON.stringify(companionField));
     if (value.includes('=') && !companionField) {
         const parts = value.trim().split(" ");
         let index = idx;
@@ -47,17 +48,20 @@ const handleEnvValue = (key, value, idx, onChange, additem, _itemCount, companio
             if (index !== idx) {
                 additem();
             }
+            console.log("PARSED", index, envKey, JSON.stringify(envVar.join('=')));
             onChange(index, 'envKey', envKey);
             onChange(index, 'envValue', envVar.join('='));
             index++;
         }
     } else {
+        console.log("PLAIN", idx, key, JSON.stringify(value));
         onChange(idx, key, value);
     }
 };
 
-export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount, validationFailed, onValidationChange }) =>
-    (
+export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount, validationFailed, onValidationChange }) => {
+    console.log("RENDER", idx);
+    return (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-6-col-on-md"
                 id={`${id}-key-group`}
@@ -101,3 +105,4 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
             </FormGroup>
         </Grid>
     );
+};
