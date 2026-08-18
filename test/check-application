@@ -2068,8 +2068,19 @@ Yaml={name}.yaml
         b.wait_val("#run-image-dialog-env-3-key", "RHUBARB")
         b.wait_val("#run-image-dialog-env-3-value", "STRAWBERRY")
 
-        # with copy&paste you can also set multiple variables
+        # With copy&paste you can also set multiple variables
+
         b.click('.env-form .btn-add')
+
+        # We make this more interesting by adding and deleting an
+        # extra slot.  This leads to sparse arrays in the dialog state
+        # which used to provoke a crash.
+        #
+        # See https://github.com/cockpit-project/cockpit-podman/issues/2637
+        #
+        b.click('.env-form .btn-add')
+        b.click('#run-image-dialog-env-5-btn-close')
+
         # focus
         b.click('#run-image-dialog-env-4-value')
         b.wait_visible('#run-image-dialog-env-4-value:focus')
@@ -2094,17 +2105,17 @@ Yaml={name}.yaml
 
         b.wait_val("#run-image-dialog-env-4-key", "DURIAN")
         b.wait_val("#run-image-dialog-env-4-value", "LEMON")
-        b.wait_val("#run-image-dialog-env-5-key", "TEST_URL")
-        b.wait_val("#run-image-dialog-env-5-value", "wss://cockpit/?start=1&stop=0")
+        b.wait_val("#run-image-dialog-env-6-key", "TEST_URL")
+        b.wait_val("#run-image-dialog-env-6-value", "wss://cockpit/?start=1&stop=0")
 
         b.click('.env-form .btn-add')
-        b.set_input_text('#run-image-dialog-env-6-key', 'HOSTNAME')
-        b.set_input_text('#run-image-dialog-env-6-value', 'busybox')
+        b.set_input_text('#run-image-dialog-env-7-key', 'HOSTNAME')
+        b.set_input_text('#run-image-dialog-env-7-value', 'busybox')
 
         # Test inputting a var with = in it doesn't reset key
         b.click('.env-form .btn-add')
-        b.set_input_text('#run-image-dialog-env-7-key', 'TEST')
-        b.set_input_text('#run-image-dialog-env-7-value', 'REBASE=1')
+        b.set_input_text('#run-image-dialog-env-8-key', 'TEST')
+        b.set_input_text('#run-image-dialog-env-8-value', 'REBASE=1')
 
         # Configure more volumes
         b.click('.volume-form .btn-add')

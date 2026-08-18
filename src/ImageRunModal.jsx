@@ -1074,7 +1074,11 @@ export class ImageRunModal extends React.Component {
                                  onChange={value => this.onValueChanged('env', value)}
                                  default={{ envKey: null, envValue: null }}
                                  helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
-                                 itemcomponent={EnvVar} />
+                                 itemcomponent={EnvVar}
+                                 options={
+                                     { itemCount: this.state.env.length }
+                                 }
+                            />
                         </FormSection>
                     </Tab>
                     <Tab eventKey={2} title={<TabTitleText>{_("Health check")}</TabTitleText>} id="create-image-dialog-tab-healthcheck">
