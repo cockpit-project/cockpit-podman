@@ -32,31 +32,34 @@ export function validateEnvVar(env, key) {
     }
 }
 
-const handleEnvValue = (key, value, idx, onChange, additem, _itemCount, companionField) => {
+const handleEnvValue = (key, value, idx, onChange, additem, itemCount, companionField) => {
     // Allow the input of KEY=VALUE separated value pairs for bulk import only if the other
     // field is not empty.
     if (value.includes('=') && !companionField) {
         const parts = value.trim().split(" ");
-        let index = idx;
-        for (const part of parts) {
+        for (const [i, part] of parts.entries()) {
             const [envKey, ...envVar] = part.split('=');
             if (!envKey || !envVar) {
                 continue;
             }
 
-            if (index !== idx) {
+            let index;
+            if (i > 0) {
                 additem();
+                index = itemCount - 1 + i; // additem always adds at the end
+            } else {
+                index = idx;
             }
+
             onChange(index, 'envKey', envKey);
             onChange(index, 'envValue', envVar.join('='));
-            index++;
         }
     } else {
         onChange(idx, key, value);
     }
 };
 
-export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount, validationFailed, onValidationChange }) =>
+export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, options, validationFailed, onValidationChange }) =>
     (
         <Grid hasGutter id={id}>
             <FormGroup className="pf-m-6-col-on-md"
@@ -71,7 +74,7 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
                        onChange={(_event, value) => {
                            utils.validationClear(validationFailed, "envKey", onValidationChange);
                            utils.validationDebounce(() => onValidationChange({ ...validationFailed, envKey: validateEnvVar(value, "envKey") }));
-                           handleEnvValue('envKey', value, idx, onChange, additem, itemCount, item.envValue);
+                           handleEnvValue('envKey', value, idx, onChange, additem, options.itemCount, item.envValue);
                        }} />
                 <FormHelper helperTextInvalid={validationFailed?.envKey} />
             </FormGroup>
@@ -86,7 +89,7 @@ export const EnvVar = ({ id, item, onChange, idx, removeitem, additem, itemCount
                        onChange={(_event, value) => {
                            utils.validationClear(validationFailed, "envValue", onValidationChange);
                            utils.validationDebounce(() => onValidationChange({ ...validationFailed, envValue: validateEnvVar(value, "envValue") }));
-                           handleEnvValue('envValue', value, idx, onChange, additem, itemCount, item.envKey);
+                           handleEnvValue('envValue', value, idx, onChange, additem, options.itemCount, item.envKey);
                        }} />
                 <FormHelper helperTextInvalid={validationFailed?.envValue} />
             </FormGroup>
