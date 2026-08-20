@@ -2084,24 +2084,7 @@ Yaml={name}.yaml
         # focus
         b.click('#run-image-dialog-env-4-value')
         b.wait_visible('#run-image-dialog-env-4-value:focus')
-
-        # We need to simulate a paste operation here, where the whole
-        # text is delivered in a single event to JavaScript.  With
-        # set_input_text however, it is delivered with one event per
-        # character.  So we use "set_val" (which does not result in
-        # any event bc React does not react to the "change" event that
-        # it emits) followed by "set_input_text".  However, we must
-        # take care that there is no render happening between the
-        # "set_val" and "set_input_text".  Such a render would undo
-        # the effect of "set_val" by overwriting it with the dialog
-        # state.  We do this by waiting a bit. That hopefully makes
-        # sure that everything that will happen has happened.
-        #
-        time.sleep(5)
-
-        b.set_val('#run-image-dialog-env-4-value',
-                  "DURIAN=LEMON TEST_URL=wss://cockpit/?start=1&stop=0")
-        b.set_input_text('#run-image-dialog-env-4-value', ' ', append=True, value_check=False)
+        b.paste("DURIAN=LEMON TEST_URL=wss://cockpit/?start=1&stop=0")
 
         b.wait_val("#run-image-dialog-env-4-key", "DURIAN")
         b.wait_val("#run-image-dialog-env-4-value", "LEMON")
