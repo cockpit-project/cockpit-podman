@@ -15,6 +15,28 @@ const fixture = JSON.parse(await readFile(resolve(here, "scheduler-refresh-fixtu
 // same-UID reconnect. The production guard must run before that stale frame
 // can replace the new connection's pending batch or cancel its timer.
 const applicationSource = await readFile(resolve(here, "../src/app.jsx"), "utf8");
+// cockpit.spawn().input(message) closes the stream by default. The scheduler
+// collector must keep its identity write open and send one explicit EOF with
+// the following null input; otherwise the bridge receives duplicate `done`
+// controls when the transport is already closing.
+assert.equal((applicationSource.match(/process\.input\(JSON\.stringify\(identity\), true\);/g) || []).length, 1);
+assert.equal((applicationSource.match(/process\.input\(JSON\.stringify\(identity\)\);/g) || []).length, 0);
+const bridgeControls = [];
+const schedulerProcess = {
+    input(message, stream) {
+        if (!stream)
+            bridgeControls.push({ control: "done" });
+        else
+            bridgeControls.push({ data: message });
+    },
+};
+const schedulerIdentity = { containers: [] };
+schedulerProcess.input(JSON.stringify(schedulerIdentity), true);
+schedulerProcess.input(null);
+assert.deepEqual(bridgeControls, [
+    { data: JSON.stringify(schedulerIdentity) },
+    { control: "done" },
+]);
 // Exercise the production inventory mapping with a real list-shaped one-shot.
 const inventoryMapperStart = applicationSource.indexOf("const containerFromInventory =");
 const inventoryMapperEnd = applicationSource.indexOf("\n// sort order", inventoryMapperStart);

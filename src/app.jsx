@@ -698,7 +698,10 @@ class Application extends React.Component {
                     environ: ["LC_ALL=C", `XDG_RUNTIME_DIR=/run/user/${contextUid}`],
                 });
             }
-            process.input(JSON.stringify(identity));
+            // Keep the request body open while writing the identity. The
+            // following null input sends the single stream EOF; omitting the
+            // stream flag here sends EOF once for this call and again below.
+            process.input(JSON.stringify(identity), true);
             process.input(null);
             const output = JSON.parse(await withTimeout(process, timeoutMs,
                                                         "Scheduler coverage collection timed out",
