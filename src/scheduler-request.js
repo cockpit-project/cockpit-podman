@@ -148,13 +148,13 @@ export class RequestConcurrencyGate {
                 if (index !== -1)
                     this.pending.splice(index, 1);
                 entry.settled = true;
-                entry.resolveStarted(false);
-                entry.reject(new Error(problem));
+                entry.resolveStarted?.(false);
+                entry.reject?.(new Error(problem));
                 return;
             }
             entry.settled = true;
             entry.request?.close?.(problem);
-            entry.reject(new Error(problem));
+            entry.reject?.(new Error(problem));
         };
         this.pending.push(entry);
         this.drain();
@@ -260,14 +260,14 @@ export class KeyedRequestGate {
                 if (state.queued === entry)
                     state.queued = null;
                 entry.settled = true;
-                entry.resolveStarted(false);
-                entry.reject(new Error(problem));
+                entry.resolveStarted?.(false);
+                entry.reject?.(new Error(problem));
                 this.cleanup(key, state);
                 return;
             }
             entry.settled = true;
             entry.request?.close?.(problem);
-            entry.reject(new Error(problem));
+            entry.reject?.(new Error(problem));
         };
 
         if (state.active)
