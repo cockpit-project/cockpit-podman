@@ -227,6 +227,14 @@ class TestApplication(testlib.MachineCase):
 
     def getContainerAttr(self, container: str, key: str, selector: str = "", *, system: bool = True) -> str:
         b = self.browser
+        if key == "State":
+            # The state cell also contains health and freshness badges. Keep
+            # lifecycle assertions scoped to the original Podman state badge;
+            # preserve the download-complete filter used by image tests.
+            downloading = ".downloading" in selector
+            selector = ".ct-badge-container-state"
+            if downloading:
+                selector += ":not(.downloading)"
         return b.text(f"{self.getContainerSelector(container, system=system)} > td[data-label={key}] {selector}")
 
     def getImageSelector(self, image: str, *, system: bool = True) -> str:
@@ -343,6 +351,52 @@ WantedBy=multi-user.target default.target
         if autostart:
             self.addCleanup(self.execute, f"{systemctl_cmd} stop {name}.service", system=auth)
             self.execute(f"{systemctl_cmd} start {name}.service", system=auth)
+
+    def createHealthScheduler(self, container_name: str, *, auth: bool = False) -> None:
+        """Install the supported external health schedule used by this browser fixture.
+
+        Podman still owns the native health result and log.  The timer only
+        gives Cockpit's read-only scheduler collector an actual effective
+        cadence to inspect; without it a native-only disposable container is
+        correctly reported as having unknown freshness.
+        """
+        systemctl_cmd = "systemctl" if auth else "systemctl --user"
+        unit_dir = "/etc/systemd/system" if auth else "/home/admin/.config/systemd/user"
+        owner = None if auth else "admin:admin"
+        unit_stem = f"cockpit-podman-healthcheck-{container_name}"
+        service_unit = f"{unit_stem}.service"
+        timer_unit = f"{unit_stem}.timer"
+        service_file = f"{unit_dir}/{service_unit}"
+        timer_file = f"{unit_dir}/{timer_unit}"
+
+        if not auth:
+            self.machine.execute(f"install -d -o admin -g admin {unit_dir}")
+
+        service = f"""
+[Unit]
+Description=Cockpit Podman healthcheck fixture for {container_name}
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman healthcheck run {container_name}
+"""
+        timer = f"""
+[Unit]
+Description=Cockpit Podman healthcheck timer fixture for {container_name}
+
+[Timer]
+OnUnitActiveSec=30s
+AccuracySec=1s
+Unit={service_unit}
+"""
+
+        self.write_file(service_file, service, owner=owner)
+        self.write_file(timer_file, timer, owner=owner)
+        self.addCleanup(self.execute,
+                        f"{systemctl_cmd} stop {timer_unit} {service_unit} || true; {systemctl_cmd} daemon-reload",
+                        system=auth)
+        self.execute(f"{systemctl_cmd} daemon-reload; {systemctl_cmd} start {timer_unit}; "
+                     f"{systemctl_cmd} is-active {timer_unit}", system=auth)
 
     def createQuadletPod(self, name: str, podName: str | None = None, *, auth: bool = False) -> None:
         podName = podName if podName else name
@@ -2441,7 +2495,7 @@ Yaml={name}.yaml
         if state is not None:
             if not isinstance(state, list):
                 state = [state]
-            b.wait(lambda: b.text(sel + " td[data-label=State]") in state)
+            b.wait(lambda: b.text(sel + " td[data-label=State] .ct-badge-container-state") in state)
 
     def filter_containers(self, value: str) -> None:
         """Use dropdown menu in the header to filter containers"""
@@ -2721,6 +2775,12 @@ Yaml={name}.yaml
 
         b.set_input_text("#run-image-dialog-name", "healthy")
 
+        # The health result remains native Podman state.  This matching timer
+        # supplies the real external cadence consumed by the display's
+        # scheduler collector, so the fixture does not rely on a green result
+        # while freshness is actually uncovered.
+        self.createHealthScheduler("healthy", auth=auth)
+
         b.click("#pf-tab-2-create-image-dialog-tab-healthcheck")
         b.set_input_text('#run-image-dialog-healthcheck-command', 'true')
         b.set_input_text('#run-image-healthcheck-interval input', '325')
@@ -2737,7 +2797,8 @@ Yaml={name}.yaml
         b.click("#containers-images .pf-v6-c-expandable-section__toggle button")
 
         healthy_sha = self.execute("podman inspect --format '{{.Id}}' healthy", system=auth).strip()
-        self.waitContainer(healthy_sha, auth=auth, state='RunningHealthy')
+        self.waitContainer(healthy_sha, auth=auth, state='Running')
+        b.wait_visible(f'{self.getContainerSelector("healthy", system=auth)} .ct-badge-container-health-healthy')
 
         self.toggleExpandedContainer("healthy", system=auth)
         b.click(".pf-m-expanded button:contains('Health check')")
@@ -2768,7 +2829,8 @@ Yaml={name}.yaml
         self.execute(f"podman run --name sick -dt --health-cmd false --health-interval 5s {IMG_BUSYBOX}", system=auth)
         self.waitContainerRow("sick")
         unhealthy_sha = self.execute("podman inspect --format '{{.Id}}' sick", system=auth).strip()
-        self.waitContainer(unhealthy_sha, auth=auth, state='RunningUnhealthy')
+        self.waitContainer(unhealthy_sha, auth=auth, state='Running')
+        b.wait_visible(f'{self.getContainerSelector("sick", system=auth)} .ct-badge-container-health-unhealthy')
         # Unhealthy should be first
         expected_ws = ""
         if auth and self.machine.ws_container:
@@ -2799,6 +2861,7 @@ Yaml={name}.yaml
         b.wait_text('div.pf-v6-c-modal-box header', 'Create container')
 
         containername = "healthaction"
+        self.createHealthScheduler(containername, auth=auth)
         b.set_input_text("#run-image-dialog-name", containername)
         b.set_input_text("#run-image-dialog-command", "/bin/sh -c 'echo 1 > /healthy && sleep infinity'")
 
@@ -2811,7 +2874,8 @@ Yaml={name}.yaml
 
         self.waitContainerRow(containername)
         self.toggleExpandedContainer(containername, system=auth)
-        b.wait(lambda: self.getContainerAttr(containername, "State", "", system=auth) == "RunningHealthy")
+        b.wait(lambda: self.getContainerAttr(containername, "State", "", system=auth) == "Running")
+        b.wait_visible(f'{self.getContainerSelector(containername, system=auth)} .ct-badge-container-health-healthy')
         b.click(".pf-m-expanded button:contains('Health check')")
         b.wait_in_text('.pf-m-expanded #container-details-healthcheck .healthcheck-when-unhealthy',
                        'Force stop')
@@ -2819,7 +2883,7 @@ Yaml={name}.yaml
         status = self.execute(f"podman exec {containername} rm -f /healthy", system=auth).strip()
         b.wait(lambda: self.getContainerAttr(containername,
                                              "State",
-                                             "span:not(.ct-badge-container-unhealthy)",
+                                             ".ct-badge-container-state",
                                              system=auth) in NOT_RUNNING)
         status = self.execute(f"podman inspect --format '{{{{.State.Health.Status}}}}' {containername}",
                               system=auth).strip()
@@ -3631,7 +3695,10 @@ Yaml={name}.yaml
             b.click(self.getContainerAction(cmd))
 
         def getContainerAttr(container: str, uid: str, key: str) -> str:
-            return b.text(f"#containers-containers tr[data-row-name='{uid}-{container}'] td[data-label={key}]")
+            return b.text(
+                f"#containers-containers tr[data-row-name='{uid}-{container}'] "
+                f"td[data-label={key}] .ct-badge-container-state"
+            )
 
         # container lifecycle actions
         uid = uids["guitar"]

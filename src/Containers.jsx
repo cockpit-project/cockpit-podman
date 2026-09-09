@@ -40,6 +40,7 @@ import { PodActions } from './PodActions.jsx';
 import { PodCreateModal } from './PodCreateModal.jsx';
 import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 import * as client from './client.js';
+import { healthAssessment, healthStates } from './health.js';
 import * as utils from './util.js';
 
 import './Containers.scss';
@@ -307,17 +308,67 @@ export let onDownloadContainerFinished = function funcOnDownloadContainerFinishe
     }));
 };
 
-const localize_health = (state) => {
-    if (state === "healthy")
+const localize_health_assessment = (assessment) => {
+    switch (assessment.status) {
+    case healthStates.healthy:
         return _("Healthy");
-    else if (state === "unhealthy")
+    case healthStates.unhealthy:
         return _("Unhealthy");
-    else if (state === "starting")
+    case healthStates.starting:
         return _("Checking health");
-    else
-        console.error("Unexpected health check status", state);
-    return null;
+    case healthStates.missing:
+        return _("No health check");
+    case healthStates.stale:
+        return _("Stale health");
+    case healthStates.unknown:
+        return _("Health unknown");
+    case healthStates.error:
+        return _("Health unavailable");
+    case healthStates.stopped:
+        return _("Stopped");
+    case healthStates.completed:
+        return _("Completed");
+    default:
+        return _("Health unknown");
+    }
 };
+
+const health_reason = (assessment) => {
+    switch (assessment.status) {
+    case healthStates.starting:
+        return assessment.reason === "details-pending"
+            ? _("Health details are still loading")
+            : null;
+    case healthStates.missing:
+        return _("No health check configured");
+    case healthStates.stale:
+        return _("The last health check is stale");
+    case healthStates.unknown:
+        if (assessment.reason === "scheduler-coverage-missing")
+            return _("No active matching health schedule");
+        if (assessment.reason === "scheduler-unavailable" || assessment.reason === "scheduler-unknown")
+            return _("Scheduler freshness is unknown");
+        if (assessment.reason === "latest-check-unknown")
+            return _("Latest health result is invalid");
+        return assessment.reason === "freshness-unknown"
+            ? _("Health result is present, but scheduler freshness is unknown")
+            : _("No health result recorded");
+    case healthStates.error:
+        return assessment.reason === "scheduler-error"
+            ? _("Health scheduler metadata is unavailable")
+            : assessment.reason === "collection-timeout"
+                ? _("Health data collection timed out")
+                : _("Health data collection failed");
+    case healthStates.stopped:
+        return _("Container is stopped; health result is not live");
+    case healthStates.completed:
+        return _("Container completed; health result is not live");
+    default:
+        return null;
+    }
+};
+
+const health_badge_class = status => `ct-badge-container-health-${status}`;
 
 const ContainerOverActions = ({ handlePruneUnusedContainers, unusedContainers }) => {
     const actions = [
@@ -361,9 +412,11 @@ class Containers extends React.Component {
         this.state = {
             width: 0,
             memTotal: 0,
+            now: Date.now(),
             downloadingContainers: [],
             showPruneUnusedContainersModal: false,
         };
+        this.healthTimer = null;
         this.renderRow = this.renderRow.bind(this);
         this.onWindowResize = this.onWindowResize.bind(this);
         this.podStats = this.podStats.bind(this);
@@ -387,10 +440,15 @@ class Containers extends React.Component {
 
     componentDidMount() {
         this.onWindowResize();
+        // Health results become stale without a Podman event. Keep the age and
+        // stale badge truthful while avoiding a per-container polling loop.
+        this.healthTimer = window.setInterval(() => this.setState({ now: Date.now() }), 10000);
     }
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowResize);
+        if (this.healthTimer !== null)
+            window.clearInterval(this.healthTimer);
     }
 
     createPod() {
@@ -426,13 +484,12 @@ class Containers extends React.Component {
         const isToolboxContainer = container.Config?.Labels?.["com.github.containers.toolbox"] === "true";
         const isDistroboxContainer = container.Config?.Labels?.manager === "distrobox";
         const isSystemdService = utils.is_systemd_service(container.Config);
-        let localized_health = null;
-
         // this needs to get along with stub containers from image run dialog, where most properties don't exist yet
-        // HACK: Podman renamed `Healthcheck` to `Health` randomly
-        // https://github.com/containers/podman/commit/119973375
-        const healthcheck = container.State?.Health?.Status ?? container.State?.Healthcheck?.Status; // not-covered: only on old version
         const status = container.State?.Status ?? ""; // not-covered: race condition
+        const collectionError = this.props.containerErrors?.[container.key] ||
+            this.props.contextErrors?.[container.uid] || null;
+        const scheduler = this.props.schedulerCoverage?.[container.key] || null;
+        const assessment = healthAssessment(container, this.state.now, collectionError, scheduler);
 
         let proc = "";
         let mem = "";
@@ -487,11 +544,25 @@ class Containers extends React.Component {
 
         const containerState = status.charAt(0).toUpperCase() + status.slice(1);
 
-        const state = [<Badge key={containerState} isRead className={containerStateClass}>{_(containerState)}</Badge>]; // States are defined in util.js
-        if (healthcheck) {
-            localized_health = localize_health(healthcheck);
-            if (localized_health)
-                state.push(<Badge key={healthcheck} isRead className={`ct-badge-container-${healthcheck}`}>{localized_health}</Badge>);
+        const state = [<Badge key={containerState} isRead className={`${containerStateClass} ct-badge-container-state`}>{_(containerState)}</Badge>]; // States are defined in util.js
+        const localizedHealth = localize_health_assessment(assessment);
+        const reason = health_reason(assessment);
+        // Keep the existing selectors/classes for native Podman states while
+        // giving the new display-only states their own namespace.
+        const legacyHealthClass = [healthStates.healthy, healthStates.unhealthy, healthStates.starting].includes(assessment.status)
+            ? `ct-badge-container-${assessment.status}`
+            : "";
+        state.push(
+            <Badge key={`health-${assessment.status}`} isRead className={`${health_badge_class(assessment.status)} ${legacyHealthClass}`} title={reason || localizedHealth}>
+                {localizedHealth}
+            </Badge>
+        );
+        if (assessment.lastChecked !== null) {
+            state.push(
+                <span key="health-last-checked" className="health-last-checked">
+                    {_("Last checked:")} <utils.RelativeTime time={new Date(assessment.lastChecked)} />
+                </span>
+            );
         }
 
         const user = this.props.users.find(user => user.uid === container.uid);
@@ -567,11 +638,17 @@ class Containers extends React.Component {
             }
         }
 
-        if (healthcheck) {
+        if (container.State && user.con !== null) {
             tabs.push({
                 name: _("Health check"),
                 renderer: ContainerHealthLogs,
-                data: { con: user.con, container, onAddNotification: this.props.onAddNotification, state: localized_health }
+                data: {
+                    con: user.con,
+                    container,
+                    onAddNotification: this.props.onAddNotification,
+                    state: localizedHealth,
+                    assessment,
+                }
             });
         }
 
@@ -582,7 +659,12 @@ class Containers extends React.Component {
             props: {
                 key: container.key,
                 "data-row-id": container.key,
+                "data-row-type": container.IsQuadlet ? "quadlet" : "container",
                 "data-started-at": container.State?.StartedAt,
+                "data-owner-uid": container.uid ?? "user",
+                ...(container.IsQuadlet ? { "data-quadlet-id": container.Id } : { "data-container-id": container.Id }),
+                "data-health-status": assessment.status,
+                "data-health-last-checked": assessment.lastChecked === null ? "" : assessment.lastChecked,
                 "data-row-name": `${container.uid === null ? 'user' : container.uid}-${container.Name}`
             },
         };
@@ -727,19 +809,30 @@ class Containers extends React.Component {
         filtered = filtered.filter(id => !containers[id].IsInfra && !containers[id].IsService);
 
         const getHealth = id => {
-            const state = containers[id]?.State;
-            return state?.Health?.Status || state?.Healthcheck?.Status;
+            const collectionError = this.props.containerErrors?.[containers[id].key] ||
+                this.props.contextErrors?.[containers[id].uid] || null;
+            const scheduler = this.props.schedulerCoverage?.[containers[id].key] || null;
+            return healthAssessment(containers[id], this.state.now, collectionError, scheduler).status;
         };
 
         filtered.sort((a, b) => {
-            // Show unhealthy containers first
+            // Show confirmed failures and unavailable/stale data first. A
+            // missing or empty health result must never sort as healthy.
             const a_health = getHealth(a);
             const b_health = getHealth(b);
             if (a_health !== b_health) {
-                if (a_health === "unhealthy")
-                    return -1;
-                if (b_health === "unhealthy")
-                    return 1;
+                const order = {
+                    [healthStates.unhealthy]: 0,
+                    [healthStates.error]: 1,
+                    [healthStates.stale]: 2,
+                    [healthStates.starting]: 3,
+                    [healthStates.unknown]: 4,
+                    [healthStates.missing]: 5,
+                    [healthStates.healthy]: 6,
+                    [healthStates.completed]: 7,
+                    [healthStates.stopped]: 8,
+                };
+                return (order[a_health] ?? 7) - (order[b_health] ?? 7);
             }
             // User containers are in front of system ones
             if (containers[a].uid !== containers[b].uid)
@@ -955,6 +1048,14 @@ class Containers extends React.Component {
                 </CardHeader>
                 <CardBody>
                     <Flex direction={{ default: 'column' }}>
+                        {Object.keys(this.props.contextErrors || {}).length > 0 &&
+                            <Content component={ContentVariants.p} className="container-context-error" role="alert">
+                                {_("Container collection is unavailable for one or more owners; cached health is marked unavailable.")}
+                            </Content>}
+                        {Object.keys(this.props.schedulerErrors || {}).length > 0 &&
+                            <Content component={ContentVariants.p} className="container-context-error" role="alert">
+                                {_("Health scheduler metadata is unavailable for one or more owners; freshness is marked unavailable.")}
+                            </Content>}
                         {(!isLoaded)
                             ? <ListingTable variant='compact'
                                             aria-label={_("Containers")}

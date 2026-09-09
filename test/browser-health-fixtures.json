@@ -1,0 +1,91 @@
+{
+  "now": "2026-09-08T12:01:00Z",
+  "healthy": {
+    "expected": "healthy",
+    "container": {
+      "Id": "healthy-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "true"], "Interval": 30000000000, "Timeout": 5000000000 } },
+      "State": { "Status": "running", "Health": { "Status": "healthy", "Log": [{ "Start": "2026-09-08T11:59:30Z", "End": "2026-09-08T11:59:31Z", "ExitCode": 0 }, { "Start": "2026-09-08T12:00:30Z", "End": "2026-09-08T12:00:31Z", "ExitCode": 0 }] } }
+    },
+    "scheduler": { "coverage_status": "covered", "active_coverage_count": 1, "coverage_count": 1, "effective_interval_seconds": 30, "jitter_seconds": 0, "accuracy_seconds": 1, "schedule_source": "systemd", "collector_errors": [] }
+  },
+  "unhealthy": {
+    "expected": "unhealthy",
+    "container": {
+      "Id": "unhealthy-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "false"], "Interval": 30000000000, "Timeout": 5000000000 } },
+      "State": { "Status": "running", "Health": { "Status": "unhealthy", "Log": [{ "Start": "2026-09-08T12:00:30Z", "End": "2026-09-08T12:00:31Z", "ExitCode": 1 }] } }
+    },
+    "scheduler": { "coverage_status": "covered", "active_coverage_count": 1, "coverage_count": 1, "effective_interval_seconds": 30, "jitter_seconds": 0, "accuracy_seconds": 1, "schedule_source": "systemd", "collector_errors": [] }
+  },
+  "starting": {
+    "expected": "starting",
+    "container": {
+      "Id": "starting-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "true"], "Interval": 30000000000, "Timeout": 5000000000 } },
+      "State": { "Status": "running", "Health": { "Status": "starting", "Log": [] } }
+    },
+    "scheduler": { "coverage_status": "covered", "active_coverage_count": 1, "coverage_count": 1, "effective_interval_seconds": 30, "jitter_seconds": 0, "accuracy_seconds": 1, "schedule_source": "systemd", "collector_errors": [] }
+  },
+  "missing": {
+    "expected": "missing",
+    "container": { "Id": "missing-id", "Config": {}, "State": { "Status": "running" } }
+  },
+  "stale": {
+    "expected": "stale",
+    "container": {
+      "Id": "stale-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "true"], "Interval": 30000000000, "Timeout": 5000000000 } },
+      "State": { "Status": "running", "Health": { "Status": "healthy", "Log": [{ "Start": "2026-09-08T11:58:00Z", "End": "2026-09-08T11:58:01Z", "ExitCode": 0 }, { "Start": "2026-09-08T11:59:00Z", "End": "2026-09-08T11:59:01Z", "ExitCode": 0 }] } }
+    },
+    "scheduler": { "coverage_status": "covered", "active_coverage_count": 1, "coverage_count": 1, "effective_interval_seconds": 30, "jitter_seconds": 0, "accuracy_seconds": 1, "schedule_source": "systemd", "collector_errors": [] }
+  },
+  "freshness-unknown": {
+    "expected": "unknown",
+    "container": {
+      "Id": "unknown-freshness-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "true"], "Interval": 5000000000, "Timeout": 1000000000 } },
+      "State": { "Status": "running", "Health": { "Status": "healthy", "Log": [{ "Start": "2026-09-08T11:59:00Z", "End": "2026-09-08T11:59:01Z", "ExitCode": 0 }] } }
+    },
+    "scheduler": { "coverage_status": "uncovered", "active_coverage_count": 0, "coverage_count": 0, "coverage_reason": "ambiguous-schedule", "effective_interval_seconds": null, "effective_interval_source": null, "collector_errors": [] }
+  },
+  "collector-error": {
+    "expected": "error",
+    "error": "permission denied\nfor /run/user/1000/podman/podman.sock",
+    "container": {
+      "Id": "error-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "true"], "Interval": 30000000000, "Timeout": 5000000000 } },
+      "State": { "Status": "running", "Health": { "Status": "healthy", "Log": [{ "Start": "2026-09-08T12:00:30Z", "End": "2026-09-08T12:00:31Z", "ExitCode": 0 }] } }
+    },
+    "scheduler": { "coverage_status": "covered", "active_coverage_count": 1, "coverage_count": 1, "effective_interval_seconds": 30, "jitter_seconds": 0, "accuracy_seconds": 1, "schedule_source": "systemd", "collector_errors": [] }
+  },
+  "stopped": {
+    "expected": "stopped",
+    "container": {
+      "Id": "stopped-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "true"], "Interval": 30000000000, "Timeout": 5000000000 } },
+      "State": { "Status": "exited", "ExitCode": 137, "Health": { "Status": "healthy", "Log": [{ "Start": "2026-09-08T12:00:30Z", "End": "2026-09-08T12:00:31Z", "ExitCode": 0 }] } }
+    },
+    "scheduler": { "coverage_status": "uncovered", "active_coverage_count": 0, "coverage_count": 0, "coverage_reason": "no-active-matching-health-timer", "collector_errors": [] }
+  },
+  "latest-failed": {
+    "expected": "unhealthy",
+    "container": {
+      "Id": "latest-failed-id",
+      "Config": { "Healthcheck": { "Test": ["CMD-SHELL", "curl -f http://service/health"], "Interval": 30000000000, "Timeout": 5000000000, "Retries": 30 } },
+      "State": { "Status": "running", "Health": { "Status": "healthy", "Log": [{ "Start": "2026-09-08T11:59:30Z", "End": "2026-09-08T11:59:31Z", "ExitCode": 0 }, { "Start": "2026-09-08T12:00:30Z", "End": "2026-09-08T12:00:31Z", "ExitCode": -1, "Output": "health check timed out" }] } }
+    },
+    "scheduler": { "coverage_status": "covered", "active_coverage_count": 1, "coverage_count": 1, "effective_interval_seconds": 30, "jitter_seconds": 0, "accuracy_seconds": 1, "schedule_source": "systemd", "collector_errors": [] }
+  },
+  "permission-context-collision": {
+    "expected": "owner-scoped",
+    "sameId": "same-id",
+    "healthyOwner": { "uid": 0, "error": null },
+    "errorOwner": { "uid": 1000, "error": "access denied" }
+  },
+  "recreated-id": {
+    "expected": "new-id-is-independent",
+    "old": { "uid": 1000, "id": "old-id", "error": "inspect 404" },
+    "new": { "uid": 1000, "id": "new-id", "error": null }
+  }
+}

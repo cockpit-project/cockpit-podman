@@ -72,12 +72,30 @@ function isReturnRaw(return_raw: boolean, callback: MonitorCallback): callback i
     return return_raw;
 }
 
+// cockpit.http().request() returns a promise-like object with a close()
+// method. Keep that cancellation hook when adapting it to the normal Promise
+// interface so bounded callers can release a request that has timed out.
+export type CancellablePromise<T> = Promise<T> & {
+    close?: (problem?: string) => void;
+};
+
 export type Connection = {
     uid: Uid;
     monitor: (path: string, callback: MonitorCallback, return_raw?: boolean) => Promise<void>;
-    call: (options: JsonObject) => Promise<string>;
+    call: (options: JsonObject) => CancellablePromise<string>;
     close: () => void;
 };
+
+type CockpitHttpRequest = Promise<Uint8Array> & {
+    close?: (problem?: string) => void;
+};
+
+function forwardClose<T>(promise: Promise<T>, request: CockpitHttpRequest): CancellablePromise<T> {
+    const result = promise as CancellablePromise<T>;
+    if (typeof request.close === "function")
+        result.close = request.close.bind(request);
+    return result;
+}
 
 function connect(uid: Uid): Connection {
     const addr = getAddress(uid);
@@ -89,12 +107,18 @@ function connect(uid: Uid): Connection {
     const decoder = new TextDecoder();
     const user_str = (uid === null) ? "user" : (uid === 0) ? "root" : `uid ${uid}`;
 
-    function call(options: JsonObject): Promise<string> {
+    function call(options: JsonObject): CancellablePromise<string> {
         const id = call_id++;
         debug(user_str, `call ${id}:`, JSON.stringify(options));
-        return new Promise((resolve, reject) => {
-            options = options || {};
-            http.request(options)
+        options = options || {};
+        let request: CockpitHttpRequest;
+        try {
+            request = http.request(options) as CockpitHttpRequest;
+        } catch (error) {
+            return Promise.reject(error) as CancellablePromise<string>;
+        }
+        const promise = new Promise<string>((resolve, reject) => {
+            request
                     .then((result: Uint8Array) => {
                         const text = decoder.decode(result);
                         debug(user_str, `call ${id} result:`, text);
@@ -109,6 +133,7 @@ function connect(uid: Uid): Connection {
                         reject(format_error(error, content_text));
                     });
         });
+        return forwardClose(promise, request);
     }
 
     function monitor(path: string, callback: MonitorCallback, return_raw: boolean = false): Promise<void> {

@@ -25,6 +25,12 @@ const format_nanoseconds = (ns) => {
     return cockpit.format(cockpit.ngettext("$0 second", "$0 seconds", seconds), seconds);
 };
 
+const format_seconds = (seconds) => {
+    if (!Number.isFinite(seconds))
+        return _("unknown");
+    return cockpit.format(cockpit.ngettext("$0 second", "$0 seconds", seconds), seconds);
+};
+
 const HealthcheckOnFailureActionText = {
     none: _("No action"),
     restart: _("Restart"),
@@ -32,10 +38,41 @@ const HealthcheckOnFailureActionText = {
     kill: _("Force stop"),
 };
 
-const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
+const ContainerHealthLogs = ({ con, container, onAddNotification, state, assessment }) => {
     const healthCheck = container.Config?.Healthcheck ?? container.Config?.Health ?? {}; // not-covered: only on old version
     const healthState = container.State?.Healthcheck ?? container.State?.Health ?? {}; // not-covered: only on old version
     const logs = [...(healthState.Log || [])].reverse(); // not-covered: Log should always exist, belt-and-suspenders
+    const hasConfiguredHealthCheck = assessment?.configured ?? Boolean(healthCheck.Test?.length);
+    const statusReason = (() => {
+        switch (assessment?.status) {
+        case "missing":
+            return _("No health check configured");
+        case "stale":
+            return _("The last health check is stale");
+        case "unknown":
+            if (assessment.reason === "scheduler-coverage-missing")
+                return _("No active matching health schedule");
+            if (assessment.reason === "scheduler-unavailable" || assessment.reason === "scheduler-unknown")
+                return _("Scheduler freshness is unknown");
+            if (assessment.reason === "latest-check-unknown")
+                return _("Latest health result is invalid");
+            return assessment.reason === "freshness-unknown"
+                ? _("Health result is present, but scheduler freshness is unknown")
+                : _("No health result recorded");
+        case "error":
+            return assessment.reason === "scheduler-error"
+                ? _("Health scheduler metadata is unavailable")
+                : assessment.reason === "collection-timeout"
+                    ? _("Health data collection timed out")
+                    : _("Health data collection failed");
+        case "stopped":
+            return _("Container is stopped; health result is not live");
+        case "completed":
+            return _("Container completed; health result is not live");
+        default:
+            return null;
+        }
+    })();
 
     return (
         <>
@@ -46,9 +83,37 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
                             <DescriptionListTerm>{_("Status")}</DescriptionListTerm>
                             <DescriptionListDescription>{state}</DescriptionListDescription>
                         </DescriptionListGroup>
+                        {statusReason && <DescriptionListGroup>
+                            <DescriptionListTerm>{_("Reason")}</DescriptionListTerm>
+                            <DescriptionListDescription className="healthcheck-reason">{statusReason}</DescriptionListDescription>
+                        </DescriptionListGroup>}
+                        {assessment?.lastChecked !== null && assessment?.lastChecked !== undefined && <DescriptionListGroup>
+                            <DescriptionListTerm>{_("Last checked")}</DescriptionListTerm>
+                            <DescriptionListDescription className="healthcheck-last-checked">
+                                <utils.RelativeTime time={new Date(assessment.lastChecked)} />
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>}
+                        {assessment?.schedule && <DescriptionListGroup>
+                            <DescriptionListTerm>{_("Effective schedule")}</DescriptionListTerm>
+                            <DescriptionListDescription className="healthcheck-schedule">
+                                {assessment.schedule.effective_interval_seconds === null || assessment.schedule.effective_interval_seconds === undefined
+                                    ? _("Unavailable")
+                                    : format_seconds(assessment.schedule.effective_interval_seconds)}
+                                {(assessment.schedule.schedule_source || assessment.schedule.schedules?.[0]?.schedule_source) &&
+                                    ` (${assessment.schedule.schedule_source || assessment.schedule.schedules[0].schedule_source})`}
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>}
+                        {assessment?.staleAfterMs !== null && assessment?.staleAfterMs !== undefined && <DescriptionListGroup>
+                            <DescriptionListTerm>{_("Freshness window")}</DescriptionListTerm>
+                            <DescriptionListDescription className="healthcheck-freshness-window">
+                                {format_seconds(assessment.staleAfterMs / 1000)}
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>}
                         <DescriptionListGroup>
                             <DescriptionListTerm>{_("Command")}</DescriptionListTerm>
-                            <DescriptionListDescription className="healthcheck-command">{utils.quote_cmdline(healthCheck.Test)}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-command">
+                                {hasConfiguredHealthCheck ? utils.quote_cmdline(healthCheck.Test) : _("Not configured")}
+                            </DescriptionListDescription>
                         </DescriptionListGroup>
                         {healthCheck.Interval && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Interval")}</DescriptionListTerm>
@@ -76,7 +141,7 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
                         </DescriptionListGroup>}
                     </DescriptionList>
                 </FlexItem>
-                { container.State.Status === "running" &&
+                { hasConfiguredHealthCheck && container.State.Status === "running" &&
                     <FlexItem>
                         <Button variant="secondary" onClick={() => {
                             client.runHealthcheck(con, container.Id)

@@ -1,19 +1,23 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 import type { JsonObject, JsonValue } from "cockpit";
 
-import type { Connection, MonitorCallback } from "./rest.ts";
+import type { CancellablePromise, Connection, MonitorCallback } from "./rest.ts";
 
 // podman API version; oldest one that we support
 export const VERSION = "/v3.4.0/";
 
 const podmanCall = (con: Connection, name: string, method: string, args: JsonObject, body?: string):
-                   Promise<string> =>
+                   CancellablePromise<string> =>
     con.call({ method, path: VERSION + name, body: body || "", params: args, });
 
 const podmanJson = (con: Connection, name: string, method: string, args: JsonObject, body?: string):
-                   Promise<JsonObject|JsonValue> =>
-    podmanCall(con, name, method, args, body)
-            .then(reply => JSON.parse(reply));
+                   CancellablePromise<JsonObject|JsonValue> => {
+    const request = podmanCall(con, name, method, args, body);
+    const result = request.then(reply => JSON.parse(reply)) as CancellablePromise<JsonObject|JsonValue>;
+    if (request.close)
+        result.close = request.close;
+    return result;
+};
 
 export const streamEvents = (con: Connection, callback: MonitorCallback) =>
     con.monitor(`${VERSION}libpod/events`, callback);

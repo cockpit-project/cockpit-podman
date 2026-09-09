@@ -56,14 +56,30 @@
     color: var(--pf-t--global--text--color--status--on-info--default);
 }
 
-.ct-badge-container-healthy {
+.ct-badge-container-healthy, .ct-badge-container-health-healthy {
     background-color: var(--pf-t--global--border--color--status--success--default);
     color: var(--pf-t--global--text--color--status--on-success--default);
 }
 
-.ct-badge-container-unhealthy {
+.ct-badge-container-unhealthy, .ct-badge-container-health-unhealthy, .ct-badge-container-health-error {
     background-color: var(--pf-t--global--border--color--status--danger--default);
     color: var(--pf-t--global--text--color--status--on-danger--default);
+}
+
+.ct-badge-container-health-starting {
+    background-color: var(--pf-t--global--color--status--info--default);
+    color: var(--pf-t--global--text--color--status--on-info--default);
+}
+
+.ct-badge-container-health-stale {
+    background-color: var(--pf-t--global--color--status--warning--default);
+    color: var(--pf-t--global--text--color--status--on-warning--default);
+}
+
+.ct-badge-container-health-missing, .ct-badge-container-health-unknown,
+.ct-badge-container-health-stopped, .ct-badge-container-health-completed {
+    background-color: var(--pf-t--global--border--color--default);
+    color: var(--pf-t--global--text--color--regular);
 }
 
 .ct-badge-toolbox {

@@ -5,7 +5,8 @@ import { Tooltip } from "@patternfly/react-core/dist/esm/components/Tooltip";
 import { debounce } from 'throttle-debounce';
 
 import cockpit from 'cockpit';
-import * as timeformat from 'timeformat';
+
+import { cachedDateTimeSeconds, cachedDistanceToNow } from './time-display.js';
 
 const _ = cockpit.gettext;
 
@@ -66,8 +67,9 @@ export const RelativeTime = ({ time }: { time: Date | string }) => {
     if (!time)
         return null;
     const timestamp = typeof time === "string" ? Date.parse(time) : time;
-    const dateRel = timeformat.distanceToNow(timestamp);
-    const dateAbs = timeformat.dateTimeSeconds(timestamp);
+    const locale = cockpit.language.replace('_', '-');
+    const dateRel = cachedDistanceToNow(timestamp, locale, _);
+    const dateAbs = cachedDateTimeSeconds(timestamp, locale);
     return <Tooltip content={dateAbs}><span>{dateRel}</span></Tooltip>;
 };
 
