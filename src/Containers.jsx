@@ -557,8 +557,8 @@ class Containers extends React.Component {
                     {isDistroboxContainer && <Badge className='ct-badge-distrobox'>distrobox</Badge>}
                     {isSystemdService && <Badge className='ct-badge-service'>{_("service")}</Badge>}
                 </Flex>
-                <small>{image}</small>
-                <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
+                <small className="container-image">{image}</small>
+                <small className="container-command">{utils.quote_cmdline(container.Config?.Cmd)}</small>
                 <small className="container-scope" data-container-scope={scopeText}>{scopeText}</small>
             </div>
         );

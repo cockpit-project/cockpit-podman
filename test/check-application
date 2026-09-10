@@ -2484,9 +2484,9 @@ Yaml={name}.yaml
         if name:
             b.wait_text(sel + " .container-name", name)
         if image:
-            b.wait_in_text(sel + " td[data-label=Container] small:nth-child(2)", image)
+            b.wait_in_text(sel + " td[data-label=Container] .container-image", image)
         if cmd:
-            b.wait_text(sel + " td[data-label=Container] small:last-child", cmd)
+            b.wait_text(sel + " td[data-label=Container] .container-command", cmd)
         if owner:
             if owner == "system":
                 b.wait_text(sel + " td[data-label=Owner]", owner)
@@ -3452,7 +3452,7 @@ Yaml={name}.yaml
         self.performContainerAction("quak", "Stop", system=system)
         b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Exited")
         # Shows Command when exited
-        b.wait_in_text(f"tr[data-row-id='{'0' if system else 'user'}-quak.service'] small:last-child",
+        b.wait_in_text(f"tr[data-row-id='{'0' if system else 'user'}-quak.service'] .container-command",
                        "sleep infinity")
         self.performContainerAction("quak", "Start", system=system)
         b.wait(lambda: self.getContainerAttr("quak", "State", "", system=system) == "Running")
