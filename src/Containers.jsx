@@ -40,7 +40,7 @@ import { PodActions } from './PodActions.jsx';
 import { PodCreateModal } from './PodCreateModal.jsx';
 import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 import * as client from './client.js';
-import { healthAssessment, healthStates } from './health.js';
+import { containerScope, healthAge, healthAssessment, healthDetail, healthStates } from './health.js';
 import * as utils from './util.js';
 
 import './Containers.scss';
@@ -334,37 +334,52 @@ const localize_health_assessment = (assessment) => {
 };
 
 const health_reason = (assessment) => {
-    switch (assessment.status) {
-    case healthStates.starting:
-        return assessment.reason === "details-pending"
-            ? _("Health details are still loading")
-            : null;
-    case healthStates.missing:
-        return _("No health check configured");
-    case healthStates.stale:
-        return _("The last health check is stale");
-    case healthStates.unknown:
-        if (assessment.reason === "scheduler-coverage-missing")
-            return _("No active matching health schedule");
-        if (assessment.reason === "scheduler-unavailable" || assessment.reason === "scheduler-unknown")
-            return _("Scheduler freshness is unknown");
-        if (assessment.reason === "latest-check-unknown")
-            return _("Latest health result is invalid");
-        return assessment.reason === "freshness-unknown"
-            ? _("Health result is present, but scheduler freshness is unknown")
-            : _("No health result recorded");
-    case healthStates.error:
-        return assessment.reason === "scheduler-error"
-            ? _("Health scheduler metadata is unavailable")
-            : assessment.reason === "collection-timeout"
-                ? _("Health data collection timed out")
-                : _("Health data collection failed");
-    case healthStates.stopped:
-        return _("Container is stopped; health result is not live");
-    case healthStates.completed:
-        return _("Container completed; health result is not live");
-    default:
+    const detail = healthDetail(assessment);
+    switch (detail.code) {
+    case "healthy":
         return null;
+    case "unhealthy":
+        return _("Health check failed");
+    case "latest-check-failed":
+        return _("Latest health check failed");
+    case "details-pending":
+        return _("Health details are still loading");
+    case "starting":
+        return _("Health check is in its startup grace period");
+    case "missing":
+        return _("No health check configured");
+    case "stale":
+        return _("The last health check is stale");
+    case "scheduler-coverage-missing":
+        return _("No active matching health schedule");
+    case "scheduler-unavailable":
+    case "scheduler-unknown":
+        return _("Scheduler freshness is unknown");
+    case "latest-check-unknown":
+        return _("Latest health result is invalid");
+    case "timestamp-future":
+        return _("Health result timestamp is in the future");
+    case "freshness-unknown":
+        return _("Health result is present, but scheduler freshness is unknown");
+    case "no-result":
+        return _("No health result recorded");
+    case "scheduler-error":
+        return _("Health scheduler metadata is unavailable");
+    case "collection-timeout":
+        return _("Health data collection timed out");
+    case "collection-error":
+    case "error":
+        return _("Health data collection failed");
+    case "stopped":
+        return detail.reason || _("Container is stopped; health result is not live");
+    case "completed":
+        return detail.reason || _("Container completed; health result is not live");
+    case "retired":
+        return detail.reason || _("Container is retired; health result is not live");
+    case "infrastructure":
+        return detail.reason || _("Infrastructure container; application health is not applicable");
+    default:
+        return _("Health status is unavailable");
     }
 };
 
@@ -490,6 +505,11 @@ class Containers extends React.Component {
             this.props.contextErrors?.[container.uid] || null;
         const scheduler = this.props.schedulerCoverage?.[container.key] || null;
         const assessment = healthAssessment(container, this.state.now, collectionError, scheduler);
+        const scope = assessment.scope || containerScope(container);
+        const ownerText = scope.ownerUid === null
+            ? _("session user")
+            : cockpit.format(_("UID $0"), scope.ownerUid);
+        const scopeText = cockpit.format(_("$0 · $1"), scope.context, ownerText);
 
         let proc = "";
         let mem = "";
@@ -535,6 +555,7 @@ class Containers extends React.Component {
                 </Flex>
                 <small>{image}</small>
                 <small>{utils.quote_cmdline(container.Config?.Cmd)}</small>
+                <small className="container-scope" data-container-scope={scopeText}>{scopeText}</small>
             </div>
         );
 
@@ -553,17 +574,22 @@ class Containers extends React.Component {
             ? `ct-badge-container-${assessment.status}`
             : "";
         state.push(
-            <Badge key={`health-${assessment.status}`} isRead className={`${health_badge_class(assessment.status)} ${legacyHealthClass}`} title={reason || localizedHealth}>
+            <Badge key={`health-${assessment.status}`} isRead className={`${health_badge_class(assessment.status)} ${legacyHealthClass}`}
+                   title={reason || localizedHealth}
+                   aria-label={cockpit.format(_("Health: $0"), localizedHealth)}>
                 {localizedHealth}
             </Badge>
         );
-        if (assessment.lastChecked !== null) {
-            state.push(
-                <span key="health-last-checked" className="health-last-checked">
-                    {_("Last checked:")} <utils.RelativeTime time={new Date(assessment.lastChecked)} />
-                </span>
-            );
-        }
+        if (reason)
+            state.push(<small key="health-detail" className="container-health-detail" data-health-detail={reason}>{reason}</small>);
+        state.push(
+            <span key="health-last-checked" className="health-last-checked"
+                  data-health-age-ms={healthAge(assessment) === null ? "" : healthAge(assessment)}>
+                {assessment.lastChecked === null
+                    ? _("Last checked: unavailable")
+                    : <>{_("Last checked:")} <utils.RelativeTime time={new Date(assessment.lastChecked)} /></>}
+            </span>
+        );
 
         const user = this.props.users.find(user => user.uid === container.uid);
         cockpit.assert(user, `User not found for container uid ${container.uid}`);
@@ -665,6 +691,12 @@ class Containers extends React.Component {
                 ...(container.IsQuadlet ? { "data-quadlet-id": container.Id } : { "data-container-id": container.Id }),
                 "data-health-status": assessment.status,
                 "data-health-last-checked": assessment.lastChecked === null ? "" : assessment.lastChecked,
+                "data-health-age-ms": healthAge(assessment) === null ? "" : healthAge(assessment),
+                "data-health-detail": reason || "",
+                "data-health-scope": scope.fullId
+                    ? `${scope.context}:${scope.ownerUid ?? "session"}:${scope.fullId}`
+                    : "",
+                ...(scope.fullId ? { "data-container-full-id": scope.fullId } : {}),
                 "data-row-name": `${container.uid === null ? 'user' : container.uid}-${container.Name}`
             },
         };

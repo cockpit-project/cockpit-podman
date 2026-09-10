@@ -16,6 +16,7 @@ import cockpit from 'cockpit';
 import { ListingTable } from "cockpit-components-table";
 
 import * as client from './client.js';
+import { containerScope, healthAge, healthDetail, normalizeExitCode } from './health.js';
 import * as utils from './util.js';
 
 const _ = cockpit.gettext;
@@ -43,36 +44,61 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state, assessm
     const healthState = container.State?.Healthcheck ?? container.State?.Health ?? {}; // not-covered: only on old version
     const logs = [...(healthState.Log || [])].reverse(); // not-covered: Log should always exist, belt-and-suspenders
     const hasConfiguredHealthCheck = assessment?.configured ?? Boolean(healthCheck.Test?.length);
+    const detail = healthDetail(assessment);
     const statusReason = (() => {
-        switch (assessment?.status) {
+        switch (detail.code) {
+        case "healthy":
+            return null;
+        case "unhealthy":
+            return _("Health check failed");
+        case "latest-check-failed":
+            return _("Latest health check failed");
+        case "details-pending":
+            return _("Health details are still loading");
+        case "starting":
+            return _("Health check is in its startup grace period");
         case "missing":
             return _("No health check configured");
         case "stale":
             return _("The last health check is stale");
-        case "unknown":
-            if (assessment.reason === "scheduler-coverage-missing")
-                return _("No active matching health schedule");
-            if (assessment.reason === "scheduler-unavailable" || assessment.reason === "scheduler-unknown")
-                return _("Scheduler freshness is unknown");
-            if (assessment.reason === "latest-check-unknown")
-                return _("Latest health result is invalid");
-            return assessment.reason === "freshness-unknown"
-                ? _("Health result is present, but scheduler freshness is unknown")
-                : _("No health result recorded");
+        case "scheduler-coverage-missing":
+            return _("No active matching health schedule");
+        case "scheduler-unavailable":
+        case "scheduler-unknown":
+            return _("Scheduler freshness is unknown");
+        case "latest-check-unknown":
+            return _("Latest health result is invalid");
+        case "timestamp-future":
+            return _("Health result timestamp is in the future");
+        case "freshness-unknown":
+            return _("Health result is present, but scheduler freshness is unknown");
+        case "no-result":
+            return _("No health result recorded");
+        case "scheduler-error":
+            return _("Health scheduler metadata is unavailable");
+        case "collection-timeout":
+            return _("Health data collection timed out");
+        case "collection-error":
         case "error":
-            return assessment.reason === "scheduler-error"
-                ? _("Health scheduler metadata is unavailable")
-                : assessment.reason === "collection-timeout"
-                    ? _("Health data collection timed out")
-                    : _("Health data collection failed");
+            return _("Health data collection failed");
         case "stopped":
-            return _("Container is stopped; health result is not live");
+            return detail.reason || _("Container is stopped; health result is not live");
         case "completed":
-            return _("Container completed; health result is not live");
+            return detail.reason || _("Container completed; health result is not live");
+        case "retired":
+            return detail.reason || _("Container is retired; health result is not live");
+        case "infrastructure":
+            return detail.reason || _("Infrastructure container; application health is not applicable");
         default:
-            return null;
+            return _("Health status is unavailable");
         }
     })();
+    const scope = assessment?.scope || containerScope(container);
+    const age = healthAge(assessment);
+    const ownerText = scope.ownerUid === null
+        ? _("session user")
+        : cockpit.format(_("UID $0"), scope.ownerUid);
+    const scopeText = cockpit.format(_("$0 · $1"), scope.context, ownerText);
 
     return (
         <>
@@ -85,14 +111,32 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state, assessm
                         </DescriptionListGroup>
                         {statusReason && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Reason")}</DescriptionListTerm>
-                            <DescriptionListDescription className="healthcheck-reason">{statusReason}</DescriptionListDescription>
+                            <DescriptionListDescription className="healthcheck-reason" data-health-detail={statusReason}>{statusReason}</DescriptionListDescription>
                         </DescriptionListGroup>}
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{_("Scope")}</DescriptionListTerm>
+                            <DescriptionListDescription className="healthcheck-scope" data-health-scope={scope.fullId
+                                ? `${scope.context}:${scope.ownerUid ?? "session"}:${scope.fullId}`
+                                : ""}>{scopeText}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{_("Container ID")}</DescriptionListTerm>
+                            <DescriptionListDescription className="healthcheck-container-id" title={scope.fullId || scope.id || ""}>
+                                {scope.fullId || scope.id || _("Unavailable")}
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>
                         {assessment?.lastChecked !== null && assessment?.lastChecked !== undefined && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Last checked")}</DescriptionListTerm>
                             <DescriptionListDescription className="healthcheck-last-checked">
                                 <utils.RelativeTime time={new Date(assessment.lastChecked)} />
                             </DescriptionListDescription>
                         </DescriptionListGroup>}
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{_("Health age")}</DescriptionListTerm>
+                            <DescriptionListDescription className="healthcheck-age" data-health-age-ms={age === null ? "" : age}>
+                                {age === null ? _("Unavailable") : format_seconds(Math.floor(age / 1000))}
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>
                         {assessment?.schedule && <DescriptionListGroup>
                             <DescriptionListTerm>{_("Effective schedule")}</DescriptionListTerm>
                             <DescriptionListDescription className="healthcheck-schedule">
@@ -158,29 +202,30 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state, assessm
                           className="health-logs"
                           variant='compact'
                           columns={[_("Last 5 runs"), _("Started at")]}
-                          rows={
-                              logs.map(log => {
-                                  const id = `hc${log.Start}${container.Id}`;
-                                  return {
-                                      expandedContent: log.Output ? <pre>{log.Output}</pre> : null,
-                                      columns: [
-                                          {
-                                              title: <Flex flexWrap={{ default: 'nowrap' }} spaceItems={{ default: 'spaceItemsSm' }} alignItems={{ default: 'alignItemsCenter' }}>
-                                                  {log.ExitCode === 0 ? <Icon status="success"><CheckCircleIcon className="green" /></Icon> : <Icon status="danger"><ErrorCircleOIcon className="red" /></Icon>}
-                                                  <span>{log.ExitCode === 0 ? _("Passed health run") : _("Failed health run")}</span>
-                                              </Flex>
-                                          },
-                                          {
-                                              title: <utils.RelativeTime time={log.Start} />
-                                          }
-                                      ],
-                                      props: {
-                                          key: id,
-                                          "data-row-id": id,
+                      rows={
+                          logs.map(log => {
+                              const id = `hc${log.Start}${container.Id}`;
+                              const exitCode = normalizeExitCode(log.ExitCode);
+                              return {
+                                  expandedContent: log.Output ? <pre>{log.Output}</pre> : null,
+                                  columns: [
+                                      {
+                                          title: <Flex flexWrap={{ default: 'nowrap' }} spaceItems={{ default: 'spaceItemsSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                                              {exitCode === 0 ? <Icon status="success"><CheckCircleIcon className="green" /></Icon> : <Icon status="danger"><ErrorCircleOIcon className="red" /></Icon>}
+                                              <span>{exitCode === 0 ? _("Passed health run") : _("Failed health run")}</span>
+                                          </Flex>
                                       },
-                                  };
-                              })
-                          } />
+                                      {
+                                          title: <utils.RelativeTime time={log.Start} />
+                                      }
+                                  ],
+                                  props: {
+                                      key: id,
+                                      "data-row-id": id,
+                                  },
+                              };
+                          })
+                      } />
         </>
     );
 };

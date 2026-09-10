@@ -16,7 +16,190 @@ export const healthStates = Object.freeze({
     error: "error",
     stopped: "stopped",
     completed: "completed",
+    retired: "retired",
+    infrastructure: "infrastructure",
 });
+
+// A lifecycle disposition is optional source metadata from the protected
+// bootstrap collector. Podman does not infer that an exited container was a
+// one-shot job, and the display must not turn names, exit codes, service names,
+// labels, or arbitrary inspect fields into that claim.
+export const lifecycleDispositionClasses = Object.freeze({
+    completed: "completed_one_shot",
+    retired: "retired",
+    infrastructure: "infrastructure_only",
+    stopped: "stopped",
+});
+
+const LIFECYCLE_CLASSES = new Set(Object.values(lifecycleDispositionClasses));
+const LIFECYCLE_TEXT_MAX_LENGTH = 240;
+const FULL_LIFECYCLE_ID = /^[0-9a-f]{64}$/;
+const FULL_CONTAINER_ID = /^[0-9a-f]{64}$/;
+const FULL_SHA256 = /^[0-9a-f]{64}$/;
+const LIFECYCLE_POLICY_SHA256 = "b58d2c2b95f46efc3cbd4fdf3b2c62a0024190c091d668e0a6f754d553ee4f81";
+const LIFECYCLE_POLICY_EVIDENCE_REF = "worktrees/misc-source/train.home.complete.tech/ops/fleet-recovery-20260907.md";
+
+const containsControlCharacter = value => {
+    for (const character of value) {
+        const code = character.codePointAt(0);
+        if (code <= 0x1f || code === 0x7f)
+            return true;
+    }
+    return false;
+};
+
+const lifecycleText = value => {
+    if (typeof value !== "string" || value.length === 0 || value.length > LIFECYCLE_TEXT_MAX_LENGTH ||
+        containsControlCharacter(value) || /https?:\/\//i.test(value))
+        return null;
+    return value.trim() || null;
+};
+
+// Keep operator-facing detail deliberately small and inert.  Collection
+// failures and lifecycle records can originate outside the browser process;
+// a command line, URL, control character, or unbounded payload must never be
+// copied into a badge, tooltip, or health summary.
+export const sanitizeHealthDetail = value => {
+    if (typeof value !== "string" || value.length === 0 || value.length > LIFECYCLE_TEXT_MAX_LENGTH ||
+        containsControlCharacter(value) || /https?:\/\//i.test(value))
+        return null;
+    return value.trim() || null;
+};
+
+// The route UID identifies the Cockpit connection (the session-user route is
+// represented by null), while ownerUid identifies the Podman namespace that
+// owns the container.  Keep both values so a same-named or same-short-ID row
+// can never inherit another context's health result.
+export const containerScope = container => {
+    const routeUid = container?.uid === null ||
+        (typeof container?.uid === "number" && Number.isInteger(container.uid) && container.uid >= 0)
+        ? container.uid
+        : null;
+    const ownerUid = typeof container?.ownerUid === "number" && Number.isInteger(container.ownerUid) && container.ownerUid >= 0
+        ? container.ownerUid
+        : routeUid;
+    const id = typeof container?.Id === "string" && container.Id.length > 0 ? container.Id : null;
+    const context = container?.context === "rootful" || container?.context === "rootless"
+        ? container.context
+        : ownerUid === 0 ? "rootful" : ownerUid === null ? "unknown" : "rootless";
+    return {
+        routeUid,
+        ownerUid,
+        context,
+        id,
+        fullId: id && FULL_CONTAINER_ID.test(id) ? id : null,
+    };
+};
+
+const SAFE_HEALTH_REASON_CODES = new Set([
+    "details-pending", "starting", "missing", "stale", "scheduler-coverage-missing",
+    "scheduler-unavailable", "scheduler-unknown", "latest-check-unknown", "freshness-unknown",
+    "no-result", "scheduler-error", "collection-timeout", "collection-error", "unhealthy",
+    "latest-check-failed", "timestamp-future", "stopped", "completed", "retired", "infrastructure", "error", "healthy",
+]);
+
+export const healthDetail = assessment => {
+    const reason = sanitizeHealthDetail(assessment?.disposition?.reason);
+    const code = SAFE_HEALTH_REASON_CODES.has(assessment?.reason) ? assessment.reason : "unknown";
+    switch (assessment?.status) {
+    case healthStates.healthy:
+        return { code: "healthy", reason: null };
+    case healthStates.unhealthy:
+        return {
+            code: assessment.reason === "latest-check-failed" ? "latest-check-failed" : "unhealthy",
+            reason: null,
+        };
+    case healthStates.starting:
+        return {
+            code: assessment.reason === "details-pending" ? "details-pending" : "starting",
+            reason: null,
+        };
+    case healthStates.missing:
+        return { code: "missing", reason: null };
+    case healthStates.stale:
+        return { code: "stale", reason: null };
+    case healthStates.unknown:
+        return { code, reason: null };
+    case healthStates.error:
+        return { code: code === "unknown" ? "error" : code, reason: null };
+    case healthStates.stopped:
+        return { code: "stopped", reason };
+    case healthStates.completed:
+        return { code: "completed", reason };
+    case healthStates.retired:
+        return { code: "retired", reason };
+    case healthStates.infrastructure:
+        return { code: "infrastructure", reason };
+    default:
+        return { code: "unknown", reason: null };
+    }
+};
+
+export const healthAge = assessment => {
+    const age = assessment?.ageMs;
+    return Number.isFinite(age) && age >= 0 ? age : null;
+};
+
+const lifecycleClass = value => {
+    return typeof value === "string" && LIFECYCLE_CLASSES.has(value) ? value : null;
+};
+
+const lifecycleMetadataObject = container => {
+    const value = container?.LifecycleDisposition;
+    return value && typeof value === "object" && !Array.isArray(value) &&
+        value.provenance && typeof value.provenance === "object" && !Array.isArray(value.provenance)
+        ? { value, source: "record" }
+        : null;
+};
+
+const lifecycleIdentityMatches = (container, metadata) => {
+    const metadataId = metadata.id;
+    if (metadataId !== container?.Id || !FULL_LIFECYCLE_ID.test(metadataId))
+        return false;
+    if (typeof metadata.uid !== "number" || !Number.isInteger(metadata.uid) || metadata.uid < 0 ||
+        typeof metadata.host !== "string" || metadata.host.length === 0 ||
+        typeof metadata.context !== "string" || !["rootful", "rootless"].includes(metadata.context))
+        return false;
+    const provenance = metadata.provenance;
+    const state = typeof container?.State === "string"
+        ? container.State
+        : container?.State?.Status || container?.Status || "";
+    if (typeof container?.ownerUid !== "number" || !Number.isInteger(container.ownerUid) || container.ownerUid < 0 ||
+        typeof state !== "string" || state.length === 0)
+        return false;
+    return container.ownerUid === metadata.uid && container?.host === metadata.host &&
+        container?.context === metadata.context && provenance.kind === "operator-policy" &&
+        provenance.source === "source-decisions.json" && provenance.source_ref === LIFECYCLE_POLICY_EVIDENCE_REF &&
+        provenance.policy_sha256 === LIFECYCLE_POLICY_SHA256 &&
+        typeof provenance.owner_verified === "boolean" &&
+        FULL_SHA256.test(provenance.manifest_sha256) && FULL_SHA256.test(provenance.decision_sha256) &&
+        state.toLowerCase() !== "running" && !/^up\b/i.test(state);
+};
+
+// Return only owner-authored lifecycle metadata.  A null result is deliberate
+// and keeps an ambiguous row on the ordinary stopped/no-health path.
+export const lifecycleDisposition = container => {
+    const candidate = lifecycleMetadataObject(container);
+    if (!candidate || !lifecycleIdentityMatches(container, candidate.value))
+        return null;
+
+    const dispositionClass = lifecycleClass(candidate.value.class);
+    if (!dispositionClass)
+        return null;
+    const reason = lifecycleText(candidate.value.reason);
+    const evidence = lifecycleText(candidate.value.provenance.source);
+    return {
+        class: dispositionClass,
+        reason,
+        evidence,
+        source: candidate.source,
+        id: candidate.value.id,
+        uid: candidate.value.uid,
+        host: candidate.value.host,
+        context: candidate.value.context,
+        provenance: candidate.value.provenance,
+    };
+};
 
 // Error details from Podman, systemd, and Cockpit can contain command lines,
 // URLs, or health output.  The display only needs an allowlisted reason; the
@@ -131,9 +314,12 @@ export const latestHealthLog = state => {
     }, null)?.log || null;
 };
 
-const healthExitCode = value => {
+// Podman can encode an exit code as either a JSON number or a decimal string.
+// Keep one parser for assessment and log rendering so a passing string "0"
+// cannot be shown as a failed run in the expanded view.
+export const normalizeExitCode = value => {
     if (typeof value === "number")
-        return Number.isInteger(value) ? value : null;
+        return Number.isSafeInteger(value) ? value : null;
     if (typeof value !== "string" || !/^[+-]?\d+$/.test(value.trim()))
         return null;
     const parsed = Number(value);
@@ -153,7 +339,9 @@ export const isCompletedContainer = container => {
     const state = container?.State;
     const config = container?.Config;
     const labels = config?.Labels || container?.Labels || {};
-    return isTrueMarker(container?.Completed) ||
+    const disposition = lifecycleDisposition(container);
+    return disposition?.class === lifecycleDispositionClasses.completed ||
+        isTrueMarker(container?.Completed) ||
         isTrueMarker(container?.OneShot) ||
         isTrueMarker(state?.Completed) ||
         isTrueMarker(state?.OneShot) ||
@@ -277,15 +465,20 @@ export const staleAfter = (config, _state, scheduler = null) => schedulerFreshne
 export const healthAssessment = (container, now = Date.now(), collectionError = null, scheduler = null) => {
     const config = healthConfig(container);
     const state = healthState(container);
-    const lastChecked = lastHealthCheck(state);
+    const observedLastChecked = lastHealthCheck(state);
+    const lastChecked = observedLastChecked !== null && observedLastChecked <= now ? observedLastChecked : null;
     const latestLog = latestHealthLog(state);
-    const latestExitCode = latestLog === null ? null : healthExitCode(latestLog.ExitCode);
+    const latestLogTime = latestLog === null ? null : healthLogTime(latestLog);
+    const futureTimestamp = latestLogTime !== null && latestLogTime > now;
+    const latestExitCode = latestLog === null ? null : normalizeExitCode(latestLog.ExitCode);
     const ageMs = lastChecked === null ? null : Math.max(0, now - lastChecked);
     const effectiveScheduler = scheduler;
     const freshness = schedulerFreshness(config, effectiveScheduler);
     const staleAfterMs = freshness.staleAfterMs;
     const freshWindowMs = null;
     const nativeStatus = state?.Status || null;
+    const disposition = lifecycleDisposition(container);
+    const lifecycle = String(container?.State?.Status || "").toLowerCase();
 
     const base = extra => ({
         rawStatus: nativeStatus,
@@ -297,17 +490,31 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         freshWindowMs,
         cadenceSource: freshness.cadenceSource,
         schedule: effectiveScheduler || null,
+        disposition,
+        lifecycleStatus: lifecycle || null,
+        scope: containerScope(container),
         ...extra,
     });
 
-    const lifecycle = String(container?.State?.Status || "").toLowerCase();
+    const role = container?.IsInfra === true || disposition?.class === lifecycleDispositionClasses.infrastructure
+        ? "infrastructure"
+        : null;
+    if (role === "infrastructure") {
+        return base({
+            status: healthStates.infrastructure,
+            reason: "infrastructure",
+            role,
+        });
+    }
     if (lifecycle && lifecycle !== "running") {
         const exitCode = container?.State?.ExitCode;
         const completed = lifecycle === "exited" && (exitCode === 0 || exitCode === "0") &&
             isCompletedContainer(container);
+        const retired = disposition?.class === lifecycleDispositionClasses.retired;
         return base({
-            status: completed ? healthStates.completed : healthStates.stopped,
-            reason: completed ? "completed" : "stopped",
+            status: completed ? healthStates.completed : retired ? healthStates.retired : healthStates.stopped,
+            reason: completed ? "completed" : retired ? "retired" : "stopped",
+            role,
         });
     }
 
@@ -317,6 +524,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.error,
             reason: collectionReason(collectionError),
+            role,
             error: collectionReason(collectionError) === "collection-timeout"
                 ? HEALTH_COLLECTION_TIMEOUT
                 : HEALTH_COLLECTION_ERROR,
@@ -330,6 +538,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.starting,
             reason: "details-pending",
+            role,
         });
     }
 
@@ -338,6 +547,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
             status: healthStates.missing,
             configured: false,
             reason: "missing",
+            role,
         });
     }
 
@@ -345,6 +555,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.unhealthy,
             reason: "unhealthy",
+            role,
         });
     }
 
@@ -352,6 +563,15 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.starting,
             reason: "starting",
+            role,
+        });
+    }
+
+    if (futureTimestamp) {
+        return base({
+            status: healthStates.unknown,
+            reason: "timestamp-future",
+            role,
         });
     }
 
@@ -363,6 +583,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.unhealthy,
             reason: "latest-check-failed",
+            role,
         });
     }
 
@@ -370,6 +591,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.unknown,
             reason: "latest-check-unknown",
+            role,
         });
     }
 
@@ -378,6 +600,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
             status: healthStates.error,
             reason: "scheduler-error",
             error: SCHEDULER_ERROR,
+            role,
         });
     }
 
@@ -385,6 +608,7 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.stale,
             reason: "stale",
+            role,
         });
     }
 
@@ -392,11 +616,13 @@ export const healthAssessment = (container, now = Date.now(), collectionError = 
         return base({
             status: healthStates.healthy,
             reason: "healthy",
+            role,
         });
     }
 
     return base({
         status: healthStates.unknown,
         reason: nativeStatus === "healthy" ? freshness.reason : "no-result",
+        role,
     });
 };

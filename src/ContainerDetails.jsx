@@ -7,6 +7,7 @@ import { Flex, FlexItem } from "@patternfly/react-core/dist/esm/layouts/Flex";
 
 import cockpit from 'cockpit';
 
+import { containerScope } from './health.js';
 import * as utils from './util.js';
 
 const _ = cockpit.gettext;
@@ -19,6 +20,11 @@ const render_container_state = (container) => {
 };
 
 const ContainerDetails = ({ container }) => {
+    const scope = containerScope(container);
+    const ownerText = scope.ownerUid === null
+        ? _("session user")
+        : cockpit.format(_("UID $0"), scope.ownerUid);
+    const scopeText = cockpit.format(_("$0 · $1"), scope.context, ownerText);
     const networkOptions = (
         [
             container.NetworkSettings?.IPAddress,
@@ -33,7 +39,21 @@ const ContainerDetails = ({ container }) => {
                 <DescriptionList className='container-details-basic'>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("ID")}</DescriptionListTerm>
-                        <DescriptionListDescription className="ignore-pixels">{utils.truncate_id(container.Id)}</DescriptionListDescription>
+                        <DescriptionListDescription className="ignore-pixels container-id-short" title={scope.fullId || scope.id || ""}>
+                            {utils.truncate_id(container.Id)}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Full ID")}</DescriptionListTerm>
+                        <DescriptionListDescription className="container-id-full" data-container-full-id={scope.fullId || ""}>
+                            {scope.fullId || scope.id || _("Unavailable")}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>{_("Owner")}</DescriptionListTerm>
+                        <DescriptionListDescription className="container-owner-scope" data-container-scope={scopeText}>
+                            {scopeText}
+                        </DescriptionListDescription>
                     </DescriptionListGroup>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{_("Image")}</DescriptionListTerm>
