@@ -53,7 +53,25 @@ const isContainerInventoryRow = container => container !== null &&
     typeof container === "object" && !Array.isArray(container) &&
     typeof container.Id === "string" && container.Id.trim().length > 0;
 
-const containerFromInventory = (inventory, uid, key, current = null) => {
+const isValidOwnerUid = uid => Number.isInteger(uid) && uid >= 0;
+
+// `uid === null` identifies the session-user Cockpit route, but it is not the
+// Podman owner identity. Keep the verified session UID and namespace on every
+// row so scope and lifecycle metadata remain attributable to the real owner.
+const ownerScope = (uid, ownerUid = undefined, context = undefined) => {
+    const resolvedOwnerUid = isValidOwnerUid(ownerUid)
+        ? ownerUid
+        : isValidOwnerUid(uid) ? uid : null;
+    const resolvedContext = context === "rootful" || context === "rootless"
+        ? context
+        : resolvedOwnerUid === 0 ? "rootful" : resolvedOwnerUid === null ? "unknown" : "rootless";
+    return { ownerUid: resolvedOwnerUid, context: resolvedContext };
+};
+
+const containerFromInventory = (inventory, uid, key, current = null, connection = null) => {
+    const scope = ownerScope(uid,
+                            connection?.ownerUid ?? current?.ownerUid,
+                            connection?.context ?? current?.context);
     const inventoryState = typeof inventory?.State === "string"
         ? { Status: inventory.State.toLowerCase() }
         : (inventory?.State || {});
@@ -96,6 +114,7 @@ const containerFromInventory = (inventory, uid, key, current = null) => {
         State: state,
         uid,
         key,
+        ...scope,
         // An inventory-only row has enough data for lifecycle rendering but
         // must remain pending until its first full inspect establishes health
         // configuration and the native result.
@@ -477,13 +496,13 @@ class Application extends React.Component {
             const result = resultByKey.get(key);
             if (result?.error) {
                 const old = this.state.containers?.[key] || null;
-                const failed = containerFromInventory(inventory, con.uid, key, old);
+                const failed = containerFromInventory(inventory, con.uid, key, old, con);
                 failed.healthDetailsLoaded = false;
                 snapshot.push(failed);
                 errors[key] = errorText(result.error);
             } else if (result && !isValidHealthDetails(inventory, result.detail)) {
                 const old = this.state.containers?.[key] || null;
-                const failed = containerFromInventory(inventory, con.uid, key, old);
+                const failed = containerFromInventory(inventory, con.uid, key, old, con);
                 failed.healthDetailsLoaded = false;
                 snapshot.push(failed);
                 errors[key] = CONTAINER_INSPECT_INVALID;
@@ -493,7 +512,7 @@ class Application extends React.Component {
                 snapshot.push(detail);
             } else {
                 const old = this.state.containers?.[key] || null;
-                snapshot.push(containerFromInventory(inventory, con.uid, key, old));
+                snapshot.push(containerFromInventory(inventory, con.uid, key, old, con));
             }
         }
 
@@ -919,7 +938,7 @@ class Application extends React.Component {
                     // source. It supplies lifecycle and identity while the
                     // owner health refresh obtains the optional detail.
                     const current = prevState.containers?.[key] || null;
-                    copyContainers[key] = containerFromInventory(inventory, con.uid, key, current);
+                    copyContainers[key] = containerFromInventory(inventory, con.uid, key, current, con);
                     if (current && prevState.containerErrors?.[key])
                         copyContainerErrors[key] = prevState.containerErrors[key];
                 }
@@ -1053,6 +1072,8 @@ class Application extends React.Component {
                         return;
                     }
                     details.uid = con.uid;
+                    details.ownerUid = con.ownerUid;
+                    details.context = con.context;
                     details.key = key;
                     details.healthDetailsLoaded = true;
                     // HACK: during restart State never changes from "running"
@@ -1398,6 +1419,8 @@ class Application extends React.Component {
                 // Mock podman container state
                 const container = {
                     uid: con.uid,
+                    ownerUid: con.ownerUid,
+                    context: con.context,
                     key: container_key,
                     Id: key,
                     // This is a display-only row synthesized from a systemd
@@ -1502,6 +1525,7 @@ class Application extends React.Component {
             const environ = is_other_user ? [`XDG_RUNTIME_DIR=/run/user/${uid}`] : [];
             await cockpit.spawn(start_args, { superuser: uid === null ? null : "require", err: "message", environ });
             con = rest.connect(uid);
+            Object.assign(con, ownerScope(uid, uid === null ? this.sessionUser?.id : uid));
             const reply = await client.getInfo(con);
             this.ownerConnections.set(uid, con);
             this.setState(prevState => {

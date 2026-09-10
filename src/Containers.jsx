@@ -328,6 +328,10 @@ const localize_health_assessment = (assessment) => {
         return _("Stopped");
     case healthStates.completed:
         return _("Completed");
+    case healthStates.retired:
+        return _("Retired");
+    case healthStates.infrastructure:
+        return _("Infrastructure");
     default:
         return _("Health unknown");
     }
