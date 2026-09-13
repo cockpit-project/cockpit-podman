@@ -433,7 +433,7 @@ class Application extends React.Component {
 
     cleanupAfterService(con) {
         debug("cleanupAfterService", con.uid, "current owner filter:", this.state.ownerFilter);
-        ["images", "containers", "pods"].forEach(t => {
+        ["images", "containers", "pods", "quadletContainers", "quadletPods"].forEach(t => {
             if (this.state[t])
                 this.setState(prevState => {
                     const copy = {};
@@ -650,6 +650,10 @@ class Application extends React.Component {
             if (!system || err.problem != 'access-denied')
                 console.warn("init uid", uid, "getInfo failed:", err.toString());
 
+            // On dropping admin privileges the system resources stay in the state until the
+            // previous connection's event stream closes; forget them together with the user,
+            // otherwise their rows render for a uid without a user in the meantime
+            this.cleanupAfterService({ uid });
             this.setState(prevState => ({ users: prevState.users.filter(u => u.uid !== uid) }));
             return;
         }
