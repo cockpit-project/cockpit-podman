@@ -371,7 +371,7 @@ class Application extends React.Component {
                 if (event.Actor.Attributes.podId) {
                     const podKey = makeKey(con.uid, event.Actor.Attributes.podId);
                     const newPod = { ...prevState.pods[podKey] };
-                    newPod.Containers = newPod.Containers.filter(container => container.Id !== id);
+                    newPod.Containers = newPod?.Containers.filter(container => container.Id !== id);
                     pods = { ...prevState.pods, [podKey]: newPod };
                 } else {
                     // HACK: with podman < 4.3.0 we don't get a pod event when a container in a pod is removed
@@ -433,7 +433,7 @@ class Application extends React.Component {
 
     cleanupAfterService(con) {
         debug("cleanupAfterService", con.uid, "current owner filter:", this.state.ownerFilter);
-        ["images", "containers", "pods"].forEach(t => {
+        ["images", "containers", "pods", "quadletContainers", "quadletPods"].forEach(t => {
             if (this.state[t])
                 this.setState(prevState => {
                     const copy = {};
