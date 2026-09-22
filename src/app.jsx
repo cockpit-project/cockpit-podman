@@ -62,7 +62,6 @@ class Application extends React.Component {
             quadletPods: {},
             textFilter: "",
             ownerFilter: "all",
-            dropDownValue: 'Everything',
             notifications: [],
             version: '1.3.0',
             selinuxAvailable: false,
