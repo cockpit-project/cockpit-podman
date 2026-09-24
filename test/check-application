@@ -739,6 +739,27 @@ Yaml={name}.yaml
         self.execute(f"podman rmi {IMG_HELLO_LATEST}", system=auth)
         b.wait_not_present(hello_sel)
 
+        # A manifest list is listed like an image, but inspecting it returns one of its
+        # member images under the member's Id; the list entry must still get its details
+        # and the member must not be replaced by it
+        IMG_MULTI_LATEST = "localhost/test-multi:latest"
+        self.execute(f"podman manifest create {IMG_MULTI_LATEST}; "
+                     f"podman manifest add {IMG_MULTI_LATEST} containers-storage:{IMG_ALPINE_LATEST}",
+                     system=auth)
+        # "podman image inspect" also resolves the list to a member, so take the Id from the listing
+        for image in self.execute("podman images --noheading --no-trunc", system=auth).strip().split("\n"):
+            items = image.split()
+            images[f"{items[0]}:{items[1]}"] = items[2].split(":")[-1]
+        multi_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_MULTI_LATEST]}\"]".lower()
+        alpine_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_ALPINE_LATEST]}\"]".lower()
+        b.wait_visible(multi_sel)
+        b.wait_visible(alpine_sel)
+        b.click(multi_sel + " td.pf-v6-c-table__toggle button")
+        b.wait_in_text("#containers-images tbody.pf-m-expanded tr .image-details", IMG_MULTI_LATEST)
+        b.click(multi_sel + " td.pf-v6-c-table__toggle button")
+        self.execute(f"podman manifest rm {IMG_MULTI_LATEST}", system=auth)
+        b.wait_not_present(multi_sel)
+
         # make sure no running containers shown; on CoreOS there's the cockpit/ws container
         self.filter_containers('running')
         if auth and self.machine.ws_container:
