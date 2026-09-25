@@ -83,7 +83,8 @@ po/$(PACKAGE_NAME).js.pot:
 		--keyword=ngettext:1,2,3t --keyword=ngettext:1c,2,3,4t \
 		--keyword=gettextCatalog.getString:1,3c --keyword=gettextCatalog.getPlural:2,3,4c \
 		--from-code=UTF-8 $$(find src/ -name '*.[jt]s' -o -name '*.[jt]sx') | \
-		sed '/^#/ s/, c-format//' > $@
+		sed '/^#/ s/, c-format//' > $@ && \
+		sed -i 's/charset=CHARSET/charset=UTF-8/g' $@
 
 po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST) $(COCKPIT_REPO_STAMP)
 	pkg/lib/html2po -o $@ $$(find src -name '*.html')
@@ -92,10 +93,11 @@ po/$(PACKAGE_NAME).manifest.pot: $(COCKPIT_REPO_STAMP)
 	pkg/lib/manifest2po -o $@ src/manifest.json
 
 po/$(PACKAGE_NAME).metainfo.pot: $(APPSTREAMFILE)
-	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ $<
+	xgettext --default-domain=$(PACKAGE_NAME) --output=$@ $< && \
+	sed -i 's/charset=CHARSET/charset=UTF-8/g' $@
 
 po/$(PACKAGE_NAME).pot: po/$(PACKAGE_NAME).html.pot po/$(PACKAGE_NAME).js.pot po/$(PACKAGE_NAME).manifest.pot po/$(PACKAGE_NAME).metainfo.pot
-	msgcat --sort-output --output-file=$@ $^
+	xgettext --output=$@ $^
 
 po/LINGUAS:
 	echo $(LINGUAS) | tr ' ' '\n' > $@
