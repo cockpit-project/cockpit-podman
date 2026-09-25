@@ -41,7 +41,7 @@ const ContainerHealthLogs = ({ con, container, onAddNotification, state }) => {
         <>
             <Flex alignItems={{ default: "alignItemsFlexStart" }}>
                 <FlexItem grow={{ default: 'grow' }}>
-                    <DescriptionList isAutoFit id="container-details-healthcheck">
+                    <DescriptionList id="container-details-healthcheck">
                         <DescriptionListGroup>
                             <DescriptionListTerm>{_("Status")}</DescriptionListTerm>
                             <DescriptionListDescription>{state}</DescriptionListDescription>
