@@ -85,7 +85,7 @@ po/$(PACKAGE_NAME).js.pot:
 		--from-code=UTF-8 $$(find src/ -name '*.[jt]s' -o -name '*.[jt]sx') | \
 		sed '/^#/ s/, c-format//' > $@
 
-po/$(PACKAGE_NAME).html.pot: $(NODE_MODULES_TEST) $(COCKPIT_REPO_STAMP)
+po/$(PACKAGE_NAME).html.pot: $(COCKPIT_REPO_STAMP)
 	pkg/lib/html2po -o $@ $$(find src -name '*.html')
 
 po/$(PACKAGE_NAME).manifest.pot: $(COCKPIT_REPO_STAMP)
