@@ -86,6 +86,9 @@ export function resizeContainersTTY(con: Connection, id: string, exec: boolean, 
 function parseImageInfo(info: JsonObject): JsonObject {
     const image: JsonObject = {};
 
+    // the details view relies on these lists, so keep them present even without Config
+    image.Ports = [];
+    image.Env = [];
     if (info.Config) {
         const config = info.Config as JsonObject;
         image.Entrypoint = config.Entrypoint;
@@ -114,11 +117,14 @@ export function getImages(con: Connection, id?: string) {
 
                 return Promise.all(promises)
                         .then(replies => {
-                            for (const info of replies as JsonObject[]) {
-                                const imageId = info.Id as string;
+                            (replies as JsonObject[]).forEach((info, i) => {
+                                // Inspecting a manifest list returns one of its member images, whose Id
+                                // differs from the list's own. Key by the Id we asked for, so the list
+                                // entry gets its parsed fields and the member entry is not overwritten.
+                                const imageId = (reply as JsonObject[])[i].Id as string;
                                 const existingImage = images[imageId] as JsonObject || {};
                                 images[imageId] = { uid: con.uid, ...existingImage, ...parseImageInfo(info) };
-                            }
+                            });
                             return images;
                         });
             });
