@@ -433,7 +433,7 @@ class Application extends React.Component {
 
     cleanupAfterService(con) {
         debug("cleanupAfterService", con.uid, "current owner filter:", this.state.ownerFilter);
-        ["images", "containers", "pods"].forEach(t => {
+        ["images", "containers", "pods", "quadletContainers", "quadletPods"].forEach(t => {
             if (this.state[t])
                 this.setState(prevState => {
                     const copy = {};
