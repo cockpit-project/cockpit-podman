@@ -72,10 +72,15 @@
     }
 }
 
-/* HACK - force DescriptionList to wrap but not fill the width */
 #container-details-healthcheck {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5rem, max-content));
+
+    /* Prevent long command strings from inflating max-content beyond screen bounds */
+    .pf-v6-c-description-list__group {
+        min-width: 0;
+        word-break: break-word;
+    }
 }
 
 /* Upstream issue https://github.com/patternfly/patternfly/pull/7396
