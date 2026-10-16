@@ -85,6 +85,27 @@
     color: var(--pf-t--global--text--color--subtle);
 }
 
+.ct-badge-autoupdate-pending {
+    background-color: var(--pf-t--global--color--nonstatus--blue--default);
+    color: var(--pf-t--global--text--color--nonstatus--on-blue--default);
+}
+
+.ct-badge-autoupdate-updated {
+    background-color: var(--pf-t--global--border--color--status--success--default);
+    color: var(--pf-t--global--text--color--status--on-success--default);
+}
+
+
+.ct-badge-autoupdate-failed {
+    background-color: var(--pf-t--global--border--color--status--danger--default);
+    color: var(--pf-t--global--text--color--status--on-danger--default);
+}
+
+.ct-badge-autoupdate-rolled-back {
+    background-color: var(--pf-t--global--color--nonstatus--orange--default);
+    color: var(--pf-t--global--text--color--nonstatus--on-orange--default);
+}
+
 // HACK: PF should offer that: https://github.com/patternfly/patternfly/issues/6572
 .ct-numeric-column {
     text-align: end;
