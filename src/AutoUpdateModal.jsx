@@ -67,7 +67,6 @@ const AutoUpdateModal = ({ users }) => {
     useEffect(() => {
         setReports(undefined);
         setErrors(undefined);
-        setUpdating(false);
 
         client.autoUpdate(owner.con, true)
                 .then((r) => {

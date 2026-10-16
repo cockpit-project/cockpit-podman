@@ -319,14 +319,16 @@ const localize_health = (state) => {
     return null;
 };
 
-const ContainerOverActions = ({ handleAutoUpdate, handlePruneUnusedContainers, unusedContainers }) => {
+const ContainerOverActions = ({ canAutoUpdate, handleAutoUpdate, handlePruneUnusedContainers, unusedContainers }) => {
     const actions = [
-        <DropdownItem key="auto-update"
+        ...(canAutoUpdate ? [
+            <DropdownItem key="auto-update"
                       id="auto-update-button"
                       component="button"
                       onClick={() => handleAutoUpdate()}>
             {_("Auto update")}
-        </DropdownItem>,
+        </DropdownItem>
+        ] : []),
         <DropdownItem key="prune-unused-containers"
                             id="prune-unused-containers-button"
                             component="button"
@@ -364,6 +366,7 @@ class Containers extends React.Component {
 
     constructor(props) {
         super(props);
+        console.log(props.version);
         this.state = {
             width: 0,
             memTotal: 0,
@@ -900,6 +903,9 @@ class Containers extends React.Component {
             nonIntermediateImages = localImages.filter(img => img.Index !== "");
         }
 
+        // Podman auto update support through REST API was introduced in v6.2.0
+        const canAutoUpdate = utils.isVersionGte(this.props.version, [6, 2, 0]);
+
         const filterRunning = (
             <Toolbar>
                 <ToolbarContent className="containers-containers-toolbarcontent">
@@ -929,7 +935,7 @@ class Containers extends React.Component {
                         </Button>
                     </ToolbarItem>
                     <ToolbarItem>
-                        <ContainerOverActions handleAutoUpdate={this.autoUpdate} unusedContainers={unusedContainers} handlePruneUnusedContainers={this.onOpenPruneUnusedContainersDialog} />
+                        <ContainerOverActions canAutoUpdate={canAutoUpdate} handleAutoUpdate={this.autoUpdate} unusedContainers={unusedContainers} handlePruneUnusedContainers={this.onOpenPruneUnusedContainersDialog} />
                     </ToolbarItem>
                 </ToolbarContent>
             </Toolbar>
