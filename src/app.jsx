@@ -437,20 +437,24 @@ class Application extends React.Component {
 
     cleanupAfterService(con) {
         debug("cleanupAfterService", con.uid, "current owner filter:", this.state.ownerFilter);
-        ["images", "containers", "pods", "quadletContainers", "quadletPods"].forEach(t => {
-            if (this.state[t])
-                this.setState(prevState => {
+        this.setState(prevState => {
+            const update = {};
+            ["images", "containers", "pods", "quadletContainers", "quadletPods"].forEach(t => {
+                if (prevState[t]) {
                     const copy = {};
-                    Object.entries(prevState[t] || {}).forEach(([id, v]) => {
+                    Object.entries(prevState[t]).forEach(([id, v]) => {
                         if (v.uid !== con.uid)
                             copy[id] = v;
                     });
-                    return { [t]: copy };
-                });
-        });
+                    update[t] = copy;
+                }
+            });
 
-        // keep dummy (null) connections from other users, only remove valid ones
-        this.setState(prevState => ({ users: prevState.users.filter(u => u.con === null || u.uid !== con.uid) }));
+            // keep dummy (null) connections from other users, only remove valid ones
+            update.users = prevState.users.filter(u => u.con === null || u.uid !== con.uid);
+
+            return update;
+        });
 
         // reset owner filter if the current filter is the closed connection
         if (con.uid == this.state.ownerFilter)
