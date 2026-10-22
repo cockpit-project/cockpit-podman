@@ -259,7 +259,12 @@ class Application extends React.Component {
                     //       override it to reconnect console after restart
                     if (event?.Action === "restart")
                         details.State.Status = "restarting";
-                    this.updateState("containers", key, details);
+                    this.setState(prevState => {
+                        // Don't update state if the connection was closed (e.g. after dropping privileges)
+                        if (!prevState.users.some(u => u.uid === con.uid && u.con))
+                            return null;
+                        return { containers: { ...prevState.containers, [key]: details } };
+                    });
                 })
                 .catch(e => console.warn("updateContainer uid", con.uid, "inspectContainer failed:", e.toString()));
         this.pendingUpdateContainer[key] = new_wait;
@@ -370,9 +375,13 @@ class Application extends React.Component {
 
                 if (event.Actor.Attributes.podId) {
                     const podKey = makeKey(con.uid, event.Actor.Attributes.podId);
-                    const newPod = { ...prevState.pods[podKey] };
-                    newPod.Containers = newPod.Containers.filter(container => container.Id !== id);
-                    pods = { ...prevState.pods, [podKey]: newPod };
+                    if (prevState.pods[podKey]) {
+                        const newPod = { ...prevState.pods[podKey] };
+                        newPod.Containers = newPod.Containers.filter(container => container.Id !== id);
+                        pods = { ...prevState.pods, [podKey]: newPod };
+                    } else {
+                        pods = prevState.pods;
+                    }
                 } else {
                     // HACK: with podman < 4.3.0 we don't get a pod event when a container in a pod is removed
                     // https://github.com/containers/podman/issues/15408
@@ -433,20 +442,24 @@ class Application extends React.Component {
 
     cleanupAfterService(con) {
         debug("cleanupAfterService", con.uid, "current owner filter:", this.state.ownerFilter);
-        ["images", "containers", "pods"].forEach(t => {
-            if (this.state[t])
-                this.setState(prevState => {
+        this.setState(prevState => {
+            const update = {};
+            ["images", "containers", "pods", "quadletContainers", "quadletPods"].forEach(t => {
+                if (prevState[t]) {
                     const copy = {};
-                    Object.entries(prevState[t] || {}).forEach(([id, v]) => {
+                    Object.entries(prevState[t]).forEach(([id, v]) => {
                         if (v.uid !== con.uid)
                             copy[id] = v;
                     });
-                    return { [t]: copy };
-                });
-        });
+                    update[t] = copy;
+                }
+            });
 
-        // keep dummy (null) connections from other users, only remove valid ones
-        this.setState(prevState => ({ users: prevState.users.filter(u => u.con === null || u.uid !== con.uid) }));
+            // keep dummy (null) connections from other users, only remove valid ones
+            update.users = prevState.users.filter(u => u.con === null || u.uid !== con.uid);
+
+            return update;
+        });
 
         // reset owner filter if the current filter is the closed connection
         if (con.uid == this.state.ownerFilter)
