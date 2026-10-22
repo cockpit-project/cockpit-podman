@@ -16,10 +16,11 @@ import './podman.scss';
 const _origConsoleError = console.error;
 console.error = (...args) => {
     _origConsoleError.apply(console, args);
-    for (const arg of args) {
-        if (arg instanceof Error && arg.stack)
-            _origConsoleError.call(console, "TRACE:", arg.stack);
-    }
+    _origConsoleError.call(console, "ARGS: " + JSON.stringify(args, (_key, value) => {
+        if (value instanceof Error || (value && typeof value.stack === "string"))
+            return { message: value.message, stack: value.stack };
+        return value;
+    }));
 };
 
 document.addEventListener("DOMContentLoaded", function () {
