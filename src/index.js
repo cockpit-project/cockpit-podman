@@ -13,10 +13,14 @@ import 'patternfly/patternfly-6-cockpit.scss';
 import Application from './app.jsx';
 import './podman.scss';
 
-window.addEventListener("error", event => {
-    if (event.error?.stack)
-        console.error("STACK TRACE:", event.error.stack);
-}, true);
+const _origConsoleError = console.error;
+console.error = (...args) => {
+    _origConsoleError.apply(console, args);
+    for (const arg of args) {
+        if (arg instanceof Error && arg.stack)
+            _origConsoleError.call(console, "TRACE:", arg.stack);
+    }
+};
 
 document.addEventListener("DOMContentLoaded", function () {
     const root = createRoot(document.getElementById('app'));
