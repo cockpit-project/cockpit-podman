@@ -259,7 +259,12 @@ class Application extends React.Component {
                     //       override it to reconnect console after restart
                     if (event?.Action === "restart")
                         details.State.Status = "restarting";
-                    this.updateState("containers", key, details);
+                    this.setState(prevState => {
+                        // Don't update state if the connection was closed (e.g. after dropping privileges)
+                        if (!prevState.users.some(u => u.uid === con.uid && u.con))
+                            return null;
+                        return { containers: { ...prevState.containers, [key]: details } };
+                    });
                 })
                 .catch(e => console.warn("updateContainer uid", con.uid, "inspectContainer failed:", e.toString()));
         this.pendingUpdateContainer[key] = new_wait;
