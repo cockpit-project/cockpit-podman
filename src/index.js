@@ -13,6 +13,10 @@ import 'patternfly/patternfly-6-cockpit.scss';
 import Application from './app.jsx';
 import './podman.scss';
 
+window.addEventListener("error", event => {
+    console.error("ERROR:", event.message, event.filename + ":" + event.lineno + ":" + event.colno, event.error?.stack);
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     const root = createRoot(document.getElementById('app'));
     root.render(<Application />);
