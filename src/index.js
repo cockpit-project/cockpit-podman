@@ -13,27 +13,12 @@ import 'patternfly/patternfly-6-cockpit.scss';
 import Application from './app.jsx';
 import './podman.scss';
 
-class ErrorBoundary extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false };
-    }
-
-    static getDerivedStateFromError() {
-        return { hasError: true };
-    }
-
-    componentDidCatch(error, info) {
-        console.error("RENDER ERROR:", error.message, "\nStack:", error.stack, "\nComponent stack:", info.componentStack);
-        this.setState({ hasError: false });
-    }
-
-    render() {
-        return this.props.children;
-    }
-}
+window.addEventListener("error", event => {
+    if (event.error?.stack)
+        console.error("STACK TRACE:", event.error.stack);
+}, true);
 
 document.addEventListener("DOMContentLoaded", function () {
     const root = createRoot(document.getElementById('app'));
-    root.render(<ErrorBoundary><Application /></ErrorBoundary>);
+    root.render(<Application />);
 });
