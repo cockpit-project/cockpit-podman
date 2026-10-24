@@ -143,7 +143,7 @@ const ContainerIntegration = ({ container, localImages }) => {
     let env = null;
     // Podman allows one to remove an image while it has a container attached
     if (image)
-        env = <ContainerEnv containerEnv={container.Config.Env} imageEnv={image.Env} />;
+        env = <ContainerEnv containerEnv={container.Config.Env} imageEnv={image.Env || []} />;
 
     return (
         <DescriptionList isAutoColumnWidths columnModifier={{ md: '3Col' }} className='container-integration'>
