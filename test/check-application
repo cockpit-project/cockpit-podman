@@ -3435,12 +3435,23 @@ Yaml={name}.yaml
             b.wait_js_cond(f'window.location.hash === "#/{service_name}.service?owner=user"')
         b.wait_js_cond('window.location.pathname === "/system/services"')
 
-        # Logs page link integration
         if system:
             b.go("/podman")
             b.enter_page("/podman")
             b.wait_visible("#app")
 
+            self.waitPodContainer("homeassistant", [{"name": "zigbee", "image": IMG_BUSYBOX,
+                                  "command": "", "state": "Exited", "id": "zigbee.service"}],
+                                  system=system)
+
+            # Dropping privileges does not raise an assertion failure and cleans up superuser containers
+            b.drop_superuser()
+            b.wait_text('#containers-containers .pf-v6-c-empty-state', 'No containers')
+
+            # Logs page link integration
+            b.become_superuser()
+            self.waitContainerRow(service_name)
+            self.toggleExpandedContainer(service_name, system=system)
             b.click(".pf-m-expanded button:contains('Logs')")
             b.click(f"#containers-containers tbody button:contains('View {service_name}.service logs')")
             b.switch_to_top()
