@@ -751,6 +751,10 @@ Yaml={name}.yaml
             images[f"{items[0]}:{items[1]}"] = items[2].split(":")[-1]
         multi_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_MULTI_LATEST]}\"]".lower()
         alpine_sel = f"#containers-images tbody tr[data-row-id=\"{uid}-{images[IMG_ALPINE_LATEST]}\"]".lower()
+        # podman emits no event for "manifest create" or "manifest add", so reload to list it
+        b.reload()
+        b.enter_page("/podman")
+        showImages(b)
         b.wait_visible(multi_sel)
         b.wait_visible(alpine_sel)
         b.click(multi_sel + " td.pf-v6-c-table__toggle button")
