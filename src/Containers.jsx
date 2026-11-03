@@ -24,6 +24,7 @@ import { ListingPanel } from 'cockpit-components-listing-panel';
 import { ListingTable } from "cockpit-components-table";
 import * as machine_info from 'machine-info';
 
+import AutoUpdateModal from './AutoUpdateModal.jsx';
 import ContainerCheckpointModal from './ContainerCheckpointModal.jsx';
 import ContainerCommitModal from './ContainerCommitModal.jsx';
 import ContainerDeleteModal from './ContainerDeleteModal.jsx';
@@ -41,7 +42,6 @@ import { PodCreateModal } from './PodCreateModal.jsx';
 import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
-
 import './Containers.scss';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 
@@ -319,8 +319,16 @@ const localize_health = (state) => {
     return null;
 };
 
-const ContainerOverActions = ({ handlePruneUnusedContainers, unusedContainers }) => {
+const ContainerOverActions = ({ canAutoUpdate, handleAutoUpdate, handlePruneUnusedContainers, unusedContainers }) => {
     const actions = [
+        ...(canAutoUpdate ? [
+            <DropdownItem key="auto-update"
+                      id="auto-update-button"
+                      component="button"
+                      onClick={() => handleAutoUpdate()}>
+            {_("Auto update")}
+        </DropdownItem>
+        ] : []),
         <DropdownItem key="prune-unused-containers"
                             id="prune-unused-containers-button"
                             component="button"
@@ -358,6 +366,7 @@ class Containers extends React.Component {
 
     constructor(props) {
         super(props);
+        console.log(props.version);
         this.state = {
             width: 0,
             memTotal: 0,
@@ -419,6 +428,11 @@ class Containers extends React.Component {
                     )}
                 </utils.PodmanInfoContext.Consumer>);
     }
+
+    autoUpdate = () => {
+        const Dialogs = this.context;
+        Dialogs.show(<AutoUpdateModal users={this.props.users} />);
+    };
 
     renderRow(containersStats, container, localImages) {
         const containerStats = containersStats[container.key];
@@ -889,6 +903,9 @@ class Containers extends React.Component {
             nonIntermediateImages = localImages.filter(img => img.Index !== "");
         }
 
+        // Podman auto update support through REST API was introduced in v6.2.0
+        const canAutoUpdate = utils.isVersionGte(this.props.version, [6, 2, 0]);
+
         const filterRunning = (
             <Toolbar>
                 <ToolbarContent className="containers-containers-toolbarcontent">
@@ -918,7 +935,7 @@ class Containers extends React.Component {
                         </Button>
                     </ToolbarItem>
                     <ToolbarItem>
-                        <ContainerOverActions unusedContainers={unusedContainers} handlePruneUnusedContainers={this.onOpenPruneUnusedContainersDialog} />
+                        <ContainerOverActions canAutoUpdate={canAutoUpdate} handleAutoUpdate={this.autoUpdate} unusedContainers={unusedContainers} handlePruneUnusedContainers={this.onOpenPruneUnusedContainersDialog} />
                     </ToolbarItem>
                 </ToolbarContent>
             </Toolbar>
