@@ -75,7 +75,7 @@ const ImageDetails = ({ containers, image, showAll }) => {
                 <DescriptionListDescription><ImageUsedBy containers={containers} showAll={showAll} /></DescriptionListDescription>
             </DescriptionListGroup>
             }
-            {image.Ports.length !== 0 &&
+            {image.Ports?.length > 0 &&
             <DescriptionListGroup>
                 <DescriptionListTerm>{_("Ports")}</DescriptionListTerm>
                 <DescriptionListDescription>{image.Ports.join(', ')}</DescriptionListDescription>
