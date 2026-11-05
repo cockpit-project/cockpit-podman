@@ -2727,7 +2727,7 @@ Yaml={name}.yaml
         b.set_input_text('#run-image-healthcheck-timeout input', '35')
         b.set_input_text('#run-image-healthcheck-start-period input', '5')
         b.click('#run-image-healthcheck-retries .pf-v6-c-input-group__item:nth-child(1) button')
-        b.wait_val("#run-image-healthcheck-retries input", 2)
+        b.wait_val("#run-image-healthcheck-retries input", "2")
         if auth:
             b.assert_pixels('.pf-v6-c-modal-box', "healthcheck-modal", skip_layouts=["rtl"])
         b.click('.pf-v6-c-modal-box__footer #create-image-create-run-btn')
