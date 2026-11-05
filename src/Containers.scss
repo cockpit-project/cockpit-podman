@@ -66,6 +66,12 @@
     }
 }
 
+/* HACK: Health check tab has two columns for the description.
+ * First column is the description list with metadata
+ * Second column is Run health check button
+ * Without this change the description list isn't rendered in a pleasing way
+ * and instead only shows 1 or 2 columns with a lot of empty space.
+ */
 #container-details-healthcheck {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(5rem, max-content));
