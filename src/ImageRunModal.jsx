@@ -30,7 +30,7 @@ import cockpit from 'cockpit';
 import { TypeaheadSelect } from 'cockpit-components-typeahead-select';
 
 import { onDownloadContainer, onDownloadContainerFinished } from './Containers.jsx';
-import { EnvVar, validateEnvVar } from './Env.jsx';
+import { EnvList, parseEnvFile, validateEnvVar } from './Env.jsx';
 import { ErrorNotification } from './Notification.tsx';
 import { PublishPort, validatePublishPort } from './PublishPort.jsx';
 import { validateVolume, Volume } from './Volume.jsx';
@@ -126,6 +126,7 @@ export class ImageRunModal extends React.Component {
             healthcheck_retries: 3,
             healthcheck_action: 0,
         };
+        this.envFileInput = React.createRef();
         this.getCreateConfig = this.getCreateConfig.bind(this);
         this.onValueChanged = this.onValueChanged.bind(this);
     }
@@ -340,6 +341,62 @@ export class ImageRunModal extends React.Component {
     onValueChanged(key, value) {
         this.setState({ [key]: value });
     }
+
+    onEnvItemsChanged(items) {
+        if (typeof items === 'function')
+            this.setState(state => ({ env: items(state.env) }));
+        else
+            this.onValueChanged('env', items);
+    }
+
+    handleEnvFileChange = async event => {
+        const input = event.currentTarget;
+        const file = input.files?.[0];
+        input.value = '';
+        if (!file)
+            return;
+
+        this.setState({ envImportError: null });
+
+        let contents;
+        try {
+            contents = await file.text();
+        } catch (error) {
+            const detail = error instanceof Error ? error.message : String(error);
+            this.setState({ envImportError: cockpit.format(_("Unable to read selected file: $0"), detail) });
+            return;
+        }
+
+        const { entries, errors } = parseEnvFile(contents);
+        if (errors.length > 0) {
+            const details = errors.map(({ line, error }) => cockpit.format(_("Line $0: $1"), line, error));
+            this.setState({
+                envImportError: details.join("\n"),
+            });
+            return;
+        }
+
+        if (entries.length === 0) {
+            this.setState({ envImportError: _("No environment variables found in the selected file") });
+            return;
+        }
+
+        this.setState(state => {
+            const mergedEntries = new Map(
+                state.env.filter(item => item?.envKey).map(item => [item.envKey, item.envValue])
+            );
+            entries.forEach(({ envKey, envValue }) => mergedEntries.set(envKey, envValue));
+
+            const validationFailed = { ...state.validationFailed };
+            delete validationFailed.env;
+
+            return {
+                env: Array.from(mergedEntries, ([envKey, envValue]) => ({ envKey, envValue })),
+                envImportError: null,
+                validationFailed,
+            };
+        });
+    };
 
     onPlusOne(key) {
         this.setState(state => ({ [key]: parseFloat(state[key]) + 1 }));
@@ -1042,6 +1099,23 @@ export class ImageRunModal extends React.Component {
                     </Tab>
                     <Tab eventKey={1} title={<TabTitleText>{_("Integration")}</TabTitleText>} id="create-image-dialog-tab-integration">
                         <FormSection>
+                            <Button type="button" variant="secondary" onClick={() => this.envFileInput.current?.click()}>
+                                {_("Import .env file")}
+                            </Button>
+                            <input
+                                id="run-image-dialog-env-file"
+                                ref={this.envFileInput}
+                                type="file"
+                                accept=".env,text/plain"
+                                hidden
+                                aria-label={_("Import .env file")}
+                                onChange={this.handleEnvFileChange}
+                            />
+                            {dialogValues.envImportError &&
+                                <ErrorNotification
+                                    errorMessage={_("Failed to import environment file")}
+                                    errorDetail={dialogValues.envImportError}
+                                />}
                             <DynamicListForm id='run-image-dialog-publish'
                                  emptyStateString={_("No ports exposed")}
                                  formclass='publish-port-form'
@@ -1064,20 +1138,12 @@ export class ImageRunModal extends React.Component {
                                  options={{ selinuxAvailable }}
                                  itemcomponent={Volume} />
 
-                            <DynamicListForm id='run-image-dialog-env'
-                                 emptyStateString={_("No environment variables specified")}
-                                 formclass='env-form'
-                                 label={_("Environment variables")}
-                                 actionLabel={_("Add variable")}
-                                 validationFailed={dialogValues.validationFailed.env}
-                                 onValidationChange={value => this.dynamicListOnValidationChange('env', value)}
-                                 onChange={value => this.onValueChanged('env', value)}
-                                 default={{ envKey: null, envValue: null }}
-                                 helperText={_("Paste one or more lines of key=value pairs into any field for bulk import")}
-                                 itemcomponent={EnvVar}
-                                 options={
-                                     { itemCount: this.state.env.length }
-                                 }
+                            <EnvList
+                                id="run-image-dialog-env"
+                                items={dialogValues.env}
+                                validationFailed={dialogValues.validationFailed.env}
+                                onValidationChange={value => this.dynamicListOnValidationChange('env', value)}
+                                onChange={items => this.onEnvItemsChanged(items)}
                             />
                         </FormSection>
                     </Tab>

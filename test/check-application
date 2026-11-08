@@ -2606,6 +2606,54 @@ Yaml={name}.yaml
                  "image": IMG_BUSYBOX, "command": 'sh -c "sleep infinity"'}]
         self.waitPodContainer("pod", pods, system=auth)
 
+    def testEnvFileImport(self) -> None:
+        b = self.browser
+        self.login(system=False)
+        showImages(b)
+        b.wait_visible(f'#containers-images td[data-label="Image"]:contains("{IMG_BUSYBOX}")')
+        self.openCreateContainerDialog(IMG_BUSYBOX_LATEST, system=False)
+        b.click("#pf-tab-1-create-image-dialog-tab-integration")
+
+        b.click('.env-form .btn-add')
+        b.set_input_text("#run-image-dialog-env-0-key", "EXISTING")
+        b.set_input_text("#run-image-dialog-env-0-value", "before")
+        b.click('.env-form .btn-add')
+        b.set_input_text("#run-image-dialog-env-1-key", "KEEP")
+        b.set_input_text("#run-image-dialog-env-1-value", "unchanged")
+
+        b.eval_js("""
+            const input = document.getElementById("run-image-dialog-env-file");
+            const file = new File([
+                "EXISTING=from-file\\nWITH_EQUALS=one=two\\nEXISTING=last-wins\\nEMPTY=\\n# comment\\n"
+            ], ".env", { type: "text/plain" });
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            input.files = transfer.files;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+        """)
+
+        b.wait_val("#run-image-dialog-env-0-key", "EXISTING")
+        b.wait_val("#run-image-dialog-env-0-value", "last-wins")
+        b.wait_val("#run-image-dialog-env-1-key", "KEEP")
+        b.wait_val("#run-image-dialog-env-1-value", "unchanged")
+        b.wait_val("#run-image-dialog-env-2-key", "WITH_EQUALS")
+        b.wait_val("#run-image-dialog-env-2-value", "one=two")
+        b.wait_val("#run-image-dialog-env-3-key", "EMPTY")
+        b.wait_val("#run-image-dialog-env-3-value", "")
+
+        b.eval_js("""
+            const input = document.getElementById("run-image-dialog-env-file");
+            const file = new File(["INVALID-NAME=value\\nMISSING_EQUALS"], ".env", { type: "text/plain" });
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            input.files = transfer.files;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+        """)
+        b.wait_in_text(".pf-v6-c-alert", "Line 1")
+        b.wait_val("#run-image-dialog-env-0-value", "last-wins")
+        b.click(".pf-v6-c-modal-box .btn-cancel")
+        b.wait_not_present(".pf-v6-c-modal-box")
+
     def testCreateContainerValidation(self) -> None:
         def validateField(groupSelector: str, value: str, errorMessage: str, resetValue: str = "") -> None:
             b.wait_visible(".pf-v6-c-modal-box__footer #create-image-create-run-btn:not(:disabled)")
