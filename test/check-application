@@ -311,22 +311,24 @@ class TestApplication(testlib.MachineCase):
         m.write("/etc/containers/registries.conf.d/99-cockpit-podman-test.conf", REGISTRIES_CONF)
         m.execute("systemctl stop podman.service")
 
-    def createQuadlet(self, name: str, podName: str | None = None, containerName: str | None = None,
-                      *, auth: bool = False, autostart: bool = True) -> None:
+    def createQuadlet(self, name: str, podName: str | None = None, containerName: str | None = None, image: str = IMG_BUSYBOX,
+                      *, auth: bool = False, autostart: bool = True, autoupdate: str | None = None) -> None:
         pod_option = f'Pod={podName}.pod' if podName else ''
         containername_option = f'ContainerName={containerName}' if containerName else ''
         stop_timeout = 'StopTimeout=0' if self.machine.image not in ['rhel-8-10'] else ''
+        autoupdate_option = f'AutoUpdate={autoupdate}' if autoupdate else ''
         quadlet = f"""
 [Unit]
 Description=Podman - {name}
 After=local-fs.target
 
 [Container]
-Image={IMG_BUSYBOX}
+Image={image}
 Exec=sleep infinity
 {containername_option}
 {pod_option}
 {stop_timeout}
+{autoupdate_option}
 
 [Install]
 WantedBy=multi-user.target default.target
@@ -3694,6 +3696,76 @@ ContainerName=guitarq1
             b.wait_in_text(f"{sel} + tr", "sleep infinity")
             b.wait_not_in_text(f"{sel} + tr", "systemd service")
 
+    def testAutoUpdateSystem(self) -> None:
+        self._autoUpdate(auth=True)
+
+    def testAutoUpdateUser(self) -> None:
+        self._autoUpdate(auth=False)
+
+    def _autoUpdate(self, *, auth: bool) -> None:
+        b = self.browser
+
+        # setup for image building
+        self.setupRegistry()
+
+        def buildImage(image_name: str, size: int, *, auth: bool) -> None:
+            temp_dir = self.machine.execute(f"""
+                set -eu
+                D=$(mktemp -d -p {self.vm_tmpdir})
+                # Allow admin to read the created directory, mktemp by default creates it unreadable for other users
+                chmod 755 $D
+                truncate -s {size}M $D/test.img
+                printf 'FROM {IMG_BUSYBOX}\\nCOPY test.img /\\n' > $D/Containerfile
+                echo $D
+            """).strip()
+            self.execute(f"podman build -t {image_name} {temp_dir}", system=auth)
+
+        self.login(system=auth)
+
+        # initially check that there are no auto-update containers
+        b.click("#containers-actions-dropdown")
+        b.click("button:contains('Auto update')") 
+
+        b.wait_in_text(".pf-v6-c-modal-box__body .pf-v6-c-empty-state .pf-v6-c-empty-state__title", "No auto-update containers")
+
+        b.click(".pf-v6-c-modal-box button:contains('Close')")
+        b.wait_not_present(".pf-v6-c-modal-box__body")
+
+        # build & push initial image
+        image1 = "localhost:5000/test-auto-update:1"
+        buildImage(image1, 1, auth=auth)
+        self.execute(f"podman push {image1}; podman rmi {image1}", system=auth)
+
+        # start a quadlet with auto-update configuration
+        service_name = "test-auto-update"
+        self.createQuadlet(service_name, containerName=service_name, image=image1, auth=auth, autoupdate='registry')
+
+        self.waitContainerRow(service_name)
+
+        # check that there is an auto-update container, but status up to date
+        b.click("#containers-actions-dropdown")
+        b.click("button:contains('Auto update')") 
+
+        b.wait_in_text(".pf-v6-c-modal-box__body tbody td[data-label=Status]", "Up to date")
+
+        b.click(".pf-v6-c-modal-box button:contains('Close')")
+        b.wait_not_present(".pf-v6-c-modal-box__body")
+
+        # build and push an updated image
+        buildImage(image1, 50, auth=auth)
+        self.execute(f"podman push {image1}; podman rmi {image1}", system=auth)
+
+        # check that an update is available
+        b.click("#containers-actions-dropdown")
+        b.click("button:contains('Auto update')") 
+
+        b.wait_in_text(".pf-v6-c-modal-box__body tbody td[data-label=Status]", "Update available")
+
+        # run the update and check completion
+        b.click(".pf-v6-c-modal-box button:contains('Update')")
+        b.wait_in_text(".pf-v6-c-modal-box__body tbody td[data-label=Status]", "Updated")
+
+        b.click(".pf-v6-c-modal-box button:contains('Close')")
 
 if __name__ == '__main__':
     testlib.test_main()
