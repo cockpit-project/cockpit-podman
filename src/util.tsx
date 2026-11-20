@@ -198,3 +198,15 @@ export const systemctl_spawn = (args: string[], system: boolean = false) => {
 
     return cockpit.spawn([...systemctl_args, ...args], { superuser: system ? "require" : null, err: "message" });
 };
+
+export const isVersionGte = (version: string, than: [number, number, number]) => {
+    const parsed = version.split('.').slice(0, 3).map(part => Number(part.split('-')[0]));
+
+    for (let i = 0; i < 3; i++) {
+        // Return false if not greater than, to handle NaN as well 
+        // In case of shorter version number, assume zeros e.g. 6.2 -> 6.2.0
+        if (!((parsed[i] ?? 0) >= than[i])) return false;
+    }
+
+    return true;
+};
