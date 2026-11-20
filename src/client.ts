@@ -161,3 +161,7 @@ export const imageHistory = (con: Connection, id: string) => podmanJson(con, `li
 export const imageExists = (con: Connection, id: string) => podmanCall(con, `libpod/images/${id}/exists`, "GET", {});
 
 export const containerExists = (con: Connection, id: string) => podmanCall(con, `libpod/containers/${id}/exists`, "GET", {});
+
+export const getVolumes = (con: Connection) => podmanJson(con, "libpod/volumes/json", "GET", {});
+
+export const deleteVolume = (con: Connection, name: string, force: boolean = false) => podmanCall(con, `libpod/volumes/${name}`, "DELETE", { force });

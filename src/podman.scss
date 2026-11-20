@@ -5,11 +5,11 @@
 // For pf-v6-line-clamp
 @use "@patternfly/patternfly/sass-utilities/mixins.scss";
 
-#app .pf-v6-c-card.containers-containers, #app .pf-v6-c-card.containers-images {
+#app .pf-v6-c-card.containers-containers, #app .pf-v6-c-card.containers-images, #app .pf-v6-c-card.containers-volumes {
     @extend .ct-card;
 }
 
-#containers-images, #containers-containers {
+#containers-images, #containers-containers, #containers-volumes {
     // Decrease padding for the image/container toggle button list
     .pf-v6-c-table.pf-m-compact .pf-v6-c-table__toggle {
         padding-inline-start: 0;
