@@ -3591,6 +3591,11 @@ Yaml={name}.yaml
         b.wait_text("#containers-containers tbody:nth-of-type(2) .container-name", "sysc1")
         showImages(b)
 
+        # a hint explains that the other users are not included, and who they are
+        b.wait_in_text("#containers-other-users-hint", "Containers and images of other users are not included")
+        b.wait_text("#containers-other-users-hint-" + uids['guitar'], "guitar")
+        b.wait_text("#containers-other-users-hint-" + uids['piano'], "piano")
+
         # switching to other user only shows its images and containers
         for user in ['guitar', 'piano']:
             b.set_val("#containers-containers-owner", uids[user])
@@ -3607,6 +3612,14 @@ Yaml={name}.yaml
         b.set_val("#containers-containers-owner", "all")
         self.waitNumContainers(2, auth=True)
         self.waitNumImages(self.user_images_count + self.system_images_count)
+
+        # the hint shows again, its buttons switch to that user, and it is not shown for a single owner
+        b.click("#containers-other-users-hint-" + uids['guitar'])
+        b.wait_val("#containers-containers-owner", uids['guitar'])
+        self.waitNumContainers(1, auth=False)
+        b.wait_not_present("#containers-other-users-hint")
+        b.set_val("#containers-containers-owner", "all")
+        self.waitNumContainers(2, auth=True)
 
         # reconnect to guitar
         b.set_val("#containers-containers-owner", uids['guitar'])

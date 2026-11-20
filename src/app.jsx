@@ -22,6 +22,7 @@ import { superuser } from "superuser";
 import ContainerHeader from './ContainerHeader.tsx';
 import Containers from './Containers.jsx';
 import Images from './Images.jsx';
+import { OtherUsersHint } from './OtherUsersHint.tsx';
 import * as client from './client.js';
 import detect_quadlets from './detect-quadlets.py';
 import rest from './rest.js';
@@ -949,6 +950,11 @@ class Application extends React.Component {
                         </PageSection>
                         <PageSection hasBodyWrapper={false} className='ct-pagesection-mobile'>
                             <Stack hasGutter>
+                                <OtherUsersHint
+                                  users={this.state.users}
+                                  ownerFilter={this.state.ownerFilter}
+                                  handleOwnerChanged={this.onOwnerChanged}
+                                />
                                 {imageList}
                                 {containerList}
                             </Stack>
