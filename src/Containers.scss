@@ -66,10 +66,21 @@
     }
 }
 
-/* HACK - force DescriptionList to wrap but not fill the width */
+/* HACK: Health check tab has two columns for the description.
+ * First column is the description list with metadata
+ * Second column is Run health check button
+ * Without this change the description list isn't rendered in a pleasing way
+ * and instead only shows 1 or 2 columns with a lot of empty space.
+ */
 #container-details-healthcheck {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5rem, max-content));
+
+    /* Prevent long command strings from inflating max-content beyond screen bounds */
+    .pf-v6-c-description-list__group {
+        min-inline-size: 0;
+        overflow-wrap: break-word;
+    }
 }
 
 /* Upstream issue https://github.com/patternfly/patternfly/pull/7396
