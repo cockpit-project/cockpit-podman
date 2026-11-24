@@ -42,6 +42,7 @@ import { PodCreateModal } from './PodCreateModal.jsx';
 import PruneUnusedContainersModal from './PruneUnusedContainersModal.jsx';
 import * as client from './client.js';
 import * as utils from './util.js';
+
 import './Containers.scss';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 
@@ -366,7 +367,6 @@ class Containers extends React.Component {
 
     constructor(props) {
         super(props);
-        console.log(props.version);
         this.state = {
             width: 0,
             memTotal: 0,
@@ -904,7 +904,10 @@ class Containers extends React.Component {
         }
 
         // Podman auto update support through REST API was introduced in v6.2.0
-        const canAutoUpdate = utils.isVersionGte(this.props.version, [6, 2, 0]);
+        // Only showing button if user has auto update containers
+        const canAutoUpdate = utils.compare_versions(this.props.version, '6.2.0') >= 0 &&
+            this.props.containers &&
+            Object.values(this.props.containers).some(container => container.Config?.Labels?.["io.containers.autoupdate"]);
 
         const filterRunning = (
             <Toolbar>

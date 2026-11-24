@@ -1,7 +1,9 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 import React, { useEffect, useState } from 'react';
 
-import { Badge, Form, FormGroup, Radio } from '@patternfly/react-core';
+import { Badge } from '@patternfly/react-core/dist/esm/components/Badge';
+import { Form, FormGroup } from '@patternfly/react-core/dist/esm/components/Form';
+import { Radio } from '@patternfly/react-core/dist/esm/components/Radio';
 import { Button } from "@patternfly/react-core/dist/esm/components/Button";
 import {
     Modal, ModalBody, ModalFooter, ModalHeader
@@ -21,18 +23,17 @@ const _ = cockpit.gettext;
 
 const updateStatusColumn = (updated) => {
     switch (updated) {
-    case 'failed': return { label: 'Failed', classSuffix: 'failed', sortOrder: 0 };
-    case 'rolled back': return { label: 'Rolled back', classSuffix: 'rolled-back', sortOrder: 0 };
-    case 'true': return { label: 'Updated', classSuffix: 'updated', sortOrder: 1 };
-    case 'pending': return { label: 'Update available', classSuffix: 'pending', sortOrder: 1 };
-    case 'false': return { label: 'Up to date', classSuffix: undefined, sortOrder: 2 };
+    case 'failed': return { label: _('Failed'), classSuffix: 'failed', sortOrder: 0 };
+    case 'rolled back': return { label: _('Rolled back'), classSuffix: 'rolled-back', sortOrder: 0 };
+    case 'true': return { label: _('Updated'), classSuffix: 'updated', sortOrder: 1 };
+    case 'pending': return { label: _('Update available'), classSuffix: 'pending', sortOrder: 1 };
+    case 'false': return { label: _('Up to date'), classSuffix: undefined, sortOrder: 2 };
     default: return updated;
     }
 };
 
 const getContainerRow = (report) => {
     const status = updateStatusColumn(report.Updated);
-
     const statusClassName = status.classSuffix ? `ct-badge-autoupdate-${status.classSuffix}` : undefined;
 
     const columns = [
@@ -101,6 +102,7 @@ const AutoUpdateModal = ({ users }) => {
     console.log(reports, reports?.map(report => getContainerRow(report)));
     return (
         <Modal isOpen
+            onClose={() => !isUpdating && Dialogs.close()}
             position="top"
             variant="medium"
         >
@@ -109,14 +111,15 @@ const AutoUpdateModal = ({ users }) => {
                 <Form isHorizontal>
                     {errors?.length && <ErrorNotification errorMessage="Error" errorDetail={errors.join("\n")} />}
                     { users.length > 1 &&
-                    <FormGroup fieldId='auto-update-dialog-owner' label={_("Owner")} isInline disabled={isUpdating}>
+                    <FormGroup fieldId='auto-update-dialog-owner' label={_("Owner")} isInline>
                         { users.map(user => (
                             <Radio key={user.name}
                                 value={user.name}
                                 label={user.uid === 0 ? _("System") : cockpit.format("$0 $1", _("User:"), user.name)}
                                 id={`auto-update-dialog-owner-${user.name}` }
                                 isChecked={owner === user}
-                                onChange={() => setOwner(user)} />))
+                                onChange={() => setOwner(user)}
+                                isDisabled={isUpdating} />))
                         }
                     </FormGroup>
                     }
