@@ -136,6 +136,17 @@ class TestApplication(testlib.MachineCase):
                                                     ssh_port=m.ssh_port,
                                                     identity_file=m.identity_file)
 
+        # HACK: clean up stale rootless podman user namespace state to prevent
+        # "cannot re-exec process to join the existing user namespace" errors
+        if m.image == "debian-testing":
+            self.execute("""
+                pkill -e -9 catatonit || true
+                while pgrep catatonit; do sleep 0.1; done
+                # admin_uid=$(id -u admin)
+                #rm -f /run/user/$admin_uid/libpod/tmp/pause.pid
+                #rm -f /tmp/storage-run-$admin_uid/libpod/tmp/pause.pid
+                """, system=False)
+
         # Enable user service as well; copy our images (except cockpit/ws) from system
         self.execute("""
             systemctl --user stop podman.service
